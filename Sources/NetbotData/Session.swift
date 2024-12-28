@@ -1,0 +1,199 @@
+//
+// See LICENSE.txt for license information
+//
+
+#if canImport(Darwin)
+  public import Foundation
+  public import Logging
+  @preconcurrency private import NetworkExtension
+
+  /// NETunnelProviderSession wrapper.
+  @globalActor public actor Session {
+
+    public static let shared = Session()
+
+    public enum Message: Sendable {
+      case data(Data)
+      case string(String)
+    }
+
+    nonisolated public let logger = Logger(label: "Session")
+
+    private var manager: NETunnelProviderManager?
+    private var lastLoadError: Error?
+    private var managerLoadingTask: Task<Void, any Error>?
+
+    private var statusUpdatesTask: Task<Void, Never>?
+    private var configurationUpdatesTask: Task<Void, Never>?
+
+    private init() {
+      Task.detached(priority: .background) {
+        try await self.waitUntilLoaded()
+        await self.setupListenerTasksIfNeeded()
+      }
+    }
+
+    /// Start packet tunnel with specific options.
+    nonisolated public func startVPNTunnel(options: [String: Any]) async throws {
+      do {
+        try await waitUntilLoaded()
+        guard let manager = await manager else {
+          return
+        }
+        let session = manager.connection as! NETunnelProviderSession
+        switch session.status {
+        case .invalid: break
+        case .disconnected:
+          try session.startTunnel()
+        case .connecting: break
+        case .connected: break
+        case .reasserting: break
+        case .disconnecting:
+          try session.startTunnel()
+        @unknown default:
+          assertionFailure()
+        }
+      } catch {
+        logger.error("\(error)")
+        throw error
+      }
+    }
+
+    /// Stop current running packet tunnel.
+    nonisolated public func stopVPNTunnel() async {
+      do {
+        try await waitUntilLoaded()
+        guard let manager = await manager else {
+          return
+        }
+        let session = manager.connection as! NETunnelProviderSession
+        switch session.status {
+        case .invalid: break
+        case .disconnected: break
+        case .connecting:
+          session.stopTunnel()
+        case .connected:
+          session.stopTunnel()
+        case .reasserting:
+          session.stopTunnel()
+        case .disconnecting: break
+        @unknown default:
+          assertionFailure()
+        }
+      } catch {}
+    }
+
+    @discardableResult
+    nonisolated public func send(_ message: Message) async throws -> Data? {
+      guard let session = await manager?.connection as? NETunnelProviderSession else {
+        return nil
+      }
+
+      return try await withCheckedThrowingContinuation { continuation in
+        do {
+          let finalize: Data
+          switch message {
+          case .data(let data):
+            finalize = data
+          case .string(let string):
+            finalize = string.data(using: .utf8) ?? Data()
+          }
+          try session.sendProviderMessage(finalize) {
+            continuation.resume(returning: $0)
+          }
+        } catch {
+          continuation.resume(throwing: error)
+        }
+      }
+    }
+
+    private func waitUntilLoaded() async throws {
+      // We don't want to load any tunnel provider manager relative actions while testing.
+      guard !CommandLine.arguments.contains("--testable") else { return }
+
+      if let task = managerLoadingTask {
+        try await task.value
+      }
+      // You load the manager at once, so you can skip this if the
+      // loadedManager is nil.
+      else if manager == nil {
+        let newTask = Task {
+          do {
+            let bundleID = "com.tenbits.netbot.packet-tunnel.extension"
+            let manager =
+              try await NETunnelProviderManager.loadAllFromPreferences().first {
+                guard let configuration = $0.protocolConfiguration as? NETunnelProviderProtocol
+                else {
+                  return false
+                }
+                return configuration.providerBundleIdentifier == bundleID
+              } ?? NETunnelProviderManager()
+
+            let configuration = NETunnelProviderProtocol()
+            configuration.serverAddress = "127.0.0.1"
+            configuration.providerBundleIdentifier = bundleID
+            configuration.disconnectOnSleep = false
+            manager.protocolConfiguration = configuration
+            manager.localizedDescription = "Netbot"
+            manager.isEnabled = true
+            manager.isOnDemandEnabled = true
+
+            #if os(macOS)
+              var authorizationRef: AuthorizationRef?
+              let authFlags: AuthorizationFlags = [
+                .extendRights, .interactionAllowed, .preAuthorize,
+              ]
+              let error = AuthorizationCreate(nil, nil, authFlags, &authorizationRef)
+              if error == noErr, let authorizationRef {
+                manager.setAuthorization(authorizationRef)
+              }
+            #endif
+
+            try await manager.saveToPreferences()
+            try await manager.loadFromPreferences()
+            self.manager = manager
+          } catch {
+            logger.error("Failed to get tunnel provider managers: \(error)")
+            lastLoadError = error
+            throw error
+          }
+          managerLoadingTask = nil
+        }
+        managerLoadingTask = newTask
+        try await newTask.value
+      }
+    }
+
+    private func setupListenerTasksIfNeeded() {
+      let nc = NotificationCenter.default
+
+      if statusUpdatesTask == nil {
+        statusUpdatesTask = Task.detached(priority: .background) {
+          if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            for await _ in nc.notifications(named: .NEVPNStatusDidChange).map({ $0.name }) {
+              await self.handleVPNStatusUpdate()
+            }
+          }
+        }
+      }
+
+      if configurationUpdatesTask == nil {
+        configurationUpdatesTask = Task.detached(priority: .background) {
+          if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            for await _ in nc.notifications(named: .NEVPNConfigurationChange).map({ $0.name }) {
+              await self.handleVPNConfigurationUpdate()
+            }
+          }
+        }
+      }
+    }
+
+    private func handleVPNStatusUpdate() async {
+
+    }
+
+    private func handleVPNConfigurationUpdate() async {
+
+    }
+  }
+#endif

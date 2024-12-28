@@ -1,0 +1,29 @@
+//
+// See LICENSE.txt for license information
+//
+
+#if os(macOS)
+  public import Foundation
+
+  @objc public protocol AuthorizationHandleProtocol: Sendable {
+
+    /// Require authorization rights for modify system VPN settings.
+    func systemVPNAuthorizationRights(authentication: Data) async throws -> Data
+
+    /// Require authorization rights for modify system proxy settings.
+    func systemNetworkingAuthorizationRights(authentication: Data) async throws -> Data
+  }
+
+  /// HelperToolHandleProtocol is the NSXPCConnection-based protocol implemented by the helper tool
+  /// and called by the app.
+  @objc public protocol HelperToolHandleProtocol: AuthorizationHandleProtocol {
+
+    /// Not used by the standard app (it's part of the sandboxed XPC service support).
+    func listenerEndpoint() async -> NSXPCListenerEndpoint
+
+    /// Returns the version number of the tool.
+    ///
+    /// - Note: This operation never requires authorization.
+    func toolVersion() async -> String
+  }
+#endif

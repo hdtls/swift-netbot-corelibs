@@ -1,0 +1,1 @@
+This directory is derived from LwIP cloned from https://git.savannah.gnu.org/git/lwip.git at revision fbd597e4500bbd51c8872f1ab11e50dba075f291

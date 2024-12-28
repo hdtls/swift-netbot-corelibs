@@ -1,0 +1,23 @@
+//
+// See LICENSE.txt for license information
+//
+
+#if canImport(FoundationEssentials)
+  public import FoundationEssentials
+#else
+  public import Foundation
+#endif
+
+extension Date: @retroactive RawRepresentable {
+
+  public var rawValue: String {
+    self.timeIntervalSinceReferenceDate.description
+  }
+
+  public init?(rawValue: RawValue) {
+    guard let timeInterval = TimeInterval(rawValue) else {
+      return nil
+    }
+    self = Date(timeIntervalSinceReferenceDate: timeInterval)
+  }
+}

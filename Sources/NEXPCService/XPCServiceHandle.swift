@@ -1,0 +1,219 @@
+//
+// See LICENSE.txt for license information
+//
+
+#if os(macOS)
+  public import Foundation
+  @_exported public import ServiceManagement
+  private import os
+
+  /// This object implements the protocol which we have defined. It provides the actual behavior for the service. It is 'exported' by the
+  /// service to make it available to the process hosting the service over an NSXPCConnection.
+  final public class XPCServiceHandle: @unchecked Sendable {
+
+    private let authorization: Data
+
+    /// only accessed or modified by operations on self.queue
+    private var connection: NSXPCConnection!
+
+    private var authorizationRef: AuthorizationRef?
+
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "com.apple.xpc")
+
+    public init() {
+      var err = errAuthorizationSuccess
+      var extForm = AuthorizationExternalForm()
+
+      err = AuthorizationCreate(nil, nil, .init(rawValue: 0), &authorizationRef)
+      if err == errAuthorizationSuccess, let authorizationRef {
+        err = AuthorizationMakeExternalForm(authorizationRef, &extForm)
+      }
+      if err == errAuthorizationSuccess {
+        authorization = withUnsafeBytes(of: &extForm) { Data($0) }
+      } else {
+        authorization = Data()
+      }
+      assert(err == errAuthorizationSuccess)
+    }
+
+    deinit {
+      if let authorizationRef {
+        AuthorizationFree(authorizationRef, .init(rawValue: 0))
+      }
+    }
+
+    private func register(plistName: String, service: SMAppService) async throws {
+      do {
+        let status = service.status
+        try service.register()
+        switch status {
+        case .notRegistered:
+          try service.register()
+        case .enabled:
+          logger.debug(
+            "Launch service \(plistName) already enabled"
+          )
+        case .requiresApproval:
+          // Replace throw error with open system settings login items panel.
+          logger.debug(
+            "Launch service \(plistName) has been successfully registered, but we need take action in System Settings before the service is eligible to run"
+          )
+          SMAppService.openSystemSettingsLoginItems()
+        case .notFound:
+          try service.register()
+        @unknown default:
+          throw NSError(
+            domain: "SMAppServiceDomain", code: -1,
+            userInfo: [
+              NSLocalizedFailureErrorKey:
+                "Launch service \(plistName) run into unhandled @unknown default status"
+            ])
+        }
+      } catch {
+        switch service.status {
+        case .enabled:
+          // How it is possible for service that register failed and become enabled at the same time.
+          break
+        case .notFound:
+          logger.error("Launch service \(plistName) not found")
+          throw error
+        case .notRegistered:
+          logger.error("Launch service \(plistName) register failure with error: \(error)")
+          throw error
+        case .requiresApproval:
+          // Replace throw error with open system settings login items panel.
+          logger.debug(
+            "Launch service \(plistName) has been successfully registered, but we need take action in System Settings before the service is eligible to run"
+          )
+          SMAppService.openSystemSettingsLoginItems()
+        @unknown default:
+          logger.fault("Launch service \(plistName) run into unhandled @unknown default status")
+          throw error
+        }
+      }
+    }
+
+    private func unregister(plistName: String, service: SMAppService) async throws {
+      do {
+        try await SMAppService.daemon(plistName: plistName).unregister()
+        logger.debug("Launch service \(plistName) has been successfully unregistered")
+      } catch {
+        logger.error("Launch service \(plistName) unregister failure with error: \(error)")
+        throw error
+      }
+    }
+
+    private func setToolIfNeeded(matchServiceName name: String) {
+      // Because we access connection, we have to run on the operation queue.
+      guard connection == nil else {
+        return
+      }
+
+      connection = NSXPCConnection(machServiceName: name, options: .privileged)
+      connection?.remoteObjectInterface = NSXPCInterface(with: (any HelperToolHandleProtocol).self)
+
+      // We can ignore the retain cycle warning because a) the retain taken by the
+      // invalidation handler block is released by us setting it to nil when the block
+      // actually runs, and b) the retain taken by the block passed to -addOperationWithBlock:
+      // will be released when that operation completes and the operation itself is deallocated
+      // (notably self does not have a reference to the NSBlockOperation).
+      connection?.invalidationHandler = {
+        // If the connection gets invalidated then, on our operation queue thread, nil out our
+        // reference to it.  This ensures that we attempt to rebuild it the next time around.
+        self.connection?.invalidationHandler = nil
+
+        self.connection = nil
+      }
+      connection?.resume()
+    }
+  }
+
+  extension XPCServiceHandle: XPCServiceHandleProtocol {
+
+    public func codeSigningRequirement() async -> String {
+      var codeSigningRequirementParts: [Substring] = []
+
+      codeSigningRequirementParts.append("identifier \"com.tenbits.netbot\"")
+      codeSigningRequirementParts.append("anchor apple generic")
+
+      let propertyList =
+        Bundle.main.object(forInfoDictionaryKey: "SMPrivilegedExecutables") as! [String: String]
+      let team = propertyList.values.first.map {
+        $0.split(separator: /\ and\ /)
+          .filter { $0.starts(with: /^certificate leaf\[subject\./) }
+          .first!
+      }!
+      codeSigningRequirementParts.append(team)
+
+      return codeSigningRequirementParts.joined(separator: " and ")
+    }
+
+    public func register(daemon plistName: String) async throws {
+      let daemon = SMAppService.daemon(plistName: plistName)
+      try await register(plistName: plistName, service: daemon)
+    }
+
+    public func register(agent plistName: String) async throws {
+      let agent = SMAppService.agent(plistName: plistName)
+      try await register(plistName: plistName, service: agent)
+    }
+
+    public func register(loginItem identifier: String) async throws {
+      let loginItem = SMAppService.loginItem(identifier: identifier)
+      try await register(plistName: identifier, service: loginItem)
+    }
+
+    public func unregister(daemon plistName: String) async throws {
+      let daemon = SMAppService.daemon(plistName: plistName)
+      try await unregister(plistName: plistName, service: daemon)
+    }
+
+    public func unregister(agent plistName: String) async throws {
+      let agent = SMAppService.agent(plistName: plistName)
+      try await unregister(plistName: plistName, service: agent)
+    }
+
+    public func unregister(loginItem identifier: String) async throws {
+      let loginItem = SMAppService.loginItem(identifier: identifier)
+      try await unregister(plistName: identifier, service: loginItem)
+    }
+
+    public func status(daemon plistName: String) async -> SMAppService.Status {
+      let daemon = SMAppService.daemon(plistName: plistName)
+      return daemon.status
+    }
+
+    public func status(agent plistName: String) async -> SMAppService.Status {
+      let agent = SMAppService.agent(plistName: plistName)
+      return agent.status
+    }
+
+    public func status(loginItem identifier: String) async -> SMAppService.Status {
+      let loginItem = SMAppService.loginItem(identifier: identifier)
+      return loginItem.status
+    }
+
+    public func openSystemSettingsLoginItems() async {
+      SMAppService.openSystemSettingsLoginItems()
+    }
+
+    public func setupAuthorizationRights() async throws {
+      guard let authorizationRef else {
+        throw NSError(domain: NSOSStatusErrorDomain, code: Int(errAuthorizationInvalidRef))
+      }
+      AuthorizationRightPresets.setupAuthorizationRights(authorizationRef)
+    }
+
+    public func connect(matchService name: String) async throws -> NSXPCListenerEndpoint {
+      setToolIfNeeded(matchServiceName: name)
+
+      // Call the helper tool to get the endpoint we need.
+      let endpoint = try await connection.tool().listenerEndpoint()
+      return endpoint
+    }
+
+    public func authorization() async -> Data {
+      authorization
+    }
+  }
+#endif

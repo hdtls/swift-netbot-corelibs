@@ -1,0 +1,208 @@
+//
+// See LICENSE.txt for license information
+//
+
+import Testing
+
+@testable import _ResourceProcessing
+
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
+@Suite(.tags(.dnsMapping, .formatting))
+struct DNSMappingFormatStyleTests {
+
+  @Test(arguments: [
+    DNSMapping.FormatStyle(),
+    DNSMapping.FormatStyle.dnsMapping,
+  ])
+  func formatDNSMapping(_ formatter: DNSMapping.FormatStyle) {
+    let formatInput = DNSMapping(domainName: "example.com", value: "1.1.1.1")
+    let formatOutput = formatter.format(formatInput)
+    #expect(formatOutput == "example.com = 1.1.1.1")
+  }
+
+  @Test(arguments: [
+    DNSMapping.FormatStyle(),
+    DNSMapping.FormatStyle.dnsMapping,
+  ])
+  func formatCNAMEDNSMapping(_ formatter: DNSMapping.FormatStyle) {
+    var formatInput = DNSMapping(domainName: "example.com", value: "example1.com")
+    formatInput.kind = .cname
+    let formatOutput = formatter.format(formatInput)
+    #expect(formatOutput == "example.com = example1.com")
+  }
+
+  @Test(arguments: [
+    DNSMapping.FormatStyle(),
+    DNSMapping.FormatStyle.dnsMapping,
+  ])
+  func formatDNSDNSMapping(_ formatter: DNSMapping.FormatStyle) {
+    var formatInput = DNSMapping(domainName: "example.com", value: "8.8.8.8")
+    formatInput.kind = .dns
+    let formatOutput = formatter.format(formatInput)
+    #expect(formatOutput == "example.com = server:8.8.8.8")
+  }
+
+  @Test(arguments: [
+    DNSMapping.FormatStyle(),
+    DNSMapping.FormatStyle.dnsMapping,
+  ])
+  func formatDisabledDNSMapping(_ formatter: DNSMapping.FormatStyle) {
+    var formatInput = DNSMapping(domainName: "example.com", value: "1.1.1.1")
+    formatInput.isEnabled = false
+    let formatOutput = formatter.format(formatInput)
+    #expect(formatOutput == "# example.com = 1.1.1.1")
+  }
+
+  @Test(arguments: [
+    DNSMapping.FormatStyle(),
+    DNSMapping.FormatStyle.dnsMapping,
+  ])
+  func formatDisabledCNAMEDNSMapping(_ formatter: DNSMapping.FormatStyle) {
+    var formatInput = DNSMapping(domainName: "example.com", value: "example1.com")
+    formatInput.kind = .cname
+    formatInput.isEnabled = false
+    let formatOutput = formatter.format(formatInput)
+    #expect(formatOutput == "# example.com = example1.com")
+  }
+
+  @Test(arguments: [
+    DNSMapping.FormatStyle(),
+    DNSMapping.FormatStyle.dnsMapping,
+  ])
+  func formatDisabledDNSDNSMapping(_ formatter: DNSMapping.FormatStyle) {
+    var formatInput = DNSMapping(domainName: "example.com", value: "8.8.8.8")
+    formatInput.kind = .dns
+    formatInput.isEnabled = false
+    let formatOutput = formatter.format(formatInput)
+    #expect(formatOutput == "# example.com = server:8.8.8.8")
+  }
+
+  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @Test(arguments: [
+    DNSMapping.FormatStyle(),
+    DNSMapping.FormatStyle().parseStrategy,
+    DNSMapping.FormatStyle.dnsMapping,
+  ])
+  func parseDNSMappingFromInvalidString(_ parser: DNSMapping.FormatStyle) {
+    #expect(throws: CocoaError.self) {
+      try parser.parse("example.com")
+    }
+    #expect(throws: CocoaError.self) {
+      try parser.parse("example.com = example1.com?query=1")
+    }
+  }
+
+  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @Test(arguments: [
+    DNSMapping.FormatStyle(),
+    DNSMapping.FormatStyle().parseStrategy,
+    DNSMapping.FormatStyle.dnsMapping,
+  ])
+  func parseDNSMapping(_ parser: DNSMapping.FormatStyle) throws {
+    let parseInput = "example.com = 1.1.1.1"
+    let parseOutput = try parser.parse(parseInput)
+    #expect(parseOutput.kind == .mapping)
+    #expect(parseOutput.isEnabled)
+    #expect(parseOutput.domainName == "example.com")
+    #expect(parseOutput.value == "1.1.1.1")
+    #expect(parseOutput.note == "")
+  }
+
+  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @Test(arguments: [
+    DNSMapping.FormatStyle(),
+    DNSMapping.FormatStyle().parseStrategy,
+    DNSMapping.FormatStyle.dnsMapping,
+  ])
+  func parseCNAMEDNSMapping(_ parser: DNSMapping.FormatStyle) throws {
+    let parseInput = "example.com = example1.com"
+    let parseOutput = try parser.parse(parseInput)
+    #expect(parseOutput.kind == .cname)
+    #expect(parseOutput.isEnabled)
+    #expect(parseOutput.domainName == "example.com")
+    #expect(parseOutput.value == "example1.com")
+    #expect(parseOutput.note == "")
+  }
+
+  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @Test(arguments: [
+    DNSMapping.FormatStyle(),
+    DNSMapping.FormatStyle().parseStrategy,
+    DNSMapping.FormatStyle.dnsMapping,
+  ])
+  func parseDNSDNSMapping(_ parser: DNSMapping.FormatStyle) throws {
+    let parseInput = "example.com = server:8.8.8.8"
+    let parseOutput = try parser.parse(parseInput)
+    #expect(parseOutput.kind == .dns)
+    #expect(parseOutput.isEnabled)
+    #expect(parseOutput.domainName == "example.com")
+    #expect(parseOutput.value == "8.8.8.8")
+    #expect(parseOutput.note == "")
+  }
+
+  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @Test(arguments: [
+    DNSMapping.FormatStyle(),
+    DNSMapping.FormatStyle().parseStrategy,
+    DNSMapping.FormatStyle.dnsMapping,
+  ])
+  func parseDisabledDNSMapping(_ parser: DNSMapping.FormatStyle) throws {
+    let parseInput = "# example.com = 1.1.1.1"
+    let parseOutput = try parser.parse(parseInput)
+    #expect(parseOutput.kind == .mapping)
+    #expect(!parseOutput.isEnabled)
+    #expect(parseOutput.domainName == "example.com")
+    #expect(parseOutput.value == "1.1.1.1")
+    #expect(parseOutput.note == "")
+  }
+
+  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @Test(arguments: [
+    DNSMapping.FormatStyle(),
+    DNSMapping.FormatStyle().parseStrategy,
+    DNSMapping.FormatStyle.dnsMapping,
+  ])
+  func parseDisabledCNAMEDNSMapping(_ parser: DNSMapping.FormatStyle) throws {
+    let parseInput = "# example.com = example1.com"
+    let parseOutput = try parser.parse(parseInput)
+    #expect(parseOutput.kind == .cname)
+    #expect(!parseOutput.isEnabled)
+    #expect(parseOutput.domainName == "example.com")
+    #expect(parseOutput.value == "example1.com")
+    #expect(parseOutput.note == "")
+  }
+
+  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @Test(arguments: [
+    DNSMapping.FormatStyle(),
+    DNSMapping.FormatStyle().parseStrategy,
+    DNSMapping.FormatStyle.dnsMapping,
+  ])
+  func parseDisabledDNSDNSMapping(_ parser: DNSMapping.FormatStyle) throws {
+    let parseInput = "# example.com = server:8.8.8.8"
+    let parseOutput = try parser.parse(parseInput)
+    #expect(parseOutput.kind == .dns)
+    #expect(!parseOutput.isEnabled)
+    #expect(parseOutput.domainName == "example.com")
+    #expect(parseOutput.value == "8.8.8.8")
+    #expect(parseOutput.note == "")
+  }
+
+  @Test func formatStyleConformance() {
+    var formatInput = DNSMapping(domainName: "example.com", value: "8.8.8.8")
+    formatInput.kind = .dns
+    formatInput.isEnabled = false
+    #expect(formatInput.formatted(.dnsMapping) == "# example.com = server:8.8.8.8")
+  }
+
+  @Test func parseStrategyConformance() {
+    #expect(throws: Never.self) {
+      try DNSMapping("# example.com = server:8.8.8.8", strategy: .dnsMapping)
+    }
+  }
+}
