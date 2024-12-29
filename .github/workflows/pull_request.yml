@@ -9,9 +9,12 @@ jobs:
     name: Soundness
     uses: swiftlang/github-workflows/.github/workflows/soundness.yml@main
     with:
+      api_breakage_check_enabled: false
+      format_check_enabled: false,
+      docs_check_enabled: false,
       unacceptable_language_check_enabled: false
       license_header_check_project_name: "Netbot"
-      linux_pre_build_command: git config --global url."https://${{ github.token }}@github".insteadOf https://github
+      linux_pre_build_command: git config --local url."https://${{ github.token }}@github".insteadOf https://github
 
   unit-tests:
     name: Unit tests

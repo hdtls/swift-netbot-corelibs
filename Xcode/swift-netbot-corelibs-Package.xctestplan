@@ -1,0 +1,49 @@
+{
+  "configurations" : [
+    {
+      "id" : "6F76E5C4-E695-42C5-9312-3DADB73454EB",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "NetbotDataTests",
+        "name" : "NetbotDataTests"
+      }
+    },
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "NetbotMacrosTests",
+        "name" : "NetbotMacrosTests"
+      }
+    },
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "_NEAnalyticsTests",
+        "name" : "_NEAnalyticsTests"
+      }
+    },
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "_ResourceProcessingTests",
+        "name" : "_ResourceProcessingTests"
+      }
+    }
+  ],
+  "version" : 1
+}
