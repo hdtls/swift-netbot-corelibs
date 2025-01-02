@@ -340,7 +340,10 @@ extension AnyProxy.FormatStyle {
 
     pattern = try .init("\(Fields.testURL.rawValue)\(text)")
     //    pattern = /test-url *= *([^,]+)/
-    let testURL = line.firstMatch(of: pattern)?.1 ?? ""
+    let testURLString = line.firstMatch(of: pattern)?.1 ?? ""
+    let testURL =
+      testURLString._trimmingWhitespaces().isEmpty
+      ? nil : URL(string: testURLString._trimmingWhitespaces())
 
     pattern = try .init("\(Fields.interfaceName.rawValue)\(text)")
     //    pattern = /interface-name *= *([^,]+)/
@@ -422,7 +425,8 @@ extension AnyProxy.FormatStyle {
     parseOutput.obfuscation.isEnabled = obfs
     parseOutput.obfuscation.strategy = obfsStrategy
     parseOutput.obfuscation.hostname = obfsHostname._trimmingWhitespaces()
-    parseOutput.measurement.url = URL(string: testURL._trimmingWhitespaces())
+    // swift 6.0 initialize URL with empty string is not nil
+    parseOutput.measurement.url = testURL
     parseOutput.engress.interfaceName = interfaceName._trimmingWhitespaces()
     parseOutput.engress.backToDefaultIfNICUnavailable = backToDefaultIfNICUnavailable
     parseOutput.engress.packetToS = UInt8(ipPacketToS._trimmingWhitespaces()) ?? 0
