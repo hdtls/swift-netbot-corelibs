@@ -2,11 +2,9 @@
 // See LICENSE.txt for license information
 //
 
-@_exported public import Preference
+public import Preference
 
-#if canImport(FoundationEssentials)
-  private import _FoundationEssentials
-#else
+#if canImport(Darwin)
   private import Foundation
 #endif
 
@@ -37,19 +35,27 @@ extension CapabilityFlags: PreferenceRepresentable {}
 extension CapabilityFlags {
   public var localizedName: String {
     switch self {
-    case .httpCapture:
-      return String(
-        localized: "Enable HTTP Capture", comment: "CapabilityFlags for HTTP Capture")
-    case .httpsDecryption:
-      return String(localized: "Enable HTTPS MitM", comment: "CapabilityFlags for HTTPS MitM")
-    case .rewrite:
-      return String(localized: "Enable Rewrite", comment: "CapabilityFlags for Rewrite")
-    case .scripting:
-      return String(
-        localized: "Enable Scripting",
-        comment: "CapabilityFlags for Scripting"
-      )
-    default: return "UNKNOWN(\(self.rawValue))"
+    #if canImport(Darwin)
+      case .httpCapture:
+        return String(
+          localized: "Enable HTTP Capture", comment: "CapabilityFlags for HTTP Capture")
+      case .httpsDecryption:
+        return String(localized: "Enable HTTPS MitM", comment: "CapabilityFlags for HTTPS MitM")
+      case .rewrite:
+        return String(localized: "Enable Rewrite", comment: "CapabilityFlags for Rewrite")
+      case .scripting:
+        return String(
+          localized: "Enable Scripting",
+          comment: "CapabilityFlags for Scripting"
+        )
+      default: return "UNKNOWN(\(self.rawValue))"
+    #else
+      case .httpCapture: return "Enable HTTP Capture"
+      case .httpsDecryption: return "Enable HTTPS MitM"
+      case .rewrite: return "Enable Rewrite"
+      case .scripting: return "Enable Scripting"
+      default: return "UNKNOWN(\(self.rawValue))"
+    #endif
     }
   }
 }

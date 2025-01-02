@@ -6,7 +6,8 @@ private import Preference
 private import _PersistentStore
 
 #if canImport(FoundationEssentials)
-  import _FoundationEssentials
+  import FoundationEssentials
+  import class Foundation.OperationQueue
 #else
   import Foundation
 #endif
@@ -221,6 +222,10 @@ extension ProfileAssistant {
 
 extension URL {
   fileprivate var isProfile: Bool {
-    isFileURL && pathExtension == Profile.contentType.preferredFilenameExtension
+    #if canImport(Darwin)
+      isFileURL && pathExtension == Profile.contentType.preferredFilenameExtension
+    #else
+      isFileURL && pathExtension == .profilePathExtension
+    #endif
   }
 }

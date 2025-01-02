@@ -3,7 +3,7 @@
 //
 
 #if canImport(FoundationEssentials)
-  public import _FoundationEssentials
+  public import FoundationEssentials
 #else
   public import Foundation
 #endif
@@ -25,9 +25,15 @@ public struct HTTPFieldsRewrite: Equatable, Hashable, Sendable {
 
     public var localizedName: String {
       switch self {
-      case .add: String(localized: "Add HTTP Field")
-      case .remove: String(localized: "Delete HTTP Field")
-      case .replace: String(localized: "Replace HTTP Field")
+      #if canImport(Darwin)
+        case .add: String(localized: "Add HTTP Field")
+        case .remove: String(localized: "Delete HTTP Field")
+        case .replace: String(localized: "Replace HTTP Field")
+      #else
+        case .add: "Add HTTP Field"
+        case .remove: "Delete HTTP Field"
+        case .replace: "Replace HTTP Field"
+      #endif
       }
     }
   }

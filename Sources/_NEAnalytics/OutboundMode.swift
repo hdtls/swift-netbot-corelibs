@@ -5,10 +5,8 @@
 @_exported public import Anlzr
 @_exported public import Preference
 
-#if canImport(FoundationEssentials)
-  import _FoundationEssentials
-#else
-  import Foundation
+#if canImport(Darwin)
+  private import Foundation
 #endif
 
 extension OutboundMode: @retroactive RawRepresentable {
@@ -43,12 +41,21 @@ extension OutboundMode: @retroactive PreferenceRepresentable {}
 extension OutboundMode {
   var localizedName: String {
     switch self {
-    case .direct:
-      return String(localized: "Direct Outbound", comment: "")
-    case .globalProxy:
-      return String(localized: "Global Proxy", comment: "")
-    case .ruleBased:
-      return String(localized: "Rule-based Proxy", comment: "")
+    #if canImport(Darwin)
+      case .direct:
+        return String(localized: "Direct Outbound", comment: "")
+      case .globalProxy:
+        return String(localized: "Global Proxy", comment: "")
+      case .ruleBased:
+        return String(localized: "Rule-based Proxy", comment: "")
+    #else
+      case .direct:
+        return "Direct Outbound"
+      case .globalProxy:
+        return "Global Proxy"
+      case .ruleBased:
+        return "Rule-based Proxy"
+    #endif
     }
   }
 }

@@ -2,8 +2,6 @@
 // See LICENSE.txt for license information
 //
 
-private import _UniformTypeIdentifiers
-
 #if canImport(FoundationEssentials)
   public import FoundationEssentials
 #else
@@ -31,10 +29,10 @@ extension URL {
     #endif
     if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
       return applicationGroupDirectory.appending(component: pathComponent)
-        .appendingPathComponent("Default", conformingTo: .profile)
+        .appending(path: "Default").appendingPathExtension(.profilePathExtension)
     } else {
       return applicationGroupDirectory.appendingPathComponent(pathComponent)
-        .appendingPathComponent("Default", conformingTo: .profile)
+        .appending(path: "Default").appendingPathExtension(.profilePathExtension)
     }
   }
 
@@ -68,4 +66,9 @@ extension URL {
         components: ".cache", "com.tenbits.netbot", "External Resource")
     #endif
   }
+}
+
+extension String {
+
+  package static var profilePathExtension: String { "netbotcfg" }
 }

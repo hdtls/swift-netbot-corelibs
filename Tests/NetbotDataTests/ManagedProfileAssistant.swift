@@ -26,7 +26,7 @@ func withManagedProfile(body: (ProfileAssistant) async throws -> Void) async thr
     let profileAssistant = ProfileAssistant()
   #endif
   let profileURL = URL(filePath: #filePath).deletingLastPathComponent()
-    .appendingPathComponent(UUID().uuidString, conformingTo: .profile)
+    .appending(path: UUID().uuidString).appendingPathExtension(.profilePathExtension)
   try "".write(to: profileURL, atomically: true, encoding: .utf8)
   await profileAssistant.setProfileURL(profileURL)
   await profileAssistant.setProfilesDirectory(profileURL.deletingLastPathComponent())

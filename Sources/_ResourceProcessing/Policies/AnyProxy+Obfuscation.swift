@@ -2,9 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-#if canImport(FoundationEssentials)
-  private import _FoundationEssentials
-#else
+#if canImport(Darwin)
   private import Foundation
 #endif
 
@@ -33,13 +31,23 @@ extension AnyProxy {
 
       public var localizedName: String {
         switch self {
-        case .http:
-          return String(localized: "HTTP")
-        case .tls:
-          return String(localized: "TLS")
-        default:
-          assertionFailure("Unknown obfuscation strategy \(self)")
-          return ""
+        #if canImport(Darwin)
+          case .http:
+            return String(localized: "HTTP")
+          case .tls:
+            return String(localized: "TLS")
+          default:
+            assertionFailure("Unknown obfuscation strategy \(self)")
+            return ""
+        #else
+          case .http:
+            return "HTTP"
+          case .tls:
+            return "TLS"
+          default:
+            assertionFailure("Unknown obfuscation strategy \(self)")
+            return ""
+        #endif
         }
       }
     }

@@ -43,13 +43,13 @@ var dependencies: [Package.Dependency] = [
 
 if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
   dependencies += [
-    .package(url: "https://github.com/hdtls/swift-nio-anlzr.git", branch: "main"),
+    .package(url: "https://github.com/hdtls/swift-netbot-essentials.git", branch: "main"),
     .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.2.1"),
     .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
   ]
 } else {
   dependencies += [
-    .package(path: "../swift-nio-anlzr"),
+    .package(path: "../swift-netbot-essentials"),
     .package(path: "../swift-maxminddb"),
     .package(path: "../swift-preference"),
   ]
@@ -85,17 +85,13 @@ let package = Package(
       ]
     ),
     .target(
-      name: "_FoundationEssentials",
-      swiftSettings: swiftSettings
-    ),
-    .target(
       name: "_NEAnalytics",
       dependencies: [
         "_PersistentStore",
         "_ResourceProcessing",
         "CNELwIP",
         "CNETTP",
-        .product(name: "Anlzr", package: "swift-nio-anlzr"),
+        .product(name: "Anlzr", package: "swift-netbot-essentials"),
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "NIOCore", package: "swift-nio"),
         .product(name: "NIOSSL", package: "swift-nio-ssl"),
@@ -115,17 +111,8 @@ let package = Package(
     .target(
       name: "_ResourceProcessing",
       dependencies: [
-        "_FoundationEssentials",
-        "_UniformTypeIdentifiers",
         .product(name: "HTTPTypes", package: "swift-http-types"),
         .product(name: "Logging", package: "swift-log"),
-      ],
-      swiftSettings: swiftSettings
-    ),
-    .target(
-      name: "_UniformTypeIdentifiers",
-      dependencies: [
-        "_FoundationEssentials"
       ],
       swiftSettings: swiftSettings
     ),
@@ -151,8 +138,7 @@ let package = Package(
       name: "Dashboard",
       dependencies: [
         "_PersistentStore",
-        "_FoundationEssentials",
-        .product(name: "AnlzrReports", package: "swift-nio-anlzr"),
+        .product(name: "AnlzrReports", package: "swift-netbot-essentials"),
       ],
       swiftSettings: swiftSettings
     ),
@@ -163,7 +149,6 @@ let package = Package(
         "NetbotMacros",
         "_PersistentStore",
         "_ResourceProcessing",
-        "_UniformTypeIdentifiers",
         .product(name: "_CryptoExtras", package: "swift-crypto"),
         .product(name: "Crypto", package: "swift-crypto"),
         .product(name: "NIOSSL", package: "swift-nio-ssl"),

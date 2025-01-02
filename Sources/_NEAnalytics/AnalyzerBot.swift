@@ -9,10 +9,11 @@ public import MaxMindDB
 private import NIOConcurrencyHelpers
 public import _ResourceProcessing
 
-#if canImport(FoundationEssentials)
-  private import _FoundationEssentials
-#else
+#if canImport(Darwin)
   private import Foundation
+#else
+  private import FoundationEssentials
+  private import class Foundation.UserDefaults
 #endif
 
 #if canImport(Darwin)

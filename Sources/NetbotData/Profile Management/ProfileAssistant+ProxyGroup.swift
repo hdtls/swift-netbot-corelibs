@@ -6,7 +6,7 @@
   public import Foundation
   private import SwiftUI
 #else
-  public import _FoundationEssentials
+  public import struct Foundation.IndexSet
 #endif
 
 /// `AnyProxyGroup` management

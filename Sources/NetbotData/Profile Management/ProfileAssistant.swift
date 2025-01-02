@@ -4,13 +4,13 @@
 
 public import Logging
 public import _ResourceProcessing
-private import _UniformTypeIdentifiers
 
 #if canImport(FoundationEssentials)
-  public import _FoundationEssentials
+  public import FoundationEssentials
   private import FoundationInternationalization
 #else
   public import Foundation
+  private import UniformTypeIdentifiers
 #endif
 
 #if canImport(SwiftData)
@@ -48,7 +48,7 @@ private import _UniformTypeIdentifiers
 
   /// A virtual profile URL. Load profile from virtual profile url always return a default `Profile` instance and never failed.
   public var virtualProfileURL: URL {
-    profilesDirectory.appendingPathComponent("Default", conformingTo: .profile)
+    profilesDirectory.appending(path: "Default").appendingPathExtension(.profilePathExtension)
   }
 
   nonisolated public let logger = Logger(label: "Profile")
@@ -90,10 +90,10 @@ private import _UniformTypeIdentifiers
       filePresenter = _FilePresenter(presentedItemURL: newDirectory)
     }
 
-    let suggestedFilename = profileURL.suggestedFilename
     let profileURL =
       profilesDirectory
-      .appendingPathComponent(suggestedFilename, conformingTo: .profile)
+      .appending(path: profileURL.suggestedFilename)
+      .appendingPathExtension(.profilePathExtension)
     setProfileURL(profileURL)
   }
 
@@ -228,7 +228,7 @@ private import _UniformTypeIdentifiers
   /// - Returns: Loaded profile if success.
   nonisolated public func profile(identified name: String) async throws -> Profile {
     let profilesDirectory = await profileURL.deletingLastPathComponent()
-    let url = profilesDirectory.appendingPathComponent(name, conformingTo: .profile)
+    let url = profilesDirectory.appending(path: name).appendingPathExtension(.profilePathExtension)
     return try await profile(identified: url)
   }
 
@@ -379,7 +379,7 @@ private import _UniformTypeIdentifiers
               let fileURLs: [URL] = try FileManager.default
                 .contentsOfDirectory(atPath: readIntent.url.path(percentEncoded: false))
                 .compactMap {
-                  guard $0.hasSuffix(UTType.profile.preferredFilenameExtension!) else {
+                  guard $0.hasSuffix(.profilePathExtension) else {
                     return nil
                   }
                   return URL(filePath: $0)

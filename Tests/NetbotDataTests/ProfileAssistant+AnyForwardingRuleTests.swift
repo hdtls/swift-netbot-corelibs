@@ -8,6 +8,7 @@ import Testing
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
+  import struct Foundation.IndexSet
 #else
   import Foundation
 #endif

@@ -5,7 +5,7 @@
 import NEAddressProcessing
 import NEVMESS
 import NIOCore
-@preconcurrency import NIOHTTP1
+import NIOHTTP1
 private import NIOWebSocket
 
 #if canImport(FoundationEssentials)

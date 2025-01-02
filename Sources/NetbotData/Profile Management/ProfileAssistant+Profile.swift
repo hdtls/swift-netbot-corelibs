@@ -5,7 +5,7 @@
 private import Logging
 
 #if canImport(FoundationEssentials)
-  public import _FoundationEssentials
+  public import FoundationEssentials
   private import FoundationInternationalization
 #else
   public import Foundation

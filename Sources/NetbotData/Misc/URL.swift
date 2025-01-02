@@ -3,7 +3,8 @@
 //
 
 #if canImport(FoundationEssentials)
-  public import _FoundationEssentials
+  public import FoundationEssentials
+  private import struct Foundation.URLResourceKey
 #else
   public import Foundation
 #endif

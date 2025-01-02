@@ -250,7 +250,7 @@ struct ProfileAssistantTests {
       await #expect(throws: ProfileLoadError.self) {
         try await profileAssistant.profile(
           identified: profileAssistant.profileURL.deletingLastPathComponent()
-            .appendingPathComponent("ABC", conformingTo: .profile)
+            .appending(path: "ABC").appendingPathExtension(.profilePathExtension)
         )
       }
     }
