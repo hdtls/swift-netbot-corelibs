@@ -6,7 +6,7 @@
   import SwiftData
   import Testing
 
-  @testable import NetbotData
+  @testable import Netbot
 
   @Suite("V1._AnyProxyGroupTests", .tags(.swiftData, .schema, .proxyGroup))
   struct V1_AnyProxyGroupTests {

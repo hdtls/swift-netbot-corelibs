@@ -370,10 +370,12 @@ public import _ResourceProcessing
             #if canImport(Darwin)
               let fileURLs = try FileManager.default
                 .contentsOfDirectory(
-                  at: readIntent.url, includingPropertiesForKeys: [.contentTypeKey]
+                  at: readIntent.url,
+                  includingPropertiesForKeys: nil,
+                  options: [.skipsHiddenFiles]
                 )
                 .filter {
-                  try $0.resourceValues(forKeys: [.contentTypeKey]).contentType == .profile
+                  try $0.pathExtension == .profilePathExtension
                 }
             #else
               let fileURLs: [URL] = try FileManager.default

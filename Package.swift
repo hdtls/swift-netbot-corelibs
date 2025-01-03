@@ -63,7 +63,8 @@ let package = Package(
     .tvOS(.v17),
   ],
   products: [
-    .library(name: "NetbotData", targets: ["NetbotData"]),
+    .library(name: "Netbot", targets: ["Netbot"]),
+    .library(name: "NetbotUI", targets: ["NetbotUI"]),
     .library(name: "Dashboard", targets: ["Dashboard"]),
     .library(name: "DashboardUI", targets: ["DashboardUI"]),
     .library(name: "_NEAnalytics", targets: ["_NEAnalytics"]),
@@ -144,7 +145,7 @@ let package = Package(
     ),
     .target(name: "DashboardUI", dependencies: ["Dashboard"], swiftSettings: swiftSettings),
     .target(
-      name: "NetbotData",
+      name: "Netbot",
       dependencies: [
         "NetbotMacros",
         "_PersistentStore",
@@ -157,6 +158,10 @@ let package = Package(
         .product(name: "X509", package: "swift-certificates"),
       ],
       swiftSettings: swiftSettings
+    ),
+    .target(
+      name: "NetbotUI",
+      dependencies: ["Netbot"]
     ),
     .target(name: "NEXPCService"),
     .testTarget(
@@ -174,8 +179,8 @@ let package = Package(
       swiftSettings: swiftSettings
     ),
     .testTarget(
-      name: "NetbotDataTests",
-      dependencies: ["NetbotData"],
+      name: "NetbotTests",
+      dependencies: ["Netbot"],
       swiftSettings: swiftSettings
     ),
     .testTarget(

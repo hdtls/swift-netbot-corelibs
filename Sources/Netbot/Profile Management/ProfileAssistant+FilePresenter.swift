@@ -222,10 +222,6 @@ extension ProfileAssistant {
 
 extension URL {
   fileprivate var isProfile: Bool {
-    #if canImport(Darwin)
-      isFileURL && pathExtension == Profile.contentType.preferredFilenameExtension
-    #else
-      isFileURL && pathExtension == .profilePathExtension
-    #endif
+    isFileURL && pathExtension == .profilePathExtension
   }
 }

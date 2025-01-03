@@ -5,6 +5,7 @@
 #if canImport(Darwin)
   public import CoreTransferable
   public import UniformTypeIdentifiers
+  public import Netbot
 
   extension Profile {
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)

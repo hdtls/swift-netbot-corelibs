@@ -6,7 +6,7 @@
   import SwiftData
   import Testing
 
-  @testable import NetbotData
+  @testable import Netbot
 
   @Suite("V1._URLRewriteTests", .tags(.swiftData, .schema, .urlRewrite))
   struct V1_URLRewriteTests {

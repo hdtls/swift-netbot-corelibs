@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-@testable import NetbotData
+@testable import Netbot
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

@@ -4,7 +4,7 @@
 
 import Testing
 
-@testable import NetbotData
+@testable import Netbot
 
 @Suite struct FirstRangeTests {
 

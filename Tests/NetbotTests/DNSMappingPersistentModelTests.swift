@@ -6,7 +6,7 @@
   import SwiftData
   import Testing
 
-  @testable import NetbotData
+  @testable import Netbot
 
   @Suite("V1._DNSMappingTests", .tags(.swiftData, .schema, .dnsMapping))
   struct DNSMappingPersistentModelTests {

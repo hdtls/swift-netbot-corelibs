@@ -5,7 +5,7 @@
 import Logging
 import Testing
 
-@testable import NetbotData
+@testable import Netbot
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

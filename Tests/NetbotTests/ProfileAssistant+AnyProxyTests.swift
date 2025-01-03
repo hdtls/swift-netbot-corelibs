@@ -4,7 +4,7 @@
 
 import Testing
 
-@testable import NetbotData
+@testable import Netbot
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
@@ -13,57 +13,29 @@ import Testing
   import Foundation
 #endif
 
-@Suite(.tags(.urlRewrite))
-struct URLRewriteManagementTests {
+@Suite(.tags(.profileAssistant)) struct AnyProxyManagementTests {
 
   @available(swift 5.9)
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-  @Test func insertURLRewrite() async throws {
-    try await withManagedProfile { profileAssistant in
-      let profileURL = await profileAssistant.profileURL
-
-      var urlRewrite = URLRewrite()
-      urlRewrite.type = .found
-      urlRewrite.pattern = "(?:http://)?swift.org"
-      urlRewrite.destination = "https://swift.org"
-
-      await #expect(throws: Never.self) {
-        try await profileAssistant.insert(urlRewrite)
-      }
-
-      let finalize = try String(contentsOf: profileURL, encoding: .utf8)
-      let expected = """
-
-        [URL Rewrite]
-        found, (?:http://)?swift.org, https://swift.org
-        """
-      #expect(finalize == expected)
-    }
-  }
-
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-  @Test func insertURLRewriteIntoProfileWhereURLRewritesSectionExists() async throws {
+  @Test func insertProxyIntoProfileFile() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
 
       try """
-      [URL Rewrite]
+      [Proxy]
+      DIRECT = direct
       """.write(to: profileURL, atomically: true, encoding: .utf8)
 
-      var urlRewrite = URLRewrite()
-      urlRewrite.type = .found
-      urlRewrite.pattern = "(?:http://)?swift.org"
-      urlRewrite.destination = "https://swift.org"
-
+      var proxy = AnyProxy(name: "Test Insert")
+      proxy.kind = .direct
       await #expect(throws: Never.self) {
-        try await profileAssistant.insert(urlRewrite)
+        try await profileAssistant.insert(proxy)
       }
-
       let finalize = try String(contentsOf: profileURL, encoding: .utf8)
       let expected = """
-        [URL Rewrite]
-        found, (?:http://)?swift.org, https://swift.org
+        [Proxy]
+        DIRECT = direct
+        Test Insert = direct
         """
       #expect(finalize == expected)
     }
@@ -71,30 +43,46 @@ struct URLRewriteManagementTests {
 
   @available(swift 5.9)
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-  @Test func insertURLRewriteIntoProfileWhereURLRewritesSectionExistsAndItemsNotEmpty() async throws
-  {
+  @Test func insertAnyProxyIntoProfileWhereAnyProxiesSectionExists() async throws {
+    try await withManagedProfile { profileAssistant in
+      let profileURL = await profileAssistant.profileURL
+
+      try "".write(to: profileURL, atomically: true, encoding: .utf8)
+
+      var proxy = AnyProxy(name: "Test Insert")
+      proxy.kind = .direct
+      await #expect(throws: Never.self) {
+        try await profileAssistant.insert(proxy)
+      }
+      let finalize = try String(contentsOf: profileURL, encoding: .utf8)
+      let expected = """
+
+        [Proxy]
+        Test Insert = direct
+        """
+      #expect(finalize == expected)
+    }
+  }
+
+  @available(swift 5.9)
+  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @Test func insertAnyProxyIntoProfileWhereAnyProxiesSectionExistsAndItemsNotEmpty() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
 
       try """
-      [URL Rewrite]
-      found, (?:http://)?apple.com, https://apple.com
+      [Proxy]
       """.write(to: profileURL, atomically: true, encoding: .utf8)
 
-      var urlRewrite = URLRewrite()
-      urlRewrite.type = .found
-      urlRewrite.pattern = "(?:http://)?swift.org"
-      urlRewrite.destination = "https://swift.org"
-
+      var proxy = AnyProxy(name: "Test Insert")
+      proxy.kind = .direct
       await #expect(throws: Never.self) {
-        try await profileAssistant.insert(urlRewrite)
+        try await profileAssistant.insert(proxy)
       }
-
       let finalize = try String(contentsOf: profileURL, encoding: .utf8)
       let expected = """
-        [URL Rewrite]
-        found, (?:http://)?apple.com, https://apple.com
-        found, (?:http://)?swift.org, https://swift.org
+        [Proxy]
+        Test Insert = direct
         """
       #expect(finalize == expected)
     }
@@ -102,39 +90,34 @@ struct URLRewriteManagementTests {
 
   @available(swift 5.9)
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-  @Test func insertURLRewriteIntoProfileWhereURLRewritesSectionAtMiddleOfProfile() async throws {
+  @Test func insertAnyProxyIntoProfileWhereAnyProxiesSectionAtMiddleOfProfile() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
 
       try """
-      [Policies]
-      DIRECT,direct
-
-      [URL Rewrite]
-      found, (?:http://)?apple.com, https://apple.com
-
+      [DNS Mapping]
+      recovery.com = server:8.8.8.8
+      [Proxy]
+      DIRECT = direct
       [Rule]
       DOMAIN-SUFFIX, swift.org, DIRECT
       """.write(to: profileURL, atomically: true, encoding: .utf8)
 
-      var urlRewrite = URLRewrite()
-      urlRewrite.type = .found
-      urlRewrite.pattern = "(?:http://)?swift.org"
-      urlRewrite.destination = "https://swift.org"
-
+      var newProxy = AnyProxy(name: "HTTP")
+      newProxy.serverAddress = "127.0.0.1"
+      newProxy.port = 8080
+      newProxy.kind = .http
       await #expect(throws: Never.self) {
-        try await profileAssistant.insert(urlRewrite)
+        try await profileAssistant.insert(newProxy)
       }
 
       let finalize = try String(contentsOf: profileURL, encoding: .utf8)
       let expected = """
-        [Policies]
-        DIRECT,direct
-
-        [URL Rewrite]
-        found, (?:http://)?apple.com, https://apple.com
-        found, (?:http://)?swift.org, https://swift.org
-
+        [DNS Mapping]
+        recovery.com = server:8.8.8.8
+        [Proxy]
+        DIRECT = direct
+        HTTP = http, port = 8080, server-address = 127.0.0.1
         [Rule]
         DOMAIN-SUFFIX, swift.org, DIRECT
         """
@@ -144,30 +127,32 @@ struct URLRewriteManagementTests {
 
   @available(swift 5.9)
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-  @Test func replaceURLRewrite() async throws {
+  @Test func replaceProxyWithNewProxy() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
 
-      var urlRewrite = URLRewrite()
-      urlRewrite.pattern = "(?:http://)?apple.com"
-      urlRewrite.destination = "https://apple.com"
       try """
-      [URL Rewrite]
-      found, (?:http://)?apple.com, https://apple.com
+      [Proxy]
+      HTTP = http
+
       """.write(to: profileURL, atomically: true, encoding: .utf8)
 
-      var newURLRewrite = URLRewrite()
-      newURLRewrite.pattern = "(?:http://)?swift.org"
-      newURLRewrite.destination = "https://swift.org"
+      var proxy = AnyProxy(name: "HTTP")
+      proxy.kind = .http
+
+      var newProxy = AnyProxy(name: "HTTP")
+      newProxy.serverAddress = "127.0.0.1"
+      newProxy.port = 8080
+      newProxy.kind = .http
 
       await #expect(throws: Never.self) {
-        try await profileAssistant.replace(urlRewrite, with: newURLRewrite)
+        try await profileAssistant.replace(proxy, with: newProxy)
       }
-
       let finalize = try String(contentsOf: profileURL, encoding: .utf8)
       let expected = """
-        [URL Rewrite]
-        found, (?:http://)?swift.org, https://swift.org
+        [Proxy]
+        HTTP = http, port = 8080, server-address = 127.0.0.1
+
         """
       #expect(finalize == expected)
     }
@@ -175,25 +160,42 @@ struct URLRewriteManagementTests {
 
   @available(swift 5.9)
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-  @Test func moveURLRewrites() async throws {
+  @Test func replaceProxyWithNewProxyWhichNameAlsoChanged() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
 
       try """
-      [URL Rewrite]
-      found, (?:http://)?apple.com, https://apple.com
-      found, (?:http://)?swift.org, https://swift.org
+      [Proxy]
+      DIRECT = direct
+
+      [Policy Group]
+      PROXY = select, proxies = DIRECT
+
+      [Rule]
+      DOMAIN-SUFFIX,example.com,DIRECT
+
       """.write(to: profileURL, atomically: true, encoding: .utf8)
 
-      await #expect(throws: Never.self) {
-        try await profileAssistant.moveURLRewrites(fromOffsets: IndexSet([1]), toOffset: 0)
-      }
+      var proxy = AnyProxy(name: "DIRECT")
+      proxy.kind = .direct
 
+      var newProxy = AnyProxy(name: "HTTP1")
+      newProxy.kind = .direct
+
+      await #expect(throws: Never.self) {
+        try await profileAssistant.replace(proxy, with: newProxy)
+      }
       let finalize = try String(contentsOf: profileURL, encoding: .utf8)
       let expected = """
-        [URL Rewrite]
-        found, (?:http://)?swift.org, https://swift.org
-        found, (?:http://)?apple.com, https://apple.com
+        [Proxy]
+        HTTP1 = direct
+
+        [Policy Group]
+        PROXY = select, proxies = HTTP1
+
+        [Rule]
+        DOMAIN-SUFFIX,example.com,HTTP1
+
         """
       #expect(finalize == expected)
     }
@@ -201,25 +203,42 @@ struct URLRewriteManagementTests {
 
   @available(swift 5.9)
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-  @Test func removeURLRewrites() async throws {
+  @Test func moveProxies() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
 
-      var urlRewrite = URLRewrite()
-      urlRewrite.pattern = "(?:http://)?apple.com"
-      urlRewrite.destination = "https://apple.com"
       try """
-      [URL Rewrite]
-      found, (?:http://)?apple.com, https://apple.com
+      [Proxy]
+      DIRECT = direct
+      REJECT = reject
+      REJECT-TINYGIF = reject-tinygif
+      HTTP = http, port = 8000, server-address = 127.0.0.1
+
+      [Policy Group]
+      PROXY = select, proxies = DIRECT, REJECT, REJECT-TINYGIF, HTTP
+
+      [Rule]
+      DOMAIN-SUFFIX,example.com,DIRECT
+
       """.write(to: profileURL, atomically: true, encoding: .utf8)
 
       await #expect(throws: Never.self) {
-        try await profileAssistant.removeURLRewrites(atOffsets: IndexSet([0]))
+        try await profileAssistant.moveProxies(fromOffsets: IndexSet([2]), toOffset: 1)
       }
-
       let finalize = try String(contentsOf: profileURL, encoding: .utf8)
       let expected = """
-        [URL Rewrite]
+        [Proxy]
+        DIRECT = direct
+        REJECT-TINYGIF = reject-tinygif
+        REJECT = reject
+        HTTP = http, port = 8000, server-address = 127.0.0.1
+
+        [Policy Group]
+        PROXY = select, proxies = DIRECT, REJECT, REJECT-TINYGIF, HTTP
+
+        [Rule]
+        DOMAIN-SUFFIX,example.com,DIRECT
+
         """
       #expect(finalize == expected)
     }
@@ -227,25 +246,39 @@ struct URLRewriteManagementTests {
 
   @available(swift 5.9)
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-  @Test func removeSpecifiedURLRewrite() async throws {
+  @Test func removeProxies() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
 
-      var urlRewrite = URLRewrite()
-      urlRewrite.pattern = "(?:http://)?apple.com"
-      urlRewrite.destination = "https://apple.com"
       try """
-      [URL Rewrite]
-      found, (?:http://)?apple.com, https://apple.com
+      [Proxy]
+      DIRECT = direct
+      REJECT = reject
+      REJECT-TINYGIF = reject-tinygif
+      HTTP = http, port = 8000, server-address = 127.0.0.1
+
+      [Policy Group]
+      PROXY = select, proxies = DIRECT, REJECT, REJECT-TINYGIF, HTTP
+
+      [Rule]
+      DOMAIN-SUFFIX,example.com,DIRECT
+
       """.write(to: profileURL, atomically: true, encoding: .utf8)
 
       await #expect(throws: Never.self) {
-        try await profileAssistant.delete(urlRewrite)
+        try await profileAssistant.removeProxies(atOffsets: IndexSet([0, 2]))
       }
-
       let finalize = try String(contentsOf: profileURL, encoding: .utf8)
       let expected = """
-        [URL Rewrite]
+        [Proxy]
+        REJECT = reject
+        HTTP = http, port = 8000, server-address = 127.0.0.1
+
+        [Policy Group]
+        PROXY = select, proxies = REJECT, REJECT-TINYGIF, HTTP
+
+        [Rule]
+
         """
       #expect(finalize == expected)
     }

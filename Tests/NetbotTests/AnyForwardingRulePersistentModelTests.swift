@@ -5,7 +5,7 @@
 #if canImport(SwiftData)
   import SwiftData
   import Testing
-  @testable import NetbotData
+  @testable import Netbot
 
   @Suite("V1._AnyForwardingRuleTests", .tags(.swiftData, .schema, .forwardingRule))
   struct AnyRulePersistentModelTests {
