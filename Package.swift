@@ -161,7 +161,10 @@ let package = Package(
     ),
     .target(
       name: "NetbotUI",
-      dependencies: ["Netbot"]
+      dependencies: ["Netbot"],
+      resources: [
+        .process("Assets.xcassets")
+      ]
     ),
     .target(name: "NEXPCService"),
     .testTarget(
