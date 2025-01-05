@@ -63,6 +63,9 @@
         .foregroundStyle(color)
         .bold()
         .fixedSize()
+        .modelContainer(ProfileAssistant.shared.modelContainer)
+        .subscribeToProfileStatus()
+        .subscribeToSystemProxyStatus()
       }
 
       private var color: Color {

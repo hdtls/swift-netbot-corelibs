@@ -205,7 +205,8 @@
           target: self,
           action: #selector(openNetbotPreference(_:)),
           keyEquivalent: ","
-        ))
+        )
+      )
       items.append(.separator())
 
       items.append(

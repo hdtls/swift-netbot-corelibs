@@ -19,8 +19,6 @@
       contentView = NSHostingView(
         rootView: ContentView()
           .subscribeOpenURLActions()
-          .subscribeToProfileStatus()
-          .subscribeToSystemProxyStatus()
           .frame(minWidth: 900, minHeight: 510)
           .modelContainer(ProfileAssistant.shared.modelContainer)
       )
