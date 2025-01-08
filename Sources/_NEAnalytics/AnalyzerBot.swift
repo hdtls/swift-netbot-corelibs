@@ -27,13 +27,6 @@ public import _ResourceProcessing
 
   var profile = Profile()
 
-  private struct Addresses: SocketListenAddresses, Equatable {
-    var httpListenAddress = "127.0.0.1"
-    var httpListenPort: Int? = 6152
-    var socksListenAddress = "127.0.0.1"
-    var socksListenPort: Int? = 6153
-  }
-
   nonisolated private let analyzer: Analyzer
 
   nonisolated public let logger: Logger
@@ -59,7 +52,6 @@ public import _ResourceProcessing
     }
 
     logger = .init(label: "AnalyzerBot")
-    let addresses = Addresses()
     var reporting: any ConnectionReporting = NoOpReporting()
 
     let containerURL = URL.applicationGroupDirectory
@@ -83,7 +75,7 @@ public import _ResourceProcessing
     reporting = Analyzed(persistentStorage: persistentStorage)
     maxminddb = try? MaxMindDB(file: dbPath, mode: .mmap)
 
-    analyzer = Analyzer(logger: logger, addresses: addresses, reporter: reporting)
+    analyzer = Analyzer(logger: logger, reporter: reporting)
   }
 
   /// Start analyzer tunnel.
@@ -163,25 +155,14 @@ public import _ResourceProcessing
     try await setForwardProtocol(profile.asForwardProtocol())
     try await setForwardingRules(profile.asForwardingRules())
 
-    let newAddresses = Addresses(
-      httpListenAddress: profile.httpListenAddress,
-      httpListenPort: profile.httpListenPort,
-      socksListenAddress: profile.socksListenAddress,
-      socksListenPort: profile.socksListenPort
-    )
-    try await setTunnelNetworkSettings(newAddresses)
+    try await setTunnelNetworkSettings((
+      SocketAddress(ipAddress: profile.httpListenAddress, port: profile.httpListenPort ?? 6152),
+      SocketAddress(ipAddress: profile.socksListenAddress, port: profile.socksListenPort ?? 6153)
+    ))
   }
 
-  private func setTunnelNetworkSettings(_ addresses: Addresses) async throws {
-    guard (analyzer.socketListenAddresses as! Addresses) != addresses else {
-      return
-    }
-    analyzer.socketListenAddresses = addresses
-
-    if analyzer.isActive {
-      await stopVPNTunnel()
-      try await startVPNTunnel()
-    }
+  private func setTunnelNetworkSettings(_ addresses: (webProxyListenAddress: SocketAddress, socksProxyListenAddress: SocketAddress)) async throws {
+    try await analyzer.setTunnelNetworkSettings(addresses)
   }
 
   public func setForwardProtocol(_ forwardProtocol: any ForwardProtocolConvertible) async throws {
