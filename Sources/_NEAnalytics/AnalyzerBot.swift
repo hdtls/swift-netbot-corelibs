@@ -93,14 +93,14 @@ public import _ResourceProcessing
   /// Modify MaxMind GeoLite2-Country.mmdb.
   public func setGeoLite2DB(_ db: MaxMindDB) async throws {
     maxminddb = db
-    try await setForwardingRules(profile.asForwardingRules())
+    await setForwardingRules(profile.asForwardingRules())
   }
 
   /// Modify outbound mode.
-  public func setOutboundMode(_ outboundMode: OutboundMode) async throws {
+  public func setOutboundMode(_ outboundMode: OutboundMode) async {
     guard outboundMode != analyzer.outboundMode else { return }
 
-    self.analyzer.outboundMode = outboundMode
+    await self.analyzer.setOutboundMode(outboundMode)
     logger.info("Outbound mode has been changed to \(outboundMode.localizedName)")
 
     #if canImport(Darwin)
@@ -139,10 +139,8 @@ public import _ResourceProcessing
   }
 
   /// Modify enabled HTTP capabilities.
-  public func setEnabledHTTPCapabilities(_ enabledHTTPCapabilities: CapabilityFlags) async throws {
-    guard enabledHTTPCapabilities != analyzer.capabilities else { return }
-
-    self.analyzer.capabilities = enabledHTTPCapabilities
+  public func setEnabledHTTPCapabilities(_ enabledHTTPCapabilities: CapabilityFlags) async {
+    await self.analyzer.setEnabledHTTPCapabilities(enabledHTTPCapabilities)
   }
 
   /// Modify current analyzer settings using specific profile.
@@ -152,8 +150,8 @@ public import _ResourceProcessing
     }
     profile = newProfile
 
-    try await setForwardProtocol(profile.asForwardProtocol())
-    try await setForwardingRules(profile.asForwardingRules())
+    await setForwardProtocol(profile.asForwardProtocol())
+    await setForwardingRules(profile.asForwardingRules())
 
     try await setTunnelNetworkSettings((
       SocketAddress(ipAddress: profile.httpListenAddress, port: profile.httpListenPort ?? 6152),
@@ -165,12 +163,12 @@ public import _ResourceProcessing
     try await analyzer.setTunnelNetworkSettings(addresses)
   }
 
-  public func setForwardProtocol(_ forwardProtocol: any ForwardProtocolConvertible) async throws {
-    analyzer.forwardProtocol = forwardProtocol
+  public func setForwardProtocol(_ forwardProtocol: any ForwardProtocolConvertible) async {
+    await analyzer.setForwardProtocol(forwardProtocol)
   }
 
-  public func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) async throws {
-    analyzer.forwardingRules = forwardingRules.map {
+  public func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) async {
+    let forwardingRules: [any ForwardingRuleConvertible] = forwardingRules.map {
       if var forwardingRule = $0 as? GeoIPForwardingRule {
         forwardingRule.db = maxminddb
         return forwardingRule
@@ -190,5 +188,6 @@ public import _ResourceProcessing
 
       return $0
     }
+    await analyzer.setForwardingRules(forwardingRules)
   }
 }
