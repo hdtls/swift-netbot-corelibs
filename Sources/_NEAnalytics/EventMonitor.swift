@@ -82,8 +82,6 @@ final public class EventMonitor: @unchecked Sendable {
   private var maxminddbUpdatesTask: AnyCancellable?
   private var geoLite2UpdatesTask: RepeatedTask?
 
-  private var profile = Profile()
-
   private let lock = NIOLock()
 
   #if canImport(Darwin)
@@ -109,9 +107,6 @@ final public class EventMonitor: @unchecked Sendable {
         .sink { [unowned self] url, _, packetProcessing in
           Task {
             let profile = try Profile(contentsOf: url)
-            lock.withLock {
-              self.profile = profile
-            }
             delegate?.eventMonitor(
               self, willChangeProfile: profile, packetProcessing: packetProcessing
             )
@@ -142,6 +137,7 @@ final public class EventMonitor: @unchecked Sendable {
       selectionRecordUpdatesTask = Task {
         for await _ in $selectionRecords.values {
           try Task.checkCancellation()
+          let profile = try Profile(contentsOf: profileURL)
           delegate?.eventMonitor(self, willChangeForwardProtocol: profile.asForwardProtocol())
           delegate?.eventMonitor(self, willChangeForwardingRules: profile.asForwardingRules())
         }

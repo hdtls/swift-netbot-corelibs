@@ -25,8 +25,6 @@ public import _ResourceProcessing
 
   public static let shared = AnalyzerBot()
 
-  var profile = Profile()
-
   nonisolated private let analyzer: Analyzer
 
   nonisolated public let logger: Logger
@@ -145,17 +143,12 @@ public import _ResourceProcessing
 
   /// Modify current analyzer settings using specific profile.
   public func setProfile(_ newProfile: Profile) async throws {
-    guard profile != newProfile else {
-      return
-    }
-    profile = newProfile
-
-    await setForwardProtocol(profile.asForwardProtocol())
-    await setForwardingRules(profile.asForwardingRules())
+    await setForwardProtocol(newProfile.asForwardProtocol())
+    await setForwardingRules(newProfile.asForwardingRules())
 
     try await setTunnelNetworkSettings((
-      SocketAddress(ipAddress: profile.httpListenAddress, port: profile.httpListenPort ?? 6152),
-      SocketAddress(ipAddress: profile.socksListenAddress, port: profile.socksListenPort ?? 6153)
+      SocketAddress(ipAddress: newProfile.httpListenAddress, port: newProfile.httpListenPort ?? 6152),
+      SocketAddress(ipAddress: newProfile.socksListenAddress, port: newProfile.socksListenPort ?? 6153)
     ))
   }
 
