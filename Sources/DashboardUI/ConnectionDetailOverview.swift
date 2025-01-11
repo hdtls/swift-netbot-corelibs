@@ -145,7 +145,11 @@
                     }
                     GridRow {
                       Text("Status Code:")
-                      Text("N/A")
+                      if let status = data.response?.httpResponse?.status {
+                        Text(verbatim: "\(status.code) \(status.reasonPhrase)")
+                      } else {
+                        Text(verbatim: "N/A")
+                      }
                     }
                   }
                   .frame(width: 145, alignment: .leading)

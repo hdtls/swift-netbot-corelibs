@@ -81,21 +81,24 @@
                 : "\($0.forwardingReport.protocol) (\($0.forwardingReport.prettyPrintedRule))"
             )
           }
-          TableColumn("Up") {
-            Text(
-              Int64(
-                truncatingIfNeeded: $0.dataTransferReport.aggregatePathReport.sentTransportByteCount
-              ),
-              format: .byteCount(style: .binary, spellsOutZero: false)
-            )
-          }
-          TableColumn("Down") {
-            Text(
-              Int64(
-                truncatingIfNeeded: $0.dataTransferReport.aggregatePathReport
-                  .receivedTransportByteCount),
-              format: .byteCount(style: .binary, spellsOutZero: false)
-            )
+          Group {
+            TableColumn("Up") { (conn: Connection) in
+              Text(
+                Int64(
+                  truncatingIfNeeded: conn.dataTransferReport.aggregatePathReport
+                    .sentTransportByteCount
+                ),
+                format: .byteCount(style: .binary, spellsOutZero: false)
+              )
+            }
+            TableColumn("Down") {
+              Text(
+                Int64(
+                  truncatingIfNeeded: $0.dataTransferReport.aggregatePathReport
+                    .receivedTransportByteCount),
+                format: .byteCount(style: .binary, spellsOutZero: false)
+              )
+            }
           }
           TableColumn("Duration") {
             Text(
@@ -104,7 +107,9 @@
                 allowed: [.seconds, .milliseconds], width: .narrow, maximumUnitCount: 1)
             )
           }
-          //        TableColumn("Protocol", value: \.`protocol`)
+          TableColumn("Protocol") {
+            Text(verbatim: $0.protocol)
+          }
           TableColumn("URL") {
             Text($0.currentRequest.url())
           }

@@ -24,17 +24,32 @@ extension Request {
       return "\(host)\(portString)"
     }
 
-    return "\(host)\(portString)/\(path.trimmingPrefix("/"))"
+    let fixedPath = (path.last == "/" ? String(path.dropLast(1)) : path).trimmingPrefix("/")
+    return "\(host)\(portString)/\(fixedPath)"
   }
 
-  public func formatted() -> String {
+  public enum FormatStrategy {
+    case head
+    case body
+  }
+
+  public func formatted(strategy: FormatStrategy = .head) -> String {
     guard let httpRequest else {
       return ""
     }
-    return """
-      \(httpRequest.method) \(httpRequest.host(percentEncoded: false) ?? ""):\(httpRequest.port ?? 443) HTTP/1.1
-      Host: \(httpRequest.host(percentEncoded: false) ?? "")
-      \(httpRequest.headerFields.map  { "\($0.name): \($0.value)" }.joined(separator: "\n"))
-      """
+
+    switch strategy {
+    case .head:
+      return """
+        \(httpRequest.method) \(httpRequest.host(percentEncoded: false) ?? ""):\(httpRequest.port ?? 443) HTTP/1.1
+        Host: \(httpRequest.host(percentEncoded: false) ?? "")
+        \(httpRequest.headerFields.map  { "\($0.name): \($0.value)" }.joined(separator: "\n"))
+        """
+    case .body:
+      guard let body else {
+        return "No Data".localizedCapitalized
+      }
+      return String(data: body, encoding: .utf8) ?? "No Data".localizedCapitalized
+    }
   }
 }

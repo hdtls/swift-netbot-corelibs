@@ -126,14 +126,14 @@
               TextEditor(
                 text: .constant(
                   enabledHTTPCapabilities.contains(.httpCapture)
-                    ? "data.currentRequest?.body"
+                    ? "\(data.currentRequest.formatted(strategy: .body))"
                     : "Turn on HTTP capture and configure MitM to dump and inspect the body.")
               )
               .textEditorStyle(.plain)
             }
           case .responseHead:
             GroupBox {
-              TextEditor(text: .constant(""))
+              TextEditor(text: .constant(data.response?.formatted() ?? ""))
                 .textEditorStyle(.plain)
             }
           case .responseBody:
@@ -141,7 +141,7 @@
               TextEditor(
                 text: .constant(
                   enabledHTTPCapabilities.contains(.httpCapture)
-                    ? "data.response?.body"
+                    ? "\(data.response?.formatted(strategy: .body) ?? "No Data")"
                     : "Turn on HTTP capture and configure MitM to dump and inspect the body.")
               )
               .textEditorStyle(.plain)
