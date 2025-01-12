@@ -4,10 +4,8 @@
 
 @_exported public import AnlzrReports
 
-@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 extension Request {
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
   public func url() -> String {
     guard let host = host(percentEncoded: false) else {
       return ""
@@ -20,12 +18,13 @@ extension Request {
       }
     }
 
-    guard let path = httpRequest?.path, !path.isEmpty else {
+    guard var path = httpRequest?.path, !path.isEmpty else {
       return "\(host)\(portString)"
     }
 
-    let fixedPath = (path.last == "/" ? String(path.dropLast(1)) : path).trimmingPrefix("/")
-    return "\(host)\(portString)/\(fixedPath)"
+    path = path.hasPrefix("/") ? path : "/\(path)"
+    path = path.last == "/" ? String(path.dropLast(1)) : path
+    return "\(host)\(portString)\(path)"
   }
 
   public enum FormatStrategy {
