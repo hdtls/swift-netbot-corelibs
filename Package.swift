@@ -164,7 +164,8 @@ let package = Package(
       dependencies: ["Netbot"],
       resources: [
         .process("Assets.xcassets")
-      ]
+      ],
+      swiftSettings: swiftSettings
     ),
     .target(name: "NEXPCService"),
     .testTarget(
@@ -191,7 +192,8 @@ let package = Package(
       dependencies: [
         "NetbotMacros",
         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
-      ]
+      ],
+      swiftSettings: swiftSettings
     ),
   ]
 )

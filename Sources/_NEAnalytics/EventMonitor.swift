@@ -90,6 +90,8 @@ final public class EventMonitor: @unchecked Sendable {
 
   public weak var delegate: (any EventMonitorDelegate)?
 
+  public var cancellable: AnyCancellable?
+
   public func startListening() async throws {
     lock.lock()
 
@@ -111,6 +113,10 @@ final public class EventMonitor: @unchecked Sendable {
               self, willChangeProfile: profile, packetProcessing: packetProcessing
             )
           }
+        }
+
+        cancellable = $profileLastContentModificationDate.sink {
+          AnalyzerBot.shared.logger.trace("\($0)")
         }
       }
     #endif

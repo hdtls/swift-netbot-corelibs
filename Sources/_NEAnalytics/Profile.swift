@@ -3,6 +3,10 @@
 //
 
 import Anlzr
+private import CNIOBoringSSL
+private import SwiftASN1
+private import X509
+private import _CryptoExtras
 
 #if canImport(FoundationEssentials)
   private import FoundationEssentials
@@ -83,6 +87,80 @@ extension Profile {
       return fallback.asForwardProtocol()
     }
     return lazyProxy.asForwardProtocol()
+  }
+
+  func asDecryptionPKCS12Bundle() throws -> NIOSSLPKCS12Bundle? {
+    guard let data = Data(base64Encoded: base64EncodedP12String) else {
+      return nil
+    }
+
+    // NIOSSL does not provide public convert function for convert NIOSSLPrivateKey to der bytes,
+    // so we need fallback to use low-level C API to extract CA and private key.
+    let buffer = Array(data)
+    let p12 = buffer.withUnsafeBytes { pointer -> OpaquePointer? in
+      let bio = CNIOBoringSSL_BIO_new_mem_buf(pointer.baseAddress, pointer.count)!
+      defer {
+        CNIOBoringSSL_BIO_free(bio)
+      }
+      return CNIOBoringSSL_d2i_PKCS12_bio(bio, nil)
+    }
+    defer {
+      p12.map { CNIOBoringSSL_PKCS12_free($0) }
+    }
+
+    guard let p12 else {
+      throw BoringSSLError.unknownError(BoringSSLError.buildErrorStack())
+    }
+
+    var pkey: OpaquePointer? = nil  // <EVP_PKEY>
+    var cert: OpaquePointer? = nil  // <X509>
+    var caCerts: OpaquePointer? = nil
+
+    let rc = try passphrase.withCString { passphrase in
+      CNIOBoringSSL_PKCS12_parse(p12, passphrase, &pkey, &cert, &caCerts)
+    }
+    guard rc == 1 else {
+      throw BoringSSLError.unknownError(BoringSSLError.buildErrorStack())
+    }
+
+    // Successfully parsed, let's unpack. The key and cert are mandatory,
+    // the ca stack is not.
+    guard let actualCert = cert, let actualKey = pkey else {
+      fatalError("Failed to obtain cert and pkey from a PKC12 file")
+    }
+
+    let issuer = try Certificate.fromUnsafePointer(takingOwnership: actualCert).subject
+    let issuerPrivateKey = try Certificate.PrivateKey(
+      _RSA.Signing.PrivateKey.fromUnsafePointer(takingOwnership: actualKey))
+
+    // Issuer new self-signed certificates and private key for HTTPS decryption.
+    let privateKey = try _RSA.Signing.PrivateKey(keySize: .bits2048)
+    let notValidBefore = Date()
+    let subject = try DistinguishedName {
+      CommonName("*")
+    }
+    let extensions = try Certificate.Extensions {
+      SubjectAlternativeNames(hostnames.map { .dnsName($0) })
+    }
+    let certificate = try Certificate(
+      version: .v3,
+      serialNumber: .init(),
+      publicKey: .init(privateKey.publicKey),
+      notValidBefore: notValidBefore,
+      notValidAfter: notValidBefore.addingTimeInterval(60 * 60 * 24 * 30),
+      issuer: issuer,
+      subject: subject,
+      signatureAlgorithm: .sha256WithRSAEncryption,
+      extensions: extensions,
+      issuerPrivateKey: issuerPrivateKey
+    )
+    var serializer = DER.Serializer()
+    try serializer.serialize(certificate)
+
+    return try NIOSSLPKCS12Bundle(
+      certificateChain: [NIOSSLCertificate(bytes: serializer.serializedBytes, format: .der)],
+      privateKey: .init(bytes: Array(privateKey.derRepresentation), format: .der)
+    )
   }
 }
 
@@ -190,5 +268,63 @@ extension AnyForwardingRule {
     case .final:
       return FinalForwardingRule(value, forwardProtocol: forwardProtocol)
     }
+  }
+}
+
+extension Certificate {
+  fileprivate static func fromUnsafePointer(takingOwnership pointer: OpaquePointer) throws
+    -> Certificate
+  {
+    guard let bio = CNIOBoringSSL_BIO_new(CNIOBoringSSL_BIO_s_mem()) else {
+      fatalError("Failed to malloc for a BIO handler")
+    }
+
+    defer {
+      CNIOBoringSSL_BIO_free(bio)
+    }
+
+    let rc = CNIOBoringSSL_i2d_X509_bio(bio, pointer)
+    guard rc == 1 else {
+      let errorStack = BoringSSLError.buildErrorStack()
+      throw BoringSSLError.unknownError(errorStack)
+    }
+
+    var dataPtr: UnsafeMutablePointer<CChar>? = nil
+    let length = CNIOBoringSSL_BIO_get_mem_data(bio, &dataPtr)
+
+    guard let bytes = dataPtr.map({ UnsafeRawBufferPointer(start: $0, count: length) }) else {
+      fatalError("Failed to map bytes from a certificate")
+    }
+
+    return try Certificate(derEncoded: Array(bytes))
+  }
+}
+
+extension _RSA.Signing.PrivateKey {
+  fileprivate static func fromUnsafePointer(takingOwnership pointer: OpaquePointer) throws
+    -> _RSA.Signing.PrivateKey
+  {
+    guard let bio = CNIOBoringSSL_BIO_new(CNIOBoringSSL_BIO_s_mem()) else {
+      fatalError("Failed to malloc for a BIO handler")
+    }
+
+    defer {
+      CNIOBoringSSL_BIO_free(bio)
+    }
+
+    let rc = CNIOBoringSSL_i2d_PrivateKey_bio(bio, pointer)
+    guard rc == 1 else {
+      let errorStack = BoringSSLError.buildErrorStack()
+      throw BoringSSLError.unknownError(errorStack)
+    }
+
+    var dataPtr: UnsafeMutablePointer<CChar>? = nil
+    let length = CNIOBoringSSL_BIO_get_mem_data(bio, &dataPtr)
+
+    guard let bytes = dataPtr.map({ UnsafeRawBufferPointer(start: $0, count: length) }) else {
+      fatalError("Failed to map bytes from a private key")
+    }
+
+    return try _RSA.Signing.PrivateKey(derRepresentation: bytes)
   }
 }

@@ -7,6 +7,7 @@ private import AnlzrReports
 import Logging
 public import MaxMindDB
 private import NIOConcurrencyHelpers
+public import NIOSSL
 public import _ResourceProcessing
 
 #if canImport(Darwin)
@@ -91,7 +92,12 @@ public import _ResourceProcessing
   /// Modify MaxMind GeoLite2-Country.mmdb.
   public func setGeoLite2DB(_ db: MaxMindDB) async throws {
     maxminddb = db
-    await setForwardingRules(profile.asForwardingRules())
+    await setForwardingRules(analyzer.forwardingRules)
+  }
+
+  /// Modify Web and SOCKS proxy settings.
+  private func setTunnelNetworkSettings(_ networkSettings: Analyzer.NetworkSettings) async throws {
+    try await analyzer.setTunnelNetworkSettings(networkSettings)
   }
 
   /// Modify outbound mode.
@@ -136,30 +142,12 @@ public import _ResourceProcessing
     #endif
   }
 
-  /// Modify enabled HTTP capabilities.
-  public func setEnabledHTTPCapabilities(_ enabledHTTPCapabilities: CapabilityFlags) async {
-    await self.analyzer.setEnabledHTTPCapabilities(enabledHTTPCapabilities)
-  }
-
-  /// Modify current analyzer settings using specific profile.
-  public func setProfile(_ newProfile: Profile) async throws {
-    await setForwardProtocol(newProfile.asForwardProtocol())
-    await setForwardingRules(newProfile.asForwardingRules())
-
-    try await setTunnelNetworkSettings((
-      SocketAddress(ipAddress: newProfile.httpListenAddress, port: newProfile.httpListenPort ?? 6152),
-      SocketAddress(ipAddress: newProfile.socksListenAddress, port: newProfile.socksListenPort ?? 6153)
-    ))
-  }
-
-  private func setTunnelNetworkSettings(_ addresses: (webProxyListenAddress: SocketAddress, socksProxyListenAddress: SocketAddress)) async throws {
-    try await analyzer.setTunnelNetworkSettings(addresses)
-  }
-
+  /// Modify global forward protocol.
   public func setForwardProtocol(_ forwardProtocol: any ForwardProtocolConvertible) async {
     await analyzer.setForwardProtocol(forwardProtocol)
   }
 
+  /// Modify forwarding rules.
   public func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) async {
     let forwardingRules: [any ForwardingRuleConvertible] = forwardingRules.map {
       if var forwardingRule = $0 as? GeoIPForwardingRule {
@@ -182,5 +170,31 @@ public import _ResourceProcessing
       return $0
     }
     await analyzer.setForwardingRules(forwardingRules)
+  }
+
+  /// Modify enabled HTTP capabilities.
+  public func setEnabledHTTPCapabilities(_ enabledHTTPCapabilities: CapabilityFlags) async {
+    await self.analyzer.setEnabledHTTPCapabilities(enabledHTTPCapabilities)
+  }
+
+  /// Modify HTTPS decryption PKCS#12 bundle.
+  public func setDecryptionSSLPKCS12Bundle(_ sslPKCS12Bundle: NIOSSLPKCS12Bundle?) async {
+    guard sslPKCS12Bundle != analyzer.decryptionSSLPKCS12Bundle else { return }
+
+    await self.analyzer.setDecryptionSSLPKCS12Bundle(sslPKCS12Bundle)
+  }
+
+  /// Modify current analyzer settings using specific profile.
+  public func setProfile(_ newProfile: Profile) async throws {
+    try await setTunnelNetworkSettings(
+      (
+        SocketAddress(
+          ipAddress: newProfile.httpListenAddress, port: newProfile.httpListenPort ?? 6152),
+        SocketAddress(
+          ipAddress: newProfile.socksListenAddress, port: newProfile.socksListenPort ?? 6153)
+      ))
+    await setForwardProtocol(newProfile.asForwardProtocol())
+    await setForwardingRules(newProfile.asForwardingRules())
+    try await setDecryptionSSLPKCS12Bundle(newProfile.asDecryptionPKCS12Bundle())
   }
 }
