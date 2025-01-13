@@ -70,7 +70,7 @@ final public class EventMonitor: @unchecked Sendable {
   public var maxminddbDownloadURL = URL(string: "https://git.io/GeoLite2-Country.mmdb")!
 
   @Preference(Prefs.Name.maxminddbLastUpdatedDate, store: .applicationGroup)
-  public var maxminddbLastUpdatedDate = Date.now
+  public var maxminddbLastUpdatedDate = Date(timeIntervalSinceReferenceDate: 0)
 
   @Preference(Prefs.Name.maxminddbKeepUpToDate, store: .applicationGroup)
   public var maxminddbKeepUpToDate = true
@@ -80,7 +80,7 @@ final public class EventMonitor: @unchecked Sendable {
   private var enabledHTTPCapabilitiesUpdatesTask: Task<Void, any Error>?
   private var selectionRecordUpdatesTask: Task<Void, any Error>?
   private var maxminddbUpdatesTask: AnyCancellable?
-  private var geoLite2UpdatesTask: RepeatedTask?
+  private var existingGeoLite2AutoUpdateTask: RepeatedTask?
 
   private let lock = NIOLock()
 
@@ -150,44 +150,43 @@ final public class EventMonitor: @unchecked Sendable {
       }
     }
 
-    #if canImport(Darwin)
-      if maxminddbUpdatesTask == nil {
-        maxminddbUpdatesTask = $maxminddbDownloadURL.combineLatest(
-          $maxminddbLastUpdatedDate, $maxminddbKeepUpToDate
-        )
-        .sink { [weak self] url, date, keepUpToDate in
-          guard let self else {
-            return
-          }
+    if maxminddbUpdatesTask == nil {
+      maxminddbUpdatesTask = $maxminddbDownloadURL.combineLatest(
+        $maxminddbLastUpdatedDate, $maxminddbKeepUpToDate
+      )
+      .sink { [weak self] url, date, keepUpToDate in
+        guard let self else {
+          return
+        }
 
-          guard keepUpToDate else {
-            // Cancel auto update task.
-            geoLite2UpdatesTask?.cancel()
-            return
-          }
+        guard keepUpToDate else {
+          // Cancel auto update task.
+          existingGeoLite2AutoUpdateTask?.cancel()
+          return
+        }
 
-          let eventLoop = MultiThreadedEventLoopGroup.singleton.any()
-          let initialDelay = TimeAmount.seconds(86400 * 7 - Int64(date.timeIntervalSinceNow))
-          let delay = TimeAmount.seconds(86400 * 7)
-          geoLite2UpdatesTask = eventLoop.scheduleRepeatedAsyncTask(
-            initialDelay: initialDelay, delay: delay
-          ) { _ in
-            eventLoop.makeFutureWithTask {
-              let (url, _) = try await URLSession.shared.download(from: url)
-              let filename = "GeoLite2-Country.mmdb"
-              let file = URL.maxmind.appending(path: filename, directoryHint: .notDirectory)
-              if FileManager.default.fileExists(atPath: file.path(percentEncoded: false)) {
-                try FileManager.default.removeItem(at: file)
-              }
-              try FileManager.default.moveItem(at: url, to: file)
+        let eventLoop = MultiThreadedEventLoopGroup.singleton.any()
 
-              let db = try MaxMindDB(file: file.path(percentEncoded: false), mode: .mmap)
-              self.delegate?.eventMonitor(self, willChangeMaxMindDB: db)
+        let initialDelay = TimeAmount.seconds(min(0, 86400 * 7 - Int64(date.timeIntervalSinceNow)))
+        let delay = TimeAmount.seconds(86400 * 7)
+        existingGeoLite2AutoUpdateTask = eventLoop.scheduleRepeatedAsyncTask(
+          initialDelay: initialDelay, delay: delay
+        ) { _ in
+          eventLoop.makeFutureWithTask {
+            let (url, _) = try await URLSession.shared.download(from: url)
+            let filename = "GeoLite2-Country.mmdb"
+            let file = URL.maxmind.appending(path: filename, directoryHint: .notDirectory)
+            if FileManager.default.fileExists(atPath: file.path(percentEncoded: false)) {
+              try FileManager.default.removeItem(at: file)
             }
+            try FileManager.default.moveItem(at: url, to: file)
+
+            let db = try MaxMindDB(file: file.path(percentEncoded: false), mode: .mmap)
+            self.delegate?.eventMonitor(self, willChangeMaxMindDB: db)
           }
         }
       }
-    #endif
+    }
 
     #if canImport(Darwin)
       try await pathMonitor.startMonitoring()

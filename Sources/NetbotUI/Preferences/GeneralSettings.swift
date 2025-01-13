@@ -20,7 +20,7 @@ struct GeneralSettings: View {
   private var maxminddbKeepUpToDate = true
 
   @AppStorage(Prefs.Name.maxminddbLastUpdatedDate, store: .applicationGroup)
-  private var maxminddbLastUpdatedDate = Date.now
+  private var maxminddbLastUpdatedDate = Date(timeIntervalSinceReferenceDate: 0)
 
   @Environment(\.profileAssistant) private var profileAssistant
   @Environment(\.session) private var session
