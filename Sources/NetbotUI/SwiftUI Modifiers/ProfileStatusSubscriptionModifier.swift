@@ -4,7 +4,7 @@
 
 import Netbot
 import SwiftData
-import SwiftUI
+public import SwiftUI
 
 private struct ProfileStatusSubscriptionModifier: ViewModifier {
 
