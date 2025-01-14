@@ -23,7 +23,6 @@ var swiftSettings: [SwiftSetting] = [
   .enableExperimentalFeature("AccessLevelOnImport"),
   .enableUpcomingFeature("InternalImportsByDefault"),
   .define("EXTENDED_ALL"),
-  .define("ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING"),
 ]
 
 if Context.environment["ENABLE_NIO_POSIX"] == nil {
