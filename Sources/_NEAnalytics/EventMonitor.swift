@@ -3,6 +3,7 @@
 //
 
 @_exported public import Anlzr
+@_exported public import Logging
 @_exported public import MaxMindDB
 private import NIOConcurrencyHelpers
 private import NIOCore
@@ -89,8 +90,11 @@ final public class EventMonitor: @unchecked Sendable {
   #endif
 
   public weak var delegate: (any EventMonitorDelegate)?
+  public let logger: Logger
 
-  public var cancellable: AnyCancellable?
+  public init(logger: Logger) {
+    self.logger = logger
+  }
 
   public func startListening() async throws {
     lock.lock()
@@ -113,10 +117,6 @@ final public class EventMonitor: @unchecked Sendable {
               self, willChangeProfile: profile, packetProcessing: packetProcessing
             )
           }
-        }
-
-        cancellable = $profileLastContentModificationDate.sink {
-          AnalyzerBot.shared.logger.trace("\($0)")
         }
       }
     #endif
@@ -166,23 +166,46 @@ final public class EventMonitor: @unchecked Sendable {
         }
 
         let eventLoop = MultiThreadedEventLoopGroup.singleton.any()
-
-        let initialDelay = TimeAmount.seconds(min(0, 86400 * 7 - Int64(date.timeIntervalSinceNow)))
+        let initialDelay = TimeAmount.seconds(max(0, 86400 * 7 - Int64(date.timeIntervalSinceNow)))
         let delay = TimeAmount.seconds(86400 * 7)
         existingGeoLite2AutoUpdateTask = eventLoop.scheduleRepeatedAsyncTask(
           initialDelay: initialDelay, delay: delay
         ) { _ in
           eventLoop.makeFutureWithTask {
-            let (url, _) = try await URLSession.shared.download(from: url)
-            let filename = "GeoLite2-Country.mmdb"
-            let file = URL.maxmind.appending(path: filename, directoryHint: .notDirectory)
-            if FileManager.default.fileExists(atPath: file.path(percentEncoded: false)) {
-              try FileManager.default.removeItem(at: file)
+            do {
+              let profile = try Profile(contentsOf: self.profileURL)
+              let configuration = URLSessionConfiguration.default
+              #if canImport(Darwin)
+                configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+                if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+                  let port = UInt16(profile.httpListenPort ?? 6152)
+                  configuration.proxyConfigurations = [
+                    .init(
+                      httpCONNECTProxy: .hostPort(
+                        host: "127.0.0.1", port: .init(rawValue: port) ?? 6152)
+                    )
+                  ]
+                } else {
+                  configuration.connectionProxyDictionary = [
+                    kCFNetworkProxiesHTTPEnable as String: 1,
+                    kCFNetworkProxiesHTTPProxy as String: "127.0.0.1",
+                    kCFNetworkProxiesHTTPPort as String: profile.httpListenPort ?? 6152,
+                  ]
+                }
+              #endif
+              let (url, _) = try await URLSession(configuration: configuration).download(from: url)
+              let filename = "GeoLite2-Country.mmdb"
+              let file = URL.maxmind.appending(path: filename, directoryHint: .notDirectory)
+              if FileManager.default.fileExists(atPath: file.path(percentEncoded: false)) {
+                try FileManager.default.removeItem(at: file)
+              }
+              try FileManager.default.moveItem(at: url, to: file)
+              let db = try MaxMindDB(file: file.path(percentEncoded: false), mode: .mmap)
+              self.maxminddbLastUpdatedDate = .now
+              self.delegate?.eventMonitor(self, willChangeMaxMindDB: db)
+            } catch {
+              self.logger.error("MaxMind GeoLite2-Country.mmdb update failure with error: \(error)")
             }
-            try FileManager.default.moveItem(at: url, to: file)
-
-            let db = try MaxMindDB(file: file.path(percentEncoded: false), mode: .mmap)
-            self.delegate?.eventMonitor(self, willChangeMaxMindDB: db)
           }
         }
       }
@@ -217,9 +240,6 @@ final public class EventMonitor: @unchecked Sendable {
     #endif
 
     lock.unlock()
-  }
-
-  public init() {
   }
 }
 
