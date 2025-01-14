@@ -136,6 +136,10 @@ struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equatab
     }
   }
 
+  @inlinable var externalResourceURL: URL {
+    _storage.externalResourceURL
+  }
+
   @inlinable var description: String {
     "RULE-SET,\(originalURLString),\(forwardProtocol.asForwardProtocol().name)"
   }

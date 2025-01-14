@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+import Crypto
 import NEAddressProcessing
 import NEVMESS
 import NIOCore

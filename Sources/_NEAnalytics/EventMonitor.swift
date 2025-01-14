@@ -76,12 +76,17 @@ final public class EventMonitor: @unchecked Sendable {
   @Preference(Prefs.Name.maxminddbKeepUpToDate, store: .applicationGroup)
   public var maxminddbKeepUpToDate = true
 
+  @Preference(Prefs.Name.forwardingRuleResourcesLastUpdatedDate, store: .applicationGroup)
+  public var forwardingRuleResourcesLastUpdatedDate = Date(timeIntervalSinceReferenceDate: 0)
+
   private var networkSettingsUpdatesTask: AnyCancellable?
   private var outboundModeUpdatesTask: Task<Void, any Error>?
   private var enabledHTTPCapabilitiesUpdatesTask: Task<Void, any Error>?
   private var selectionRecordUpdatesTask: Task<Void, any Error>?
   private var maxminddbUpdatesTask: AnyCancellable?
   private var existingGeoLite2AutoUpdateTask: RepeatedTask?
+  private var forwardingRuleResourcesUpdatesTask: AnyCancellable?
+  private var existingForwardingRulesAutoUpdateTask: RepeatedTask?
 
   private let lock = NIOLock()
 
@@ -90,10 +95,34 @@ final public class EventMonitor: @unchecked Sendable {
   #endif
 
   public weak var delegate: (any EventMonitorDelegate)?
-  public let logger: Logger
+
+  private let logger: Logger
 
   public init(logger: Logger) {
     self.logger = logger
+  }
+
+  private func __session(host: String, port: UInt16) -> URLSession {
+    let configuration = URLSessionConfiguration.default
+    #if canImport(Darwin)
+      configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+
+      if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+        configuration.proxyConfigurations = [
+          .init(
+            httpCONNECTProxy: .hostPort(
+              host: .init(host), port: .init(rawValue: port) ?? 6152)
+          )
+        ]
+      } else {
+        configuration.connectionProxyDictionary = [
+          kCFNetworkProxiesHTTPEnable as String: 1,
+          kCFNetworkProxiesHTTPProxy as String: host,
+          kCFNetworkProxiesHTTPPort as String: port ?? 6152,
+        ]
+      }
+    #endif
+    return URLSession(configuration: configuration)
   }
 
   public func startListening() async throws {
@@ -166,7 +195,8 @@ final public class EventMonitor: @unchecked Sendable {
         }
 
         let eventLoop = MultiThreadedEventLoopGroup.singleton.any()
-        let initialDelay = TimeAmount.seconds(max(0, 86400 * 7 - Int64(date.timeIntervalSinceNow)))
+        let initialDelay = TimeAmount.seconds(
+          max(0, 86400 * 7 - Int64(Date.now.timeIntervalSince(date))))
         let delay = TimeAmount.seconds(86400 * 7)
         existingGeoLite2AutoUpdateTask = eventLoop.scheduleRepeatedAsyncTask(
           initialDelay: initialDelay, delay: delay
@@ -174,26 +204,9 @@ final public class EventMonitor: @unchecked Sendable {
           eventLoop.makeFutureWithTask {
             do {
               let profile = try Profile(contentsOf: self.profileURL)
-              let configuration = URLSessionConfiguration.default
-              #if canImport(Darwin)
-                configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
-                if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
-                  let port = UInt16(profile.httpListenPort ?? 6152)
-                  configuration.proxyConfigurations = [
-                    .init(
-                      httpCONNECTProxy: .hostPort(
-                        host: "127.0.0.1", port: .init(rawValue: port) ?? 6152)
-                    )
-                  ]
-                } else {
-                  configuration.connectionProxyDictionary = [
-                    kCFNetworkProxiesHTTPEnable as String: 1,
-                    kCFNetworkProxiesHTTPProxy as String: "127.0.0.1",
-                    kCFNetworkProxiesHTTPPort as String: profile.httpListenPort ?? 6152,
-                  ]
-                }
-              #endif
-              let (url, _) = try await URLSession(configuration: configuration).download(from: url)
+              let session = self.__session(
+                host: profile.httpListenAddress, port: UInt16(profile.httpListenPort ?? 6152))
+              let (url, _) = try await session.download(from: url)
               let filename = "GeoLite2-Country.mmdb"
               let file = URL.maxmind.appending(path: filename, directoryHint: .notDirectory)
               if FileManager.default.fileExists(atPath: file.path(percentEncoded: false)) {
@@ -205,6 +218,89 @@ final public class EventMonitor: @unchecked Sendable {
               self.delegate?.eventMonitor(self, willChangeMaxMindDB: db)
             } catch {
               self.logger.error("MaxMind GeoLite2-Country.mmdb update failure with error: \(error)")
+            }
+          }
+        }
+      }
+    }
+
+    if forwardingRuleResourcesUpdatesTask == nil {
+      forwardingRuleResourcesUpdatesTask = $forwardingRuleResourcesLastUpdatedDate.sink {
+        [weak self] date in
+        guard let self else {
+          return
+        }
+
+        let eventLoop = MultiThreadedEventLoopGroup.singleton.any()
+        let initialDelay = TimeAmount.seconds(
+          max(0, 86400 - Int64(Date.now.timeIntervalSince(date))))
+        let delay = TimeAmount.seconds(86400)
+        existingForwardingRulesAutoUpdateTask = eventLoop.scheduleRepeatedAsyncTask(
+          initialDelay: initialDelay, delay: delay
+        ) { _ in
+          eventLoop.makeFutureWithTask {
+            guard let profile = try? Profile(contentsOf: self.profileURL) else {
+              return
+            }
+
+            try await withTaskGroup(of: Void.self) { g in
+              let session = self.__session(
+                host: profile.httpListenAddress, port: UInt16(profile.httpListenPort ?? 6152))
+
+              if !FileManager.default.fileExists(
+                atPath: URL.externalResourceDirectory.path(percentEncoded: false))
+              {
+                do {
+                  try FileManager.default.createDirectory(
+                    at: .externalResourceDirectory, withIntermediateDirectories: true)
+                } catch {
+                  self.logger.error(
+                    "Create external resource directory failure with error: \(error)")
+                }
+              }
+
+              for forwardingRuleConvertible in profile.asForwardingRules() {
+                let dstURL: URL
+                let resourceURL: URL?
+
+                switch forwardingRuleConvertible {
+                case let forwardingRule as DomainsetForwardingRule:
+                  resourceURL = URL(string: forwardingRule.originalURLString)
+                  dstURL = forwardingRule.externalResourceURL
+                case let forwardingRule as RulesetForwardingRule:
+                  resourceURL = URL(string: forwardingRule.originalURLString)
+                  dstURL = forwardingRule.externalResourceURL
+                default:
+                  continue
+                }
+
+                guard let resourceURL else {
+                  continue
+                }
+
+                g.addTask {
+                  var srcURL = resourceURL
+                  do {
+                    if !resourceURL.isFileURL {
+                      let (tmpURL, _) = try await session.download(from: srcURL)
+                      srcURL = tmpURL
+                    }
+
+                    if FileManager.default.fileExists(atPath: dstURL.path(percentEncoded: false)) {
+                      try FileManager.default.removeItem(at: dstURL)
+                    }
+                    try FileManager.default.moveItem(at: srcURL, to: dstURL)
+                  } catch {
+                    self.logger.error(
+                      "External resources \(srcURL) update failure with error: \(error)")
+                  }
+                }
+              }
+              await g.waitForAll()
+
+              self.forwardingRuleResourcesLastUpdatedDate = .now
+              self.delegate?.eventMonitor(
+                self, willChangeForwardingRules: profile.asForwardingRules())
             }
           }
         }

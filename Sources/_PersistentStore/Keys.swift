@@ -17,6 +17,8 @@ extension Prefs.Name {
   public static let profileAutoreload = "Profile - Automatically Reload if the Profile Was Modified"
   public static let profileLastContentModificationDate = "Profile - Last Content Modification Date"
 
+  public static let forwardingRuleResourcesLastUpdatedDate = "External Resources - Forwarding Rules External Resources Last Updated Date"
+
   public static let menuBarExtraTitleLabelStyle = "Appearence - MenuBarExtra Title Label Style"
   public static let showMainWindowAfterLaunching = "Appearence - Show Main Window After Launching"
   public static let shouldGrayOutStatusBarItem = "Appearence - Should Gray Out Status Bar Item"

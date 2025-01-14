@@ -99,6 +99,10 @@ struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equat
     _storage.externalDomains
   }
 
+  @inlinable var externalResourceURL: URL {
+    _storage.externalResourceURL
+  }
+
   @inlinable var description: String {
     "DOMAIN-SET,\(originalURLString),\(forwardProtocol.asForwardProtocol().name)"
   }

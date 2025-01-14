@@ -34,10 +34,10 @@
     }
 
     /// Start packet tunnel with specific options.
-    nonisolated public func startVPNTunnel(options: [String: Any]) async throws {
+    public func startVPNTunnel(options: [String: Any]) async throws {
       do {
         try await waitUntilLoaded()
-        guard let manager = await manager else {
+        guard let manager else {
           return
         }
         let session = manager.connection as! NETunnelProviderSession
@@ -60,10 +60,9 @@
     }
 
     /// Stop current running packet tunnel.
-    nonisolated public func stopVPNTunnel() async {
+    public func stopVPNTunnel() async {
       do {
-        try await waitUntilLoaded()
-        guard let manager = await manager else {
+        guard let manager else {
           return
         }
         let session = manager.connection as! NETunnelProviderSession
