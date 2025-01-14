@@ -75,7 +75,7 @@ struct GeneralSettings: View {
           }
           .disabled(profiles.isEmpty)
           .sheet(isPresented: $presentingAdvancedProxyServiceSettings) {
-            RAListenPortsEditingSheet(data: profile)
+            ProxyPortsEditingSheet(data: profile)
           }
         }
 
