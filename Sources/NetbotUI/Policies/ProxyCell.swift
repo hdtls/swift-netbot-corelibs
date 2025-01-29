@@ -51,15 +51,6 @@ struct ProxyCell: View {
 }
 
 #if DEBUG
-  #Preview {
-    PersistentStorePreviewable<AnyProxy.PersistentModel> {
-      ProxyCell(data: $0.first.unsafelyUnwrapped)
-        #if os(macOS)
-          .frame(width: 150, height: 80, alignment: .leading)
-        #endif
-    }
-  }
-
   @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
   #Preview(traits: .persistentStore()) {
     @Previewable @Query var models: [AnyProxy.PersistentModel]

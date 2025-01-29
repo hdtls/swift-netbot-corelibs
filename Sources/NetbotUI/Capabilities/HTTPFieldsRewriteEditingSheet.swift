@@ -41,18 +41,6 @@ import SwiftUI
     }
   }
 
-  #Preview("Edit HTTPFields Rewrite") {
-    PersistentStorePreviewable<HTTPFieldsRewrite.PersistentModel> { models in
-      HTTPFieldsRewriteEditingSheet(_data: models.first)
-    }
-  }
-
-  #Preview("New HTTPFields Rewrite") {
-    PersistentStorePreviewable {
-      HTTPFieldsRewriteEditingSheet(_data: nil)
-    }
-  }
-
   @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
   #Preview(traits: .persistentStore()) {
     @Previewable @Query var models: [HTTPFieldsRewrite.PersistentModel]

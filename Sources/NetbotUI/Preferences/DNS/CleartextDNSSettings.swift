@@ -148,14 +148,6 @@ extension CleartextDnsServerType {
 }
 
 #if DEBUG
-  #Preview {
-    PersistentStorePreviewable<Profile.PersistentModel> { models in
-      Form {
-        CleartextDNSSettings(data: models.first.unsafelyUnwrapped)
-      }
-    }
-  }
-
   @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
   #Preview(traits: .persistentStore()) {
     @Previewable @Query var models: [Profile.PersistentModel]

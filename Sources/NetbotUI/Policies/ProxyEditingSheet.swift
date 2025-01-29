@@ -80,18 +80,6 @@ import SwiftUI
     }
   }
 
-  #Preview("Edit Proxy") {
-    PersistentStorePreviewable<AnyProxy.PersistentModel> { models in
-      ProxyEditingSheet(_data: models.first)
-    }
-  }
-
-  #Preview("New Proxy") {
-    PersistentStorePreviewable {
-      ProxyEditingSheet(_data: nil)
-    }
-  }
-
   @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
   #Preview("Edit Proxy", traits: .persistentStore()) {
     @Previewable @Query var models: [AnyProxy.PersistentModel]

@@ -105,20 +105,6 @@ struct URLRewriteGallery: View {
 }
 
 #if DEBUG
-  #Preview {
-    PersistentStorePreviewable {
-      #if os(iOS)
-        NavigationStack {
-          URLRewriteGallery()
-        }
-      #else
-        VStack(alignment: .leading) {
-          URLRewriteGallery()
-        }
-      #endif
-    }
-  }
-
   @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
   #Preview("New URLRewrite", traits: .persistentStore()) {
     #if os(iOS)

@@ -33,16 +33,6 @@
   }
 
   #if DEBUG
-    #Preview {
-      PersistentStorePreviewable {
-        BindingPreviewable(AnyProxyGroup()) { $data in
-          BindingPreviewable(ProxyGroupEditingSheet.EditingStep.selectType) { $step in
-            ProxyGroupEditor(data: $data, step: $step)
-          }
-        }
-      }
-    }
-
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     #Preview(traits: .persistentStore()) {
       @Previewable @State var data = AnyProxyGroup()

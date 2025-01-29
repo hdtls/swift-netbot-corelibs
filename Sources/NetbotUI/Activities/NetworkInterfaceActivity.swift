@@ -58,7 +58,7 @@
               Label("Wi-Fi", systemImage: "wifi")
                 .font(.headline)
                 .foregroundColor(.green)
-              Text(monitor.addresses.v4.addresses.first ?? "N/A")
+              Text(monitor.networkService.v4.addresses.first ?? "N/A")
                 .font(.title)
                 .bold()
             }

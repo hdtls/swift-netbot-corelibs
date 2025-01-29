@@ -46,18 +46,6 @@ import SwiftUI
     }
   }
 
-  #Preview("Edit HTTP Response Stub") {
-    PersistentStorePreviewable<StubbedHTTPResponse.PersistentModel> { models in
-      StubbedHTTPResponseEditingSheet(_data: models.first)
-    }
-  }
-
-  #Preview("New HTTP Response Stub") {
-    PersistentStorePreviewable {
-      StubbedHTTPResponseEditingSheet(_data: nil)
-    }
-  }
-
   @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
   #Preview("Edit HTTP Response Stub", traits: .persistentStore()) {
     @Previewable @Query var models: [StubbedHTTPResponse.PersistentModel]

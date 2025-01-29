@@ -13,7 +13,7 @@
 
   @available(swift 5.9)
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-  @MainActor @Observable final public class WLANManager: @unchecked Sendable {
+  @MainActor @Observable final public class WLANManager {
     fileprivate struct NetworkDevice: Equatable, Hashable, Sendable {
       var name: String = "-"
       var powerOn = true
@@ -25,7 +25,7 @@
       var countryCode: String = notApplicable
       var rssi: Int = 0
       var noise: Int = 0
-      var addresses: Addresses = .init()
+      var networkService: NetworkService = .init()
       var externalIPAddresses: [String] = []
       var addressesUpdatedDate: Date = .now
       var hardwareAddress: String = notApplicable
@@ -40,15 +40,15 @@
       var transmitPower: Int = 0
     }
 
-    public struct Addresses: Hashable, Sendable {
-      public struct IPv4Address: Hashable, Sendable {
+    public struct NetworkService: Hashable, Sendable {
+      public struct IPv4: Hashable, Sendable {
         public var configMethod: String = ""
         public var router: String = ""
         public var addresses: [String] = []
         public var subnetMasks: [String] = []
       }
 
-      public struct IPv6Address: Hashable, Sendable {
+      public struct IPv6: Hashable, Sendable {
         public var configMethod: String = ""
         public var router: String = ""
         public var addresses: [String] = []
@@ -56,13 +56,10 @@
         public var prefixLength: String = ""
       }
 
-      public struct DNS: Hashable, Sendable {
-        public var addresses: [String] = []
-      }
+      public var v4: IPv4 = .init()
+      public var v6: IPv6 = .init()
 
-      public var v4: IPv4Address = .init()
-      public var v6: IPv6Address = .init()
-      public var dns: DNS = .init()
+      public var dnsServers: [String] = []
     }
 
     fileprivate var device: NetworkDevice?
@@ -111,8 +108,8 @@
       device?.noise ?? 0
     }
 
-    public var addresses: Addresses {
-      device?.addresses ?? .init()
+    public var networkService: NetworkService {
+      device?.networkService ?? .init()
     }
 
     public var externalIPAddresses: [String] {
@@ -273,13 +270,13 @@
       let v6 = extractIPv6Info(from: store, service: id)
       device?.mtu = mtu
       device?.mediaSubType = mediaSubType
-      device?.addresses.dns = dns
-      device?.addresses.v4 = v4
-      device?.addresses.v6 = v6
+      device?.networkService.dnsServers = dns
+      device?.networkService.v4 = v4
+      device?.networkService.v6 = v6
     }
 
     nonisolated private func extractDNS(from store: SCDynamicStore, service: CFString)
-      -> Addresses.DNS
+      -> [String]
     {
       let key = SCDynamicStoreKeyCreateNetworkServiceEntity(
         nil,
@@ -294,13 +291,13 @@
       guard let serverAddresses else {
         return .init()
       }
-      return Addresses.DNS(addresses: serverAddresses)
+      return serverAddresses
     }
 
     nonisolated private func extractIPv4Info(from store: SCDynamicStore, service: CFString)
-      -> Addresses.IPv4Address
+      -> NetworkService.IPv4
     {
-      var finalize = Addresses.IPv4Address()
+      var finalize = NetworkService.IPv4()
 
       var key = SCDynamicStoreKeyCreateNetworkServiceEntity(
         nil,
@@ -328,9 +325,9 @@
     }
 
     nonisolated private func extractIPv6Info(from store: SCDynamicStore, service: CFString)
-      -> Addresses.IPv6Address
+      -> NetworkService.IPv6
     {
-      var finalize = Addresses.IPv6Address()
+      var finalize = NetworkService.IPv6()
 
       var key = SCDynamicStoreKeyCreateNetworkServiceEntity(
         nil,

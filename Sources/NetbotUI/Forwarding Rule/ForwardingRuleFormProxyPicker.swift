@@ -58,14 +58,6 @@ extension ForwardingRuleForm {
 }
 
 #if DEBUG
-  #Preview {
-    PersistentStorePreviewable {
-      BindingPreviewable("DIRECT") { $selection in
-        ForwardingRuleForm.ProxyPicker("Proxy", selection: $selection)
-      }
-    }
-  }
-
   @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
   #Preview(traits: .persistentStore()) {
     @Previewable @State var selection = "DIRECT"

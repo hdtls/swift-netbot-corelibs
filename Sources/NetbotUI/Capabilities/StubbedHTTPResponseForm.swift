@@ -111,12 +111,6 @@ struct StubbedHTTPResponseForm: View {
 }
 
 #if DEBUG
-  #Preview {
-    BindingPreviewable(StubbedHTTPResponse()) { $data in
-      StubbedHTTPResponseForm(data: $data)
-    }
-  }
-
   @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
   #Preview {
     @Previewable @State var data = StubbedHTTPResponse()

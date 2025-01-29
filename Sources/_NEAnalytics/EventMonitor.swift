@@ -118,7 +118,7 @@ final public class EventMonitor: @unchecked Sendable {
         configuration.connectionProxyDictionary = [
           kCFNetworkProxiesHTTPEnable as String: 1,
           kCFNetworkProxiesHTTPProxy as String: host,
-          kCFNetworkProxiesHTTPPort as String: port ?? 6152,
+          kCFNetworkProxiesHTTPPort as String: port,
         ]
       }
     #endif
@@ -243,7 +243,7 @@ final public class EventMonitor: @unchecked Sendable {
               return
             }
 
-            try await withTaskGroup(of: Void.self) { g in
+            await withTaskGroup(of: Void.self) { g in
               let session = self.__session(
                 host: profile.httpListenAddress, port: UInt16(profile.httpListenPort ?? 6152))
 

@@ -109,18 +109,6 @@ struct ForwardingRuleEditingSheet: View {
 }
 
 #if DEBUG
-  #Preview("Edit Rule") {
-    PersistentStorePreviewable<AnyForwardingRule.PersistentModel> { models in
-      ForwardingRuleEditingSheet(data: models.first.unsafelyUnwrapped)
-    }
-  }
-
-  #Preview("Edit Rule") {
-    PersistentStorePreviewable {
-      ForwardingRuleEditingSheet(data: nil)
-    }
-  }
-
   @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
   #Preview("Edit Rule", traits: .persistentStore()) {
     @Previewable @Query var models: [AnyForwardingRule.PersistentModel]

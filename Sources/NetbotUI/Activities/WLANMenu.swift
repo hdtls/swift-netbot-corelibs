@@ -26,31 +26,31 @@
         }
 
         Section {
-          Button("Config Method: \(monitor.addresses.v4.configMethod)") {}
-          ForEach(monitor.addresses.v4.addresses, id: \.self) {
+          Button("Config Method: \(monitor.networkService.v4.configMethod)") {}
+          ForEach(monitor.networkService.v4.addresses, id: \.self) {
             Button("Address: \($0)") {}
           }
-          if !monitor.addresses.v4.router.isEmpty {
-            Button("Router: \(monitor.addresses.v4.router)") {}
+          if !monitor.networkService.v4.router.isEmpty {
+            Button("Router: \(monitor.networkService.v4.router)") {}
           }
         } header: {
           Text("IPv4")
         }
 
         Section {
-          Button("Config Method: \(monitor.addresses.v6.configMethod)") {}
-          ForEach(monitor.addresses.v6.addresses, id: \.self) {
+          Button("Config Method: \(monitor.networkService.v6.configMethod)") {}
+          ForEach(monitor.networkService.v6.addresses, id: \.self) {
             Button("Address: \($0)") {}
           }
-          if !monitor.addresses.v6.router.isEmpty {
-            Button("Router: \(monitor.addresses.v6.router)") {}
+          if !monitor.networkService.v6.router.isEmpty {
+            Button("Router: \(monitor.networkService.v6.router)") {}
           }
         } header: {
           Text("IPv6")
         }
 
         Section {
-          ForEach(monitor.addresses.dns.addresses, id: \.self) {
+          ForEach(monitor.networkService.dnsServers, id: \.self) {
             Button("Server: \($0)") {}
           }
         } header: {

@@ -68,16 +68,10 @@ extension ContentView {
 
 #if DEBUG
   #Preview {
-    struct ContentViewSidebarPreview: View {
-      @State private var page: Pages = .policy
+    @Previewable @State var page: Pages = .policy
 
-      var body: some View {
-        NavigationStack {
-          ContentView.Sidebar(selection: $page)
-        }
-      }
+    NavigationStack {
+      ContentView.Sidebar(selection: $page)
     }
-
-    return ContentViewSidebarPreview()
   }
 #endif

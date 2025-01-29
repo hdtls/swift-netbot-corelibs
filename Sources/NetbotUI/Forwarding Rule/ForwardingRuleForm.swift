@@ -200,19 +200,6 @@ struct ForwardingRuleForm: View {
 }
 
 #if DEBUG
-  #Preview {
-    BindingPreviewable(AnyForwardingRule()) { $data in
-      ForwardingRuleForm(data: $data)
-    }
-  }
-
-  #Preview("ForwardingRuleForm Disabled") {
-    BindingPreviewable(AnyForwardingRule()) { $data in
-      ForwardingRuleForm(data: $data)
-        .disabled(true)
-    }
-  }
-
   @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
   #Preview {
     @Previewable @State var data = AnyForwardingRule()
