@@ -70,12 +70,6 @@ let package = Package(
   ],
   dependencies: dependencies,
   targets: [
-    .binaryTarget(
-      name: "tun2proxy",
-      url:
-        "https://github.com/tun2proxy/tun2proxy/releases/download/v0.6.6/tun2proxy-apple-xcframework.zip",
-      checksum: "dcc7f5ec4b2def6ebf9582eb432f4e388c8ce2481b621e95f382934781a2c666"
-    ),
     .macro(
       name: "NetbotMacros",
       dependencies: [
@@ -88,8 +82,6 @@ let package = Package(
       dependencies: [
         "_PersistentStore",
         "_ResourceProcessing",
-        "CNELwIP",
-        "CNETTP",
         .product(name: "Anlzr", package: "swift-netbot-essentials"),
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "NIOCore", package: "swift-nio"),
@@ -125,12 +117,6 @@ let package = Package(
         .headerSearchPath("opt"),
         .headerSearchPath("include"),
         .define("LWIP_DEBUG", .when(configuration: .debug)),
-      ]
-    ),
-    .target(
-      name: "CNETTP",
-      dependencies: [
-        "tun2proxy"
       ]
     ),
     .target(
