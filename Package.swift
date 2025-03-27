@@ -63,7 +63,6 @@ let package = Package(
   ],
   products: [
     .library(name: "Netbot", targets: ["Netbot"]),
-    .library(name: "NetbotUI", targets: ["NetbotUI"]),
     .library(name: "Dashboard", targets: ["Dashboard"]),
     .library(name: "DashboardUI", targets: ["DashboardUI"]),
     .library(name: "_NEAnalytics", targets: ["_NEAnalytics"]),
@@ -155,14 +154,6 @@ let package = Package(
         .product(name: "Preference", package: "swift-preference"),
         .product(name: "SwiftASN1", package: "swift-asn1"),
         .product(name: "X509", package: "swift-certificates"),
-      ],
-      swiftSettings: swiftSettings
-    ),
-    .target(
-      name: "NetbotUI",
-      dependencies: ["Netbot"],
-      resources: [
-        .process("Assets.xcassets")
       ],
       swiftSettings: swiftSettings
     ),
