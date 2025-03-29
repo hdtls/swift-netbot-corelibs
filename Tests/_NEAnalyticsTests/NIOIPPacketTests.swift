@@ -14,7 +14,7 @@
 
   @testable import _NEAnalytics
 
-  @Suite struct NEPacketTests {
+  @Suite struct NIOIPPacketTests {
 
     @Test func getValues() async throws {
       let data = Data([
@@ -27,7 +27,7 @@
         0xe4, 0x8b,
       ])
 
-      let packet = _NEPacket.Internet(data: data, protocolFamily: UInt8(PF_INET))
+      let packet = NIOIPPacket.Internet(data: data, protocolFamily: UInt8(PF_INET))
       #expect(packet.protocolFamily == UInt8(PF_INET))
       #expect(packet.internetHeaderLength == 5)
       #expect(packet.differentiatedServicesCodePoint == 0)
@@ -38,7 +38,7 @@
       #expect(packet.options == nil)
       #expect(packet.fragmentOffset == 0)
       #expect(packet.timeToLive == 64)
-      #expect(packet.transportLayerProtocol == .tcp)
+      #expect(packet.protocol == .tcp)
       #expect(packet.headerChecksum == 0xaaaa)
       #expect(packet.sourceAddress.debugDescription == "192.168.7.100")
       #expect(packet.destinationAddress.debugDescription == "192.168.7.101")
@@ -56,7 +56,7 @@
         0xe4, 0x8b,
       ])
 
-      var packet = _NEPacket.Internet(data: data, protocolFamily: UInt8(PF_INET))
+      var packet = NIOIPPacket.Internet(data: data, protocolFamily: UInt8(PF_INET))
       #expect(packet.protocolFamily == UInt8(PF_INET))
 
       packet.internetHeaderLength = 5
@@ -86,8 +86,8 @@
       packet.timeToLive = 64
       #expect(packet.timeToLive == 64)
 
-      packet.transportLayerProtocol = .tcp
-      #expect(packet.transportLayerProtocol == .tcp)
+      packet.protocol = .tcp
+      #expect(packet.protocol == .tcp)
 
       #expect(packet.headerChecksum == 0xaaaa)
 
@@ -125,7 +125,7 @@
     ])
     func chksum(bytes: [UInt8]) {
       let data = Data(bytes)
-      let packet = _NEPacket(data: data, protocolFamily: sa_family_t(PF_INET))
+      let packet = NIOIPPacket(data: data, protocolFamily: sa_family_t(PF_INET))
       #expect(packet.chksum(data, length: data.count) == 0)
     }
   }

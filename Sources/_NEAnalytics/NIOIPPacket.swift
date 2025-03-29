@@ -2,10 +2,14 @@
 // See LICENSE.txt for license information
 //
 
-#if canImport(Darwin) && ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING
-  import CNELwIP
-  import Foundation
-  import Network
+#if ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING
+  #if canImport(Darwin)
+    import Foundation
+  #else
+    import FoundationEssentials
+  #endif
+
+  import NEAddressProcessing
 
   enum _NEPacket: Hashable, Sendable {
 
@@ -170,7 +174,7 @@
       /// The IPv4 address of the sender of the packet.
       var sourceAddress: IPv4Address {
         get {
-          IPv4Address(_storage.data.subdata(in: 12..<16), nil)!
+          IPv4Address(_storage.data.subdata(in: 12..<16))!
         }
         set {
           copyStorageIfNotUniquelyReferenced()
@@ -181,7 +185,7 @@
       /// The IPv4 address of the intended receiver of the packet.
       var destinationAddress: IPv4Address {
         get {
-          IPv4Address(_storage.data.subdata(in: 16..<20), nil)!
+          IPv4Address(_storage.data.subdata(in: 16..<20))!
         }
         set {
           copyStorageIfNotUniquelyReferenced()
@@ -225,6 +229,60 @@
         }
       }
 
+      /// The IPv4 source port of the sender of the packet.
+      ///
+      /// 0 will be returned if payload data is empty.
+      var sourcePort: Address.Port {
+        get {
+          guard payload.count >= 2 else {
+            return .any
+          }
+          return payload.subdata(in: 0..<2).withUnsafeBytes {
+            .init(rawValue: $0.load(as: UInt16.self).bigEndian)
+          }
+        }
+        set {
+          var newValue = newValue.rawValue.bigEndian
+          withUnsafeBytes(of: &newValue) {
+            copyStorageIfNotUniquelyReferenced()
+            let startIndex = internetHeaderLength * 4
+            if payload.count >= 2 {
+              _storage.data.replaceSubrange(startIndex..<startIndex + 2, with: Data($0))
+            } else {
+              _storage.data.append(Data($0))
+            }
+          }
+        }
+      }
+
+      /// The IPv4 source port of the sender of the packet.
+      ///
+      /// 0 will be returned if payload data is empty.
+      var destinationPort: Address.Port {
+        get {
+          guard payload.count >= 4 else {
+            return .any
+          }
+          return payload.subdata(in: 2..<4).withUnsafeBytes {
+            .init(rawValue: $0.load(as: UInt16.self).bigEndian)
+          }
+        }
+        set {
+          var newValue = newValue.rawValue.bigEndian
+          withUnsafeBytes(of: &newValue) {
+            copyStorageIfNotUniquelyReferenced()
+            let startIndex = internetHeaderLength * 4 + 2
+            if payload.count >= 4 {
+              _storage.data.replaceSubrange(startIndex..<startIndex + 2, with: Data($0))
+            } else if payload.count >= 2 {
+              _storage.data.append(Data($0))
+            } else {
+              _storage.data.append(Data([0, 0]) + Data($0))
+            }
+          }
+        }
+      }
+
       /// IP packet data.
       var data: Data {
         var sum = headerChecksum
@@ -246,9 +304,32 @@
       }
 
       func chksum(_ data: Data, length: Int) -> UInt16 {
-        return data.withUnsafeBytes {
-          inet_chksum($0.baseAddress, u16_t(min(data.count, length)))
+        guard data.count >= 20 else { return 0 }  // IPv4 header must be at least 20 bytes
+
+        var sum: UInt32 = 0
+        let length = data.count
+
+        // Sum all 16-bit words
+        var i = 0
+        while i < length - 1 {
+          let part = UInt32(data[i]) << 8 | UInt32(data[i + 1])
+          sum += part
+          i += 2
         }
+
+        // If odd length, add the last byte
+        if length % 2 != 0 {
+          sum += UInt32(data[length - 1]) << 8
+        }
+
+        // Add carry bits
+        while (sum >> 16) > 0 {
+          sum = (sum & 0xFFFF) + (sum >> 16)
+        }
+
+        // One's complement
+        let checksum = ~UInt16(sum & 0xFFFF)
+        return checksum == 0 ? 0xFFFF : checksum  // Return 0xFFFF for 0
       }
     }
 
@@ -258,6 +339,20 @@
       switch self {
       case .v4(let packet):
         return packet.transportLayerProtocol
+      }
+    }
+
+    var sourceAddress: Address {
+      switch self {
+      case .v4(let packet):
+        return .hostPort(host: .ipv4(packet.sourceAddress), port: packet.sourcePort)
+      }
+    }
+
+    var destinationAddress: Address {
+      switch self {
+      case .v4(let packet):
+        return .hostPort(host: .ipv4(packet.destinationAddress), port: packet.destinationPort)
       }
     }
 
