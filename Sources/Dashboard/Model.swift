@@ -17,7 +17,7 @@
     var fetchError: (any Error)?
 
     func query<Value>(
-      filter: Predicate<Element>? = nil, sort keyPath: KeyPath<Element, Value>,
+      filter: Predicate<Element>? = nil, sort keyPath: KeyPath<Element, Value> & Sendable,
       order: SortOrder = .forward
     ) -> [Connection] where Value: Comparable {
       var fd = FetchDescriptor<Element>()
@@ -27,7 +27,7 @@
     }
 
     func query<Value>(
-      filter: Predicate<Element>? = nil, sort keyPath: KeyPath<Element, Value?>,
+      filter: Predicate<Element>? = nil, sort keyPath: KeyPath<Element, Value?> & Sendable,
       order: SortOrder = .forward
     ) -> [Connection] where Value: Comparable {
       var fd = FetchDescriptor<Element>()
