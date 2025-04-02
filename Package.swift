@@ -43,12 +43,14 @@ var dependencies: [Package.Dependency] = [
 
 if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
   dependencies += [
+    .package(url: "https://github.com/hdtls/swift-netbot-frame-processing.git", branch: "main"),
     .package(url: "https://github.com/hdtls/swift-netbot-essentials.git", branch: "main"),
     .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.2.1"),
     .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
   ]
 } else {
   dependencies += [
+    .package(path: "../swift-netbot-frame-processing"),
     .package(path: "../swift-netbot-essentials"),
     .package(path: "../swift-maxminddb"),
     .package(path: "../swift-preference"),
@@ -81,6 +83,7 @@ let package = Package(
     .target(
       name: "_NEAnalytics",
       dependencies: [
+        "_PrettyDNS",
         "_PersistentStore",
         "_ResourceProcessing",
         .product(name: "Anlzr", package: "swift-netbot-essentials"),
@@ -97,6 +100,14 @@ let package = Package(
       dependencies: [
         .product(name: "Logging", package: "swift-log"),
         .product(name: "Preference", package: "swift-preference"),
+      ],
+      swiftSettings: swiftSettings
+    ),
+    .target(
+      name: "_PrettyDNS",
+      dependencies: [
+        .product(name: "NIOCore", package: "swift-nio"),
+        .product(name: "NEAddressProcessing", package: "swift-netbot-frame-processing"),
       ],
       swiftSettings: swiftSettings
     ),
@@ -152,6 +163,11 @@ let package = Package(
         "External Resource/4a79917602f5e63d3fb28166ded4b8f5",
         "External Resource/24e84f0f66c2bcd5582519b4a76f2ffe",
       ],
+      swiftSettings: swiftSettings
+    ),
+    .testTarget(
+      name: "_PrettyDNSTests",
+      dependencies: ["_PrettyDNS"],
       swiftSettings: swiftSettings
     ),
     .testTarget(
