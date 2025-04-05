@@ -27,8 +27,8 @@
         0xe4, 0x8b,
       ])
 
-      let packet = NIOIPPacket.Internet(data: data, protocolFamily: UInt8(PF_INET))
-      #expect(packet.protocolFamily == UInt8(PF_INET))
+      let packet = NIOIPPacket.IPv4Packet(data: data, protocolFamily: UInt8(AF_INET))
+      #expect(packet.protocolFamily == UInt8(AF_INET))
       #expect(packet.internetHeaderLength == 5)
       #expect(packet.differentiatedServicesCodePoint == 0)
       #expect(packet.explicitCongestionNotification == 0)
@@ -56,8 +56,8 @@
         0xe4, 0x8b,
       ])
 
-      var packet = NIOIPPacket.Internet(data: data, protocolFamily: UInt8(PF_INET))
-      #expect(packet.protocolFamily == UInt8(PF_INET))
+      var packet = NIOIPPacket.IPv4Packet(data: data, protocolFamily: UInt8(AF_INET))
+      #expect(packet.protocolFamily == UInt8(AF_INET))
 
       packet.internetHeaderLength = 5
       #expect(packet.internetHeaderLength == 5)
@@ -125,7 +125,7 @@
     ])
     func chksum(bytes: [UInt8]) {
       let data = Data(bytes)
-      let packet = NIOIPPacket(data: data, protocolFamily: sa_family_t(PF_INET))
+      let packet = NIOIPPacket(data: data, protocolFamily: sa_family_t(AF_INET))
       #expect(packet.chksum(data, length: data.count) == 0)
     }
   }
