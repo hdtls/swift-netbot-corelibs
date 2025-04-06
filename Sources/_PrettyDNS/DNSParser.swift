@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-public import NEAddressProcessing
+import NEAddressProcessing
 public import NIOCore
 
 public enum DNSParserError: Error {
@@ -15,38 +15,43 @@ public struct DNSParser: Sendable {
   public init() {}
 
   public func parse(_ parseInput: ByteBuffer) throws -> Message {
-    var parseInput = parseInput
-
-    let headerFields = try parseHeaderFieldsIfAvailable(&parseInput)
+    var consumed = parseInput.readerIndex
+    let headerFields = try parseHeaderFieldsIfAvailable(
+      parseInput,
+      readBytesStartOffset: &consumed
+    )
 
     var questions: [Question] = []
     var numberOfLoops = headerFields.qestionCount
     while numberOfLoops > 0 {
-      let question = try parseQuestionIfAvailable(&parseInput)
+      let question = try parseQuestionIfAvailable(
+        parseInput,
+        readBytesStartOffset: &consumed
+      )
       questions.append(question)
       numberOfLoops -= 1
     }
 
-    var answers: [any RecordProtocol] = []
+    var answers: [any RecordProtocol & RawBytesSerializable] = []
     numberOfLoops = headerFields.answerCount
     while numberOfLoops > 0 {
-      let answer = try parseRRIfAvailable(&parseInput)
+      let answer = try parseRRIfAvailable(parseInput, readBytesStartOffset: &consumed)
       answers.append(answer)
       numberOfLoops -= 1
     }
 
-    var authorities: [any RecordProtocol] = []
+    var authorities: [any RecordProtocol & RawBytesSerializable] = []
     numberOfLoops = headerFields.authorityCount
     while numberOfLoops > 0 {
-      let authority = try parseRRIfAvailable(&parseInput)
+      let authority = try parseRRIfAvailable(parseInput, readBytesStartOffset: &consumed)
       authorities.append(authority)
       numberOfLoops -= 1
     }
 
-    var additionals: [any RecordProtocol] = []
+    var additionals: [any RecordProtocol & RawBytesSerializable] = []
     numberOfLoops = headerFields.additionCount
     while numberOfLoops > 0 {
-      let additional = try parseRRIfAvailable(&parseInput)
+      let additional = try parseRRIfAvailable(parseInput, readBytesStartOffset: &consumed)
       additionals.append(additional)
       numberOfLoops -= 1
     }
@@ -62,7 +67,9 @@ public struct DNSParser: Sendable {
     return message
   }
 
-  private func parseHeaderFieldsIfAvailable(_ parseInput: inout ByteBuffer) throws
+  internal func parseHeaderFieldsIfAvailable(
+    _ parseInput: ByteBuffer, readBytesStartOffset: inout Int
+  ) throws
     -> Message.HeaderFields
   {
     /// The header contains the following fields:
@@ -175,30 +182,35 @@ public struct DNSParser: Sendable {
     ///
     /// ARCOUNT         an unsigned 16 bit integer specifying the number of
     ///                resource records in the additional records section.
-
-    guard let id = parseInput.readInteger(as: UInt16.self) else {
+    guard let id = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self) else {
       throw DNSParserError.invalidPayloadData
     }
+    readBytesStartOffset += MemoryLayout<UInt16>.size
 
-    guard let flags = parseInput.readInteger(as: UInt16.self) else {
+    guard let flags = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self) else {
       throw DNSParserError.invalidPayloadData
     }
+    readBytesStartOffset += MemoryLayout<UInt16>.size
 
-    guard var qdCount = parseInput.readInteger(as: UInt16.self) else {
+    guard let qdCount = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self) else {
       throw DNSParserError.invalidPayloadData
     }
+    readBytesStartOffset += MemoryLayout<UInt16>.size
 
-    guard var anCount = parseInput.readInteger(as: UInt16.self) else {
+    guard let anCount = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self) else {
       throw DNSParserError.invalidPayloadData
     }
+    readBytesStartOffset += MemoryLayout<UInt16>.size
 
-    guard var nsCount = parseInput.readInteger(as: UInt16.self) else {
+    guard let nsCount = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self) else {
       throw DNSParserError.invalidPayloadData
     }
+    readBytesStartOffset += MemoryLayout<UInt16>.size
 
-    guard var arCount = parseInput.readInteger(as: UInt16.self) else {
+    guard let arCount = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self) else {
       throw DNSParserError.invalidPayloadData
     }
+    readBytesStartOffset += MemoryLayout<UInt16>.size
 
     let headerFields = Message.HeaderFields(
       transactionID: id,
@@ -212,40 +224,80 @@ public struct DNSParser: Sendable {
     return headerFields
   }
 
-  private func parseLengthPrefixedString(_ parseInput: inout ByteBuffer) throws -> String {
-    guard let l = parseInput.readInteger(as: UInt8.self) else {
+  private func parseLengthPrefixedString(_ parseInput: ByteBuffer, readBytesStartOffset: inout Int)
+    throws -> String
+  {
+    let l = parseInput.getInteger(
+      at: parseInput.readerIndex.advanced(by: readBytesStartOffset),
+      as: UInt8.self
+    )
+    guard let l else {
       throw DNSParserError.invalidPayloadData
     }
-    guard let parseOutput = parseInput.readString(length: Int(l)) else {
+    readBytesStartOffset += MemoryLayout<UInt8>.size
+    guard
+      let parseOutput = parseInput.getString(
+        at: parseInput.readerIndex.advanced(by: readBytesStartOffset), length: Int(l))
+    else {
       throw DNSParserError.invalidPayloadData
     }
+    readBytesStartOffset += Int(l)
     return parseOutput
   }
 
-  private func parseLabelIfAvailable(_ parseInput: inout ByteBuffer) throws -> String {
-    var label = try parseLengthPrefixedString(&parseInput)
+  private func parseLabelIfAvailable(_ parseInput: ByteBuffer, readBytesStartOffset: inout Int)
+    throws -> String
+  {
+    var parseOutput = ""
 
-    while true {
-      guard let l = parseInput.getInteger(at: parseInput.readerIndex, as: UInt8.self) else {
-        throw DNSParserError.invalidPayloadData
-      }
+    while readBytesStartOffset < parseInput.writerIndex {
+      let lengthByte = parseInput.getInteger(at: readBytesStartOffset, as: UInt8.self)!
 
-      // Name end with 0 length label.
-      guard l > 0 else {
-        // Skip terminator byte.
-        parseInput.moveReaderIndex(forwardBy: MemoryLayout<UInt8>.size)
+      guard lengthByte != 0x00 else {
+        // End of domain.
+        readBytesStartOffset += MemoryLayout<UInt8>.size
         break
       }
 
-      if !label.isEmpty {
-        label += "."
+      // Check if it's a pointer (starts with 11xxxxxx)
+      if lengthByte & 0xC0 == 0xC0 {
+        // It's a pointer, read the next byte too
+        readBytesStartOffset += MemoryLayout<UInt8>.size
+        guard let nextByte = parseInput.getInteger(at: readBytesStartOffset, as: UInt8.self) else {
+          break
+        }
+        readBytesStartOffset += MemoryLayout<UInt8>.size
+        var pointerOffset = Int(((UInt16(lengthByte & 0x3F) << 8) | UInt16(nextByte)))
+
+        // Jump to the offset indicated by the pointer
+        let label = try parseLabelIfAvailable(
+          parseInput, readBytesStartOffset: &pointerOffset)
+
+        if parseOutput.isEmpty {
+          parseOutput = label
+        } else {
+          parseOutput += ".\(label)"
+        }
+        break  // pointers are always terminal
+      } else {
+        // It's a label
+        let label = try parseLengthPrefixedString(
+          parseInput, readBytesStartOffset: &readBytesStartOffset)
+
+        if parseOutput.isEmpty {
+          parseOutput = label
+        } else {
+          parseOutput += ".\(label)"
+        }
       }
-      label += try parseLengthPrefixedString(&parseInput)
     }
-    return label
+
+    return parseOutput
   }
 
-  private func parseQuestionIfAvailable(_ parseInput: inout ByteBuffer) throws -> Question {
+  internal func parseQuestionIfAvailable(_ parseInput: ByteBuffer, readBytesStartOffset: inout Int)
+    throws -> Question
+  {
     /// The question section is used to carry the "question" in most queries,
     /// i.e., the parameters that define what is being asked.  The section
     /// contains QDCOUNT (usually 1) entries, each of the following format:
@@ -278,26 +330,34 @@ public struct DNSParser: Sendable {
     /// QCLASS          a two octet code that specifies the class of the query.
     ///                 For example, the QCLASS field is IN for the Internet.
 
-    let domainName = try parseLabelIfAvailable(&parseInput)
+    let domainName = try parseLabelIfAvailable(
+      parseInput,
+      readBytesStartOffset: &readBytesStartOffset
+    )
 
-    guard let qType = parseInput.readInteger(as: UInt16.self) else {
+    guard let qType = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self) else {
       throw DNSParserError.invalidPayloadData
     }
+    readBytesStartOffset += MemoryLayout<UInt16>.size
 
-    guard let qClass = parseInput.readInteger(as: UInt16.self) else {
+    guard let qClass = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self) else {
       throw DNSParserError.invalidPayloadData
     }
+    readBytesStartOffset += MemoryLayout<UInt16>.size
 
     let question = Question(
       domainName: domainName,
       queryType: .init(rawValue: qType),
-      queryClass: QueryClass(rawValue: qClass) ?? .internet
+      queryClass: QueryClass(rawValue: qClass)
     )
 
     return question
   }
 
-  private func parseRRIfAvailable(_ parseInput: inout ByteBuffer) throws -> any RecordProtocol {
+  internal func parseRRIfAvailable(_ parseInput: ByteBuffer, readBytesStartOffset: inout Int) throws
+    -> any RecordProtocol
+    & RawBytesSerializable
+  {
     /// The answer, authority, and additional sections all share the same
     /// format: a variable number of resource records, where the number of
     /// records is specified in the corresponding count field in the header.
@@ -350,37 +410,46 @@ public struct DNSParser: Sendable {
     ///                 For example, the if the TYPE is A and the CLASS is IN,
     ///                 the RDATA field is a 4 octet ARPA Internet address.
 
-    let name = try parseLabelIfAvailable(&parseInput)
+    let name = try parseLabelIfAvailable(parseInput, readBytesStartOffset: &readBytesStartOffset)
 
-    guard let rrtype = parseInput.readInteger(as: UInt16.self) else {
+    guard let rrtype = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self) else {
       throw DNSParserError.invalidPayloadData
     }
     let recordType = QueryType(rawValue: rrtype)
+    readBytesStartOffset += MemoryLayout<UInt16>.size
 
-    guard let rrclass = parseInput.readInteger(as: UInt16.self) else {
+    guard let rrclass = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self) else {
       throw DNSParserError.invalidPayloadData
     }
     let recordClass = QueryClass(rawValue: rrclass)
+    readBytesStartOffset += MemoryLayout<UInt16>.size
 
-    guard let ttl = parseInput.readInteger(as: Int32.self) else {
+    guard let ttl = parseInput.getInteger(at: readBytesStartOffset, as: Int32.self) else {
+      throw DNSParserError.invalidPayloadData
+    }
+    readBytesStartOffset += MemoryLayout<Int32>.size
+
+    guard let dataLength = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self) else {
+      throw DNSParserError.invalidPayloadData
+    }
+    readBytesStartOffset += MemoryLayout<UInt16>.size
+
+    guard parseInput.readableBytes >= Int(dataLength) else {
       throw DNSParserError.invalidPayloadData
     }
 
-    guard let dataLength = parseInput.readInteger(as: UInt16.self) else {
-      throw DNSParserError.invalidPayloadData
-    }
-
-    guard var _parseInput = parseInput.readSlice(length: Int(dataLength)) else {
-      throw DNSParserError.invalidPayloadData
-    }
-
-    let finalize: any RecordProtocol
+    let finalize: any RecordProtocol & RawBytesSerializable
 
     switch recordType {
     case .a:
-      guard let data = IPv4Address(.init(buffer: _parseInput)) else {
+      guard let addressData = parseInput.getBytes(at: readBytesStartOffset, length: Int(dataLength))
+      else {
         throw DNSParserError.invalidPayloadData
       }
+      guard let data = IPv4Address(.init(addressData)) else {
+        throw DNSParserError.invalidPayloadData
+      }
+      readBytesStartOffset += Int(dataLength)
       finalize = ARecord(
         ownerName: name,
         recordType: recordType,
@@ -394,7 +463,7 @@ public struct DNSParser: Sendable {
         recordType: recordType,
         recordClass: recordClass,
         ttl: ttl,
-        data: try parseLabelIfAvailable(&_parseInput)
+        data: try parseLabelIfAvailable(parseInput, readBytesStartOffset: &readBytesStartOffset)
       )
     case .cname:
       finalize = CNAMERecord(
@@ -402,7 +471,7 @@ public struct DNSParser: Sendable {
         recordType: recordType,
         recordClass: recordClass,
         ttl: ttl,
-        data: try parseLabelIfAvailable(&_parseInput)
+        data: try parseLabelIfAvailable(parseInput, readBytesStartOffset: &readBytesStartOffset)
       )
     case .soa:
       finalize = SOARecord(
@@ -410,7 +479,7 @@ public struct DNSParser: Sendable {
         recordType: recordType,
         recordClass: recordClass,
         ttl: ttl,
-        data: try parseSOARDataIfAvailable(&_parseInput)
+        data: try parseSOARDataIfAvailable(parseInput, readBytesStartOffset: &readBytesStartOffset)
       )
     case .ptr:
       finalize = PTRRecord(
@@ -418,7 +487,7 @@ public struct DNSParser: Sendable {
         recordType: recordType,
         recordClass: recordClass,
         ttl: ttl,
-        data: try parseLabelIfAvailable(&_parseInput)
+        data: try parseLabelIfAvailable(parseInput, readBytesStartOffset: &readBytesStartOffset)
       )
     case .mx:
       finalize = MXRecord(
@@ -426,7 +495,7 @@ public struct DNSParser: Sendable {
         recordType: recordType,
         recordClass: recordClass,
         ttl: ttl,
-        data: try parseMXRDataIfAvailable(&_parseInput)
+        data: try parseMXRDataIfAvailable(parseInput, readBytesStartOffset: &readBytesStartOffset)
       )
     case .txt:
       finalize = TXTRecord(
@@ -434,12 +503,16 @@ public struct DNSParser: Sendable {
         recordType: recordType,
         recordClass: recordClass,
         ttl: ttl,
-        data: try parseLengthPrefixedString(&_parseInput)
+        data: try parseLengthPrefixedString(parseInput, readBytesStartOffset: &readBytesStartOffset)
       )
     case .aaaa:
-      guard let data = IPv6Address(.init(buffer: _parseInput)) else {
+      guard
+        let data = IPv6Address(
+          .init(buffer: parseInput.getSlice(at: readBytesStartOffset, length: Int(dataLength))!))
+      else {
         throw DNSParserError.invalidPayloadData
       }
+      readBytesStartOffset += Int(dataLength)
       finalize = AAAARecord(
         ownerName: name,
         recordType: recordType,
@@ -453,7 +526,7 @@ public struct DNSParser: Sendable {
         recordType: recordType,
         recordClass: recordClass,
         ttl: ttl,
-        data: try parseSRVRDataIfAvailable(&_parseInput)
+        data: try parseSRVRDataIfAvailable(parseInput, readBytesStartOffset: &readBytesStartOffset)
       )
     case .naptr:
       finalize = NAPTRRecord(
@@ -461,7 +534,10 @@ public struct DNSParser: Sendable {
         recordType: recordType,
         recordClass: recordClass,
         ttl: ttl,
-        data: try parseNAPTRRDataIfAvailable(&_parseInput)
+        data: try parseNAPTRRDataIfAvailable(
+          parseInput,
+          readBytesStartOffset: &readBytesStartOffset
+        )
       )
     default:
       throw DNSParserError.notImplemented
@@ -470,43 +546,96 @@ public struct DNSParser: Sendable {
     return finalize
   }
 
-  private func parseSOARDataIfAvailable(_ parseInput: inout ByteBuffer) throws -> SOARecord.Data {
-    SOARecord.Data(
-      primaryNameServer: try parseLabelIfAvailable(&parseInput),
-      responsibleMailbox: try parseLabelIfAvailable(&parseInput),
-      serialNumber: parseInput.readInteger() ?? 0,
-      refreshInterval: parseInput.readInteger() ?? 0,
-      retryInterval: parseInput.readInteger() ?? 0,
-      expirationTime: parseInput.readInteger() ?? 0,
-      ttl: parseInput.readInteger() ?? 0
-    )
-  }
-
-  private func parseMXRDataIfAvailable(_ parseInput: inout ByteBuffer) throws -> MXRecord.Data {
-    MXRecord.Data(
-      preference: parseInput.readInteger() ?? 0,
-      exchange: try parseLabelIfAvailable(&parseInput)
-    )
-  }
-
-  private func parseSRVRDataIfAvailable(_ parseInput: inout ByteBuffer) throws -> SRVRecord.Data {
-    SRVRecord.Data(
-      priority: parseInput.readInteger() ?? 0,
-      weight: parseInput.readInteger() ?? 0,
-      port: parseInput.readInteger() ?? 0,
-      hostname: try parseLabelIfAvailable(&parseInput)
-    )
-  }
-
-  private func parseNAPTRRDataIfAvailable(_ parseInput: inout ByteBuffer) throws -> NAPTRRecord.Data
+  private func parseSOARDataIfAvailable(_ parseInput: ByteBuffer, readBytesStartOffset: inout Int)
+    throws -> SOARecord.Data
   {
-    NAPTRRecord.Data(
-      order: parseInput.readInteger() ?? 0,
-      preference: parseInput.readInteger() ?? 0,
-      flags: try parseLengthPrefixedString(&parseInput),
-      services: try parseLengthPrefixedString(&parseInput),
-      regExp: try parseLengthPrefixedString(&parseInput),
-      replacement: try parseLabelIfAvailable(&parseInput)
+    let primaryNameServer = try parseLabelIfAvailable(
+      parseInput,
+      readBytesStartOffset: &readBytesStartOffset
+    )
+    let responsibleMailbox = try parseLabelIfAvailable(
+      parseInput,
+      readBytesStartOffset: &readBytesStartOffset
+    )
+    let serialNumber = parseInput.getInteger(at: readBytesStartOffset, as: UInt32.self)
+    readBytesStartOffset += MemoryLayout<UInt32>.size
+
+    let refreshInterval = parseInput.getInteger(at: readBytesStartOffset, as: UInt32.self)
+    readBytesStartOffset += MemoryLayout<UInt32>.size
+
+    let retryInterval = parseInput.getInteger(at: readBytesStartOffset, as: UInt32.self)
+    readBytesStartOffset += MemoryLayout<UInt32>.size
+
+    let expirationTime = parseInput.getInteger(at: readBytesStartOffset, as: UInt32.self)
+    readBytesStartOffset += MemoryLayout<UInt32>.size
+
+    let ttl = parseInput.getInteger(at: readBytesStartOffset, as: UInt32.self)
+    readBytesStartOffset += MemoryLayout<UInt32>.size
+
+    return SOARecord.Data(
+      primaryNameServer: primaryNameServer,
+      responsibleMailbox: responsibleMailbox,
+      serialNumber: serialNumber ?? 0,
+      refreshInterval: refreshInterval ?? 0,
+      retryInterval: retryInterval ?? 0,
+      expirationTime: expirationTime ?? 0,
+      ttl: ttl ?? 0
+    )
+  }
+
+  private func parseMXRDataIfAvailable(_ parseInput: ByteBuffer, readBytesStartOffset: inout Int)
+    throws -> MXRecord.Data
+  {
+    let preference = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self)
+    readBytesStartOffset += MemoryLayout<UInt16>.size
+
+    return MXRecord.Data(
+      preference: preference ?? 0,
+      exchange: try parseLabelIfAvailable(parseInput, readBytesStartOffset: &readBytesStartOffset)
+    )
+  }
+
+  private func parseSRVRDataIfAvailable(_ parseInput: ByteBuffer, readBytesStartOffset: inout Int)
+    throws -> SRVRecord.Data
+  {
+    let priority = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self)
+    readBytesStartOffset += MemoryLayout<UInt16>.size
+
+    let weight = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self)
+    readBytesStartOffset += MemoryLayout<UInt16>.size
+
+    let port = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self)
+    readBytesStartOffset += MemoryLayout<UInt16>.size
+
+    return SRVRecord.Data(
+      priority: priority ?? 0,
+      weight: weight ?? 0,
+      port: port ?? 0,
+      hostname: try parseLabelIfAvailable(parseInput, readBytesStartOffset: &readBytesStartOffset)
+    )
+  }
+
+  private func parseNAPTRRDataIfAvailable(_ parseInput: ByteBuffer, readBytesStartOffset: inout Int)
+    throws -> NAPTRRecord.Data
+  {
+    let order = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self)
+    readBytesStartOffset += MemoryLayout<UInt16>.size
+
+    let preference = parseInput.getInteger(at: readBytesStartOffset, as: UInt16.self)
+    readBytesStartOffset += MemoryLayout<UInt16>.size
+
+    return NAPTRRecord.Data(
+      order: order ?? 0,
+      preference: preference ?? 0,
+      flags: try parseLengthPrefixedString(parseInput, readBytesStartOffset: &readBytesStartOffset),
+      services: try parseLengthPrefixedString(
+        parseInput, readBytesStartOffset: &readBytesStartOffset),
+      regExp: try parseLengthPrefixedString(
+        parseInput, readBytesStartOffset: &readBytesStartOffset),
+      replacement: try parseLabelIfAvailable(
+        parseInput,
+        readBytesStartOffset: &readBytesStartOffset
+      )
     )
   }
 }

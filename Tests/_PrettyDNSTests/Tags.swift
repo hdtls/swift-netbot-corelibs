@@ -4,8 +4,7 @@
 
 import Testing
 
-@testable import _DNS
+extension Tag {
 
-@Suite(.dns) struct MessageTests {
-
+  @Tag static var dns: Tag
 }
