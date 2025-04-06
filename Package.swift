@@ -86,6 +86,7 @@ let package = Package(
         "_PrettyDNS",
         "_PersistentStore",
         "_ResourceProcessing",
+        "CNELwIP",
         .product(name: "Anlzr", package: "swift-netbot-essentials"),
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "NIOCore", package: "swift-nio"),
