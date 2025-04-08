@@ -16,12 +16,11 @@
       "parallelizable" : false,
       "target" : {
         "containerPath" : "container:",
-        "identifier" : "NetbotDataTests",
-        "name" : "NetbotDataTests"
+        "identifier" : "_NEAnalyticsTests",
+        "name" : "_NEAnalyticsTests"
       }
     },
     {
-      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:",
         "identifier" : "NetbotMacrosTests",
@@ -29,19 +28,24 @@
       }
     },
     {
-      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:",
-        "identifier" : "_NEAnalyticsTests",
-        "name" : "_NEAnalyticsTests"
+        "identifier" : "_PrettyDNSTests",
+        "name" : "_PrettyDNSTests"
       }
     },
     {
-      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:",
         "identifier" : "_ResourceProcessingTests",
         "name" : "_ResourceProcessingTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "NetbotTests",
+        "name" : "NetbotTests"
       }
     }
   ],

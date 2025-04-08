@@ -4,7 +4,8 @@
 
 public import NEAddressProcessing
 
-public struct QueryType: RawRepresentable, Hashable, Sendable {
+/// `QTYPE` fields appear in the question part of a query, define the type of the question.
+public struct QTYPE: Hashable, Sendable, RawRepresentable {
 
   public var rawValue: UInt16
 
@@ -13,63 +14,88 @@ public struct QueryType: RawRepresentable, Hashable, Sendable {
   }
 }
 
-extension QueryType {
+extension QTYPE {
 
   /// A host address.
-  public static let a = QueryType(rawValue: 1)
+  public static let a = QTYPE(rawValue: 1)
 
   /// An authoritative name server.
-  public static let ns = QueryType(rawValue: 2)
+  public static let ns = QTYPE(rawValue: 2)
 
-  public static let md = QueryType(rawValue: 3)
+  /// A mail destination.
+  @available(*, deprecated, message: "obsoleted - use .mx instead")
+  public static let md = QTYPE(rawValue: 3)
 
-  public static let mf = QueryType(rawValue: 4)
+  /// A mail forwarder.
+  @available(*, deprecated, message: "obsoleted - use .mx instead")
+  public static let mf = QTYPE(rawValue: 4)
 
   /// The canonical name for an alias.
-  public static let cname = QueryType(rawValue: 5)
+  public static let cname = QTYPE(rawValue: 5)
 
   /// Marks the start of a zone of authority.
-  public static let soa = QueryType(rawValue: 6)
+  public static let soa = QTYPE(rawValue: 6)
 
-  public static let mb = QueryType(rawValue: 7)
+  /// A mailbox domain name.
+  ///
+  /// - Important: EXPERIMENTAL.
+  public static let mb = QTYPE(rawValue: 7)
 
-  public static let mg = QueryType(rawValue: 8)
+  /// A mail group member.
+  ///
+  /// - Important: EXPERIMENTAL.
+  public static let mg = QTYPE(rawValue: 8)
 
-  public static let mr = QueryType(rawValue: 9)
+  /// A mail rename domain name.
+  ///
+  /// - Important: EXPERIMENTAL.
+  public static let mr = QTYPE(rawValue: 9)
 
-  public static let null = QueryType(rawValue: 10)
+  /// A null RR.
+  ///
+  /// - Important: EXPERIMENTAL.
+  public static let null = QTYPE(rawValue: 10)
 
-  public static let wks = QueryType(rawValue: 11)
+  /// A well known service description.
+  public static let wks = QTYPE(rawValue: 11)
 
   /// A domain name pointer.
-  public static let ptr = QueryType(rawValue: 12)
+  public static let ptr = QTYPE(rawValue: 12)
 
-  public static let hinfo = QueryType(rawValue: 13)
+  /// Host information.
+  public static let hinfo = QTYPE(rawValue: 13)
 
-  public static let minfo = QueryType(rawValue: 14)
+  /// Mailbox or mail list information.
+  public static let minfo = QTYPE(rawValue: 14)
 
   /// Mail exchange.
-  public static let mx = QueryType(rawValue: 15)
+  public static let mx = QTYPE(rawValue: 15)
 
   /// Text strings.
-  public static let txt = QueryType(rawValue: 16)
+  public static let txt = QTYPE(rawValue: 16)
 
-  public static let aaaa = QueryType(rawValue: 28)
+  public static let aaaa = QTYPE(rawValue: 28)
 
-  public static let srv = QueryType(rawValue: 33)
+  public static let srv = QTYPE(rawValue: 33)
 
-  public static let naptr = QueryType(rawValue: 35)
+  public static let naptr = QTYPE(rawValue: 35)
 
-  public static let axfr = QueryType(rawValue: 252)
+  /// A request for a transfer of an entire zone.
+  public static let axfr = QTYPE(rawValue: 252)
 
-  public static let mailb = QueryType(rawValue: 253)
+  /// A request for mailbox-related records (MB, MG or MR).
+  public static let mailb = QTYPE(rawValue: 253)
 
-  public static let maila = QueryType(rawValue: 254)
+  /// A request for mail agent RRs.
+  @available(*, deprecated, message: "obsolete - see .mx")
+  public static let maila = QTYPE(rawValue: 254)
 
-  public static let any = QueryType(rawValue: 255)
+  /// A request for all records.
+  public static let any = QTYPE(rawValue: 255)
 }
 
-public struct QueryClass: RawRepresentable, Hashable, Sendable {
+/// `QCLASS` fields appear in the question section of a query, define the class of the question.
+public struct QCLASS: Hashable, Sendable, RawRepresentable {
 
   public var rawValue: UInt16
 
@@ -78,34 +104,49 @@ public struct QueryClass: RawRepresentable, Hashable, Sendable {
   }
 }
 
-extension QueryClass {
+extension QCLASS {
 
-  public static let internet: QueryClass = QueryClass(rawValue: 1)
+  /// The internet.
+  public static let internet: QCLASS = QCLASS(rawValue: 1)
 
-  public static let csnet = QueryClass(rawValue: 2)
+  /// The CSNET class.
+  @available(*, deprecated, message: "obsolete - used only for examples in some obsolete RFCs")
+  public static let csnet = QCLASS(rawValue: 2)
 
-  public static let chaos = QueryClass(rawValue: 3)
+  /// The CHAOS class.
+  public static let chaos = QCLASS(rawValue: 3)
 
-  public static let hesiod = QueryClass(rawValue: 4)
+  /// Hesiod [Dyer 87].
+  public static let hesiod = QCLASS(rawValue: 4)
 
-  public static let any = QueryClass(rawValue: 255)
+  /// Any class.
+  public static let any = QCLASS(rawValue: 255)
+}
+
+/// `TYPE` fields are used in resource records.
+///
+/// - note: These types should be a subset of QTYPEs, for convenience we use QTYPE directly.
+public typealias TYPE = QTYPE
+
+/// `CLASS` fields are used in resource records.
+///
+/// - note: These types should be a subset of QCLASSes, for convenience we use QCLASS directly,
+public typealias CLASS = QCLASS
+
+public enum RDATALength: Hashable, Sendable {
+  case determined(UInt16)
+  case flexible
 }
 
 /// Resource record defines information about a dns resource record,
 /// including pertains domain name, type, class, ttl, data length and
 /// data.
-public protocol RecordProtocol: Sendable {
+public protocol ResourceRecord: Hashable, Sendable {
 
   associatedtype Data
 
   /// A domain name to which this resource record pertains.
-  var ownerName: String { get }
-
-  /// The meaning of the data in the `RDATA` field.
-  var recordType: QueryType { get }
-
-  /// The class of the data in the `RDATA` field.
-  var recordClass: QueryClass { get }
+  var domainName: String { get }
 
   /// The time interval (in seconds) that the resource record may be
   /// cached before it should be discarded.  Zero values are
@@ -113,8 +154,14 @@ public protocol RecordProtocol: Sendable {
   /// transaction in progress, and should not be cached.
   var ttl: Int32 { get }
 
+  /// The meaning of the data in the `RDATA` field.
+  var dataType: TYPE { get }
+
+  /// The class of the data in the `RDATA` field.
+  var dataClass: CLASS { get }
+
   /// The length in octets of the `RDATA` field.
-  var dataLength: UInt16 { get }
+  var dataLength: RDATALength { get }
 
   /// The content of the `RDATA` field. The format of this information
   /// varies according to the TYPE and CLASS of the resource record.
@@ -130,33 +177,33 @@ public protocol RecordProtocol: Sendable {
 /// browser, the DNS system uses the A record to translate that domain
 /// into an IP address (like 192.0.2.1) so that it knows where to send the
 /// request.
-public struct ARecord: RecordProtocol {
+public struct ARecord: ResourceRecord {
 
   public typealias Data = IPv4Address
 
-  public var ownerName: String
-
-  public var recordType: QueryType
-
-  public var recordClass: QueryClass
+  public var domainName: String
 
   public var ttl: Int32
 
-  public var dataLength: UInt16 { 4 }
+  public var dataType: TYPE { .a }
+
+  public var dataClass: CLASS
+
+  public var dataLength: RDATALength
 
   public var data: Data
 
   public init(
-    ownerName: String,
-    recordType: QueryType,
-    recordClass: QueryClass,
+    domainName: String,
     ttl: Int32,
+    dataClass: CLASS = .internet,
+    dataLength: RDATALength = .flexible,
     data: Data
   ) {
-    self.ownerName = ownerName
-    self.recordType = recordType
-    self.recordClass = recordClass
+    self.domainName = domainName
     self.ttl = ttl
+    self.dataClass = dataClass
+    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -164,37 +211,33 @@ public struct ARecord: RecordProtocol {
 /// NS record that specifies which servers are authoritative for a particular
 /// domain. In simpler terms, it tells the internet where to look for the DNS
 /// records for that domain.
-public struct NSRecord: RecordProtocol {
+public struct NSRecord: ResourceRecord {
 
   public typealias Data = String
 
-  public var ownerName: String
-
-  public var recordType: QueryType
-
-  public var recordClass: QueryClass
+  public var domainName: String
 
   public var ttl: Int32
 
-  public var dataLength: UInt16 {
-    // 2 means 1 byte for first label length and 1 byte
-    // for terminator 0.
-    UInt16(data.utf8.count + 2)
-  }
+  public var dataType: TYPE { .ns }
+
+  public var dataClass: CLASS
+
+  public var dataLength: RDATALength
 
   public var data: Data
 
   public init(
-    ownerName: String,
-    recordType: QueryType,
-    recordClass: QueryClass,
+    domainName: String,
     ttl: Int32,
+    dataClass: CLASS = .internet,
+    dataLength: RDATALength = .flexible,
     data: Data
   ) {
-    self.ownerName = ownerName
-    self.recordType = recordType
-    self.recordClass = recordClass
+    self.domainName = domainName
     self.ttl = ttl
+    self.dataClass = dataClass
+    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -205,35 +248,33 @@ public struct NSRecord: RecordProtocol {
 /// Essentially, it allows you to point one domain (or subdomain) to another
 /// domain, rather than directly mapping it to an IP address like with an A
 /// record.
-public struct CNAMERecord: RecordProtocol {
+public struct CNAMERecord: ResourceRecord {
 
   public typealias Data = String
 
-  public var ownerName: String
-
-  public var recordType: QueryType
-
-  public var recordClass: QueryClass
+  public var domainName: String
 
   public var ttl: Int32
 
-  public var dataLength: UInt16 {
-    UInt16(data.utf8.count + 2)
-  }
+  public var dataType: TYPE { .cname }
+
+  public var dataClass: CLASS
+
+  public var dataLength: RDATALength
 
   public var data: Data
 
   public init(
-    ownerName: String,
-    recordType: QueryType,
-    recordClass: QueryClass,
+    domainName: String,
     ttl: Int32,
+    dataClass: CLASS = .internet,
+    dataLength: RDATALength = .flexible,
     data: Data
   ) {
-    self.ownerName = ownerName
-    self.recordType = recordType
-    self.recordClass = recordClass
+    self.domainName = domainName
     self.ttl = ttl
+    self.dataClass = dataClass
+    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -247,12 +288,12 @@ public struct CNAMERecord: RecordProtocol {
 /// The SOA record is critical for DNS zone management because it helps
 /// control how DNS information is propagated and cached across the
 /// internet. It's usually the first record in a DNS zone file.
-public struct SOARecord: RecordProtocol {
+public struct SOARecord: ResourceRecord {
 
   /// `SOARecord.Data` defines authoritative information about a
   /// domain, including primary name server, administrator email, and
   /// domain settings like serial number and refresh intervals.
-  public struct Data: Sendable {
+  public struct Data: Hashable, Sendable {
 
     /// Primary name server.
     public var primaryNameServer: String
@@ -294,34 +335,29 @@ public struct SOARecord: RecordProtocol {
     }
   }
 
-  public var ownerName: String
-
-  public var recordType: QueryType
-
-  public var recordClass: QueryClass
+  public var domainName: String
 
   public var ttl: Int32
 
-  public var dataLength: UInt16 {
-    UInt16(
-      MemoryLayout<UInt32>.size * 5 + data.primaryNameServer.utf8.count + 2
-        + data.responsibleMailbox.utf8.count + 2
-    )
-  }
+  public var dataType: TYPE { .soa }
+
+  public var dataClass: CLASS
+
+  public var dataLength: RDATALength
 
   public var data: Data
 
   public init(
-    ownerName: String,
-    recordType: QueryType,
-    recordClass: QueryClass,
+    domainName: String,
     ttl: Int32,
+    dataClass: CLASS = .internet,
+    dataLength: RDATALength = .flexible,
     data: Data
   ) {
-    self.ownerName = ownerName
-    self.recordType = recordType
-    self.recordClass = recordClass
+    self.domainName = domainName
     self.ttl = ttl
+    self.dataClass = dataClass
+    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -333,35 +369,33 @@ public struct SOARecord: RecordProtocol {
 ///
 /// It’s primarily used in reverse DNS lookups to determine the domain name
 /// associated with an IP address.
-public struct PTRRecord: RecordProtocol {
+public struct PTRRecord: ResourceRecord {
 
   public typealias Data = String
 
-  public var ownerName: String
-
-  public var recordType: QueryType
-
-  public var recordClass: QueryClass
+  public var domainName: String
 
   public var ttl: Int32
 
-  public var dataLength: UInt16 {
-    UInt16(data.utf8.count + 2)
-  }
+  public var dataType: TYPE { .ptr }
+
+  public var dataClass: CLASS
+
+  public var dataLength: RDATALength
 
   public var data: Data
 
   public init(
-    ownerName: String,
-    recordType: QueryType,
-    recordClass: QueryClass,
+    domainName: String,
     ttl: Int32,
+    dataClass: CLASS = .internet,
+    dataLength: RDATALength = .flexible,
     data: Data
   ) {
-    self.ownerName = ownerName
-    self.recordType = recordType
-    self.recordClass = recordClass
+    self.domainName = domainName
     self.ttl = ttl
+    self.dataClass = dataClass
+    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -371,12 +405,12 @@ public struct PTRRecord: RecordProtocol {
 ///
 /// When someone sends an email to an address (e.g., user@example.com),
 /// the MX record tells the sending email server where to deliver the email.
-public struct MXRecord: RecordProtocol {
+public struct MXRecord: ResourceRecord {
 
   /// `MXRecord.Data` define mail servers responsible for handling email
   /// for a domain. It includes a priority value to determine the order in which
   /// mail servers should be used.
-  public struct Data: Sendable {
+  public struct Data: Hashable, Sendable {
 
     /// The priority of the mail server (lower values are preferred).
     public var preference: UInt16
@@ -390,31 +424,29 @@ public struct MXRecord: RecordProtocol {
     }
   }
 
-  public var ownerName: String
-
-  public var recordType: QueryType
-
-  public var recordClass: QueryClass
+  public var domainName: String
 
   public var ttl: Int32
 
-  public var dataLength: UInt16 {
-    UInt16(MemoryLayout<UInt16>.size + data.exchange.utf8.count + 2)
-  }
+  public var dataType: TYPE { .mx }
+
+  public var dataClass: CLASS
+
+  public var dataLength: RDATALength
 
   public var data: Data
 
   public init(
-    ownerName: String,
-    recordType: QueryType,
-    recordClass: QueryClass,
+    domainName: String,
     ttl: Int32,
+    dataClass: CLASS = .internet,
+    dataLength: RDATALength = .flexible,
     data: Data
   ) {
-    self.ownerName = ownerName
-    self.recordType = recordType
-    self.recordClass = recordClass
+    self.domainName = domainName
     self.ttl = ttl
+    self.dataClass = dataClass
+    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -425,37 +457,33 @@ public struct MXRecord: RecordProtocol {
 /// While TXT records were originally designed for human-readable
 /// information, they are now commonly used for a variety of purposes
 /// related to domain verification and security.
-public struct TXTRecord: RecordProtocol {
+public struct TXTRecord: ResourceRecord {
 
   public typealias Data = String
 
-  public var ownerName: String
+  public var domainName: String
 
-  public var recordType: QueryType
+  public var dataType: TYPE { .txt }
 
-  public var recordClass: QueryClass
+  public var dataClass: CLASS
 
   public var ttl: Int32
 
-  public var dataLength: UInt16 {
-    // Different from domain name there is no terminator
-    // at end just + 1 byte.
-    UInt16(data.utf8.count + 1)
-  }
+  public var dataLength: RDATALength
 
   public var data: Data
 
   public init(
-    ownerName: String,
-    recordType: QueryType,
-    recordClass: QueryClass,
+    domainName: String,
     ttl: Int32,
+    dataClass: CLASS = .internet,
+    dataLength: RDATALength = .flexible,
     data: Data
   ) {
-    self.ownerName = ownerName
-    self.recordType = recordType
-    self.recordClass = recordClass
+    self.domainName = domainName
     self.ttl = ttl
+    self.dataClass = dataClass
+    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -468,33 +496,33 @@ public struct TXTRecord: RecordProtocol {
 /// the AAAA record is used for the newer IPv6 protocol, which provides
 /// a much larger address space and is becoming increasingly important
 /// as the number of devices connected to the internet grows.
-public struct AAAARecord: RecordProtocol {
+public struct AAAARecord: ResourceRecord {
 
   public typealias Data = IPv6Address
 
-  public var ownerName: String
-
-  public var recordType: QueryType
-
-  public var recordClass: QueryClass
+  public var domainName: String
 
   public var ttl: Int32
 
-  public var dataLength: UInt16 { 16 }
+  public var dataType: TYPE { .aaaa }
+
+  public var dataClass: CLASS
+
+  public var dataLength: RDATALength
 
   public var data: Data
 
   public init(
-    ownerName: String,
-    recordType: QueryType,
-    recordClass: QueryClass,
+    domainName: String,
     ttl: Int32,
+    dataClass: CLASS = .internet,
+    dataLength: RDATALength = .flexible,
     data: Data
   ) {
-    self.ownerName = ownerName
-    self.recordType = recordType
-    self.recordClass = recordClass
+    self.domainName = domainName
     self.ttl = ttl
+    self.dataClass = dataClass
+    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -505,9 +533,9 @@ public struct AAAARecord: RecordProtocol {
 /// (e.g., SIP, XMPP, LDAP) and is commonly used for services like instant
 /// messaging, VoIP, and other network protocols that require server
 /// discovery.
-public struct SRVRecord: RecordProtocol {
+public struct SRVRecord: ResourceRecord {
 
-  public struct Data: Sendable {
+  public struct Data: Hashable, Sendable {
 
     /// The priority of the target host (lower values are preferred).
     public var priority: UInt16
@@ -529,31 +557,29 @@ public struct SRVRecord: RecordProtocol {
     }
   }
 
-  public var ownerName: String
-
-  public var recordType: QueryType
-
-  public var recordClass: QueryClass
+  public var domainName: String
 
   public var ttl: Int32
 
-  public var dataLength: UInt16 {
-    UInt16(MemoryLayout<UInt16>.size * 3 + data.hostname.utf8.count + 2)
-  }
+  public var dataType: TYPE { .srv }
+
+  public var dataClass: CLASS
+
+  public var dataLength: RDATALength
 
   public var data: Data
 
   public init(
-    ownerName: String,
-    recordType: QueryType,
-    recordClass: QueryClass,
+    domainName: String,
     ttl: Int32,
+    dataClass: CLASS = .internet,
+    dataLength: RDATALength = .flexible,
     data: Data
   ) {
-    self.ownerName = ownerName
-    self.recordType = recordType
-    self.recordClass = recordClass
+    self.domainName = domainName
     self.ttl = ttl
+    self.dataClass = dataClass
+    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -570,9 +596,9 @@ public struct SRVRecord: RecordProtocol {
 ///
 /// NAPTR records are often used in combination with SRV (Service) records,
 /// particularly in systems like SIP and ENUM (E.164 Number Mapping).
-public struct NAPTRRecord: RecordProtocol {
+public struct NAPTRRecord: ResourceRecord {
 
-  public struct Data: Sendable {
+  public struct Data: Hashable, Sendable {
 
     /// The order of processing (lower values are processed first).
     public var order: UInt16
@@ -609,35 +635,29 @@ public struct NAPTRRecord: RecordProtocol {
     }
   }
 
-  public var ownerName: String
-
-  public var recordType: QueryType
-
-  public var recordClass: QueryClass
+  public var domainName: String
 
   public var ttl: Int32
 
-  public var dataLength: UInt16 {
-    UInt16(
-      MemoryLayout<UInt16>.size * 2 + data.flags.utf8.count + 1 + data.services.utf8.count + 1
-        + data.regExp
-        .utf8.count + 1 + data.replacement.utf8.count + 2
-    )
-  }
+  public var dataType: TYPE { .naptr }
+
+  public var dataClass: CLASS
+
+  public var dataLength: RDATALength
 
   public var data: Data
 
   public init(
-    ownerName: String,
-    recordType: QueryType,
-    recordClass: QueryClass,
+    domainName: String,
     ttl: Int32,
+    dataClass: CLASS = .internet,
+    dataLength: RDATALength = .flexible,
     data: Data
   ) {
-    self.ownerName = ownerName
-    self.recordType = recordType
-    self.recordClass = recordClass
+    self.domainName = domainName
     self.ttl = ttl
+    self.dataClass = dataClass
+    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -649,23 +669,59 @@ public struct Question: Hashable, Sendable {
   public var domainName: String
 
   /// The type of the dns query.
-  public var queryType: QueryType
+  public var queryType: QTYPE
 
   /// The type of the dns query.
-  public var queryClass: QueryClass
+  public var queryClass: QCLASS
 
-  public init(domainName: String, queryType: QueryType, queryClass: QueryClass) {
+  public init(domainName: String, queryType: QTYPE, queryClass: QCLASS = .internet) {
     self.domainName = domainName
     self.queryType = queryType
     self.queryClass = queryClass
   }
 }
 
+/// All communications inside of the domain protocol are carried in a single
+/// format called a message.  The top level format of message is divided
+/// into 5 sections (some of which are empty in certain cases) shown below:
+///
+//  +---------------------+
+//  |        Header       |
+//  +---------------------+
+//  |       Question      | the question for the name server
+//  +---------------------+
+//  |        Answer       | RRs answering the question
+//  +---------------------+
+//  |      Authority      | RRs pointing toward an authority
+//  +---------------------+
+//  |      Additional     | RRs holding additional information
+//  +---------------------+
+///
+/// The header section is always present.
 public struct Message: Sendable {
 
+  /// The header includes fields that specify which of the remaining sections are
+  /// present, and also specify whether the message is a query or a response, a
+  /// standard query or some other opcode, etc. The format of header shown below:
+  ///
+  //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+  //  |                      ID                       |
+  //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+  //  |QR|   Opcode  |AA|TC|RD|RA|   Z    |   RCODE   |
+  //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+  //  |                    QDCOUNT                    |
+  //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+  //  |                    ANCOUNT                    |
+  //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+  //  |                    NSCOUNT                    |
+  //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+  //  |                    ARCOUNT                    |
+  //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+  /// For more information see [Header section format](https://datatracker.ietf.org/doc/html/rfc1035#section-4.1.1)
+  ///
   public struct HeaderFields: Hashable, Sendable {
 
-    public struct Flags: CustomReflectable, Hashable, RawRepresentable, Sendable {
+    public struct Flags: Hashable, Sendable, RawRepresentable, CustomReflectable {
 
       public var rawValue: UInt16
 
@@ -775,20 +831,25 @@ public struct Message: Sendable {
 
   public var questions: [Question]
 
-  public var answerRRs: [any RecordProtocol]
+  public var answerRRs: [any ResourceRecord]
 
-  public var authorityRRs: [any RecordProtocol]
+  public var authorityRRs: [any ResourceRecord]
 
-  public var additionalRRs: [any RecordProtocol]
+  public var additionalRRs: [any ResourceRecord]
 
   public init(
     headerFields: HeaderFields,
     questions: [Question],
-    answerRRs: [any RecordProtocol],
-    authorityRRs: [any RecordProtocol],
-    additionalRRs: [any RecordProtocol]
+    answerRRs: [any ResourceRecord],
+    authorityRRs: [any ResourceRecord],
+    additionalRRs: [any ResourceRecord]
   ) {
     self.headerFields = headerFields
+    precondition(headerFields.qestionCount == questions.count)
+    precondition(headerFields.answerCount == answerRRs.count)
+    precondition(headerFields.authorityCount == authorityRRs.count)
+    precondition(headerFields.additionCount == additionalRRs.count)
+
     self.questions = questions
     self.answerRRs = answerRRs
     self.authorityRRs = authorityRRs
