@@ -102,7 +102,7 @@ final public class EventMonitor: @unchecked Sendable {
     self.logger = logger
   }
 
-  private func __session(host: String, port: UInt16) -> URLSession {
+  private func _session(host: String, port: UInt16) -> URLSession {
     let configuration = URLSessionConfiguration.default
     #if canImport(Darwin)
       configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
@@ -204,7 +204,7 @@ final public class EventMonitor: @unchecked Sendable {
           eventLoop.makeFutureWithTask {
             do {
               let profile = try Profile(contentsOf: self.profileURL)
-              let session = self.__session(
+              let session = self._session(
                 host: profile.httpListenAddress, port: UInt16(profile.httpListenPort ?? 6152))
               let (url, _) = try await session.download(from: url)
               let filename = "GeoLite2-Country.mmdb"
@@ -244,7 +244,7 @@ final public class EventMonitor: @unchecked Sendable {
             }
 
             await withTaskGroup(of: Void.self) { g in
-              let session = self.__session(
+              let session = self._session(
                 host: profile.httpListenAddress, port: UInt16(profile.httpListenPort ?? 6152))
 
               if !FileManager.default.fileExists(

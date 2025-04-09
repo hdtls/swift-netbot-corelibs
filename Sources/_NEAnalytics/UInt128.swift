@@ -14,9 +14,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if canImport(Darwin)
-  // swift-format-ignore-file
+// swift-format-ignore-file
 
+#if canImport(Darwin)
   @available(iOS, deprecated: 18.0)
   @available(macOS, deprecated: 15.0)
   @available(tvOS, deprecated: 18.0)
