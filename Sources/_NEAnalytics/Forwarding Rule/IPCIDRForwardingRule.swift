@@ -218,11 +218,16 @@ extension IPCIDRForwardingRule {
         upperBound = .init(packedAddress: packedAddress.bigEndian)
       case .v6(let iPv6Address):
         var bitWidth = 128
-        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+        #if canImport(Darwin)
+          if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+            bitWidth = UInt128.bitWidth
+          } else {
+            bitWidth = _UInt128.bitWidth
+          }
+        #else
           bitWidth = UInt128.bitWidth
-        } else {
-          bitWidth = _UInt128.bitWidth
-        }
+        #endif
+
         precondition((0...bitWidth).contains(prefix))
 
         guard prefix != 0 else {
@@ -242,7 +247,30 @@ extension IPCIDRForwardingRule {
 
         let bitsToMove = bitWidth - prefix
         var s6addr = iPv6Address.address.sin6_addr
-        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+
+        #if canImport(Darwin)
+          if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+            var packedAddress = withUnsafeBytes(of: &s6addr) {
+              $0.loadUnaligned(as: UInt128.self).bigEndian
+            }
+
+            packedAddress = (packedAddress >> bitsToMove) << bitsToMove
+            lowerBound = .init(packedAddress: packedAddress.bigEndian)
+
+            packedAddress = packedAddress | ~((UInt128.max >> bitsToMove) << bitsToMove)
+            upperBound = .init(packedAddress: packedAddress.bigEndian)
+          } else {
+            var packedAddress = withUnsafeBytes(of: &s6addr) {
+              $0.loadUnaligned(as: _UInt128.self).bigEndian
+            }
+
+            packedAddress = (packedAddress >> bitsToMove) << bitsToMove
+            lowerBound = .init(packedAddress: packedAddress.bigEndian)
+
+            packedAddress = packedAddress | ~((_UInt128.max >> bitsToMove) << bitsToMove)
+            upperBound = .init(packedAddress: packedAddress.bigEndian)
+          }
+        #else
           var packedAddress = withUnsafeBytes(of: &s6addr) {
             $0.loadUnaligned(as: UInt128.self).bigEndian
           }
@@ -252,17 +280,7 @@ extension IPCIDRForwardingRule {
 
           packedAddress = packedAddress | ~((UInt128.max >> bitsToMove) << bitsToMove)
           upperBound = .init(packedAddress: packedAddress.bigEndian)
-        } else {
-          var packedAddress = withUnsafeBytes(of: &s6addr) {
-            $0.loadUnaligned(as: _UInt128.self).bigEndian
-          }
-
-          packedAddress = (packedAddress >> bitsToMove) << bitsToMove
-          lowerBound = .init(packedAddress: packedAddress.bigEndian)
-
-          packedAddress = packedAddress | ~((_UInt128.max >> bitsToMove) << bitsToMove)
-          upperBound = .init(packedAddress: packedAddress.bigEndian)
-        }
+        #endif
       case .unixDomainSocket:
         throw SocketAddressError.unsupported
       }
@@ -309,20 +327,22 @@ extension SocketAddress {
     self.init(ipv4Addr)
   }
 
-  @available(iOS, deprecated: 18.0)
-  @available(macOS, deprecated: 15.0)
-  @available(tvOS, deprecated: 18.0)
-  @available(watchOS, deprecated: 11.0)
-  @available(visionOS, deprecated: 2.0)
-  fileprivate init(packedAddress: _UInt128) {
-    var ipv6Addr = sockaddr_in6()
-    ipv6Addr.sin6_family = sa_family_t(AF_INET6)
-    ipv6Addr.sin6_port = 0
-    withUnsafeMutableBytes(of: &ipv6Addr.sin6_addr) {
-      $0.storeBytes(of: packedAddress, as: _UInt128.self)
+  #if canImport(Darwin)
+    @available(iOS, deprecated: 18.0)
+    @available(macOS, deprecated: 15.0)
+    @available(tvOS, deprecated: 18.0)
+    @available(watchOS, deprecated: 11.0)
+    @available(visionOS, deprecated: 2.0)
+    fileprivate init(packedAddress: _UInt128) {
+      var ipv6Addr = sockaddr_in6()
+      ipv6Addr.sin6_family = sa_family_t(AF_INET6)
+      ipv6Addr.sin6_port = 0
+      withUnsafeMutableBytes(of: &ipv6Addr.sin6_addr) {
+        $0.storeBytes(of: packedAddress, as: _UInt128.self)
+      }
+      self.init(ipv6Addr)
     }
-    self.init(ipv6Addr)
-  }
+  #endif
 
   @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
   fileprivate init(packedAddress: UInt128) {
