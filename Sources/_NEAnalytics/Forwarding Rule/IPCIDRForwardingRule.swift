@@ -244,7 +244,7 @@ extension IPCIDRForwardingRule {
         var s6addr = iPv6Address.address.sin6_addr
         if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
           var packedAddress = withUnsafeBytes(of: &s6addr) {
-            $0.load(as: UInt128.self).bigEndian
+            $0.loadUnaligned(as: UInt128.self).bigEndian
           }
 
           packedAddress = (packedAddress >> bitsToMove) << bitsToMove
@@ -254,7 +254,7 @@ extension IPCIDRForwardingRule {
           upperBound = .init(packedAddress: packedAddress.bigEndian)
         } else {
           var packedAddress = withUnsafeBytes(of: &s6addr) {
-            $0.load(as: _UInt128.self).bigEndian
+            $0.loadUnaligned(as: _UInt128.self).bigEndian
           }
 
           packedAddress = (packedAddress >> bitsToMove) << bitsToMove
