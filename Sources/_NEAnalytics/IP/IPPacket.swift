@@ -9,6 +9,8 @@
   /// An `IPPacket` object represents the data, protocol family associated with an IP packet.
   public enum IPPacket: Hashable, Sendable {
 
+    public typealias Data = ByteBuffer
+
     /// The class to process and build IPv4 packet.
     public struct IPv4Packet: Hashable, CustomReflectable, Sendable {
 
@@ -72,7 +74,7 @@
           precondition(newValue <= UInt16.max)
           precondition(newValue >= 20)
           precondition(newValue >= internetHeaderLength)
-          let position = _storage.readerIndex.advanced(by: 2)
+          let position = _storage.index(_storage.readerIndex, offsetBy: 2)
           _storage.setInteger(UInt16(newValue), at: position)
         }
       }
@@ -80,11 +82,11 @@
       /// Identification field and is primarily used for uniquely identifying the group of fragments of a single IP datagram.
       public var identification: UInt16 {
         get {
-          let position = _storage.readerIndex.advanced(by: 4)
+          let position = _storage.index(_storage.readerIndex, offsetBy: 4)
           return _storage.getInteger(at: position)!
         }
         set {
-          let position = _storage.readerIndex.advanced(by: 4)
+          let position = _storage.index(_storage.readerIndex, offsetBy: 4)
           _storage.setInteger(newValue, at: position)
         }
       }
@@ -92,12 +94,12 @@
       /// There are three flags defined within this field, R, DF and MF.
       public var flags: UInt8 {
         get {
-          let position = _storage.readerIndex.advanced(by: 6)
+          let position = _storage.index(_storage.readerIndex, offsetBy: 6)
           let flagsAndFragmentOffset = _storage.getInteger(at: position, as: UInt16.self)!
           return UInt8((flagsAndFragmentOffset >> 13) & 0x7)
         }
         set {
-          let position = _storage.readerIndex.advanced(by: 6)
+          let position = _storage.index(_storage.readerIndex, offsetBy: 6)
           let flags = UInt16(newValue) << 13
           _storage.setInteger(flags | fragmentOffset, at: position)
         }
@@ -106,12 +108,12 @@
       ///  the offset of a particular fragment relative to the beginning of the original unfragmented IP datagram.
       public var fragmentOffset: UInt16 {
         get {
-          let position = _storage.readerIndex.advanced(by: 6)
+          let position = _storage.index(_storage.readerIndex, offsetBy: 6)
           let flagsAndFragmentOffset = _storage.getInteger(at: position, as: UInt16.self)!
           return flagsAndFragmentOffset & 0x1FFF
         }
         set {
-          let position = _storage.readerIndex.advanced(by: 6)
+          let position = _storage.index(_storage.readerIndex, offsetBy: 6)
           let flags = UInt16(flags) << 13
           let validatedOffset = min(newValue, 0x1FFF)
           _storage.setInteger(flags | validatedOffset, at: position)
@@ -121,11 +123,11 @@
       /// The datagram's lifetime to prevent network failure in the event of a routing loop.
       public var timeToLive: Int {
         get {
-          let position = _storage.readerIndex.advanced(by: 8)
+          let position = _storage.index(_storage.readerIndex, offsetBy: 8)
           return Int(_storage.getInteger(at: position, as: UInt8.self)!)
         }
         set {
-          let position = _storage.readerIndex.advanced(by: 8)
+          let position = _storage.index(_storage.readerIndex, offsetBy: 8)
           _storage.setInteger(UInt8(newValue), at: position)
         }
       }
@@ -133,11 +135,11 @@
       /// Protocol used in the data portion of the IP datagram.
       public var `protocol`: NIOIPProtocol {
         get {
-          let position = _storage.readerIndex.advanced(by: 9)
+          let position = _storage.index(_storage.readerIndex, offsetBy: 9)
           return NIOIPProtocol(rawValue: _storage.getInteger(at: position)!)
         }
         set {
-          let position = _storage.readerIndex.advanced(by: 9)
+          let position = _storage.index(_storage.readerIndex, offsetBy: 9)
           _storage.setInteger(newValue.rawValue, at: position)
         }
       }
@@ -169,12 +171,12 @@
       }
 
       /// Internet protocol options.
-      public var options: ByteBuffer? {
+      public var options: Data? {
         get {
           guard internetHeaderLength > 5 else {
             return nil
           }
-          let position = _storage.readerIndex.advanced(by: 20)
+          let position = _storage.index(_storage.readerIndex, offsetBy: 20)
           let length = internetHeaderLength * 4 - 20
           return _storage.getSlice(at: position, length: length)
         }
@@ -211,7 +213,7 @@
       }
 
       /// Transport layer data.
-      public var payload: ByteBuffer? {
+      public var payload: Data? {
         get {
           let l = internetHeaderLength * 4
           guard _storage.count > l else {
@@ -231,15 +233,15 @@
       }
 
       /// IP packet data.
-      public var data: ByteBuffer {
+      public var data: Data {
         var data = _storage
         data.setInteger(chksum, at: data.readerIndex.advanced(by: 10))
         return data
       }
 
-      private var _storage: ByteBuffer
+      private var _storage: Data
 
-      init(data: ByteBuffer) {
+      init(data: Data) {
         self._storage = data
 
         // Ensure we have at least 20 bytes.
@@ -279,7 +281,7 @@
     case v4(IPv4Packet)
 
     /// The data content of the packet.
-    public var data: ByteBuffer {
+    public var data: Data {
       switch self {
       case .v4(let packet):
         return packet.data
@@ -298,7 +300,7 @@
     /// - Parameters:
     ///   - data: The content of the packet.
     ///   - protocolFamily: The protocol family of the packet (such as AF_INET or AF_INET6).
-    public init(data: ByteBuffer, protocolFamily: UInt8) {
+    public init(data: Data, protocolFamily: UInt8) {
       assert(protocolFamily == 4)
       self = .v4(.init(data: data))
     }
