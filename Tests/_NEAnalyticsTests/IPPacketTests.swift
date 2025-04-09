@@ -38,7 +38,7 @@
       #expect(packet.fragmentOffset == 0)
       #expect(packet.timeToLive == 64)
       #expect(packet.protocol == .tcp)
-      #expect(packet.headerChecksum == 0xaaaa)
+      #expect(packet.chksum == 0xaaaa)
       #expect(packet.sourceAddress.debugDescription == "192.168.7.100")
       #expect(packet.destinationAddress.debugDescription == "192.168.7.101")
       #expect(packet.payload?.readableBytes == 32)
