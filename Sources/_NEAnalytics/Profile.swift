@@ -116,7 +116,7 @@ extension Profile {
     var cert: OpaquePointer? = nil  // <X509>
     var caCerts: OpaquePointer? = nil
 
-    let rc = try passphrase.withCString { passphrase in
+    let rc = passphrase.withCString { passphrase in
       CNIOBoringSSL_PKCS12_parse(p12, passphrase, &pkey, &cert, &caCerts)
     }
     guard rc == 1 else {

@@ -66,7 +66,7 @@ private final class NEVMESSWebSocketClientUpgrader<Output: Sendable>:
       UInt64.random(in: UInt64.min...UInt64.max, using: &generator),
       UInt64.random(in: UInt64.min...UInt64.max, using: &generator)
     )
-    return String(base64Encoding: buffer.readableBytesView)
+    return String(_base64Encoding: buffer.readableBytesView)
   }
 
   /// Generates a random WebSocket Request Key by generating 16 bytes randomly using the `SystemRandomNumberGenerator` and encoding them as a base64 string as defined in RFC6455 https://tools.ietf.org/html/rfc6455#section-4.1.
@@ -95,7 +95,7 @@ private final class NEVMESSWebSocketClientUpgrader<Output: Sendable>:
     hasher.update(data: Array(requestKey.utf8))
     hasher.update(data: Array(magicWebSocketGUID.utf8))
 
-    let expectedAcceptValue = String(base64Encoding: Array(hasher.finalize()))
+    let expectedAcceptValue = String(_base64Encoding: Array(hasher.finalize()))
 
     return expectedAcceptValue == acceptValueHeader[0]
   }

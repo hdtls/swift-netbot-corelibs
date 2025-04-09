@@ -374,9 +374,8 @@ public import _ResourceProcessing
                   includingPropertiesForKeys: nil,
                   options: [.skipsHiddenFiles]
                 )
-                .filter {
-                  try $0.pathExtension == .profilePathExtension
-                }
+                .filter { $0.pathExtension == .profilePathExtension }
+
             #else
               let fileURLs: [URL] = try FileManager.default
                 .contentsOfDirectory(atPath: readIntent.url.path(percentEncoded: false))

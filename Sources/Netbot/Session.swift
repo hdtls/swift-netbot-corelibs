@@ -61,25 +61,23 @@
 
     /// Stop current running packet tunnel.
     public func stopVPNTunnel() async {
-      do {
-        guard let manager else {
-          return
-        }
-        let session = manager.connection as! NETunnelProviderSession
-        switch session.status {
-        case .invalid: break
-        case .disconnected: break
-        case .connecting:
-          session.stopTunnel()
-        case .connected:
-          session.stopTunnel()
-        case .reasserting:
-          session.stopTunnel()
-        case .disconnecting: break
-        @unknown default:
-          assertionFailure()
-        }
-      } catch {}
+      guard let manager else {
+        return
+      }
+      let session = manager.connection as! NETunnelProviderSession
+      switch session.status {
+      case .invalid: break
+      case .disconnected: break
+      case .connecting:
+        session.stopTunnel()
+      case .connected:
+        session.stopTunnel()
+      case .reasserting:
+        session.stopTunnel()
+      case .disconnecting: break
+      @unknown default:
+        assertionFailure()
+      }
     }
 
     @discardableResult

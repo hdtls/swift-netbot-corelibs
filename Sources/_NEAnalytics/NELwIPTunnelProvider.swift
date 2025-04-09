@@ -6,7 +6,6 @@
   import CNELwIP
   import Dispatch
   import Foundation
-  public import NetworkExtension
 
   final class _NELwIPTCPListener {
 
@@ -109,7 +108,7 @@
     private let v4: _NELwIPTCPListener
     private let v6: _NELwIPTCPListener? = nil
 
-    weak var packetFlow: NEPacketTunnelFlow?
+    var packetFlow: any PacketTunnelFlow
 
     private let virtualInterface: UnsafeMutablePointer<netif>?
 
@@ -121,14 +120,14 @@
       virtualInterface?.deallocate()
     }
 
-    public init(packetFlow: NEPacketTunnelFlow) {
+    public init(packetFlow: any PacketTunnelFlow) {
       lwip_init()
 
       // Configure network interface in LwIP
       virtualInterface = UnsafeMutablePointer.allocate(capacity: MemoryLayout<netif>.size)
       virtualInterface?.initialize(to: .init())
 
-      var ipaddr = [UInt8]([198, 18, 0, 2]).withUnsafeBytes {
+      var ipaddr = [UInt8]([198, 18, 0, 1]).withUnsafeBytes {
         ip4_addr_t(addr: $0.bindMemory(to: UInt32.self).baseAddress!.pointee)
       }
 
@@ -175,53 +174,10 @@
     public func startTunnel() async throws {
       v4.start(queue: .global())
       print("NELwIPTunnelProvider start on .global() queue")
-      await readPacketsObjects()
     }
 
     public func stopTunnel() async {
       v4.cancel()
-    }
-
-    private func readPacketsObjects() async {
-      guard let packetFlow else {
-        return
-      }
-      let packetObjects = await packetFlow.readPacketObjects()
-
-      await withDiscardingTaskGroup { g in
-        g.addTask {
-          for packetObject in packetObjects where packetObject.protocolFamily == AF_INET6 {
-            packetFlow.writePacketObjects([packetObject])
-          }
-        }
-
-        g.addTask {
-          for packetObject in packetObjects where packetObject.protocolFamily == AF_INET {
-            let _packetObject = _NEPacket(
-              data: packetObject.data,
-              protocolFamily: packetObject.protocolFamily
-            )
-            // Only process TCP
-            guard _packetObject.transportLayerProtocol == .tcp else {
-              packetFlow.writePacketObjects([packetObject])
-              continue
-            }
-
-            guard let byteBuffer = pbuf_alloc(PBUF_RAW, u16_t(packetObject.data.count), PBUF_RAM)
-            else {
-              continue
-            }
-
-            packetObject.data.withUnsafeBytes { dataptr in
-              _ = pbuf_take(byteBuffer, dataptr.baseAddress, u16_t(dataptr.count))
-            }
-
-            netif_input(byteBuffer, self.virtualInterface)
-          }
-        }
-      }
-
-      await readPacketsObjects()
     }
 
     private func commonOutput(
@@ -230,8 +186,4 @@
       ERR_OK
     }
   }
-
-  extension NEPacketTunnelFlow: @retroactive @unchecked Sendable {}
-
-  extension NEPacket: @retroactive @unchecked Sendable {}
 #endif
