@@ -30,32 +30,26 @@ if Context.environment["ENABLE_NIO_POSIX"] == nil {
   swiftSettings += [.define("ENABLE_NIO_TRANSPORT_SERVICES")]
 }
 
-var dependencies: [Package.Dependency] = [
-  .package(url: "https://github.com/apple/swift-asn1.git", from: "1.0.0"),
-  .package(url: "https://github.com/apple/swift-certificates.git", from: "1.0.1"),
-  .package(url: "https://github.com/apple/swift-crypto.git", from: "3.0.0"),
-  .package(url: "https://github.com/apple/swift-http-types", from: "1.0.0"),
-  .package(url: "https://github.com/apple/swift-log.git", from: "1.4.2"),
-  .package(url: "https://github.com/apple/swift-nio.git", from: "2.32.1"),
-  .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.14.1"),
-  .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.0"),
-]
-
-if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
-  dependencies += [
-    .package(url: "https://github.com/hdtls/swift-netbot-frame-processing.git", branch: "main"),
-    .package(url: "https://github.com/hdtls/swift-netbot-essentials.git", branch: "main"),
-    .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.2.1"),
-    .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
+#if canImport(Darwin)
+  let additionalTargets: [Target] = [
+    .target(
+      name: "CNELwIP",
+      exclude: privacyManifestExclude + [
+        "hash.txt"
+      ],
+      resources: privacyManifestResource,
+      cSettings: [
+        .headerSearchPath("opt"),
+        .headerSearchPath("include"),
+        .define("LWIP_DEBUG", .when(configuration: .debug)),
+      ]
+    )
   ]
-} else {
-  dependencies += [
-    .package(path: "../swift-netbot-frame-processing"),
-    .package(path: "../swift-netbot-essentials"),
-    .package(path: "../swift-maxminddb"),
-    .package(path: "../swift-preference"),
-  ]
-}
+  let additionalDependencies: [Target.Dependency] = ["CNELwIP"]
+#else
+  let additionalTargets: [Target] = []
+  let additionalDependencies: [Target.Dependency] = []
+#endif
 
 let package = Package(
   name: "swift-netbot-corelibs",
@@ -71,7 +65,20 @@ let package = Package(
     .library(name: "_NEAnalytics", targets: ["_NEAnalytics"]),
     .library(name: "NEXPCService", targets: ["NEXPCService"]),
   ],
-  dependencies: dependencies,
+  dependencies: [
+    .package(url: "https://github.com/apple/swift-asn1.git", from: "1.0.0"),
+    .package(url: "https://github.com/apple/swift-certificates.git", from: "1.0.1"),
+    .package(url: "https://github.com/apple/swift-crypto.git", from: "3.0.0"),
+    .package(url: "https://github.com/apple/swift-http-types", from: "1.0.0"),
+    .package(url: "https://github.com/apple/swift-log.git", from: "1.4.2"),
+    .package(url: "https://github.com/apple/swift-nio.git", from: "2.32.1"),
+    .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.14.1"),
+    .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.0"),
+    .package(url: "https://github.com/hdtls/swift-netbot-frame-processing.git", branch: "main"),
+    .package(url: "https://github.com/hdtls/swift-netbot-essentials.git", branch: "main"),
+    .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.2.1"),
+    .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
+  ],
   targets: [
     .macro(
       name: "NetbotMacros",
@@ -86,14 +93,13 @@ let package = Package(
         "_PrettyDNS",
         "_PersistentStore",
         "_ResourceProcessing",
-        "CNELwIP",
         .product(name: "Anlzr", package: "swift-netbot-essentials"),
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "NIOCore", package: "swift-nio"),
         .product(name: "NIOSSL", package: "swift-nio-ssl"),
         .product(name: "Preference", package: "swift-preference"),
         .product(name: "X509", package: "swift-certificates"),
-      ],
+      ] + additionalDependencies,
       swiftSettings: swiftSettings
     ),
     .target(
@@ -119,18 +125,6 @@ let package = Package(
         .product(name: "Logging", package: "swift-log"),
       ],
       swiftSettings: swiftSettings
-    ),
-    .target(
-      name: "CNELwIP",
-      exclude: privacyManifestExclude + [
-        "hash.txt"
-      ],
-      resources: privacyManifestResource,
-      cSettings: [
-        .headerSearchPath("opt"),
-        .headerSearchPath("include"),
-        .define("LWIP_DEBUG", .when(configuration: .debug)),
-      ]
     ),
     .target(
       name: "Dashboard",
@@ -167,20 +161,13 @@ let package = Package(
       swiftSettings: swiftSettings
     ),
     .testTarget(
-      name: "_PrettyDNSTests",
-      dependencies: ["_PrettyDNS"],
-      swiftSettings: swiftSettings
-    ),
+      name: "_PrettyDNSTests", dependencies: ["_PrettyDNS"], swiftSettings: swiftSettings),
     .testTarget(
       name: "_ResourceProcessingTests",
       dependencies: ["_ResourceProcessing"],
       swiftSettings: swiftSettings
     ),
-    .testTarget(
-      name: "NetbotTests",
-      dependencies: ["Netbot"],
-      swiftSettings: swiftSettings
-    ),
+    .testTarget(name: "NetbotTests", dependencies: ["Netbot"], swiftSettings: swiftSettings),
     .testTarget(
       name: "NetbotMacrosTests",
       dependencies: [
@@ -189,5 +176,5 @@ let package = Package(
       ],
       swiftSettings: swiftSettings
     ),
-  ]
+  ] + additionalTargets
 )
