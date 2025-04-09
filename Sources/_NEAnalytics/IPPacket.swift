@@ -145,7 +145,7 @@
       /// The IPv4 header checksum used for error checking of the header.
       public var chksum: UInt16 {
         let data = _storage.getSlice(at: _storage.readerIndex, length: internetHeaderLength * 4)!
-        return chksum(data, zeroization: true)
+        return _chksum(data, zeroization: true)
       }
 
       /// The IPv4 address of the sender of the packet.
@@ -247,31 +247,6 @@
         if bytesNeeded > 0 {
           self._storage.writeRepeatingByte(0, count: bytesNeeded)
         }
-      }
-
-      private func chksum(_ data: ByteBuffer, zeroization: Bool = false, ofsset: Int = 10) -> UInt16
-      {
-        var sum = UInt32.zero
-
-        var i = 0
-        while i < data.count {
-          // Skip the checksum field itself (assumed to be at offset 10 in 8-bit words)
-          if zeroization && i == ofsset {
-            i += 2
-            continue
-          }
-          // Sum all 16-bit words
-          let word = UInt16(data[i]) << 8 | (i + 1 < data.count ? UInt16(data[i + 1]) : 0)
-          sum += UInt32(word)
-          i += 2
-        }
-
-        // Fold 32-bit sum to 16 bits
-        while sum >> 16 != 0 {
-          sum = (sum & 0xFFFF) + (sum >> 16)
-        }
-
-        return ~UInt16(sum)
       }
 
       public var customMirror: Mirror {

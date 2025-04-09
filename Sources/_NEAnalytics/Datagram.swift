@@ -3,97 +3,83 @@
 //
 
 #if ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING
-  #if canImport(FoundationEssentials)
-    import FoundationEssentials
-  #else
-    import Foundation
-  #endif
+  import NIOCore
 
   struct Datagram: Hashable, Sendable {
+
+    typealias Data = ByteBuffer
 
     /// The sender's port.
     var sourcePort: UInt16 {
       get {
-        data.subdata(in: 0..<2).withUnsafeBytes {
-          $0.load(as: UInt16.self).bigEndian
-        }
+        _storage.getInteger(at: _storage.readerIndex)!
       }
       set {
-        var newValue = newValue.bigEndian
-        withUnsafeBytes(of: &newValue) {
-          _data.replaceSubrange(0..<2, with: Data($0))
-        }
+        _storage.setInteger(newValue, at: _storage.readerIndex)
       }
     }
 
     /// The receiver's port.
     var destinationPort: UInt16 {
       get {
-        data.subdata(in: 2..<4).withUnsafeBytes {
-          $0.load(as: UInt16.self).bigEndian
-        }
+        let position = _storage.index(_storage.readerIndex, offsetBy: MemoryLayout<UInt16>.size)
+        return _storage.getInteger(at: position)!
       }
       set {
-        var newValue = newValue.bigEndian
-        withUnsafeBytes(of: &newValue) {
-          _data.replaceSubrange(2..<4, with: Data($0))
-        }
+        let position = _storage.index(_storage.readerIndex, offsetBy: MemoryLayout<UInt16>.size)
+        _storage.setInteger(newValue, at: position)
       }
     }
 
-    /// The length in bytes of the UDP datagram
-    var length: Int {
+    /// The length in bytes of the UDP datagram, including header and payload.
+    var totalLength: UInt16 {
       get {
-        data.subdata(in: 4..<6).withUnsafeBytes {
-          Int($0.load(as: UInt16.self).bigEndian)
-        }
+        let position = _storage.index(_storage.readerIndex, offsetBy: MemoryLayout<UInt16>.size * 2)
+        return _storage.getInteger(at: position, as: UInt16.self)!
       }
       set {
-        assert(newValue >= 8)
-        assert(newValue <= UInt16.max)
-        var newValue = newValue.bigEndian
-        withUnsafeBytes(of: &newValue) {
-          _data.replaceSubrange(4..<6, with: Data($0))
-        }
+        let position = _storage.index(_storage.readerIndex, offsetBy: MemoryLayout<UInt16>.size * 2)
+        _storage.setInteger(newValue, at: position)
       }
     }
 
-    /// The checksum field may be used for error-checking of the header and data. This field is optional in IPv4, and mandatory in most
-    /// cases in IPv6.
-    var checksum: UInt16 {
-      get {
-        data.subdata(in: 6..<8).withUnsafeBytes {
-          $0.load(as: UInt16.self).bigEndian
-        }
-      }
-      set {
-        assert(newValue >= 8)
-        assert(newValue <= UInt16.max)
-        var newValue = newValue.bigEndian
-        withUnsafeBytes(of: &newValue) {
-          _data.replaceSubrange(6..<8, with: Data($0))
-        }
-      }
+    /// The checksum field may be used for error-checking of the header and data.
+    /// This field is optional in IPv4, and mandatory in most cases in IPv6.
+    var chksum: UInt16 {
+      _chksum(data, pseudoFields: pseudoFields, zeroization: true)
     }
 
     /// The payload of the UDP packet.
-    var payload: Data {
+    var payload: Data? {
       get {
-        data.suffix(from: 8)
+        return data[8...]
       }
       set {
-        _data = _data.prefix(upTo: 8) + newValue
-        length = _data.count > UInt16.max ? 0 : _data.count
+        if let newValue {
+          _storage.replaceSubrange(8..., with: newValue)
+        } else {
+          _storage.removeSubrange(8...)
+        }
+        totalLength = UInt16(truncatingIfNeeded: _storage.count)
       }
     }
 
+    /// Datagram data.
     var data: Data {
-      _data
+      var data = _storage
+      data.setInteger(chksum, at: data.index(data.startIndex, offsetBy: 6))
+      return data
     }
-    private var _data: Data
 
-    init(data: Data) {
-      _data = data
+    /// Pseudo fields for chksum calculation, including fields from IP headers.
+    var pseudoFields: PseudoFields
+
+    private var _storage: Data
+
+    init(data: Data, pseudoFields: PseudoFields) {
+      assert(data.count >= MemoryLayout<UInt16>.size * 4)
+      _storage = data
+      self.pseudoFields = pseudoFields
     }
   }
 #endif
