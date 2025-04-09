@@ -23,29 +23,26 @@
       /// maximum value is 15; this means that the maximum size of the IPv4 header is 15 × 32 bits = 480 bits = 60 bytes.
       public var internetHeaderLength: Int {
         get {
-          let position = _storage.readerIndex
-          return Int(_storage.getInteger(at: position, as: UInt8.self)! & 0b0000_1111)
+          Int(_storage[_storage.startIndex] & 0b0000_1111)
         }
         set {
           precondition(newValue <= 15)
           precondition(newValue >= 5)
-          let position = _storage.readerIndex
-          let newValue = _storage.getInteger(at: position)! & 0b1111_0000 | UInt8(newValue)
-          _storage.setInteger(newValue, at: position)
+          let newValue = _storage[_storage.startIndex] & 0b1111_0000 | UInt8(newValue)
+          _storage[_storage.startIndex] = newValue
         }
       }
 
       /// DSCP originally defined as the type of service (ToS), this field specifies differentiated services (DiffServ).
       public var differentiatedServicesCodePoint: UInt8 {
         get {
-          let position = _storage.readerIndex.advanced(by: 1)
-          return (_storage.getInteger(at: position)! >> 2) & 0b0011_1111
+          return (_storage[_storage.index(after: _storage.startIndex)] >> 2) & 0b0011_1111
         }
         set {
-          let position = _storage.readerIndex.advanced(by: 1)
           // Ensure DSCP is valid (6-bit value)
           let validatedDSCP = min(newValue, 0x3F)
-          _storage.setInteger((validatedDSCP << 2) | explicitCongestionNotification, at: position)
+          let index = _storage.index(after: _storage.startIndex)
+          _storage[index] = (validatedDSCP << 2) | explicitCongestionNotification
         }
       }
 
@@ -53,24 +50,23 @@
       /// ECN is an optional feature available when both endpoints support it and effective when also supported by the underlying network.
       public var explicitCongestionNotification: UInt8 {
         get {
-          let position = _storage.readerIndex.advanced(by: 1)
-          return _storage.getInteger(at: position)! & 0b0000_0011
+          return _storage[_storage.index(after: _storage.startIndex)] & 0b0000_0011
         }
         set {
-          let position = _storage.readerIndex.advanced(by: 1)
+          let position = _storage.index(after: _storage.startIndex)
           let validatedECN = min(newValue, 0b000_0011)
-          var dscpAndECN = _storage.getInteger(at: position, as: UInt8.self)!
+          var dscpAndECN = _storage[position]
           // Clear ECN and set new value
           dscpAndECN &= 0xFC
           dscpAndECN |= validatedECN
-          _storage.setInteger(dscpAndECN, at: position)
+          _storage[position] = dscpAndECN
         }
       }
 
       /// This 16-bit field defines the entire packet size in bytes, including header and data.
       public var totalLength: Int {
         get {
-          let position = _storage.readerIndex.advanced(by: 2)
+          let position = _storage.index(_storage.readerIndex, offsetBy: 2)
           return Int(_storage.getInteger(at: position, as: UInt16.self)!)
         }
         set {
@@ -157,24 +153,20 @@
       /// The IPv4 address of the sender of the packet.
       public var sourceAddress: IPv4Address {
         get {
-          let position = _storage.readerIndex.advanced(by: 12)
-          return IPv4Address(.init(_storage.getBytes(at: position, length: 4)!))!
+          return IPv4Address(.init(_storage[12..<16]))!
         }
         set {
-          let position = _storage.readerIndex.advanced(by: 12)
-          _storage.setBytes(newValue.rawValue, at: position)
+          _storage.replaceSubrange(12..<16, with: newValue.rawValue)
         }
       }
 
       /// The IPv4 address of the intended receiver of the packet.
       public var destinationAddress: IPv4Address {
         get {
-          let position = _storage.readerIndex.advanced(by: 16)
-          return IPv4Address(.init(_storage.getBytes(at: position, length: 4)!))!
+          return IPv4Address(.init(_storage[16..<20]))!
         }
         set {
-          let position = _storage.readerIndex.advanced(by: 16)
-          _storage.setBytes(newValue.rawValue, at: position)
+          _storage[16..<20] = Array(newValue.rawValue)
         }
       }
 
@@ -189,39 +181,34 @@
           return _storage.getSlice(at: position, length: length)
         }
         set {
-          // Payload deponds on internetHeaderLength, after options data changed,
-          // internetHeaderLength should also be changed, so we need a require payload before we
-          // make any changes of IP header.
-          let payload = payload
-          var bytesToWrite: ByteBuffer?
-
-          if let newValue {
-            bytesToWrite = newValue
-
-            // IHL is always a multiple of 4, so if new options data count is not multiple of 4
-            // we need fill zero to make it a multiple of 4.
-            if newValue.readableBytes % 4 != 0 {
-              let bytesNeeded = 4 - newValue.readableBytes % 4
-              bytesToWrite?.writeBytes(Array(repeating: UInt8.zero, count: bytesNeeded))
+          guard var newValue else {
+            guard let options else {
+              // Do nothing if original packet does not contains options.
+              return
             }
-          }
-
-          if let bytesToWrite {
-            internetHeaderLength = (20 + bytesToWrite.readableBytes) / 4
-          } else {
+            _storage.removeSubrange(20..<20 + options.count)
             internetHeaderLength = 5
+            totalLength = _storage.count
+            return
           }
 
-          if let payload = payload {
-            bytesToWrite.setOrWriteImmutableBuffer(payload)
+          // IHL is always a multiple of 4, so if new options data count is not multiple of 4
+          // we need fill zero to make it a multiple of 4.
+          if newValue.count % 4 != 0 {
+            let bytesNeeded = 4 - newValue.count % 4
+            newValue.append(contentsOf: Array(repeating: UInt8.zero, count: bytesNeeded))
           }
 
-          _storage.moveWriterIndex(to: _storage.readerIndex.advanced(by: 20))
-          if let bytesToWrite {
-            _storage.writeImmutableBuffer(bytesToWrite)
+          guard let options else {
+            _storage.insert(contentsOf: newValue, at: 20)
+            internetHeaderLength = 5 + newValue.count / 4
+            totalLength = _storage.count
+            return
           }
 
-          totalLength = _storage.readableBytes
+          _storage.replaceSubrange(20..<20 + options.count, with: newValue)
+          internetHeaderLength = 5 + newValue.count / 4
+          totalLength = _storage.count
         }
       }
 
@@ -229,21 +216,18 @@
       public var payload: ByteBuffer? {
         get {
           let l = internetHeaderLength * 4
-          guard _storage.readableBytes > l else {
+          guard _storage.count > l else {
             return nil
           }
-          return
-            _storage
-            .getSlice(
-              at: _storage.readerIndex.advanced(by: l),
-              length: _storage.readableBytes - l
-            )
+          return _storage[l...]
         }
         set {
-          _storage.moveWriterIndex(to: _storage.readerIndex.advanced(by: internetHeaderLength * 4))
-          if let newValue {
-            _storage.writeImmutableBuffer(newValue)
+          guard let newValue else {
+            _storage.removeSubrange((internetHeaderLength * 4)...)
+            totalLength = internetHeaderLength * 4
+            return
           }
+          _storage[(internetHeaderLength * 4)...] = newValue
           totalLength = _storage.readableBytes
         }
       }
