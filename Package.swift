@@ -7,50 +7,6 @@
 import CompilerPluginSupport
 import PackageDescription
 
-// This doesn't work when cross-compiling: the privacy manifest will be included in the Bundle and
-// Foundation will be linked. This is, however, strictly better than unconditionally adding the
-// resource.
-#if canImport(Darwin)
-  let privacyManifestExclude: [String] = []
-  let privacyManifestResource: [PackageDescription.Resource] = [.copy("PrivacyInfo.xcprivacy")]
-#else
-  // Exclude on other platforms to avoid build warnings.
-  let privacyManifestExclude: [String] = ["PrivacyInfo.xcprivacy"]
-  let privacyManifestResource: [PackageDescription.Resource] = []
-#endif
-
-var swiftSettings: [SwiftSetting] = [
-  .enableExperimentalFeature("AccessLevelOnImport"),
-  .enableUpcomingFeature("InternalImportsByDefault"),
-  .define("EXTENDED_ALL"),
-  .define("ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING"),
-]
-
-if Context.environment["ENABLE_NIO_POSIX"] == nil {
-  swiftSettings += [.define("ENABLE_NIO_TRANSPORT_SERVICES")]
-}
-
-#if canImport(Darwin)
-  let additionalTargets: [Target] = [
-    .target(
-      name: "CNELwIP",
-      exclude: privacyManifestExclude + [
-        "hash.txt"
-      ],
-      resources: privacyManifestResource,
-      cSettings: [
-        .headerSearchPath("opt"),
-        .headerSearchPath("include"),
-        .define("LWIP_DEBUG", .when(configuration: .debug)),
-      ]
-    )
-  ]
-  let additionalDependencies: [Target.Dependency] = ["CNELwIP"]
-#else
-  let additionalTargets: [Target] = []
-  let additionalDependencies: [Target.Dependency] = []
-#endif
-
 let package = Package(
   name: "swift-netbot-corelibs",
   platforms: [
@@ -99,42 +55,37 @@ let package = Package(
         .product(name: "NIOSSL", package: "swift-nio-ssl"),
         .product(name: "Preference", package: "swift-preference"),
         .product(name: "X509", package: "swift-certificates"),
-      ] + additionalDependencies,
-      swiftSettings: swiftSettings
+      ]
     ),
     .target(
       name: "_PersistentStore",
       dependencies: [
         .product(name: "Logging", package: "swift-log"),
         .product(name: "Preference", package: "swift-preference"),
-      ],
-      swiftSettings: swiftSettings
+      ]
     ),
     .target(
       name: "_PrettyDNS",
       dependencies: [
         .product(name: "NIOCore", package: "swift-nio"),
         .product(name: "NEAddressProcessing", package: "swift-netbot-frame-processing"),
-      ],
-      swiftSettings: swiftSettings
+      ]
     ),
     .target(
       name: "_ResourceProcessing",
       dependencies: [
         .product(name: "HTTPTypes", package: "swift-http-types"),
         .product(name: "Logging", package: "swift-log"),
-      ],
-      swiftSettings: swiftSettings
+      ]
     ),
     .target(
       name: "Dashboard",
       dependencies: [
         "_PersistentStore",
         .product(name: "AnlzrReports", package: "swift-netbot-essentials"),
-      ],
-      swiftSettings: swiftSettings
+      ]
     ),
-    .target(name: "DashboardUI", dependencies: ["Dashboard"], swiftSettings: swiftSettings),
+    .target(name: "DashboardUI", dependencies: ["Dashboard"]),
     .target(
       name: "Netbot",
       dependencies: [
@@ -147,34 +98,64 @@ let package = Package(
         .product(name: "Preference", package: "swift-preference"),
         .product(name: "SwiftASN1", package: "swift-asn1"),
         .product(name: "X509", package: "swift-certificates"),
-      ],
-      swiftSettings: swiftSettings
+      ]
     ),
     .target(name: "NEXPCService"),
     .testTarget(
       name: "_NEAnalyticsTests",
       dependencies: ["_NEAnalytics"],
-      exclude: [
-        "External Resource/4a79917602f5e63d3fb28166ded4b8f5",
-        "External Resource/24e84f0f66c2bcd5582519b4a76f2ffe",
-      ],
-      swiftSettings: swiftSettings
+      exclude: ["External Resource"]
     ),
-    .testTarget(
-      name: "_PrettyDNSTests", dependencies: ["_PrettyDNS"], swiftSettings: swiftSettings),
-    .testTarget(
-      name: "_ResourceProcessingTests",
-      dependencies: ["_ResourceProcessing"],
-      swiftSettings: swiftSettings
-    ),
-    .testTarget(name: "NetbotTests", dependencies: ["Netbot"], swiftSettings: swiftSettings),
+    .testTarget(name: "_PrettyDNSTests", dependencies: ["_PrettyDNS"]),
+    .testTarget(name: "_ResourceProcessingTests", dependencies: ["_ResourceProcessing"]),
+    .testTarget(name: "NetbotTests", dependencies: ["Netbot"]),
     .testTarget(
       name: "NetbotMacrosTests",
       dependencies: [
         "NetbotMacros",
         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
-      ],
-      swiftSettings: swiftSettings
+      ]
     ),
-  ] + additionalTargets
+  ]
 )
+
+#if canImport(Darwin)
+  // This doesn't work when cross-compiling: the privacy manifest will be included in the Bundle and
+  // Foundation will be linked. This is, however, strictly better than unconditionally adding the
+  // resource.
+  #if canImport(Darwin)
+    let privacyManifestExclude: [String] = []
+    let privacyManifestResource: [PackageDescription.Resource] = [.copy("PrivacyInfo.xcprivacy")]
+  #else
+    // Exclude on other platforms to avoid build warnings.
+    let privacyManifestExclude: [String] = ["PrivacyInfo.xcprivacy"]
+    let privacyManifestResource: [PackageDescription.Resource] = []
+  #endif
+
+  // There is some issues that make CNELwIP unavailable on non-Darwin platform.
+  package.targets.append(
+    .target(
+      name: "CNELwIP",
+      exclude: privacyManifestExclude + [
+        "hash.txt"
+      ],
+      resources: privacyManifestResource,
+      cSettings: [
+        .headerSearchPath("opt"),
+        .headerSearchPath("include"),
+        .define("LWIP_DEBUG", .when(configuration: .debug)),
+      ]
+    )
+  )
+  package.targets.first(where: { $0.name == "_NEAnalytics" })?.dependencies.append("CNELwIP")
+#endif
+
+for target in package.targets {
+  var settings = target.swiftSettings ?? []
+  settings.append(.enableExperimentalFeature("AccessLevelOnImport"))
+  settings.append(.enableUpcomingFeature("InternalImportsByDefault"))
+  settings.append(.define("EXTENDED_ALL"))
+  settings.append(.define("ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING"))
+  settings.append(.define("ENABLE_NIO_TRANSPORT_SERVICES"))
+  target.swiftSettings = settings
+}
