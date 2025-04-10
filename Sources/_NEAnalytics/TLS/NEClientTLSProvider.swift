@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information
 //
 
-private import Dispatch
+import Dispatch
 import NIOCore
-private import SwiftASN1
-private import X509
+import SwiftASN1
+import X509
+import NIOSSL
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
@@ -14,11 +15,9 @@ private import X509
 #endif
 
 #if canImport(Network) && ENABLE_NIO_TRANSPORT_SERVICES
-  private import Network
-  private import NIOTransportServices
-  private import Security
-#else
-  import NIOSSL
+  import Network
+  import NIOTransportServices
+  import Security
 #endif
 
 private let offlineQueue = DispatchQueue(label: "com.tenbits.AnalyzerBot.tls.offline.queue")

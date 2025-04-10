@@ -152,8 +152,6 @@ let package = Package(
 
 for target in package.targets {
   var settings = target.swiftSettings ?? []
-  settings.append(.enableExperimentalFeature("AccessLevelOnImport"))
-  settings.append(.enableUpcomingFeature("InternalImportsByDefault"))
   settings.append(.define("EXTENDED_ALL"))
   settings.append(.define("ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING"))
   settings.append(.define("ENABLE_NIO_TRANSPORT_SERVICES"))

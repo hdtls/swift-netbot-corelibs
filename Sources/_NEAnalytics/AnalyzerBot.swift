@@ -2,23 +2,23 @@
 // See LICENSE.txt for license information
 //
 
-public import Anlzr
-private import AnlzrReports
+import Anlzr
+import AnlzrReports
 import Logging
-public import MaxMindDB
-private import NIOConcurrencyHelpers
-public import NIOSSL
-public import _ResourceProcessing
-
+import MaxMindDB
+import NIOConcurrencyHelpers
+import NIOSSL
+import _ResourceProcessing
+import _PersistentStore
 #if canImport(Darwin)
-  private import Foundation
+  import Foundation
 #else
-  private import FoundationEssentials
-  private import class Foundation.UserDefaults
+  import FoundationEssentials
+  import class Foundation.UserDefaults
 #endif
 
 #if canImport(Darwin)
-  private import UserNotifications
+  import UserNotifications
 #endif
 
 /// Assistant to manage PacketTunnelProvider and NIO proxy servers backend.

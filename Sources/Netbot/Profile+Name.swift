@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information
 //
 
+import _ResourceProcessing
+
 extension Profile {
   public var name: String {
     url.deletingPathExtension().lastPathComponent

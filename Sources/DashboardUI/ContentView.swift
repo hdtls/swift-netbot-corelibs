@@ -3,8 +3,10 @@
 //
 
 #if os(macOS)
-  public import Dashboard
-  public import SwiftUI
+import AnlzrReports
+import _PersistentStore
+  import Dashboard
+  import SwiftUI
 
   @available(iOS 17.0, macOS 14.0, *)
   @available(tvOS, unavailable)

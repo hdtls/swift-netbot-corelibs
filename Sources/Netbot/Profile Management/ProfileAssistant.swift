@@ -2,19 +2,19 @@
 // See LICENSE.txt for license information
 //
 
-public import Logging
-public import _ResourceProcessing
+import Logging
+import _ResourceProcessing
 
 #if canImport(FoundationEssentials)
-  public import FoundationEssentials
-  private import FoundationInternationalization
+  import FoundationEssentials
+  import FoundationInternationalization
 #else
-  public import Foundation
-  private import UniformTypeIdentifiers
+  import Foundation
+  import UniformTypeIdentifiers
 #endif
 
 #if canImport(SwiftData)
-  public import SwiftData
+  import SwiftData
 #endif
 
 @available(swift 5.9)

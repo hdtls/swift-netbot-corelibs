@@ -3,7 +3,7 @@
 //
 
 #if !canImport(FoundationEssentials)
-  private import Foundation
+  import Foundation
 #else
 
   // swift-format-ignore: AlwaysUseLowerCamelCase

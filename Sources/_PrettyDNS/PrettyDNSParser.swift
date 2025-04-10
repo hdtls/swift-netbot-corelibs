@@ -3,7 +3,7 @@
 //
 
 import NEAddressProcessing
-public import NIOCore
+import NIOCore
 
 public struct PrettyDNSParser: Sendable {
 

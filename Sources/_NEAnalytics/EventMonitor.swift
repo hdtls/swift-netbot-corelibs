@@ -2,19 +2,20 @@
 // See LICENSE.txt for license information
 //
 
-@_exported public import Anlzr
-@_exported public import Logging
-@_exported public import MaxMindDB
-private import NIOConcurrencyHelpers
-private import NIOCore
-@_exported public import Preference
-@_exported public import _ResourceProcessing
+import Anlzr
+import Logging
+import MaxMindDB
+import NIOConcurrencyHelpers
+import NIOCore
+import Preference
+import _ResourceProcessing
+import _PersistentStore
 
 #if canImport(FoundationEssentials)
-  public import FoundationEssentials
-  private import FoundationNetworking
+  import FoundationEssentials
+  import FoundationNetworking
 #else
-  public import Foundation
+  import Foundation
 #endif
 
 public protocol EventMonitorDelegate: AnyObject, Sendable {

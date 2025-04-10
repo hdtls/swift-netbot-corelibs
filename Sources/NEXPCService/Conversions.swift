@@ -3,8 +3,8 @@
 //
 
 #if os(macOS)
-  public import Foundation
-  private import os
+  import Foundation
+  import os
 
   extension NSXPCConnection {
 

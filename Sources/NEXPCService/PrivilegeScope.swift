@@ -3,9 +3,9 @@
 //
 
 #if os(macOS)
-  public import Foundation
-  private import ServiceManagement
-  public import os
+  import Foundation
+  import ServiceManagement
+  import os
 
   @globalActor public actor PrivilegeScope {
 

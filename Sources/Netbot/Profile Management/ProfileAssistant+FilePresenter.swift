@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information
 //
 
-private import Preference
-private import _PersistentStore
+import Preference
+import _PersistentStore
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

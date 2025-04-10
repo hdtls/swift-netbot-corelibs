@@ -3,7 +3,7 @@
 //
 
 #if canImport(SwiftUI)
-  public import SwiftUI
+  import SwiftUI
 
   extension EnvironmentValues {
 

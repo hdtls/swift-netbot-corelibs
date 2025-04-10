@@ -3,8 +3,8 @@
 //
 
 #if ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING
-  private import NIOCore
-  private import AsyncDNSResolver
+  import NIOCore
+  import AsyncDNSResolver
 
   public actor __AnalyzerBot {
 

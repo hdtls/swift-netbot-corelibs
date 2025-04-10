@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-public import NIOCore
+import NIOCore
 
 extension ByteBuffer {
 

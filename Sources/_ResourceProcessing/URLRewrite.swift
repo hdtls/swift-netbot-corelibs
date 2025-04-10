@@ -3,9 +3,9 @@
 //
 
 #if canImport(FoundationEssentials)
-  public import FoundationEssentials
+  import FoundationEssentials
 #else
-  public import Foundation
+  import Foundation
 #endif
 
 /// An URL rewrite representation object, define how to navigates the user from a source URL to a target URL with

@@ -3,8 +3,8 @@
 //
 
 #if ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING
-  public import NEAddressProcessing
-  public import NIOCore
+  import NEAddressProcessing
+  import NIOCore
 
   /// An `IPPacket` object represents the data, protocol family associated with an IP packet.
   public enum IPPacket: Hashable, Sendable {

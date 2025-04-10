@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-public import NEAddressProcessing
+import NEAddressProcessing
 
 /// `QTYPE` fields appear in the question part of a query, define the type of the question.
 public struct QTYPE: Hashable, Sendable, RawRepresentable {

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+import _ResourceProcessing
 import RegexBuilder
 
 extension AnyProxy {

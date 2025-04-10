@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information
 //
 
-public import HTTPTypes
+import HTTPTypes
 
 #if canImport(FoundationEssentials)
-  public import FoundationEssentials
+  import FoundationEssentials
 #else
-  public import Foundation
+  import Foundation
 #endif
 
 extension HTTPFields {

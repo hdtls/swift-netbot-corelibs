@@ -3,9 +3,9 @@
 //
 
 #if canImport(FoundationEssentials)
-  public import FoundationEssentials
+  import FoundationEssentials
 #else
-  public import Foundation
+  import Foundation
 #endif
 
 /// An object that encapsualtes the performance metrics during the execution of a network speed test.

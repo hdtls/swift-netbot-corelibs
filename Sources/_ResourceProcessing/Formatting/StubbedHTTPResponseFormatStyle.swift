@@ -5,9 +5,9 @@
 import HTTPTypes
 
 #if canImport(FoundationEssentials)
-  public import FoundationEssentials
+  import FoundationEssentials
 #else
-  public import Foundation
+  import Foundation
 #endif
 
 extension StubbedHTTPResponse {

@@ -5,7 +5,7 @@
 import Anlzr
 import AnlzrReports
 import Logging
-private import NEAddressProcessing
+import NEAddressProcessing
 import NESS
 import NIOCore
 

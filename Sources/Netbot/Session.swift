@@ -3,9 +3,9 @@
 //
 
 #if canImport(Darwin)
-  public import Foundation
-  public import Logging
-  @preconcurrency private import NetworkExtension
+  import Foundation
+  import Logging
+  @preconcurrency import NetworkExtension
 
   /// NETunnelProviderSession wrapper.
   @globalActor public actor Session {

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-@_exported public import Preference
+import Preference
 
 public enum RequestFilterStrategy: Int, CaseIterable, Hashable, Sendable {
   case noFilter

@@ -3,9 +3,9 @@
 //
 
 #if canImport(FoundationEssentials)
-  public import class Foundation.UserDefaults
+  import class Foundation.UserDefaults
 #else
-  public import Foundation
+  import Foundation
 #endif
 
 public enum Prefs {

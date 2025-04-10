@@ -3,17 +3,17 @@
 //
 
 #if canImport(Darwin)
-  private import Darwin
-  private import Logging
-  public import Network
-  private import NIOCore
-  private import NIOConcurrencyHelpers
-  private import UserNotifications
+  import Darwin
+  import Logging
+  import Network
+  import NIOCore
+  import NIOConcurrencyHelpers
+  import UserNotifications
 
   #if os(iOS)
-    private import NetworkExtension
+    import NetworkExtension
   #else
-    private import CoreWLAN
+    import CoreWLAN
   #endif
 
   /// A wrap class for `NWPathMonitor` providing default `pathUpdateHandler`.

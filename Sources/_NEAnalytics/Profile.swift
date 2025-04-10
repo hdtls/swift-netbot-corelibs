@@ -3,16 +3,18 @@
 //
 
 import Anlzr
-private import CNIOBoringSSL
-private import SwiftASN1
-private import X509
-private import _CryptoExtras
+import CNIOBoringSSL
+import SwiftASN1
+import X509
+import _CryptoExtras
+import _ResourceProcessing
+import _PersistentStore
 
 #if canImport(FoundationEssentials)
-  private import FoundationEssentials
-  private import class Foundation.UserDefaults
+  import FoundationEssentials
+  import class Foundation.UserDefaults
 #else
-  private import Foundation
+  import Foundation
 #endif
 
 extension Profile {

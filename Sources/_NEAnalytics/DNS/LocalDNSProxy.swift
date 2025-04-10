@@ -3,12 +3,12 @@
 //
 
 #if ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING
-  internal import NIOCore
-  private import AsyncDNSResolver
-  private import NEAddressProcessing
-  private import AnlzrReports
-  private import Dispatch
-  internal import _PrettyDNS
+  import NIOCore
+  import AsyncDNSResolver
+  import NEAddressProcessing
+  import AnlzrReports
+  import Dispatch
+  import _PrettyDNS
 
   internal typealias ARecord = _PrettyDNS.ARecord
   internal typealias NSRecord = _PrettyDNS.NSRecord

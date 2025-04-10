@@ -6,7 +6,7 @@
   import FoundationEssentials
   import class Foundation.OperationQueue
   import struct Foundation.URLResourceKey
-  private import Synchronization
+  import Synchronization
 
   struct NSFileVersion {}
 

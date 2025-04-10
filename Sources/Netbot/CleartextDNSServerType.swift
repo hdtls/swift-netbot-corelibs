@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-public import Preference
+import Preference
 
 public enum CleartextDnsServerType: String, CaseIterable, Hashable {
 

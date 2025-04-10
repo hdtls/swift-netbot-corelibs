@@ -3,9 +3,9 @@
 //
 
 #if canImport(FoundationEssentials)
-  public import FoundationEssentials
+  import FoundationEssentials
 #else
-  public import Foundation
+  import Foundation
 #endif
 
 /// A HTTP fields modification representation object, define how to modify mached request header fields.

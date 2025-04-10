@@ -3,7 +3,8 @@
 //
 
 #if os(macOS)
-  public import Foundation
+  import Foundation
+  import ServiceManagement
 
   /// XPCServiceHandleProtocol is the NSXPCConnection-based protocol implemented by the XPC service and called by the app.
   ///

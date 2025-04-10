@@ -3,7 +3,7 @@
 //
 
 #if os(macOS)
-  public import Foundation
+  import Foundation
 
   @objc public protocol AuthorizationHandleProtocol: Sendable {
 

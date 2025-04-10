@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-@_exported public import AnlzrReports
+import AnlzrReports
 
 extension Connection.State {
 

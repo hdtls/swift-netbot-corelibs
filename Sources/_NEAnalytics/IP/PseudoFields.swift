@@ -7,20 +7,20 @@
   import NIOCore
 
   /// Pseudo fields for datagram.
-  struct PseudoFields: Hashable, Sendable {
+  public struct PseudoFields: Hashable, Sendable {
 
     /// The IPv4 address of the sender of the packet.
-    var sourceAddress: IPv4Address
+    public var sourceAddress: IPv4Address
 
     /// The IPv4 address of the intended receiver of the packet.
-    var destinationAddress: IPv4Address
+    public var destinationAddress: IPv4Address
 
-    var zero = UInt8.zero
+    public var zero = UInt8.zero
 
     /// Protocol used in the data portion of the IP datagram.
-    var `protocol`: NIOIPProtocol
+    public var `protocol`: NIOIPProtocol
 
     /// Length of datagram data.
-    var dataLength: UInt16
+    public var dataLength: UInt16
   }
 #endif

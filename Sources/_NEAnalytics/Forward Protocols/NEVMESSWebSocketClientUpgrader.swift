@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information
 //
 
+import Anlzr
 import Crypto
 import NEAddressProcessing
 import NEVMESS
 import NIOCore
 import NIOHTTP1
-private import NIOWebSocket
+import NIOWebSocket
+import _ResourceProcessing
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

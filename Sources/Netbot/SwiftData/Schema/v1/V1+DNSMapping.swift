@@ -2,9 +2,11 @@
 // See LICENSE.txt for license information
 //
 
+import _ResourceProcessing
+
 #if canImport(SwiftData)
-  public import Foundation
-  public import SwiftData
+  import Foundation
+  import SwiftData
 
   @available(swift 5.9)
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)

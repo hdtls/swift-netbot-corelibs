@@ -3,9 +3,9 @@
 //
 
 #if os(macOS)
-  public import AnlzrReports
-  private import AppKit
-  public import SwiftUI
+  import AnlzrReports
+  import AppKit
+  import SwiftUI
 
   extension ProcessReport {
 

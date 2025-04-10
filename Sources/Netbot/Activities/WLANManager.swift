@@ -3,7 +3,7 @@
 //
 
 #if os(macOS)
-  @_exported public import CoreWLAN
+  import CoreWLAN
   import Foundation
   import Observation
   import Logging

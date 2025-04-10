@@ -3,12 +3,12 @@
 //
 
 #if canImport(SwiftData)
-  @_exported public import AnlzrReports
-  private import CoreData
-  private import Dispatch
-  private import Foundation
-  @_exported public import Observation
-  @_exported public import SwiftData
+  import AnlzrReports
+  import CoreData
+  import Dispatch
+  import Foundation
+  import Observation
+  import SwiftData
 
   @ModelActor private actor RecentConnectionsModelActor {
     typealias Element = Connection.PersistentModel

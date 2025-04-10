@@ -3,9 +3,9 @@
 //
 
 #if canImport(Darwin)
-  private import Foundation
-  public import Logging
-  private import os
+  import Foundation
+  import Logging
+  import os
 
   /// `LogHandler` is a simple implementation of `Logging.LogHandler` for directing
   /// `Logger` output to system log via the factory methods.

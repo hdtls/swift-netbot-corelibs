@@ -5,7 +5,8 @@
 import Anlzr
 import AnlzrReports
 import Crypto
-private import NEPrettyBytes
+import NEPrettyBytes
+import _ResourceProcessing
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

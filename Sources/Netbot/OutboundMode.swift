@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information
 //
 
-public import Preference
+import Preference
 
 #if canImport(Darwin)
-  private import Foundation
+  import Foundation
 #endif
 
 /// The network outbound mode.

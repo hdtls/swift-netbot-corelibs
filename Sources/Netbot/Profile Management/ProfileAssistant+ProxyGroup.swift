@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information
 //
 
+import _ResourceProcessing
+
 #if canImport(SwiftUI)
-  public import Foundation
-  private import SwiftUI
+  import Foundation
+  import SwiftUI
 #else
-  public import struct Foundation.IndexSet
+  import struct Foundation.IndexSet
 #endif
 
 /// `AnyProxyGroup` management

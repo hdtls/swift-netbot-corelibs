@@ -3,9 +3,9 @@
 //
 
 #if ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING
-  private import Atomics
+  import Atomics
   import NEAddressProcessing
-  private import NIOCore
+  import NIOCore
 
   extension IPv4Address {
 

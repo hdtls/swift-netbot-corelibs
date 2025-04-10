@@ -3,7 +3,7 @@
 //
 
 #if canImport(Darwin)
-  private import CoreLocation
+  import CoreLocation
   import Logging
 
   @available(iOS 14.0, macOS 11.0, tvOS 14.0, *)

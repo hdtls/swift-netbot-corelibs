@@ -5,12 +5,12 @@
 #if ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING
   import NIOCore
 
-  struct Datagram: Hashable, Sendable {
+  public struct Datagram: Hashable, Sendable {
 
-    typealias Data = ByteBuffer
+    public typealias Data = ByteBuffer
 
     /// The sender's port.
-    var sourcePort: UInt16 {
+    public var sourcePort: UInt16 {
       get {
         _storage.getInteger(at: _storage.readerIndex)!
       }
@@ -20,7 +20,7 @@
     }
 
     /// The receiver's port.
-    var destinationPort: UInt16 {
+    public var destinationPort: UInt16 {
       get {
         let position = _storage.index(_storage.readerIndex, offsetBy: MemoryLayout<UInt16>.size)
         return _storage.getInteger(at: position)!
@@ -32,7 +32,7 @@
     }
 
     /// The length in bytes of the UDP datagram, including header and payload.
-    var totalLength: UInt16 {
+    public var totalLength: UInt16 {
       get {
         let position = _storage.index(_storage.readerIndex, offsetBy: MemoryLayout<UInt16>.size * 2)
         return _storage.getInteger(at: position, as: UInt16.self)!
@@ -45,12 +45,12 @@
 
     /// The checksum field may be used for error-checking of the header and data.
     /// This field is optional in IPv4, and mandatory in most cases in IPv6.
-    var chksum: UInt16 {
+    public var chksum: UInt16 {
       _chksum(data, pseudoFields: pseudoFields, zeroization: true)
     }
 
     /// The payload of the UDP packet.
-    var payload: Data? {
+    public var payload: Data? {
       get {
         return data[8...]
       }
@@ -65,18 +65,18 @@
     }
 
     /// Datagram data.
-    var data: Data {
+    public var data: Data {
       var data = _storage
       data.setInteger(chksum, at: data.index(data.startIndex, offsetBy: 6))
       return data
     }
 
     /// Pseudo fields for chksum calculation, including fields from IP headers.
-    var pseudoFields: PseudoFields
+    public var pseudoFields: PseudoFields
 
     private var _storage: Data
 
-    init(data: Data, pseudoFields: PseudoFields) {
+    public init(data: Data, pseudoFields: PseudoFields) {
       assert(data.count >= MemoryLayout<UInt16>.size * 4)
       _storage = data
       self.pseudoFields = pseudoFields

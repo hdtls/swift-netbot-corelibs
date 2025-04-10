@@ -4,7 +4,7 @@
 
 #if ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING
   #if canImport(Darwin)
-    public import NetworkExtension
+    import NetworkExtension
   #endif
 
   public protocol PacketTunnelFlow: Sendable {

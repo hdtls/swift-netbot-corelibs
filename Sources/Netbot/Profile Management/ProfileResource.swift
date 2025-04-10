@@ -3,15 +3,15 @@
 //
 
 #if canImport(FoundationEssentials)
-  public import FoundationEssentials
+  import FoundationEssentials
 #else
-  public import Foundation
+  import Foundation
 #endif
 
 #if canImport(Combine)
-  public import Combine
+  import Combine
 #else
-  public import OpenCombine
+  import OpenCombine
 #endif
 
 public struct ProfileInfo: Equatable, Hashable, Identifiable, Sendable {

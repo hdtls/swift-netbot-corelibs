@@ -4,8 +4,8 @@
 
 #if canImport(Darwin)
   @_implementationOnly import CNIOBoringSSL
-  public import Foundation
-  public import Logging
+  import Foundation
+  import Logging
   import Observation
   import Security
   import SwiftASN1

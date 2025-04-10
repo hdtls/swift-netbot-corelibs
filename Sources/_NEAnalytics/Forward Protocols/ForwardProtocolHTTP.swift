@@ -5,9 +5,10 @@
 import Anlzr
 import AnlzrReports
 import Logging
-private import NEAddressProcessing
+import NEAddressProcessing
 import NIOCore
 import NIOTLS
+import _ResourceProcessing
 
 struct ForwardProtocolHTTP: Equatable, Hashable {
 

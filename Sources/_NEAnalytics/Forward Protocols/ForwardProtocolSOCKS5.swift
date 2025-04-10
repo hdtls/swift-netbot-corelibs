@@ -5,10 +5,11 @@
 import Anlzr
 import AnlzrReports
 import Logging
-private import NEAddressProcessing
+import NEAddressProcessing
 import NESOCKS
 import NIOCore
 import NIOTLS
+import _ResourceProcessing
 
 struct ForwardProtocolSOCKS5: Equatable, Hashable, Sendable {
 

@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information
 //
 
-@_exported public import Anlzr
-@_exported public import Preference
+import Anlzr
+import Preference
 
 #if canImport(Darwin)
-  private import Foundation
+  import Foundation
 #endif
 
 extension OutboundMode: @retroactive RawRepresentable {

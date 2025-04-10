@@ -3,7 +3,7 @@
 //
 
 #if canImport(Darwin)
-  private import Foundation
+  import Foundation
 #endif
 
 extension AnyProxyGroup {
