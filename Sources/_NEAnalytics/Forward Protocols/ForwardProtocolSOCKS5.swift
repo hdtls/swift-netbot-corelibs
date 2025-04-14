@@ -11,6 +11,12 @@ import NIOCore
 import NIOTLS
 import _ResourceProcessing
 
+#if canImport(Network)
+  import NIOTransportServices
+#else
+  import NIOPosix
+#endif
+
 struct ForwardProtocolSOCKS5: Equatable, Hashable, Sendable {
 
   @usableFromInline final class _Storage: Hashable, @unchecked Sendable {

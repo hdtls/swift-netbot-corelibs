@@ -2,6 +2,9 @@
 // See LICENSE.txt for license information
 //
 
+import Logging
+import RegexBuilder
+
 #if canImport(FoundationEssentials)
   import FoundationEssentials
 #else

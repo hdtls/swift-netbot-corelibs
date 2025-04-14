@@ -5,6 +5,7 @@
 #if canImport(Darwin)
   import Testing
   import NEAddressProcessing
+  import NIOCore
 
   @testable import _NEAnalytics
 

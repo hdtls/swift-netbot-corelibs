@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-#if canImport(Darwin)
+#if canImport(os)
   import Foundation
   import Logging
   import os
@@ -69,7 +69,7 @@
       case .critical: logLevel = .fault
       }
 
-      let _message = "\(prettyMetadata ?? "") \(message)".trimmingCharacters(in: .whitespaces)
+      let _message = "\(prettyMetadata ?? "") \(message)"._trimmingWhitespaces()
       logger.log(level: logLevel, "\(_message, privacy: .public)")
     }
 

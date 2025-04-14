@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+import Preference
 import Testing
 
 @testable import Netbot

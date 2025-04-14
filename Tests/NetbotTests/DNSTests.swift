@@ -7,6 +7,7 @@
   import Testing
 
   @testable import Netbot
+  import Foundation
 
   @Suite(.tags(.dns))
   struct DNSTests {

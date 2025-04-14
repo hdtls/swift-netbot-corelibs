@@ -6,9 +6,16 @@ import Anlzr
 import AnlzrReports
 import Logging
 import NEAddressProcessing
+import NEHTTP
 import NIOCore
 import NIOTLS
 import _ResourceProcessing
+
+#if canImport(Network)
+  import NIOTransportServices
+#else
+  import NIOPosix
+#endif
 
 struct ForwardProtocolHTTP: Equatable, Hashable {
 

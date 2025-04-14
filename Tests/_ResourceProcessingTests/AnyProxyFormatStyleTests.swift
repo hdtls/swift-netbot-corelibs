@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+import HTTPTypes
 import Testing
 
 @testable import _ResourceProcessing

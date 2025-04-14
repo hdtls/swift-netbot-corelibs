@@ -4,11 +4,13 @@
 
 import Anlzr
 import Crypto
+import HTTPTypes
 import NEAddressProcessing
 import NEVMESS
 import NIOCore
 import NIOHTTP1
 import NIOWebSocket
+import _NIOBase64
 import _ResourceProcessing
 
 #if canImport(FoundationEssentials)

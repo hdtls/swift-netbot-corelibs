@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information
 //
 
+import Dispatch
 import Logging
 import _ResourceProcessing
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
   import FoundationInternationalization
+  import class Foundation.OperationQueue
 #else
   import Foundation
   import UniformTypeIdentifiers

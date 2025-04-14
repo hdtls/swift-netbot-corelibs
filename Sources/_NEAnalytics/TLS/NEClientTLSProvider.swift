@@ -3,10 +3,12 @@
 //
 
 import Dispatch
+import Logging
 import NIOCore
+import NIOSSL
 import SwiftASN1
 import X509
-import NIOSSL
+import _ResourceProcessing
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
@@ -18,6 +20,8 @@ import NIOSSL
   import Network
   import NIOTransportServices
   import Security
+#else
+  import Anlzr
 #endif
 
 private let offlineQueue = DispatchQueue(label: "com.tenbits.AnalyzerBot.tls.offline.queue")

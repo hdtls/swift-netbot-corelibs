@@ -6,6 +6,7 @@ import Anlzr
 import AnlzrReports
 import Crypto
 import NEPrettyBytes
+import _ResourceProcessing
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
@@ -53,7 +54,7 @@ struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equat
       do {
         let file = try String(contentsOf: externalResourceURL, encoding: .utf8)
         processResult = file.split(separator: "\n").map {
-          $0.trimmingCharacters(in: .whitespaces)
+          $0._trimmingWhitespaces()
         }
       } catch {}
       externalDomains = processResult

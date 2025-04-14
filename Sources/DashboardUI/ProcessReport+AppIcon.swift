@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information
 //
 
-#if os(macOS)
+#if canImport(SwiftUI)
   import AnlzrReports
   import AppKit
   import SwiftUI
+  import UniformTypeIdentifiers
 
   extension ProcessReport {
 

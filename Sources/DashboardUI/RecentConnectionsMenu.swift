@@ -4,7 +4,7 @@
 
 #if canImport(SwiftUI)
   import Dashboard
-import _PersistentStore
+  import _PersistentStore
   import SwiftData
   import SwiftUI
 

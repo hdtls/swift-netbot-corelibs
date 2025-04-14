@@ -4,6 +4,7 @@
 
 import Anlzr
 import AnlzrReports
+import HTTPTypes
 import Testing
 
 @testable import _NEAnalytics

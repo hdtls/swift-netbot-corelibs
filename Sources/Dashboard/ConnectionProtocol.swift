@@ -3,6 +3,7 @@
 //
 
 import AnlzrReports
+import HTTPTypes
 
 extension Connection {
 

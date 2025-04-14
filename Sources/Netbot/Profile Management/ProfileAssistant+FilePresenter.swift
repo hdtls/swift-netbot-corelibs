@@ -4,6 +4,7 @@
 
 import Preference
 import _PersistentStore
+import _ResourceProcessing
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

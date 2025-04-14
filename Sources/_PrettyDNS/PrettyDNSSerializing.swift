@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information
 //
 
+import NEAddressProcessing
+
 extension Message {
 
   /// Returns the bytes serialized in DNS message format.

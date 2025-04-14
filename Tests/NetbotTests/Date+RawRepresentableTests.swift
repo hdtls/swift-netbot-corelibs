@@ -4,6 +4,8 @@
 
 import Testing
 
+@testable import Netbot
+
 #if canImport(FoundationEssentials)
   import FoundationEssentials
 #else

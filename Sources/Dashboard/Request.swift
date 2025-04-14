@@ -3,6 +3,14 @@
 //
 
 import AnlzrReports
+import HTTPTypes
+
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+  import FoundationInternationalization
+#else
+  import Foundation
+#endif
 
 extension Request {
 

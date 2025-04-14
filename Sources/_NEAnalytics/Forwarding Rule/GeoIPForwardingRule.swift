@@ -5,6 +5,7 @@
 import Anlzr
 import AnlzrReports
 import MaxMindDB
+import NEAddressProcessing
 
 /// Forwarding rule base on GeoIP country code.
 struct GeoIPForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equatable, Hashable {

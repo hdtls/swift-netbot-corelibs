@@ -153,7 +153,20 @@ let package = Package(
 for target in package.targets {
   var settings = target.swiftSettings ?? []
   settings.append(.define("EXTENDED_ALL"))
-  settings.append(.define("ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING"))
   settings.append(.define("ENABLE_NIO_TRANSPORT_SERVICES"))
   target.swiftSettings = settings
+}
+
+for target in package.targets {
+  switch target.type {
+  case .regular, .test, .executable:
+    var settings = target.swiftSettings ?? []
+    // https://github.com/swiftlang/swift-evolution/blob/main/proposals/0444-member-import-visibility.md
+    settings.append(.enableUpcomingFeature("MemberImportVisibility"))
+    target.swiftSettings = settings
+  case .macro, .plugin, .system, .binary:
+    ()  // not applicable
+  @unknown default:
+    ()  // we don't know what to do here, do nothing
+  }
 }

@@ -4,6 +4,12 @@
 
 import _ResourceProcessing
 
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
 extension Profile {
   public var name: String {
     url.deletingPathExtension().lastPathComponent

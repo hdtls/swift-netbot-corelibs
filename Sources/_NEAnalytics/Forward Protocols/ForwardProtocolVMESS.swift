@@ -18,6 +18,11 @@ import _ResourceProcessing
 #else
   import Foundation
 #endif
+#if canImport(Network)
+  import NIOTransportServices
+#else
+  import NIOPosix
+#endif
 
 struct ForwardProtocolVMESS: Equatable, Hashable {
 

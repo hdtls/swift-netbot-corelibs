@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+import NEAddressProcessing
 import NIOCore
 import Testing
 

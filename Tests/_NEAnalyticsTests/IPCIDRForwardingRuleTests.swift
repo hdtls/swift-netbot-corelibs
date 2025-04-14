@@ -4,6 +4,7 @@
 
 import Anlzr
 import AnlzrReports
+import NEAddressProcessing
 import NIOCore
 import Testing
 

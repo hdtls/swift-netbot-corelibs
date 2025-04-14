@@ -2,7 +2,9 @@
 // See LICENSE.txt for license information
 //
 
+import RegexBuilder
 import _ResourceProcessing
+
 #if canImport(SwiftUI)
   import Foundation
   import SwiftUI
@@ -25,7 +27,7 @@ extension ProfileAssistant {
       if let range = lines.firstRange(match: AnyProxy.sectionRegex) {
         lines.insert(Substring(proxy.formatted()), at: range.upperBound)
       } else {
-        if lines.last?.trimmingCharacters(in: .whitespaces) != "" {
+        if lines.last?._trimmingWhitespaces() != "" {
           // Pretty print multiple sections by add an empty line.
           lines.append("")
         }
@@ -68,10 +70,10 @@ extension ProfileAssistant {
           // DO NOTHING if policy group contains external resource.
           return line
         }
-        var proxies = parseOutput.1.split(separator: ",").map { $0.trimmingWhitespaces() }
+        var proxies = parseOutput.1.split(separator: ",").map { $0._trimmingWhitespaces() }
         if proxies.contains(proxy.name) {
           proxies.replace(CollectionOfOne(proxy.name), with: CollectionOfOne(newProxy.name))
-          let name = g.1.trimmingWhitespaces()
+          let name = g.1._trimmingWhitespaces()
           return "\(name) = \(g.2.rawValue), proxies = \(proxies.joined(separator: ", "))"
         }
         return line
@@ -132,10 +134,10 @@ extension ProfileAssistant {
             // DO NOTHING if policy group contains external resource.
             continue
           }
-          var policies = parseOutput.1.split(separator: ",").map { $0.trimmingWhitespaces() }
+          var policies = parseOutput.1.split(separator: ",").map { $0._trimmingWhitespaces() }
           if policies.contains(policy.name) {
             policies.removeAll(where: { $0 == policy.name })
-            let name = g.1.trimmingCharacters(in: .whitespaces)
+            let name = g.1._trimmingWhitespaces()
             return "\(name) = \(g.2.rawValue), proxies = \(policies.joined(separator: ", "))"
           }
         }
@@ -166,7 +168,7 @@ extension ProfileAssistant {
         }
 
         if let parseOutput = parseInput.firstMatch(of: AnyProxyGroup.regex) {
-          var proxies = parseOutput.3.split(separator: ",").map { $0.trimmingWhitespaces() }
+          var proxies = parseOutput.3.split(separator: ",").map { $0._trimmingWhitespaces() }
           if proxies.contains(proxy.name) {
             guard proxies.count > 1 else {
               // Remove proxy group that does not contains any proxy.
@@ -174,7 +176,7 @@ extension ProfileAssistant {
             }
             proxies.removeAll(where: { $0 == proxy.name })
             return
-              "\(parseOutput.1.trimmingWhitespaces()) = \(parseOutput.2.rawValue), proxies = \(proxies.joined(separator: ", "))"
+              "\(parseOutput.1._trimmingWhitespaces()) = \(parseOutput.2.rawValue), proxies = \(proxies.joined(separator: ", "))"
           }
         }
 

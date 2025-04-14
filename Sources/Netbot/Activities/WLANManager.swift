@@ -8,6 +8,7 @@
   import Observation
   import Logging
   import SystemConfiguration
+  import Network
 
   private let notApplicable = "N/A"
 

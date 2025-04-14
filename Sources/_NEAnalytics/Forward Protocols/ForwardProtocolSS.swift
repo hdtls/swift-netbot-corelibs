@@ -9,6 +9,12 @@ import NEAddressProcessing
 import NESS
 import NIOCore
 
+#if canImport(Network)
+  import NIOTransportServices
+#else
+  import NIOPosix
+#endif
+
 struct ForwardProtocolSS: Equatable, Hashable {
 
   @usableFromInline final class _Storage: Hashable {

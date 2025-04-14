@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information
 //
 
+import _ResourceProcessing
+
 @testable import Netbot
 
 #if canImport(FoundationEssentials)

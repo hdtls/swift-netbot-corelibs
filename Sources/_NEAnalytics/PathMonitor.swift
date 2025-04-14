@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-#if canImport(Darwin)
+#if canImport(Network)
   import Darwin
   import Logging
   import Network

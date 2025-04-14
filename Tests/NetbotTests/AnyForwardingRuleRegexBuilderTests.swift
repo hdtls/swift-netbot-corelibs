@@ -3,6 +3,7 @@
 //
 
 import Testing
+import _ResourceProcessing
 
 @testable import Netbot
 

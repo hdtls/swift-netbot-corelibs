@@ -10,7 +10,7 @@
   let NSDebugDescriptionErrorKey = "NSDebugDescriptionErrorKey"
 
   extension BidirectionalCollection {
-    func _trimmingCharacters(while predicate: (Element) -> Bool) -> SubSequence {
+    public func _trimmingCharacters(while predicate: (Element) -> Bool) -> SubSequence {
       var idx = startIndex
       while idx < endIndex && predicate(self[idx]) {
         formIndex(after: &idx)
@@ -38,7 +38,7 @@
 
 extension String {
 
-  func _trimmingWhitespaces() -> String {
+  public func _trimmingWhitespaces() -> String {
     #if canImport(FoundationEssentials)
       if self.isEmpty {
         return ""
@@ -56,7 +56,7 @@ extension String {
 
 extension Substring {
 
-  func _trimmingWhitespaces() -> String {
+  public func _trimmingWhitespaces() -> String {
     #if canImport(FoundationEssentials)
       if self.isEmpty {
         return ""

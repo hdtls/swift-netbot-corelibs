@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+import RegexBuilder
 import _ResourceProcessing
 
 #if canImport(SwiftUI)
@@ -26,7 +27,7 @@ extension ProfileAssistant {
       if let range = lines.firstRange(match: AnyForwardingRule.sectionRegex) {
         lines.insert(Substring(forwardingRule.formatted()), at: range.lowerBound)
       } else {
-        if lines.last?.trimmingCharacters(in: .whitespaces) != "" {
+        if lines.last?._trimmingWhitespaces() != "" {
           // Pretty print multiple sections by add an empty line.
           lines.append("")
         }

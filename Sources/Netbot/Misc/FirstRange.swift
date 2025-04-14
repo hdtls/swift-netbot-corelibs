@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information
 //
 
+import _ResourceProcessing
+
 extension Array where Element == Substring {
 
   @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
@@ -24,7 +26,7 @@ extension Array where Element == Substring {
 
     // Trimming empty lines.
     while end - 1 >= start {
-      guard self[end - 1].trimmingCharacters(in: .whitespaces).isEmpty else {
+      guard self[end - 1]._trimmingWhitespaces().isEmpty else {
         break
       }
       end = end - 1

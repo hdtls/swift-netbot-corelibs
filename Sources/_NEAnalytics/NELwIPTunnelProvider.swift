@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-#if canImport(Darwin) && ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING
+#if canImport(Darwin)
   import CNELwIP
   import Dispatch
   import Foundation

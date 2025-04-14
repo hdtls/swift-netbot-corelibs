@@ -53,7 +53,7 @@ struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equatab
       do {
         let file = try String(contentsOf: externalResourceURL, encoding: .utf8)
         processResult = file.split(separator: "\n").compactMap {
-          let parseInput = $0.trimmingCharacters(in: .whitespaces)
+          let parseInput = $0._trimmingWhitespaces()
           guard !parseInput.hasPrefix("#") else {
             return nil
           }
@@ -63,13 +63,13 @@ struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equatab
             return nil
           }
 
-          let rawValue = components[0].trimmingCharacters(in: .whitespaces)
+          let rawValue = components[0]._trimmingWhitespaces()
           guard let kind = AnyForwardingRule.Kind(rawValue: rawValue) else {
             return nil
           }
 
           var condition = components[1].components(separatedBy: "//")[0]
-          condition = condition.trimmingCharacters(in: .whitespaces)
+          condition = condition._trimmingWhitespaces()
 
           switch kind {
           case .domain:

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-#if canImport(Darwin)
+#if canImport(CoreLocation)
   import CoreLocation
   import Logging
 

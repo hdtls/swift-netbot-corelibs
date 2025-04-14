@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information
 //
 
-#if os(macOS)
+#if canImport(SwiftUI)
   import Dashboard
   import SwiftUI
+  import AnlzrReports
 
   @available(swift 5.9)
   @available(macOS 14.0, *)

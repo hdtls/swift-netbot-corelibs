@@ -2,7 +2,13 @@
 // See LICENSE.txt for license information
 //
 
+//#if canImport(FoundationEssentials)
+//  import FoundationEssentials
+//#else
+import Foundation
 import RegexBuilder
+
+//#endif
 
 /// Duplicate a new object.
 public protocol Duplicable {

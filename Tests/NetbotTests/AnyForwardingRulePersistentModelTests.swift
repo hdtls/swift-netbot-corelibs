@@ -6,6 +6,7 @@
   import SwiftData
   import Testing
   @testable import Netbot
+  import _ResourceProcessing
 
   @Suite("V1._AnyForwardingRuleTests", .tags(.swiftData, .schema, .forwardingRule))
   struct AnyRulePersistentModelTests {

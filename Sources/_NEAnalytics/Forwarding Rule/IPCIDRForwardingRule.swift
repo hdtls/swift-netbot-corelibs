@@ -7,6 +7,12 @@
 import Anlzr
 import AnlzrReports
 import NIOCore
+#if canImport(FoundationEssentials)
+import Foundation
+import FoundationEssentials
+#else
+import Foundation
+#endif
 
 #if os(Windows)
   import ucrt
@@ -69,7 +75,7 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equatabl
         addresses: addresses,
         forwardProtocol: forwardProtocol
       )
-      }
+    }
 
     @inlinable static func == (lhs: _Storage, rhs: _Storage) -> Bool {
       lhs.classlessInterDomainRouting == rhs.classlessInterDomainRouting

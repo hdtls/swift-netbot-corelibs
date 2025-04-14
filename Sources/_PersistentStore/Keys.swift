@@ -38,9 +38,7 @@ extension Prefs.Name {
 
   public static let enableSystemProxy = "Enable System Proxy"
 
-  #if ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING
     public static let enableEnhancedMode = "Enable Enhanced Mode"
-  #endif
 
   public static let enabledHTTPCapabilities = "HTTP - Enabled HTTP Capabilities"
   public static let outboundMode = "Outbound Mode"

@@ -5,6 +5,12 @@
 import NEAddressProcessing
 import NIOCore
 
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
 public struct PrettyDNSParser: Sendable {
 
   public init() {}

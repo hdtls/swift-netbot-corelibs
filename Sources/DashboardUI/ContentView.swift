@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information
 //
 
-#if os(macOS)
-import AnlzrReports
-import _PersistentStore
+#if canImport(SwiftUI)
+  import AnlzrReports
+  import _PersistentStore
   import Dashboard
   import SwiftUI
 

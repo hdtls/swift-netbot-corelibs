@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information
 //
 
-import _ResourceProcessing
 import Logging
+import RegexBuilder
+import _ResourceProcessing
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
   import FoundationInternationalization
+  import class Foundation.OperationQueue
 #else
   import Foundation
 #endif

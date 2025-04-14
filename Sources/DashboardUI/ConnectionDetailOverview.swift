@@ -6,6 +6,8 @@
   import AnlzrReports
   import Dashboard
   import SwiftUI
+  import HTTPTypes
+  import NEAddressProcessing
 
   @available(iOS 17.0, macOS 14.0, *)
   @available(tvOS, unavailable)

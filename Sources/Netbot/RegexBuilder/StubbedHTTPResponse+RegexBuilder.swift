@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information
 //
 
-import _ResourceProcessing
+import HTTPTypes
 import RegexBuilder
+import _ResourceProcessing
 
 extension StubbedHTTPResponse {
 

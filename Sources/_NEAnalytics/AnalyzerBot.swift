@@ -7,17 +7,19 @@ import AnlzrReports
 import Logging
 import MaxMindDB
 import NIOConcurrencyHelpers
+import NIOCore
 import NIOSSL
-import _ResourceProcessing
 import _PersistentStore
-#if canImport(Darwin)
-  import Foundation
-#else
+import _ResourceProcessing
+
+#if canImport(FoundationEssentials)
   import FoundationEssentials
   import class Foundation.UserDefaults
+#else
+  import Foundation
 #endif
 
-#if canImport(Darwin)
+#if canImport(UserNotifications)
   import UserNotifications
 #endif
 
@@ -107,7 +109,7 @@ import _PersistentStore
     await self.analyzer.setOutboundMode(outboundMode)
     logger.info("Outbound mode has been changed to \(outboundMode.localizedName)")
 
-    #if canImport(Darwin)
+    #if canImport(UserNotifications)
       Task.detached {
         let content = UNMutableNotificationContent()
         content.title = String(

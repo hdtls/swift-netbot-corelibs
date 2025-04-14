@@ -2,34 +2,34 @@
 // See LICENSE.txt for license information
 //
 
-#if ENABLE_EXPERIMENTAL_FEATURE_PACKET_PROCESSING
-  #if canImport(Darwin)
-    import NetworkExtension
-  #endif
+import NIOCore
 
-  public protocol PacketTunnelFlow: Sendable {
+#if canImport(NetworkExtension)
+  import NetworkExtension
+#endif
 
-    func readPacketObjects() async -> [IPPacket]
+public protocol PacketTunnelFlow: Sendable {
 
-    func writePacketObjects(_ packets: [IPPacket]) -> Bool
-  }
+  func readPacketObjects() async -> [IPPacket]
 
-  #if canImport(Darwin)
-    extension NEPacketTunnelFlow: @unchecked @retroactive Sendable, PacketTunnelFlow {
+  func writePacketObjects(_ packets: [IPPacket]) -> Bool
+}
 
-      public func readPacketObjects() async -> [IPPacket] {
-        let packetObjects: [NEPacket] = await readPacketObjects()
-        return packetObjects.map {
-          IPPacket(data: .init(bytes: $0.data), protocolFamily: $0.protocolFamily)
-        }
-      }
+#if canImport(NetworkExtension)
+  extension NEPacketTunnelFlow: @unchecked @retroactive Sendable, PacketTunnelFlow {
 
-      public func writePacketObjects(_ packets: [IPPacket]) -> Bool {
-        let packetObjects = packets.map {
-          NEPacket(data: .init(Array(buffer: $0.data)), protocolFamily: $0.protocolFamily)
-        }
-        return writePacketObjects(packetObjects)
+    public func readPacketObjects() async -> [IPPacket] {
+      let packetObjects: [NEPacket] = await readPacketObjects()
+      return packetObjects.map {
+        IPPacket(data: .init(bytes: $0.data), protocolFamily: $0.protocolFamily)
       }
     }
-  #endif
+
+    public func writePacketObjects(_ packets: [IPPacket]) -> Bool {
+      let packetObjects = packets.map {
+        NEPacket(data: .init(Array(buffer: $0.data)), protocolFamily: $0.protocolFamily)
+      }
+      return writePacketObjects(packetObjects)
+    }
+  }
 #endif

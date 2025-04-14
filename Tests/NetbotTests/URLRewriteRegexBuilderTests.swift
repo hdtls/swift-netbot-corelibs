@@ -4,6 +4,7 @@
 
 import RegexBuilder
 import Testing
+import _ResourceProcessing
 
 @testable import Netbot
 

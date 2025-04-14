@@ -9,6 +9,7 @@
   import Foundation
   import Observation
   import SwiftData
+  import NEAddressProcessing
 
   @ModelActor private actor RecentConnectionsModelActor {
     typealias Element = Connection.PersistentModel
@@ -60,7 +61,7 @@
     /// The ModelContainer for the ModelActor.
     /// The container that manages the app’s schema and model storage configuration.
     public static var modelContainer: ModelContainer {
-      let schema = Schema(versionedSchema: _VersionedSchema.self)
+      let schema = Schema(versionedSchema: V1.self)
       let configuration: ModelConfiguration
 
       let containerURL = FileManager.default.containerURL(

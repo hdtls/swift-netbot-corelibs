@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+import RegexBuilder
 import _ResourceProcessing
 
 #if canImport(SwiftUI)
@@ -50,7 +51,7 @@ extension ProfileAssistant {
       if let range = lines.firstRange(match: DNSMapping.sectionRegex) {
         lines.insert(Substring(dnsMapping.formatted()), at: range.upperBound)
       } else {
-        if lines.last?.trimmingCharacters(in: .whitespaces) != "" {
+        if lines.last?._trimmingWhitespaces() != "" {
           // Pretty print multiple sections by add an empty line.
           lines.append("")
         }
