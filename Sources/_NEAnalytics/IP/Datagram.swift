@@ -45,13 +45,13 @@ public struct Datagram: Hashable, Sendable {
   /// The checksum field may be used for error-checking of the header and data.
   /// This field is optional in IPv4, and mandatory in most cases in IPv6.
   public var chksum: UInt16 {
-    _chksum(data, pseudoFields: pseudoFields, zeroization: true)
+    _chksum(_storage, pseudoFields: pseudoFields, zeroization: true)
   }
 
   /// The payload of the UDP packet.
   public var payload: Data? {
     get {
-      return data[8...]
+      return _storage[8...]
     }
     set {
       if let newValue {
