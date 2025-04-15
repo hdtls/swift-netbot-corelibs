@@ -32,6 +32,9 @@ public struct Datagram: Hashable, Sendable {
 
   /// The length in bytes of the UDP datagram, including header and payload.
   public var totalLength: UInt16 {
+    _totalLength
+  }
+  var _totalLength: UInt16 {
     get {
       let position = _storage.index(_storage.readerIndex, offsetBy: MemoryLayout<UInt16>.size * 2)
       return _storage.getInteger(at: position, as: UInt16.self)!
@@ -59,7 +62,8 @@ public struct Datagram: Hashable, Sendable {
       } else {
         _storage.removeSubrange(8...)
       }
-      totalLength = UInt16(truncatingIfNeeded: _storage.count)
+      _totalLength = UInt16(truncatingIfNeeded: _storage.count)
+      pseudoFields.dataLength = totalLength
     }
   }
 

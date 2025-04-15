@@ -11,6 +11,30 @@ import NIOCore
   import Foundation
 #endif
 
+#if os(Windows)
+  import ucrt
+
+  import let WinSDK.AF_INET
+  import let WinSDK.AF_INET6
+
+  private typealias sa_family_t = WinSDK.ADDRESS_FAMILY
+#elseif canImport(Darwin)
+  import Darwin
+#elseif os(Linux) || os(FreeBSD) || os(Android)
+  #if canImport(Glibc)
+    import Glibc
+  #elseif canImport(Musl)
+    import Musl
+  #elseif canImport(Android)
+    import Android
+  #endif
+  import CNIOLinux
+#elseif canImport(WASILibc)
+  import WASILibc
+#else
+  #error("The Socket Addresses module was unable to identify your C library.")
+#endif
+
 /// An `IPPacket` object represents the data, protocol family associated with an IP packet.
 public enum IPPacket: Hashable, Sendable {
 
@@ -20,7 +44,7 @@ public enum IPPacket: Hashable, Sendable {
   public struct IPv4Packet: Hashable, CustomReflectable, Sendable {
 
     /// The IP protocol family` AF_INET`.
-    public var protocolFamily: UInt8 { 4 }
+    public var protocolFamily: sa_family_t { sa_family_t(AF_INET) }
 
     /// The IPv4 header is variable in size due to the optional 14th field (Options). The IHL field contains the size of the IPv4 header;
     /// it has 4 bits that specify the number of 32-bit words in the header.
@@ -294,7 +318,7 @@ public enum IPPacket: Hashable, Sendable {
   }
 
   /// The protocol family of the packet (such as AF_INET or AF_INET6).
-  public var protocolFamily: UInt8 {
+  public var protocolFamily: sa_family_t {
     switch self {
     case .v4(let packet):
       return packet.protocolFamily
@@ -305,7 +329,7 @@ public enum IPPacket: Hashable, Sendable {
   /// - Parameters:
   ///   - data: The content of the packet.
   ///   - protocolFamily: The protocol family of the packet (such as AF_INET or AF_INET6).
-  public init(data: Data, protocolFamily: UInt8) {
+  public init(data: Data, protocolFamily: sa_family_t) {
     assert(protocolFamily == 4)
     self = .v4(.init(data: data))
   }

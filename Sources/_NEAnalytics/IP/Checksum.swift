@@ -41,7 +41,10 @@ func _chksum(
   combined.writeInteger(pseudoFields.protocol.rawValue)
   combined.writeInteger(pseudoFields.dataLength)
   combined.writeImmutableBuffer(data)
+  if combined.readableBytes % 2 == 1 {
+    combined.writeInteger(UInt8.zero)
+  }
 
-  let chksum = _chksum(combined, zeroization: zeroization, offset: 6)
+  let chksum = _chksum(combined, zeroization: zeroization, offset: 18)
   return chksum == 0 ? 0xFFFF : chksum
 }
