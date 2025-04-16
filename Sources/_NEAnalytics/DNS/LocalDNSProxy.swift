@@ -4,24 +4,13 @@
 
 import Anlzr
 import AnlzrReports
-import AsyncDNSResolver
 import Dispatch
+import Logging
 import NEAddressProcessing
 import NIOCore
 import _PrettyDNS
 
-internal typealias ARecord = _PrettyDNS.ARecord
-internal typealias NSRecord = _PrettyDNS.NSRecord
-internal typealias CNAMERecord = _PrettyDNS.CNAMERecord
-internal typealias SOARecord = _PrettyDNS.SOARecord
-internal typealias PTRRecord = _PrettyDNS.PTRRecord
-internal typealias MXRecord = _PrettyDNS.MXRecord
-internal typealias TXTRecord = _PrettyDNS.TXTRecord
-internal typealias AAAARecord = _PrettyDNS.AAAARecord
-internal typealias SRVRecord = _PrettyDNS.SRVRecord
-internal typealias NAPTRRecord = _PrettyDNS.NAPTRRecord
-
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 actor LocalDNSProxy: PacketHandle {
 
   let allocator: ByteBufferAllocator
@@ -29,12 +18,15 @@ actor LocalDNSProxy: PacketHandle {
   private let parser = PrettyDNSParser()
   private let aTaskMap: LRUCache<String, Task<[Expirable<ARecord>], any Error>>
   private let aaaaTaskMap: LRUCache<String, Task<[Expirable<AAAARecord>], any Error>>
-  private let soaTaskMap: LRUCache<String, Task<Expirable<SOARecord>?, any Error>>
+  private let soaTaskMap: LRUCache<String, Task<[Expirable<SOARecord>], any Error>>
 
   private let bindAddress: String
   private let additionalServers: [String]
   private let availableIPPool: AvailableIPPool
-  private var resolver: (any DNSResolver & Sendable)? = .none
+
+  internal var resolver: (any Resolver & Sendable)? = .none
+
+  private let logger = Logger(label: "dns")
 
   init(
     allocator: ByteBufferAllocator,
@@ -52,9 +44,9 @@ actor LocalDNSProxy: PacketHandle {
   }
 
   func runIfActive() async throws {
-    var options = CAresDNSResolver.Options.default
+    var options = DNSResolver.Options.default
     options.servers = additionalServers
-    self.resolver = try AsyncDNSResolver(options: options)
+    self.resolver = try DNSResolver(options: options)
   }
 
   func handle(_ packetObject: IPPacket) async throws -> PacketHandleResult {
@@ -163,14 +155,11 @@ actor LocalDNSProxy: PacketHandle {
   }
 
   private func _queryA(name: String) async throws -> [Expirable<ARecord>] {
-    guard let resolver else { fatalError("\(self) is inactive.") }
+    guard let resolver else { return [] }
 
     let task = Task<[Expirable<ARecord>], any Error> {
-      try await resolver.queryA(name: name).compactMap {
-        guard let address = IPv4Address($0.address.address) else { return nil }
-        return Expirable(
-          ARecord(domainName: name, ttl: $0.ttl ?? 1, dataLength: .determined(4), data: address)
-        )
+      try await resolver.queryA(name: name).map {
+        Expirable($0)
       }
     }
     aTaskMap.setValue(task, forKey: name)
@@ -197,15 +186,11 @@ actor LocalDNSProxy: PacketHandle {
   }
 
   private func _queryAAAA(name: String) async throws -> [Expirable<AAAARecord>] {
-    guard let resolver else { fatalError("\(self) is inactive.") }
+    guard let resolver else { return [] }
 
     let task = Task<[Expirable<AAAARecord>], any Error> {
-      try await resolver.queryAAAA(name: name).compactMap {
-        guard let address = IPv6Address($0.address.address) else { return nil }
-        return Expirable(
-          AAAARecord(
-            domainName: name, ttl: $0.ttl ?? 0, dataLength: .determined(16), data: address)
-        )
+      try await resolver.queryAAAA(name: name).map {
+        Expirable($0)
       }
     }
     aaaaTaskMap.setValue(task, forKey: name)
@@ -213,60 +198,39 @@ actor LocalDNSProxy: PacketHandle {
   }
 
   func queryNS(name: String) async throws -> [NSRecord] {
-    guard let resolver else { fatalError("\(self) is inactive.") }
-
-    return try await resolver.queryNS(name: name).nameservers.map {
-      NSRecord(domainName: name, ttl: 0, data: $0)
-    }
+    guard let resolver else { return [] }
+    return try await resolver.queryNS(name: name)
   }
 
-  func queryCNAME(name: String) async throws -> CNAMERecord? {
-    guard let resolver else { fatalError("\(self) is inactive.") }
-
-    guard let cname = try await resolver.queryCNAME(name: name) else { return nil }
-    return CNAMERecord(domainName: name, ttl: 0, data: cname)
+  func queryCNAME(name: String) async throws -> [CNAMERecord] {
+    guard let resolver else { return [] }
+    return try await resolver.queryCNAME(name: name)
   }
 
-  func querySOA(name: String) async throws -> SOARecord? {
+  func querySOA(name: String) async throws -> [SOARecord] {
     guard let task = soaTaskMap.value(forKey: name) else {
-      return try await self._querySOA(name: name)?.record
+      return try await self._querySOA(name: name).map { $0.record }
     }
 
-    var expirable: Expirable<SOARecord>?
+    let expirables: [Expirable<SOARecord>]
     do {
-      expirable = try await task.value
+      expirables = try await task.value.filter { !$0.isExpired }
     } catch {
       soaTaskMap.removeValue(forKey: name)
+      expirables = []
     }
-    guard expirable?.isExpired ?? true else {
-      return expirable?.record
+    guard expirables.isEmpty else {
+      return expirables.map { $0.record }
     }
-
-    return try await self._querySOA(name: name)?.record
+    return try await self._querySOA(name: name).map { $0.record }
   }
 
-  private func _querySOA(name: String) async throws -> Expirable<SOARecord>? {
-    guard let resolver else { fatalError("\(self) is inactive.") }
+  private func _querySOA(name: String) async throws -> [Expirable<SOARecord>] {
+    guard let resolver else { return [] }
 
     let task = Task {
-      try await resolver
-        .querySOA(name: name)
-        .map {
-          Expirable(
-            SOARecord(
-              domainName: name,
-              ttl: 0,
-              data: .init(
-                primaryNameServer: $0.mname ?? "",
-                responsibleMailbox: $0.rname ?? "",
-                serialNumber: $0.serial,
-                refreshInterval: $0.refresh,
-                retryInterval: $0.retry,
-                expirationTime: $0.expire,
-                ttl: $0.ttl
-              )
-            )
-          )
+      try await resolver.querySOA(name: name).map {
+          Expirable($0)
         }
     }
     soaTaskMap.setValue(task, forKey: name)
@@ -274,43 +238,23 @@ actor LocalDNSProxy: PacketHandle {
   }
 
   func queryPTR(name: String) async throws -> [PTRRecord] {
-    guard let resolver else { fatalError("\(self) is inactive.") }
-
-    return try await resolver.queryPTR(name: name).names.map {
-      PTRRecord(domainName: name, ttl: 0, data: $0)
-    }
+    guard let resolver else { return [] }
+    return try await resolver.queryPTR(name: name)
   }
 
   func queryMX(name: String) async throws -> [MXRecord] {
-    guard let resolver else { fatalError("\(self) is inactive.") }
-
-    return try await resolver.queryMX(name: name).map {
-      MXRecord(
-        domainName: name,
-        ttl: 0,
-        data: .init(preference: $0.priority, exchange: $0.host)
-      )
-    }
+    guard let resolver else { return [] }
+    return try await resolver.queryMX(name: name)
   }
 
   func queryTXT(name: String) async throws -> [TXTRecord] {
-    guard let resolver else { fatalError("\(self) is inactive.") }
-
-    return try await resolver.queryTXT(name: name).map {
-      TXTRecord(domainName: name, ttl: 0, data: $0.txt)
-    }
+    guard let resolver else { return [] }
+    return try await resolver.queryTXT(name: name)
   }
 
   func querySRV(name: String) async throws -> [SRVRecord] {
-    guard let resolver else { fatalError("\(self) is inactive.") }
-
-    return try await resolver.querySRV(name: name).map {
-      SRVRecord(
-        domainName: name,
-        ttl: 0,
-        data: .init(priority: $0.priority, weight: $0.weight, port: $0.port, hostname: $0.host)
-      )
-    }
+    guard let resolver else { return [] }
+    return try await resolver.querySRV(name: name)
   }
 }
 

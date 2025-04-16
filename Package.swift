@@ -29,6 +29,7 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-log.git", from: "1.4.2"),
     .package(url: "https://github.com/apple/swift-nio.git", from: "2.32.1"),
     .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.14.1"),
+    .package(url: "https://github.com/apple/swift-async-dns-resolver.git", from: "0.4.0"),
     .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.0"),
     .package(url: "https://github.com/hdtls/swift-netbot-frame-processing.git", branch: "main"),
     .package(url: "https://github.com/hdtls/swift-netbot-essentials.git", branch: "main"),
@@ -69,6 +70,7 @@ let package = Package(
       dependencies: [
         .product(name: "NIOCore", package: "swift-nio"),
         .product(name: "NEAddressProcessing", package: "swift-netbot-frame-processing"),
+        .product(name: "AsyncDNSResolver", package: "swift-async-dns-resolver"),
       ]
     ),
     .target(

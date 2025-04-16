@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information
 //
 
-import AsyncDNSResolver
 import NIOCore
 
 public actor __AnalyzerBot {
