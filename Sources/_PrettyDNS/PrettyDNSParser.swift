@@ -519,7 +519,11 @@ public struct PrettyDNSParser: Sendable {
         data: try parseNAPTRRData(parseInput, consumed: &consumed)
       )
     default:
-      throw PrettyDNSError.notImplemented
+      guard let data = parseInput.getSlice(at: consumed, length: Int(dataLength)) else {
+        throw PrettyDNSError.missingData
+      }
+      consumed += Int(dataLength)
+      finalize = RAWRecord(domainName: name, ttl: ttl, dataType: recordType, data: data)
     }
 
     return finalize

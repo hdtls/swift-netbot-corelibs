@@ -3,6 +3,7 @@
 //
 
 import NEAddressProcessing
+import NIOCore
 
 /// `QTYPE` fields appear in the question part of a query, define the type of the question.
 public struct QTYPE: Hashable, Sendable, RawRepresentable {
@@ -662,6 +663,38 @@ public struct NAPTRRecord: ResourceRecord {
   }
 }
 
+/// A RAW record is a type erased resource record.
+public struct RAWRecord: ResourceRecord {
+
+  public var domainName: String
+
+  public var ttl: Int32
+
+  public var dataType: TYPE
+
+  public var dataClass: CLASS
+
+  public var dataLength: RDATALength
+
+  public var data: ByteBuffer
+
+  public init(
+    domainName: String,
+    ttl: Int32,
+    dataType: TYPE,
+    dataClass: CLASS = .internet,
+    dataLength: RDATALength = .flexible,
+    data: Data
+  ) {
+    self.domainName = domainName
+    self.ttl = ttl
+    self.dataType = dataType
+    self.dataClass = dataClass
+    self.dataLength = dataLength
+    self.data = data
+  }
+}
+
 /// The question is used to carry the "question" in most DNS queries.
 public struct Question: Hashable, Sendable {
 
@@ -776,6 +809,29 @@ public struct Message: Sendable {
 
       public init(rawValue: UInt16) {
         self.rawValue = rawValue
+      }
+
+      public init(
+        response: Bool,
+        opcode: UInt8,
+        authoritative: Bool,
+        truncated: Bool,
+        recursionDesired: Bool,
+        recursionAvailable: Bool,
+        authenticatedData: Bool,
+        checkingDisabled: Bool,
+        responseCode: UInt8
+      ) {
+        self.init(rawValue: 0)
+        self.isResponse = response
+        self.opcode = opcode
+        self.isAuthoritative = authoritative
+        self.isTruncated = truncated
+        self.recursionDesired = recursionDesired
+        self.recursionAvailable = recursionAvailable
+        self.authenticatedData = authenticatedData
+        self.checkingDisabled = checkingDisabled
+        self.responseCode = responseCode
       }
 
       public var customMirror: Mirror {
