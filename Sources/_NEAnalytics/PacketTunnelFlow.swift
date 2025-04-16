@@ -20,7 +20,7 @@ public protocol PacketTunnelFlow: Sendable {
 
     public func readPacketObjects() async -> [IPPacket] {
       let packetObjects: [NEPacket] = await readPacketObjects()
-      return packetObjects.map {
+      return packetObjects.filter { $0.protocolFamily == sa_family_t(AF_INET) }.map {
         IPPacket(data: .init(bytes: $0.data), protocolFamily: $0.protocolFamily)
       }
     }

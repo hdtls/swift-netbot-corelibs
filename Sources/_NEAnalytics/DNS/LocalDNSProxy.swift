@@ -16,9 +16,11 @@ actor LocalDNSProxy: PacketHandle {
   let allocator: ByteBufferAllocator
 
   private let parser = PrettyDNSParser()
-  private let aTaskMap: LRUCache<String, Task<[Expirable<ARecord>], any Error>>
-  private let aaaaTaskMap: LRUCache<String, Task<[Expirable<AAAARecord>], any Error>>
-  private let soaTaskMap: LRUCache<String, Task<[Expirable<SOARecord>], any Error>>
+  private let availableAQueries: LRUCache<String, Task<[Expirable<ARecord>], any Error>>
+  private let disguisedARecords: LRUCache<String, Expirable<ARecord>>
+  private let availableAAAAQueries: LRUCache<String, Task<[Expirable<AAAARecord>], any Error>>
+  private let availableSOAQueries: LRUCache<String, Task<[Expirable<SOARecord>], any Error>>
+  private let availablePTRQueries: LRUCache<String, Task<[Expirable<PTRRecord>], any Error>>
 
   private let bindAddress: String
   private let additionalServers: [String]
@@ -29,18 +31,21 @@ actor LocalDNSProxy: PacketHandle {
   private let logger = Logger(label: "dns")
 
   init(
-    allocator: ByteBufferAllocator,
-    server: String,
-    additionalServers: [String]
+    allocator: ByteBufferAllocator = .init(),
+    server: String = "198.18.0.2",
+    additionalServers: [String] = [],
+    availableIPPool: AvailableIPPool = .init(
+      bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
   ) {
     self.allocator = allocator
     self.bindAddress = server
     self.additionalServers = additionalServers
-    self.availableIPPool = .init(
-      bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    self.aTaskMap = .init(capacity: 200)
-    self.aaaaTaskMap = .init(capacity: 200)
-    self.soaTaskMap = .init(capacity: 50)
+    self.availableIPPool = availableIPPool
+    self.availableAQueries = .init(capacity: 200)
+    self.availableAAAAQueries = .init(capacity: 200)
+    self.availableSOAQueries = .init(capacity: 50)
+    self.availablePTRQueries = .init(capacity: 200)
+    self.disguisedARecords = .init(capacity: 200)
   }
 
   func runIfActive() async throws {
@@ -84,35 +89,79 @@ actor LocalDNSProxy: PacketHandle {
       return .discarded
     }
 
-    guard let dnsPayload = datagram.payload else {
+    guard let dnsPayload = datagram.payload, !dnsPayload.isEmpty else {
       // TODO: Handle Missing Data Error.
       return .discarded
     }
 
     var message = try parser.parse(dnsPayload)
 
+    logger
+      .debug(
+        "[\(packet.identification)] \(packet.protocol) \(packet.sourceAddress) => \(packet.destinationAddress) Receive DNS query message: \(message)"
+      )
+    let questions = message.questions
+    let answerRRs = await withTaskGroup(of: [any ResourceRecord].self) { g in
+      for question in questions {
+        g.addTask { [self] in
+          do {
+            switch question.queryType {
+            case .a:
+              return try await self.queryA0(name: question.domainName)
+            case .ns:
+              return try await self.queryNS(name: question.domainName)
+            case .cname:
+              return try await self.queryCNAME(name: question.domainName)
+            case .soa:
+              return try await self.querySOA(name: question.domainName)
+            case .ptr:
+              return try await self.queryPTR(name: question.domainName)
+            case .mx:
+              return try await self.queryMX(name: question.domainName)
+            case .txt:
+              return try await self.queryTXT(name: question.domainName)
+            case .aaaa:
+              return try await self.queryAAAA(name: question.domainName)
+            case .srv:
+              return try await self.querySRV(name: question.domainName)
+            default:
+              return []
+            }
+          } catch {
+            return []
+          }
+        }
+      }
+
+      var results: [any ResourceRecord] = []
+      for await rr in g {
+        results += rr
+      }
+      return results
+    }
+
     // All communications inside of the domain protocol are carried in the same
     // message format, so we can modify query message to make response message.
-    message.headerFields.flags = .init(rawValue: 0x8181)
+    message.headerFields.flags = .init(
+      response: true,
+      opcode: 0,
+      authoritative: false,
+      truncated: false,
+      recursionDesired: true,
+      recursionAvailable: true,
+      authenticatedData: false,
+      checkingDisabled: false,
+      responseCode: 0
+    )
     message.headerFields.answerCount = 1
     message.headerFields.authorityCount = 0
     message.headerFields.additionCount = 0
-    message.answerRRs = message.questions.compactMap { question in
-      guard case .a = question.queryType else {
-        return nil
-      }
-      return ARecord(
-        domainName: question.domainName,
-        ttl: 0,
-        dataLength: .determined(4),
-        data: availableIPPool.loadThenWrappingIncrement()
-      )
-    }
+    message.answerRRs = answerRRs
     message.authorityRRs = []
     message.additionalRRs = []
 
-    datagram.sourcePort = destinationPort
     datagram.destinationPort = datagram.sourcePort
+    datagram.sourcePort = destinationPort
     datagram.payload = try allocator.buffer(bytes: message.serializedBytes)
     datagram.pseudoFields.sourceAddress = destinationAddress
     datagram.pseudoFields.destinationAddress = datagram.pseudoFields.sourceAddress
@@ -125,18 +174,51 @@ actor LocalDNSProxy: PacketHandle {
     packet.identification = .random(in: 0xC000 ... .max)
     packet.flags = 0
     packet.fragmentOffset = 0
-    packet.timeToLive = 1
+    packet.timeToLive = 5
     packet.destinationAddress = packet.sourceAddress
     packet.sourceAddress = destinationAddress
     packet.options = nil
     packet.payload = datagram.data
 
+    logger
+      .debug(
+        "[\(packet.identification)] \(packet.protocol) \(packet.sourceAddress) => \(packet.destinationAddress) Response DNS query message: \(message)"
+      )
+
     return .handled(.v4(packet))
   }
 
+  internal func setResolver(_ resolver: any Resolver & Sendable) {
+    self.resolver = resolver
+  }
+
+  // Returns disguised records contains one reserved IPv4 address.
+  private func queryA0(name: String) async throws -> [ARecord] {
+    Task(priority: .background) {
+      // Query and update actual A records.
+      _ = try await queryA(name: name)
+    }
+
+    var value: Expirable<ARecord>
+    if let stored = disguisedARecords.value(forKey: name), !stored.isExpired {
+      value = stored
+      value.time = .now()
+    } else {
+      value = Expirable(
+        ARecord(domainName: name, ttl: 10, data: availableIPPool.loadThenWrappingIncrement())
+      )
+    }
+
+    disguisedARecords.setValue(value, forKey: name)
+    return [value.record]
+  }
+}
+
+extension LocalDNSProxy: Resolver {
+
   func queryA(name: String) async throws -> [ARecord] {
-    guard let task = aTaskMap.value(forKey: name) else {
-      return try await _queryA(name: name).map { $0.record }
+    guard let task = availableAQueries.value(forKey: name) else {
+      return try await _queryA(name: name).map(\.record)
     }
 
     let expirables: [Expirable<ARecord>]
@@ -144,14 +226,14 @@ actor LocalDNSProxy: PacketHandle {
       expirables = try await task.value.filter { !$0.isExpired }
     } catch {
       // If cached task result in failure, we should remove it from cache and start a fresh request.
-      aTaskMap.removeValue(forKey: name)
+      availableAQueries.removeValue(forKey: name)
       expirables = []
     }
     guard expirables.isEmpty else {
-      return expirables.map { $0.record }
+      return expirables.map(\.record)
     }
 
-    return try await _queryA(name: name).map { $0.record }
+    return try await _queryA(name: name).map(\.record)
   }
 
   private func _queryA(name: String) async throws -> [Expirable<ARecord>] {
@@ -162,13 +244,13 @@ actor LocalDNSProxy: PacketHandle {
         Expirable($0)
       }
     }
-    aTaskMap.setValue(task, forKey: name)
+    availableAQueries.setValue(task, forKey: name)
     return try await task.value
   }
 
   func queryAAAA(name: String) async throws -> [AAAARecord] {
-    guard let task = aaaaTaskMap.value(forKey: name) else {
-      return try await self._queryAAAA(name: name).map { $0.record }
+    guard let task = availableAAAAQueries.value(forKey: name) else {
+      return try await self._queryAAAA(name: name).map(\.record)
     }
 
     let expirables: [Expirable<AAAARecord>]
@@ -176,13 +258,13 @@ actor LocalDNSProxy: PacketHandle {
       expirables = try await task.value.filter { !$0.isExpired }
     } catch {
       // If cached task result in failure, we should remove it from cache and start a fresh request.
-      aaaaTaskMap.removeValue(forKey: name)
+      availableAAAAQueries.removeValue(forKey: name)
       expirables = []
     }
     guard expirables.isEmpty else {
       return expirables.map { $0.record }
     }
-    return try await self._queryAAAA(name: name).map { $0.record }
+    return try await self._queryAAAA(name: name).map(\.record)
   }
 
   private func _queryAAAA(name: String) async throws -> [Expirable<AAAARecord>] {
@@ -193,7 +275,7 @@ actor LocalDNSProxy: PacketHandle {
         Expirable($0)
       }
     }
-    aaaaTaskMap.setValue(task, forKey: name)
+    availableAAAAQueries.setValue(task, forKey: name)
     return try await task.value
   }
 
@@ -208,21 +290,21 @@ actor LocalDNSProxy: PacketHandle {
   }
 
   func querySOA(name: String) async throws -> [SOARecord] {
-    guard let task = soaTaskMap.value(forKey: name) else {
-      return try await self._querySOA(name: name).map { $0.record }
+    guard let task = availableSOAQueries.value(forKey: name) else {
+      return try await self._querySOA(name: name).map(\.record)
     }
 
     let expirables: [Expirable<SOARecord>]
     do {
       expirables = try await task.value.filter { !$0.isExpired }
     } catch {
-      soaTaskMap.removeValue(forKey: name)
+      availableSOAQueries.removeValue(forKey: name)
       expirables = []
     }
     guard expirables.isEmpty else {
-      return expirables.map { $0.record }
+      return expirables.map(\.record)
     }
-    return try await self._querySOA(name: name).map { $0.record }
+    return try await self._querySOA(name: name).map(\.record)
   }
 
   private func _querySOA(name: String) async throws -> [Expirable<SOARecord>] {
@@ -230,10 +312,10 @@ actor LocalDNSProxy: PacketHandle {
 
     let task = Task {
       try await resolver.querySOA(name: name).map {
-          Expirable($0)
-        }
+        Expirable($0)
+      }
     }
-    soaTaskMap.setValue(task, forKey: name)
+    availableSOAQueries.setValue(task, forKey: name)
     return try await task.value
   }
 
@@ -262,7 +344,7 @@ private struct Expirable<Record: ResourceRecord>: Sendable {
 
   var record: Record
 
-  private let time = DispatchTime.now()
+  var time = DispatchTime.now()
 
   var isExpired: Bool {
     return time + Double(record.ttl) < .now()
