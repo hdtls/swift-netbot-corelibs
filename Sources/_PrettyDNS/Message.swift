@@ -6,7 +6,7 @@ import NEAddressProcessing
 import NIOCore
 
 /// `QTYPE` fields appear in the question part of a query, define the type of the question.
-public struct QTYPE: Hashable, Sendable, RawRepresentable {
+@DebugDescription public struct QTYPE: RawRepresentable, Hashable, Sendable {
 
   public var rawValue: UInt16
 
@@ -15,20 +15,23 @@ public struct QTYPE: Hashable, Sendable, RawRepresentable {
   }
 }
 
+/// Full list of DNS Parameters can be found here:  https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml
 extension QTYPE {
 
-  /// A host address.
+  /// A IPv4 host address.
   public static let a = QTYPE(rawValue: 1)
 
   /// An authoritative name server.
   public static let ns = QTYPE(rawValue: 2)
 
   /// A mail destination.
-  @available(*, deprecated, message: "obsoleted - use .mx instead")
+  ///
+  /// - Important: Obsoleted - use `.mx` instead.
   public static let md = QTYPE(rawValue: 3)
 
   /// A mail forwarder.
-  @available(*, deprecated, message: "obsoleted - use .mx instead")
+  ///
+  /// - Important: Obsoleted - use `.mx` instead.
   public static let mf = QTYPE(rawValue: 4)
 
   /// The canonical name for an alias.
@@ -57,10 +60,10 @@ extension QTYPE {
   /// - Important: EXPERIMENTAL.
   public static let null = QTYPE(rawValue: 10)
 
-  /// A well known service description.
+  /// A well-known service description.
   public static let wks = QTYPE(rawValue: 11)
 
-  /// A domain name pointer.
+  /// A domain name pointer (reverse DNS).
   public static let ptr = QTYPE(rawValue: 12)
 
   /// Host information.
@@ -75,28 +78,112 @@ extension QTYPE {
   /// Text strings.
   public static let txt = QTYPE(rawValue: 16)
 
+  /// A IPv6 host address.
   public static let aaaa = QTYPE(rawValue: 28)
 
+  /// Service locator.
   public static let srv = QTYPE(rawValue: 33)
 
+  /// Naming Authority Pointer.
   public static let naptr = QTYPE(rawValue: 35)
 
-  /// A request for a transfer of an entire zone.
+  /// EDNS pseudo.
+  public static let opt = QTYPE(rawValue: 41)
+
+  /// Delegation signer.
+  public static let ds = QTYPE(rawValue: 43)
+
+  /// DNSSEC signature.
+  public static let rrsig = QTYPE(rawValue: 46)
+
+  /// Next secure.
+  public static let nsec = QTYPE(rawValue: 47)
+
+  /// Hashed NSEC.
+  public static let nsec3 = QTYPE(rawValue: 50)
+
+  /// NSEC3 parameters.
+  public static let nsec3Param = QTYPE(rawValue: 51)
+
+  /// TLS certificate association.
+  public static let tlsa = QTYPE(rawValue: 52)
+
+  /// S/MIME cert association.
+  public static let smimea = QTYPE(rawValue: 53)
+
+  /// PGP public key.
+  public static let openPGPKey = QTYPE(rawValue: 61)
+
+  /// Service binding.
+  public static let svcb = QTYPE(rawValue: 64)
+
+  /// HTTPS binding (SVCB).
+  public static let https = QTYPE(rawValue: 65)
+
+  /// Incremental zone transfer.
+  public static let ixfr = QTYPE(rawValue: 251)
+
+  /// Transfer of an entire zone.
   public static let axfr = QTYPE(rawValue: 252)
 
-  /// A request for mailbox-related records (MB, MG or MR).
+  /// Mailbox-related records (MB, MG or MR).
   public static let mailb = QTYPE(rawValue: 253)
 
-  /// A request for mail agent RRs.
-  @available(*, deprecated, message: "obsolete - see .mx")
+  /// Mail agent RRs.
+  ///
+  /// - Important: obsolete - see .mx.
   public static let maila = QTYPE(rawValue: 254)
 
   /// A request for all records.
   public static let any = QTYPE(rawValue: 255)
 }
 
+extension QTYPE: CustomDebugStringConvertible {
+
+  public var debugDescription: String {
+    switch self {
+    case .a: return "A"
+    case .ns: return "NS"
+    case .md: return "MD"
+    case .mf: return "MF"
+    case .cname: return "CNAME"
+    case .soa: return "SOA"
+    case .mb: return "MB"
+    case .mg: return "MG"
+    case .mr: return "MR"
+    case .null: return "NULL"
+    case .wks: return "WKS"
+    case .ptr: return "PTR"
+    case .hinfo: return "HINFO"
+    case .minfo: return "MINFO"
+    case .mx: return "MX"
+    case .txt: return "TXT"
+    case .aaaa: return "AAAA"
+    case .srv: return "SRV"
+    case .naptr: return "NAPTR"
+    case .axfr: return "AXFR"
+    case .opt: return "OPT"
+    case .ds: return "DS"
+    case .rrsig: return "RRSIG"
+    case .nsec: return "NSEC"
+    case .nsec3: return "NSEC3"
+    case .nsec3Param: return "NSEC3PARAM"
+    case .tlsa: return "TLSA"
+    case .smimea: return "S/MIME cert association"
+    case .openPGPKey: return "OPENPGPKEY"
+    case .svcb: return "SVCB"
+    case .https: return "HTTPS"
+    case .ixfr: return "IXFR"
+    case .mailb: return "MAILB"
+    case .maila: return "MAILA"
+    case .any: return "*"
+    default: return "RAW(\(rawValue))"
+    }
+  }
+}
+
 /// `QCLASS` fields appear in the question section of a query, define the class of the question.
-public struct QCLASS: Hashable, Sendable, RawRepresentable {
+public struct QCLASS: RawRepresentable, Hashable, Sendable {
 
   public var rawValue: UInt16
 
@@ -107,21 +194,40 @@ public struct QCLASS: Hashable, Sendable, RawRepresentable {
 
 extension QCLASS {
 
-  /// The internet.
+  /// The internet (IN).
   public static let internet: QCLASS = QCLASS(rawValue: 1)
 
   /// The CSNET class.
-  @available(*, deprecated, message: "obsolete - used only for examples in some obsolete RFCs")
+  ///
+  /// - Important: Obsolete - used only for examples in some obsolete.
   public static let csnet = QCLASS(rawValue: 2)
 
-  /// The CHAOS class.
+  /// The CHAOS class (CH).
   public static let chaos = QCLASS(rawValue: 3)
 
-  /// Hesiod [Dyer 87].
+  /// Hesiod (HS).
   public static let hesiod = QCLASS(rawValue: 4)
 
-  /// Any class.
+  /// QCLASS NONE.
+  public static let none = QCLASS(rawValue: 254)
+
+  /// QCLASS * (any).
   public static let any = QCLASS(rawValue: 255)
+}
+
+extension QCLASS: CustomDebugStringConvertible {
+
+  public var debugDescription: String {
+    switch self {
+    case .internet: return "IN"
+    case .csnet: return "CSNET"
+    case .chaos: return "CH"
+    case .hesiod: return "HS"
+    case .none: return "QCLASS NONE"
+    case .any: return "QCLASS * (Any)"
+    default: return "RAW(\(rawValue))"
+    }
+  }
 }
 
 /// `TYPE` fields are used in resource records.
@@ -765,10 +871,44 @@ public struct Message: Sendable {
         }
       }
 
-      public var opcode: UInt8 {
-        get { UInt8((rawValue & 0x7800) >> 11) }
+      public struct OpCode: RawRepresentable, Hashable, Sendable, CustomDebugStringConvertible {
+
+        public var rawValue: UInt8
+
+        public var debugDescription: String {
+          switch self {
+          case .query: return "Query"
+          case .inverseQuery: return "Inverse Query"
+          case .status: return "Status"
+          case .notify: return "Notify"
+          case .update: return "Update"
+          case .dso: return "DNS Stateful Operations (DSO)"
+          default: return "RAW(\(rawValue))"
+          }
+        }
+
+        public init(rawValue: UInt8) {
+          self.rawValue = rawValue
+        }
+
+        public static let query = OpCode(rawValue: 0)
+
+        public static let inverseQuery = OpCode(rawValue: 1)
+
+        public static let status = OpCode(rawValue: 2)
+
+        public static let notify = OpCode(rawValue: 4)
+
+        public static let update = OpCode(rawValue: 5)
+
+        /// DNS stateful operations.
+        public static let dso = OpCode(rawValue: 6)
+      }
+
+      public var opcode: OpCode {
+        get { OpCode(rawValue: UInt8((rawValue & 0x7800) >> 11)) }
         set {
-          rawValue = (rawValue & ~0x7800) | ((UInt16(newValue) << 11) & 0x7800)
+          rawValue = (rawValue & ~0x7800) | ((UInt16(newValue.rawValue) << 11) & 0x7800)
         }
       }
 
@@ -802,9 +942,44 @@ public struct Message: Sendable {
         set { if newValue { rawValue |= 0x0010 } else { rawValue &= ~0x0010 } }
       }
 
-      public var responseCode: UInt8 {
-        get { UInt8(rawValue & 0x000F) }
-        set { rawValue = (rawValue & 0xFFF0) | (UInt16(newValue) & 0x000F) }
+      public struct RCode: RawRepresentable, Hashable, Sendable, CustomDebugStringConvertible {
+
+        public var rawValue: UInt8
+
+        public var debugDescription: String {
+          switch self {
+          case .noError: return "No Error"
+          case .formErr: return "Format Error"
+          case .servFail: return "Server Failure"
+          case .refused: return "Query Refused"
+          case .notAuth: return "Not Authorized"
+          case .notZone: return "Name not contained in zone"
+          default: return "RAW(\(rawValue))"
+          }
+        }
+
+        public init(rawValue: UInt8) {
+          self.rawValue = rawValue
+        }
+
+        public static let noError = RCode(rawValue: 0)
+
+        public static let formErr = RCode(rawValue: 1)
+
+        public static let servFail = RCode(rawValue: 2)
+
+        public static let notImp = RCode(rawValue: 4)
+
+        public static let refused = RCode(rawValue: 5)
+
+        public static let notAuth = RCode(rawValue: 9)
+
+        public static let notZone = RCode(rawValue: 10)
+      }
+
+      public var responseCode: RCode {
+        get { RCode(rawValue: UInt8(rawValue & 0x000F)) }
+        set { rawValue = (rawValue & 0xFFF0) | (UInt16(newValue.rawValue) & 0x000F) }
       }
 
       public init(rawValue: UInt16) {
@@ -813,14 +988,14 @@ public struct Message: Sendable {
 
       public init(
         response: Bool,
-        opcode: UInt8,
+        opcode: OpCode,
         authoritative: Bool,
         truncated: Bool,
         recursionDesired: Bool,
         recursionAvailable: Bool,
         authenticatedData: Bool,
         checkingDisabled: Bool,
-        responseCode: UInt8
+        responseCode: RCode
       ) {
         self.init(rawValue: 0)
         self.isResponse = response

@@ -16,6 +16,10 @@ public struct PrettyDNSParser: Sendable {
   public init() {}
 
   public func parse(_ parseInput: ByteBuffer) throws -> Message {
+    try parse0(parseInput).0
+  }
+
+  private func parse0(_ parseInput: ByteBuffer) throws -> (Message, Int) {
     var consumed = parseInput.readerIndex
     let headerFields = try parseHeaderFields(parseInput, consumed: &consumed)
 
@@ -59,8 +63,7 @@ public struct PrettyDNSParser: Sendable {
       additionalRRs: additionals
     )
 
-    assert(parseInput.readableBytes == consumed)
-    return message
+    return (message, consumed)
   }
 
   /// Parse DNS message header from complete DNS message data and specific consumed bytes offset.
