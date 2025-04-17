@@ -12,8 +12,8 @@
   @Suite struct IPPacketTests {
 
     @Test func ensureHasAtLeast20Bytes() async throws {
-      let data = IPPacket(data: ByteBuffer(bytes: [0x45, 0x0]), protocolFamily: 4)
-      #expect(data.data.readableBytes == 20)
+      let data = IPPacket(data: ByteBuffer(bytes: [0x45, 0x0]), protocolFamily: 2)
+      #expect(data?.data.readableBytes == 20)
     }
 
     @Test func getValues() async throws {
@@ -22,13 +22,13 @@
           "45000034000040004006aaaac0a80764c0a80765de5ace644b2b31e3bc83ee838010005bf6a300000101080a4a8e33e1b7d3e48b"
       )
 
-      let p = IPPacket(data: data, protocolFamily: 4)
-      #expect(p.protocolFamily == 4)
+      let p = IPPacket(data: data, protocolFamily: 2)
+      #expect(p?.protocolFamily == 2)
 
       let packet = IPPacket.IPv4Packet(data: data)
-      #expect(p.data == packet.data)
+      #expect(p?.data == packet.data)
 
-      #expect(packet.protocolFamily == 4)
+      #expect(packet.protocolFamily == 2)
       #expect(packet.internetHeaderLength == 5)
       #expect(packet.differentiatedServicesCodePoint == 0)
       #expect(packet.explicitCongestionNotification == 0)
@@ -59,14 +59,14 @@
       let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
       var packet = IPPacket.IPv4Packet(data: data)
-      #expect(packet.protocolFamily == 4)
+      #expect(packet.protocolFamily == 2)
       #expect(packet.internetHeaderLength == 5)
       #expect(packet.differentiatedServicesCodePoint == 0)
       #expect(packet.explicitCongestionNotification == 0)
       #expect(packet.totalLength == 20)
 
       packet.differentiatedServicesCodePoint = 4
-      #expect(packet.protocolFamily == 4)
+      #expect(packet.protocolFamily == 2)
       #expect(packet.internetHeaderLength == 5)
       #expect(packet.differentiatedServicesCodePoint == 4)
       #expect(packet.explicitCongestionNotification == 0)
@@ -81,14 +81,14 @@
       let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
       var packet = IPPacket.IPv4Packet(data: data)
-      #expect(packet.protocolFamily == 4)
+      #expect(packet.protocolFamily == 2)
       #expect(packet.internetHeaderLength == 5)
       #expect(packet.differentiatedServicesCodePoint == 0)
       #expect(packet.explicitCongestionNotification == 0)
       #expect(packet.totalLength == 20)
 
       packet.explicitCongestionNotification = 3
-      #expect(packet.protocolFamily == 4)
+      #expect(packet.protocolFamily == 2)
       #expect(packet.internetHeaderLength == 5)
       #expect(packet.differentiatedServicesCodePoint == 0)
       #expect(packet.explicitCongestionNotification == 3)
