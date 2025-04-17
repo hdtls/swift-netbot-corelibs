@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information
 //
 
+import Logging
+import NEAddressProcessing
 import NIOCore
 
 public actor __AnalyzerBot {
@@ -9,16 +11,17 @@ public actor __AnalyzerBot {
   private nonisolated let allocator = ByteBufferAllocator()
   private nonisolated let packetFlow: PacketTunnelFlow
   private nonisolated let dnsServer: String
-  private nonisolated let additionalDNSServers: [String]
+  private nonisolated let additionalDNSServers: [Address]
   private nonisolated let handles: [any PacketHandle]
 
-  public init(packetFlow: PacketTunnelFlow, dnsServer: String, additionalDNSServers: [String]) {
+  private var logger: Logger { AnalyzerBot.shared.logger }
+
+  public init(packetFlow: PacketTunnelFlow, dnsServer: String, additionalDNSServers: [Address]) {
     self.packetFlow = packetFlow
     self.dnsServer = dnsServer
     self.additionalDNSServers = additionalDNSServers
     self.handles = [
       LocalDNSProxy(
-        allocator: allocator,
         server: dnsServer,
         additionalServers: additionalDNSServers
       )

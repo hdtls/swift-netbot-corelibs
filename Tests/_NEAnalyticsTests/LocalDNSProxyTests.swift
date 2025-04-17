@@ -2,8 +2,12 @@
 // See LICENSE.txt for license information
 //
 
+import Anlzr
+import Atomics
 import NEAddressProcessing
 import NIOCore
+import NIOEmbedded
+import NIOPosix
 import Testing
 import _PrettyDNS
 
@@ -12,104 +16,61 @@ import _PrettyDNS
 @Suite(.tags(.dns))
 struct LocalDNSProxyTests {
 
-  class MockDNSResolver: Resolver, @unchecked Sendable {
-    var a: [ARecord] = []
-    var aQueryTimes = 0
+  final class MockDNSServer: Sendable {
+    let queryCalls: ManagedAtomic<Int> = .init(0)
+    let response: [any ResourceRecord]
+    let parser = PrettyDNSParser()
 
-    var aaaa: [AAAARecord] = []
-    var aaaaQueryTimes = 0
-
-    var ns: [NSRecord] = []
-    var nsQueryTimes = 0
-
-    var cname: [CNAMERecord] = []
-    var cnameQueryTimes = 0
-
-    var soa: [SOARecord] = []
-    var soaQueryTimes = 0
-
-    var ptr: [PTRRecord] = []
-    var ptrQueryTimes = 0
-
-    var mx: [MXRecord] = []
-    var mxQueryTimes = 0
-
-    var txt: [TXTRecord] = []
-    var txtQueryTimes = 0
-
-    var srv: [SRVRecord] = []
-    var srvQueryTimes = 0
-
-    init(
-      a: [ARecord] = [],
-      aaaa: [AAAARecord] = [],
-      ns: [NSRecord] = [],
-      cname: [CNAMERecord] = [],
-      soa: [SOARecord] = [],
-      ptr: [PTRRecord] = [],
-      mx: [MXRecord] = [],
-      txt: [TXTRecord] = [],
-      srv: [SRVRecord] = []
-    ) {
-      self.a = a
-      self.aaaa = aaaa
-      self.ns = ns
-      self.cname = cname
-      self.soa = soa
-      self.ptr = ptr
-      self.mx = mx
-      self.txt = txt
-      self.srv = srv
+    init(response: [any ResourceRecord]) {
+      self.response = response
     }
 
-    func queryA(name: String) async throws -> [ARecord] {
-      aQueryTimes += 1
-      return a
-    }
+    func start() async throws -> SocketAddress? {
+      let channel = try await DatagramBootstrap(group: .singletonMultiThreadedEventLoopGroup)
+        .bind(to: .init(ipAddress: "127.0.0.1", port: 0)) { channel in
+          channel.eventLoop.makeCompletedFuture {
+            try LocalDNSProxy.AsyncChannel(wrappingChannelSynchronously: channel)
+          }
+        }
 
-    func queryAAAA(name: String) async throws -> [AAAARecord] {
-      aaaaQueryTimes += 1
-      return aaaa
-    }
+      Task {
+        try await channel.executeThenClose { inbound, outbound in
+          for try await frame in inbound {
+            // Always response privoded records.
+            queryCalls.wrappingIncrement(ordering: .relaxed)
+            let message = try parser.parse(frame.data)
 
-    func queryNS(name: String) async throws -> [NSRecord] {
-      nsQueryTimes += 1
-      return ns
-    }
-
-    func queryCNAME(name: String) async throws -> [CNAMERecord] {
-      cnameQueryTimes += 1
-      return cname
-    }
-
-    func querySOA(name: String) async throws -> [SOARecord] {
-      soaQueryTimes += 1
-      return soa
-    }
-
-    func queryPTR(name: String) async throws -> [PTRRecord] {
-      ptrQueryTimes += 1
-      return ptr
-    }
-
-    func queryMX(name: String) async throws -> [MXRecord] {
-      mxQueryTimes += 1
-      return mx
-    }
-
-    func queryTXT(name: String) async throws -> [TXTRecord] {
-      txtQueryTimes += 1
-      return txt
-    }
-
-    func querySRV(name: String) async throws -> [SRVRecord] {
-      srvQueryTimes += 1
-      return srv
+            let response = Message(
+              headerFields: .init(
+                transactionID: message.headerFields.transactionID,
+                flags: .init(rawValue: 0x8100),
+                qestionCount: 1,
+                answerCount: UInt16(response.count),
+                authorityCount: 0,
+                additionCount: 0
+              ),
+              questions: message.questions,
+              answerRRs: response,
+              authorityRRs: [],
+              additionalRRs: []
+            )
+            let data = try response.serializedBytes
+            let envelop = AddressedEnvelope(
+              remoteAddress: frame.remoteAddress, data: ByteBuffer(bytes: data)
+            )
+            try await outbound.write(envelop)
+          }
+        }
+      }
+      return channel.channel.localAddress
     }
   }
 
   @Test func runQueryBeforeActive() async throws {
-    let p = LocalDNSProxy(allocator: .init(), server: "198.18.0.1", additionalServers: ["1.1.1.1"])
+    let p = LocalDNSProxy(
+      server: "198.18.0.1",
+      additionalServers: [.hostPort(host: "1.1.1.1", port: 53)]
+    )
     await #expect(throws: Never.self) {
       let name = "example.com"
       var result: [any ResourceRecord] = try await p.queryA(name: name)
@@ -145,10 +106,10 @@ struct LocalDNSProxyTests {
   }
 
   @Test func setResolverAfterActiveAutomatically() async throws {
-    let p = LocalDNSProxy(allocator: .init(), server: "198.18.0.1", additionalServers: ["1.1.1.1"])
-    await #expect(p.resolver == nil)
+    let p = LocalDNSProxy(server: "198.18.0.1", additionalServers: [])
+    await #expect(p.channel == nil)
     try await p.runIfActive()
-    await #expect(p.resolver != nil)
+    await #expect(p.channel != nil)
   }
 
   @Test func packetHandling() async throws {
@@ -196,7 +157,7 @@ struct LocalDNSProxyTests {
     let message = Message(
       headerFields: .init(
         transactionID: 0xcca8,
-        flags: .init(rawValue: 0x8180),
+        flags: .init(rawValue: 0x8000),
         qestionCount: 1,
         answerCount: 1,
         authorityCount: 0,
@@ -215,312 +176,268 @@ struct LocalDNSProxyTests {
   }
 
   @Test func queryA() async throws {
-    let p = LocalDNSProxy()
-    let resolver = MockDNSResolver(
-      a: [ARecord(domainName: "example.com", ttl: 300, data: .init("123.123.123.123")!)]
+    let server = MockDNSServer(
+      response: [
+        ARecord(
+          domainName: "example.com", ttl: 300, dataLength: .determined(4),
+          data: .init("123.123.123.123")!)
+      ]
     )
-    await p.setResolver(resolver)
+    let address = try #require(await server.start())
+    let p = LocalDNSProxy(additionalServers: [address.address])
+    try await p.runIfActive()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryA(name: "example.com")
       #expect(!result.isEmpty)
-      #expect(resolver.aQueryTimes == 1)
-      #expect(result == [resolver.a][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+      #expect(result == server.response as? [ARecord])
 
       _ = try await p.queryA(name: "example.com")
-      #expect(resolver.aQueryTimes == 1)
-      #expect(result == [resolver.a][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+      #expect(result == server.response as? [ARecord])
     }
   }
 
   @Test func handleExpiredARecord() async throws {
-    let p = LocalDNSProxy()
-    let resolver = MockDNSResolver(
-      a: [ARecord(domainName: "example.com", ttl: 0, data: .init("123.123.123.123")!)]
+    let server = MockDNSServer(
+      response: [
+        ARecord(
+          domainName: "example.com", ttl: 1, dataLength: .determined(4),
+          data: .init("123.123.123.123")!)
+      ]
     )
-    await p.setResolver(resolver)
+    let address = try #require(await server.start())
+    let p = LocalDNSProxy(additionalServers: [address.address])
+    try await p.runIfActive()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryA(name: "example.com")
       #expect(!result.isEmpty)
-      #expect(resolver.aQueryTimes == 1)
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+
+      // Wait for expiration.
+      try await Task.sleep(for: .seconds(1))
 
       _ = try await p.queryA(name: "example.com")
-      #expect(resolver.aQueryTimes == 2)
-    }
-  }
-
-  @Test func retryWhenCachedAQueryFailed() async throws {
-    class MockAQueryResolver: MockDNSResolver, @unchecked Sendable {
-
-      override func queryA(name: String) async throws -> [ARecord] {
-        aQueryTimes += 1
-        throw PrettyDNSError.notImplemented
-      }
-    }
-    let p = LocalDNSProxy()
-    let resolver = MockAQueryResolver()
-    await p.setResolver(resolver)
-
-    await #expect(throws: PrettyDNSError.self) {
-      _ = try await p.queryA(name: "example.com")
-      #expect(resolver.aQueryTimes == 1)
-    }
-
-    await #expect(throws: PrettyDNSError.self) {
-      _ = try await p.queryA(name: "example.com")
-      #expect(resolver.aQueryTimes == 2)
+      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
     }
   }
 
   @Test func queryAAAA() async throws {
-    let p = LocalDNSProxy()
-    let resolver = MockDNSResolver(
-      aaaa: [AAAARecord(domainName: "example.com", ttl: 300, data: .init("::1")!)]
+    let server = MockDNSServer(
+      response: [
+        AAAARecord(
+          domainName: "example.com", ttl: 300, dataLength: .determined(16), data: .init("::1")!)
+      ]
     )
-    await p.setResolver(resolver)
+    let address = try #require(await server.start())
+    let p = LocalDNSProxy(additionalServers: [address.address])
+    try await p.runIfActive()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryAAAA(name: "example.com")
       #expect(!result.isEmpty)
-      #expect(resolver.aaaaQueryTimes == 1)
-      #expect(result == [resolver.aaaa][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+      #expect(result == server.response as? [AAAARecord])
 
       _ = try await p.queryAAAA(name: "example.com")
-      #expect(resolver.aaaaQueryTimes == 1)
-      #expect(result == [resolver.aaaa][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+      #expect(result == server.response as? [AAAARecord])
     }
   }
 
   @Test func handleExpiredAAAARecord() async throws {
-    let p = LocalDNSProxy()
-    let resolver = MockDNSResolver(
-      aaaa: [AAAARecord(domainName: "example.com", ttl: 0, data: .init("::1")!)]
+    let server = MockDNSServer(
+      response: [AAAARecord(domainName: "example.com", ttl: 1, data: .init("::1")!)]
     )
-    await p.setResolver(resolver)
+    let address = try #require(await server.start())
+    let p = LocalDNSProxy(additionalServers: [address.address])
+    try await p.runIfActive()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryAAAA(name: "example.com")
       #expect(!result.isEmpty)
-      #expect(resolver.aaaaQueryTimes == 1)
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+
+      // Wait for expiration.
+      try await Task.sleep(for: .seconds(1))
 
       _ = try await p.queryAAAA(name: "example.com")
-      #expect(resolver.aaaaQueryTimes == 2)
-    }
-  }
-
-  @Test func retryWhenCachedAAAAQueryFailed() async throws {
-    class MockAAAAQueryResolver: MockDNSResolver, @unchecked Sendable {
-
-      override func queryAAAA(name: String) async throws -> [AAAARecord] {
-        aQueryTimes += 1
-        throw PrettyDNSError.notImplemented
-      }
-    }
-    let p = LocalDNSProxy()
-    let resolver = MockAAAAQueryResolver()
-    await p.setResolver(resolver)
-
-    await #expect(throws: PrettyDNSError.self) {
-      _ = try await p.queryAAAA(name: "example.com")
-      #expect(resolver.aaaaQueryTimes == 1)
-    }
-
-    await #expect(throws: PrettyDNSError.self) {
-      _ = try await p.queryAAAA(name: "example.com")
-      #expect(resolver.aaaaQueryTimes == 2)
+      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
     }
   }
 
   @Test func queryNS() async throws {
-    let p = LocalDNSProxy()
-    let resolver = MockDNSResolver(
-      ns: [NSRecord(domainName: "example.com", ttl: 300, data: "1.exp.com")]
+    let server = MockDNSServer(
+      response: [
+        NSRecord(domainName: "example.com", ttl: 300, dataLength: .determined(8), data: "1.exp.com")
+      ]
     )
-    await p.setResolver(resolver)
+    let address = try #require(await server.start())
+    let p = LocalDNSProxy(additionalServers: [address.address])
+    try await p.runIfActive()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryNS(name: "example.com")
       #expect(!result.isEmpty)
-      #expect(resolver.nsQueryTimes == 1)
-      #expect(result == [resolver.ns][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+      #expect(result == server.response as? [NSRecord])
 
       _ = try await p.queryNS(name: "example.com")
-      #expect(resolver.nsQueryTimes == 2)
-      #expect(result == [resolver.ns][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
+      #expect(result == server.response as? [NSRecord])
     }
   }
 
   @Test func queryCNAME() async throws {
-    let p = LocalDNSProxy()
-    let resolver = MockDNSResolver(
-      cname: [CNAMERecord(domainName: "example.com", ttl: 300, data: "1.exp.com")]
+    let server = MockDNSServer(
+      response: [
+        CNAMERecord(
+          domainName: "example.com", ttl: 300, dataLength: .determined(8), data: "1.exp.com")
+      ]
     )
-    await p.setResolver(resolver)
+    let address = try #require(await server.start())
+    let p = LocalDNSProxy(additionalServers: [address.address])
+    try await p.runIfActive()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryCNAME(name: "example.com")
       #expect(!result.isEmpty)
-      #expect(resolver.cnameQueryTimes == 1)
-      #expect(result == [resolver.cname][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+      #expect(result == server.response as? [CNAMERecord])
 
       _ = try await p.queryCNAME(name: "example.com")
-      #expect(resolver.cnameQueryTimes == 2)
-      #expect(result == [resolver.cname][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
+      #expect(result == server.response as? [CNAMERecord])
     }
   }
 
   @Test func querySOA() async throws {
-    let p = LocalDNSProxy()
-    let resolver = MockDNSResolver(
-      soa: [
+    let server = MockDNSServer(
+      response: [
         SOARecord(
           domainName: "example.com", ttl: 300,
+          dataLength: .determined(35),
           data: .init(
             primaryNameServer: "primary.example.com", responsibleMailbox: "mx.example.com",
             serialNumber: 0, refreshInterval: 0, retryInterval: 0, expirationTime: 0, ttl: 300))
       ]
     )
-    await p.setResolver(resolver)
+    let address = try #require(await server.start())
+    let p = LocalDNSProxy(additionalServers: [address.address])
+    try await p.runIfActive()
 
     await #expect(throws: Never.self) {
       let result = try await p.querySOA(name: "example.com")
       #expect(!result.isEmpty)
-      #expect(resolver.soaQueryTimes == 1)
-      #expect(result == [resolver.soa][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+      #expect(result == server.response as? [SOARecord])
 
       _ = try await p.querySOA(name: "example.com")
-      #expect(resolver.soaQueryTimes == 1)
-      #expect(result == [resolver.soa][0])
-    }
-  }
-
-  @Test func handleExpiredSOARecord() async throws {
-    let p = LocalDNSProxy()
-    let resolver = MockDNSResolver(
-      soa: [
-        SOARecord(
-          domainName: "example.com", ttl: 0,
-          data: .init(
-            primaryNameServer: "primary.example.com", responsibleMailbox: "mx.example.com",
-            serialNumber: 0, refreshInterval: 0, retryInterval: 0, expirationTime: 0, ttl: 0))
-      ]
-    )
-    await p.setResolver(resolver)
-
-    await #expect(throws: Never.self) {
-      let result = try await p.querySOA(name: "example.com")
-      #expect(!result.isEmpty)
-      #expect(resolver.soaQueryTimes == 1)
-
-      _ = try await p.querySOA(name: "example.com")
-      #expect(resolver.soaQueryTimes == 2)
-    }
-  }
-
-  @Test func retryWhenCachedSOAQueryFailed() async throws {
-    class MockSOAQueryResolver: MockDNSResolver, @unchecked Sendable {
-
-      override func querySOA(name: String) async throws -> [SOARecord] {
-        soaQueryTimes += 1
-        throw PrettyDNSError.notImplemented
-      }
-    }
-    let p = LocalDNSProxy()
-    let resolver = MockSOAQueryResolver()
-    await p.setResolver(resolver)
-
-    await #expect(throws: PrettyDNSError.self) {
-      _ = try await p.querySOA(name: "example.com")
-      #expect(resolver.soaQueryTimes == 1)
-    }
-
-    await #expect(throws: PrettyDNSError.self) {
-      _ = try await p.querySOA(name: "example.com")
-      #expect(resolver.soaQueryTimes == 2)
+      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
+      #expect(result == server.response as? [SOARecord])
     }
   }
 
   @Test func queryPTR() async throws {
-    let p = LocalDNSProxy()
-    let resolver = MockDNSResolver(
-      ptr: [PTRRecord(domainName: "example.com", ttl: 300, data: "1.exp.com")]
+    let server = MockDNSServer(
+      response: [
+        PTRRecord(
+          domainName: "example.com", ttl: 300, dataLength: .determined(8), data: "1.exp.com")
+      ]
     )
-    await p.setResolver(resolver)
+    let address = try #require(await server.start())
+    let p = LocalDNSProxy(additionalServers: [address.address])
+    try await p.runIfActive()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryPTR(name: "example.com")
       #expect(!result.isEmpty)
-      #expect(resolver.ptrQueryTimes == 1)
-      #expect(result == [resolver.ptr][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+      #expect(result == server.response as? [PTRRecord])
 
       _ = try await p.queryPTR(name: "example.com")
-      #expect(resolver.ptrQueryTimes == 2)
-      #expect(result == [resolver.ptr][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
+      #expect(result == server.response as? [PTRRecord])
     }
   }
 
   @Test func queryMX() async throws {
-    let p = LocalDNSProxy()
-    let resolver = MockDNSResolver(
-      mx: [
+    let server = MockDNSServer(
+      response: [
         MXRecord(
-          domainName: "example.com", ttl: 300, data: .init(preference: 10, exchange: "1.exp.com"))
+          domainName: "example.com",
+          ttl: 300,
+          dataLength: .determined(10),
+          data: .init(
+            preference: 10,
+            exchange: "1.exp.com"
+          )
+        )
       ]
     )
-    await p.setResolver(resolver)
+    let address = try #require(await server.start())
+    let p = LocalDNSProxy(additionalServers: [address.address])
+    try await p.runIfActive()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryMX(name: "example.com")
       #expect(!result.isEmpty)
-      #expect(resolver.mxQueryTimes == 1)
-      #expect(result == [resolver.mx][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+      #expect(result == server.response as? [MXRecord])
 
       _ = try await p.queryMX(name: "example.com")
-      #expect(resolver.mxQueryTimes == 2)
-      #expect(result == [resolver.mx][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
+      #expect(result == server.response as? [MXRecord])
     }
   }
 
   @Test func queryTXT() async throws {
-    let p = LocalDNSProxy()
-    let resolver = MockDNSResolver(
-      txt: [TXTRecord(domainName: "example.com", ttl: 300, data: "1.exp.com")]
+    let server = MockDNSServer(
+      response: [
+        TXTRecord(
+          domainName: "example.com", ttl: 300, dataLength: .determined(10), data: "1.exp.com")
+      ]
     )
-    await p.setResolver(resolver)
+    let address = try #require(await server.start())
+    let p = LocalDNSProxy(additionalServers: [address.address])
+    try await p.runIfActive()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryTXT(name: "example.com")
       #expect(!result.isEmpty)
-      #expect(resolver.txtQueryTimes == 1)
-      #expect(result == [resolver.txt][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+      #expect(result == server.response as? [TXTRecord])
 
       _ = try await p.queryTXT(name: "example.com")
-      #expect(resolver.txtQueryTimes == 2)
-      #expect(result == [resolver.txt][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
+      #expect(result == server.response as? [TXTRecord])
     }
   }
 
   @Test func querySRV() async throws {
-    let p = LocalDNSProxy()
-    let resolver = MockDNSResolver(
-      srv: [
+    let server = MockDNSServer(
+      response: [
         SRVRecord(
           domainName: "example.com", ttl: 300,
+          dataLength: .determined(14),
           data: .init(priority: 0, weight: 0, port: 33, hostname: "1.exp.com"))
       ]
     )
-    await p.setResolver(resolver)
+    let address = try #require(await server.start())
+    let p = LocalDNSProxy(additionalServers: [address.address])
+    try await p.runIfActive()
 
     await #expect(throws: Never.self) {
       let result = try await p.querySRV(name: "example.com")
       #expect(!result.isEmpty)
-      #expect(resolver.srvQueryTimes == 1)
-      #expect(result == [resolver.srv][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+      #expect(result == server.response as? [SRVRecord])
 
       _ = try await p.querySRV(name: "example.com")
-      #expect(resolver.srvQueryTimes == 2)
-      #expect(result == [resolver.srv][0])
+      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
+      #expect(result == server.response as? [SRVRecord])
     }
   }
 }

@@ -7,13 +7,19 @@ import AnlzrReports
 import Dispatch
 import Logging
 import NEAddressProcessing
+import NIOConcurrencyHelpers
 import NIOCore
+import NIOPosix
 import _PrettyDNS
+
+typealias Resolver = _PrettyDNS.Resolver
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 actor LocalDNSProxy: PacketHandle {
 
-  let allocator: ByteBufferAllocator
+  private var allocator: ByteBufferAllocator {
+    channel!.channel.allocator
+  }
 
   private let parser = PrettyDNSParser()
   private let availableAQueries: LRUCache<String, Task<[Expirable<ARecord>], any Error>>
@@ -23,23 +29,44 @@ actor LocalDNSProxy: PacketHandle {
   private let availablePTRQueries: LRUCache<String, Task<[Expirable<PTRRecord>], any Error>>
 
   private let bindAddress: String
-  private let additionalServers: [String]
+  private let additionalServers: [SocketAddress]
   private let availableIPPool: AvailableIPPool
-
-  internal var resolver: (any Resolver & Sendable)? = .none
 
   private let logger = Logger(label: "dns")
 
+  internal typealias AsyncChannel = NIOAsyncChannel<
+    AddressedEnvelope<ByteBuffer>, AddressedEnvelope<ByteBuffer>
+  >
+
+  internal var channel: AsyncChannel?
+  private var sessions: [UInt16: EventLoopPromise<Message>] = [:]
+  private let eventLoopGroup: any EventLoopGroup = NIOPosix.MultiThreadedEventLoopGroup.singleton
+
+  private let queries = AsyncStream.makeStream(of: Message.self)
+
   init(
-    allocator: ByteBufferAllocator = .init(),
     server: String = "198.18.0.2",
-    additionalServers: [String] = [],
+    additionalServers: [Address] = [],
     availableIPPool: AvailableIPPool = .init(
       bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
   ) {
-    self.allocator = allocator
     self.bindAddress = server
-    self.additionalServers = additionalServers
+    self.additionalServers = additionalServers.compactMap {
+      switch $0 {
+      case .hostPort(let host, let port):
+        switch host {
+        case .ipv4(let v4):
+          return try? SocketAddress(ipAddress: "\(v4)", port: Int(port.rawValue))
+        case .ipv6(let v6):
+          return try? SocketAddress(ipAddress: "\(v6)", port: Int(port.rawValue))
+        case .name(let name):
+          return try? SocketAddress.makeAddressResolvingHost(name, port: Int(port.rawValue))
+        }
+      case .unix(let path):
+        return try? SocketAddress(unixDomainSocketPath: path)
+      default: return nil
+      }
+    }
     self.availableIPPool = availableIPPool
     self.availableAQueries = .init(capacity: 200)
     self.availableAAAAQueries = .init(capacity: 200)
@@ -48,10 +75,70 @@ actor LocalDNSProxy: PacketHandle {
     self.disguisedARecords = .init(capacity: 200)
   }
 
-  func runIfActive() async throws {
-    var options = DNSResolver.Options.default
-    options.servers = additionalServers
-    self.resolver = try DNSResolver(options: options)
+  nonisolated func runIfActive() async throws {
+    try await runIfActive0()
+
+    Task {
+      // After `runIfActive0() the channel is set
+      // and should not be nil, so it's ok unwrapping value.
+      try await channel!.executeThenClose { inbound, outbound in
+        try await withThrowingTaskGroup { g in
+          g.addTask { [self] in
+            for await query in queries.stream {
+              for serverAddress in additionalServers {
+                let envelope = try await AddressedEnvelope(
+                  remoteAddress: serverAddress,
+                  data: allocator.buffer(bytes: query.serializedBytes)
+                )
+
+                do {
+                  try await outbound.write(envelope)
+                  break
+                } catch {
+                  // Failed to write data to remote address, try with next server.
+                  continue
+                }
+              }
+            }
+          }
+
+          g.addTask { [self] in
+            for try await envelop in inbound {
+              let message = try parser.parse(envelop.data)
+
+              // It's a DNS response if sessions contains promise for
+              // specific transaction ID, otherwise it's a query.
+              // For now, we don't support query handle, message will
+              // be ignored.
+              guard let promise = await sessions[message.headerFields.transactionID] else {
+                return
+              }
+              promise.succeed(message)
+            }
+          }
+
+          try await g.waitForAll()
+        }
+      }
+    }
+  }
+
+  private func runIfActive0() async throws {
+    guard channel == nil else { return }
+
+    channel = try await DatagramBootstrap(group: MultiThreadedEventLoopGroup.singleton)
+      .channelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
+      .bind(to: .init(ipAddress: "0.0.0.0", port: 0)) { channel in
+        channel.eventLoop.makeCompletedFuture {
+          try NIOAsyncChannel(
+            wrappingChannelSynchronously: channel,
+            configuration: .init(
+              inboundType: AddressedEnvelope<ByteBuffer>.self,
+              outboundType: AddressedEnvelope<ByteBuffer>.self
+            )
+          )
+        }
+      }
   }
 
   func handle(_ packetObject: IPPacket) async throws -> PacketHandleResult {
@@ -96,69 +183,46 @@ actor LocalDNSProxy: PacketHandle {
 
     var message = try parser.parse(dnsPayload)
 
-    logger
-      .debug(
-        "[\(packet.identification)] \(packet.protocol) \(packet.sourceAddress) => \(packet.destinationAddress) Receive DNS query message: \(message)"
-      )
-    let questions = message.questions
-    let answerRRs = await withTaskGroup(of: [any ResourceRecord].self) { g in
-      for question in questions {
-        g.addTask { [self] in
-          do {
-            switch question.queryType {
-            case .a:
-              return try await self.queryA0(name: question.domainName)
-            case .ns:
-              return try await self.queryNS(name: question.domainName)
-            case .cname:
-              return try await self.queryCNAME(name: question.domainName)
-            case .soa:
-              return try await self.querySOA(name: question.domainName)
-            case .ptr:
-              return try await self.queryPTR(name: question.domainName)
-            case .mx:
-              return try await self.queryMX(name: question.domainName)
-            case .txt:
-              return try await self.queryTXT(name: question.domainName)
-            case .aaaa:
-              return try await self.queryAAAA(name: question.domainName)
-            case .srv:
-              return try await self.querySRV(name: question.domainName)
-            default:
-              return []
-            }
-          } catch {
-            return []
-          }
-        }
-      }
+    var msg =
+      "\(packet.sourceAddress) => \(packet.destinationAddress) \(packet.totalLength) Standard query \(message.headerFields.transactionID)"
+    msg += message.questions.map { " \($0.queryType) \($0.domainName)" }.joined()
+    logger.debug("\(msg)")
+    msg += message.answerRRs.map { " \($0.dataType) \($0.domainName)" }.joined()
+    msg += message.authorityRRs.map { " \($0.dataType) \($0.domainName)" }.joined()
+    msg += message.additionalRRs.map { " \($0.dataType) \($0.domainName)" }.joined()
+    logger.trace("\(msg)")
 
-      var results: [any ResourceRecord] = []
-      for await rr in g {
-        results += rr
+    // TODO: Multiple Qestions.
+    if let question = message.questions.first {
+      switch question.queryType {
+      case .a:
+        // All communications inside of the domain protocol are carried in the same
+        // message format, so we can modify query message to fake response message.
+        message.headerFields.flags = .init(
+          response: true,
+          opcode: .query,
+          authoritative: false,
+          truncated: false,
+          recursionDesired: false,
+          recursionAvailable: false,
+          authenticatedData: false,
+          checkingDisabled: false,
+          responseCode: .noError
+        )
+        message.headerFields.answerCount = 1
+        message.headerFields.authorityCount = 0
+        message.headerFields.additionCount = 0
+        message.answerRRs = try await queryDisguisedA(name: question.domainName)
+        message.authorityRRs = []
+        message.additionalRRs = []
+      // TODO: IPv6 Support
+      //    case .aaaa:
+      default:
+        message = try await query(msg: message)
       }
-      return results
+    } else {
+      message = try await query(msg: message)
     }
-
-    // All communications inside of the domain protocol are carried in the same
-    // message format, so we can modify query message to make response message.
-    message.headerFields.flags = .init(
-      response: true,
-      opcode: 0,
-      authoritative: false,
-      truncated: false,
-      recursionDesired: true,
-      recursionAvailable: true,
-      authenticatedData: false,
-      checkingDisabled: false,
-      responseCode: 0
-    )
-    message.headerFields.answerCount = 1
-    message.headerFields.authorityCount = 0
-    message.headerFields.additionCount = 0
-    message.answerRRs = answerRRs
-    message.authorityRRs = []
-    message.additionalRRs = []
 
     datagram.destinationPort = datagram.sourcePort
     datagram.sourcePort = destinationPort
@@ -180,20 +244,20 @@ actor LocalDNSProxy: PacketHandle {
     packet.options = nil
     packet.payload = datagram.data
 
-    logger
-      .debug(
-        "[\(packet.identification)] \(packet.protocol) \(packet.sourceAddress) => \(packet.destinationAddress) Response DNS query message: \(message)"
-      )
+    msg =
+      "\(packet.sourceAddress) => \(packet.destinationAddress) \(packet.totalLength) Standard query response \(message.headerFields.transactionID)"
+    msg += message.questions.map { " \($0.queryType) \($0.domainName)" }.joined()
+    logger.debug("\(msg)")
+    msg += message.answerRRs.map { " \($0.dataType) \($0.domainName)" }.joined()
+    msg += message.authorityRRs.map { " \($0.dataType) \($0.domainName)" }.joined()
+    msg += message.additionalRRs.map { " \($0.dataType) \($0.domainName)" }.joined()
+    logger.trace("\(msg)")
 
     return .handled(.v4(packet))
   }
 
-  internal func setResolver(_ resolver: any Resolver & Sendable) {
-    self.resolver = resolver
-  }
-
   // Returns disguised records contains one reserved IPv4 address.
-  private func queryA0(name: String) async throws -> [ARecord] {
+  private func queryDisguisedA(name: String) async throws -> [ARecord] {
     Task(priority: .background) {
       // Query and update actual A records.
       _ = try await queryA(name: name)
@@ -212,13 +276,57 @@ actor LocalDNSProxy: PacketHandle {
     disguisedARecords.setValue(value, forKey: name)
     return [value.record]
   }
+
+  func query(msg message: Message) async throws -> Message {
+    guard channel != nil else {
+      return Message(
+        headerFields: .init(
+          transactionID: message.headerFields.transactionID,
+          flags: .init(rawValue: 0x8000),
+          qestionCount: 1,
+          answerCount: 0,
+          authorityCount: 0,
+          additionCount: 0
+        ),
+        questions: message.questions,
+        answerRRs: [],
+        authorityRRs: [],
+        additionalRRs: []
+      )
+    }
+    let promise = eventLoopGroup.next().makePromise(of: Message.self)
+    sessions[message.headerFields.transactionID] = promise
+    queries.continuation.yield(message)
+    defer {
+      sessions.removeValue(forKey: message.headerFields.transactionID)
+    }
+    return try await promise.futureResult.get()
+  }
+
+  func query(name: String, qt: QTYPE) async throws -> Message {
+    let message = Message(
+      headerFields: .init(
+        transactionID: UInt16.random(in: 0...UInt16.max),
+        flags: .init(rawValue: 0x8181),
+        qestionCount: 1,
+        answerCount: 0,
+        authorityCount: 0,
+        additionCount: 0
+      ),
+      questions: [Question(domainName: name, queryType: qt)],
+      answerRRs: [],
+      authorityRRs: [],
+      additionalRRs: []
+    )
+    return try await query(msg: message)
+  }
 }
 
 extension LocalDNSProxy: Resolver {
 
   func queryA(name: String) async throws -> [ARecord] {
     guard let task = availableAQueries.value(forKey: name) else {
-      return try await _queryA(name: name).map(\.record)
+      return try await queryA0(name: name).map(\.record)
     }
 
     let expirables: [Expirable<ARecord>]
@@ -233,14 +341,14 @@ extension LocalDNSProxy: Resolver {
       return expirables.map(\.record)
     }
 
-    return try await _queryA(name: name).map(\.record)
+    return try await queryA0(name: name).map(\.record)
   }
 
-  private func _queryA(name: String) async throws -> [Expirable<ARecord>] {
-    guard let resolver else { return [] }
+  private func queryA0(name: String) async throws -> [Expirable<ARecord>] {
+    guard channel != nil else { return [] }
 
     let task = Task<[Expirable<ARecord>], any Error> {
-      try await resolver.queryA(name: name).map {
+      try await query(name: name, qt: .a).answerRRs.lazy.compactMap { $0 as? ARecord }.map {
         Expirable($0)
       }
     }
@@ -250,7 +358,7 @@ extension LocalDNSProxy: Resolver {
 
   func queryAAAA(name: String) async throws -> [AAAARecord] {
     guard let task = availableAAAAQueries.value(forKey: name) else {
-      return try await self._queryAAAA(name: name).map(\.record)
+      return try await self.queryAAAA0(name: name).map(\.record)
     }
 
     let expirables: [Expirable<AAAARecord>]
@@ -264,14 +372,14 @@ extension LocalDNSProxy: Resolver {
     guard expirables.isEmpty else {
       return expirables.map { $0.record }
     }
-    return try await self._queryAAAA(name: name).map(\.record)
+    return try await self.queryAAAA0(name: name).map(\.record)
   }
 
-  private func _queryAAAA(name: String) async throws -> [Expirable<AAAARecord>] {
-    guard let resolver else { return [] }
+  private func queryAAAA0(name: String) async throws -> [Expirable<AAAARecord>] {
+    guard channel != nil else { return [] }
 
     let task = Task<[Expirable<AAAARecord>], any Error> {
-      try await resolver.queryAAAA(name: name).map {
+      try await query(name: name, qt: .aaaa).answerRRs.lazy.compactMap { $0 as? AAAARecord }.map {
         Expirable($0)
       }
     }
@@ -280,63 +388,31 @@ extension LocalDNSProxy: Resolver {
   }
 
   func queryNS(name: String) async throws -> [NSRecord] {
-    guard let resolver else { return [] }
-    return try await resolver.queryNS(name: name)
+    try await query(name: name, qt: .ns).answerRRs.compactMap { $0 as? NSRecord }
   }
 
   func queryCNAME(name: String) async throws -> [CNAMERecord] {
-    guard let resolver else { return [] }
-    return try await resolver.queryCNAME(name: name)
+    try await query(name: name, qt: .cname).answerRRs.compactMap { $0 as? CNAMERecord }
   }
 
   func querySOA(name: String) async throws -> [SOARecord] {
-    guard let task = availableSOAQueries.value(forKey: name) else {
-      return try await self._querySOA(name: name).map(\.record)
-    }
-
-    let expirables: [Expirable<SOARecord>]
-    do {
-      expirables = try await task.value.filter { !$0.isExpired }
-    } catch {
-      availableSOAQueries.removeValue(forKey: name)
-      expirables = []
-    }
-    guard expirables.isEmpty else {
-      return expirables.map(\.record)
-    }
-    return try await self._querySOA(name: name).map(\.record)
-  }
-
-  private func _querySOA(name: String) async throws -> [Expirable<SOARecord>] {
-    guard let resolver else { return [] }
-
-    let task = Task {
-      try await resolver.querySOA(name: name).map {
-        Expirable($0)
-      }
-    }
-    availableSOAQueries.setValue(task, forKey: name)
-    return try await task.value
+    try await query(name: name, qt: .soa).answerRRs.compactMap { $0 as? SOARecord }
   }
 
   func queryPTR(name: String) async throws -> [PTRRecord] {
-    guard let resolver else { return [] }
-    return try await resolver.queryPTR(name: name)
+    try await query(name: name, qt: .ptr).answerRRs.compactMap { $0 as? PTRRecord }
   }
 
   func queryMX(name: String) async throws -> [MXRecord] {
-    guard let resolver else { return [] }
-    return try await resolver.queryMX(name: name)
+    try await query(name: name, qt: .mx).answerRRs.compactMap { $0 as? MXRecord }
   }
 
   func queryTXT(name: String) async throws -> [TXTRecord] {
-    guard let resolver else { return [] }
-    return try await resolver.queryTXT(name: name)
+    try await query(name: name, qt: .txt).answerRRs.compactMap { $0 as? TXTRecord }
   }
 
   func querySRV(name: String) async throws -> [SRVRecord] {
-    guard let resolver else { return [] }
-    return try await resolver.querySRV(name: name)
+    try await query(name: name, qt: .srv).answerRRs.compactMap { $0 as? SRVRecord }
   }
 }
 
