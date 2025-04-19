@@ -12,8 +12,6 @@ import NIOCore
 import NIOPosix
 import _PrettyDNS
 
-typealias Resolver = _PrettyDNS.Resolver
-
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 actor LocalDNSProxy: PacketHandle {
 
@@ -29,7 +27,7 @@ actor LocalDNSProxy: PacketHandle {
   private let availablePTRQueries: LRUCache<String, Task<[Expirable<PTRRecord>], any Error>>
 
   private let bindAddress: String
-  private let additionalServers: [SocketAddress]
+  private let additionalServers: [Address]
   private let availableIPPool: AvailableIPPool
 
   private let logger = Logger(label: "dns")
@@ -51,22 +49,7 @@ actor LocalDNSProxy: PacketHandle {
       bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
   ) {
     self.bindAddress = server
-    self.additionalServers = additionalServers.compactMap {
-      switch $0 {
-      case .hostPort(let host, let port):
-        switch host {
-        case .ipv4(let v4):
-          return try? SocketAddress(ipAddress: "\(v4)", port: Int(port.rawValue))
-        case .ipv6(let v6):
-          return try? SocketAddress(ipAddress: "\(v6)", port: Int(port.rawValue))
-        case .name(let name):
-          return try? SocketAddress.makeAddressResolvingHost(name, port: Int(port.rawValue))
-        }
-      case .unix(let path):
-        return try? SocketAddress(unixDomainSocketPath: path)
-      default: return nil
-      }
-    }
+    self.additionalServers = additionalServers
     self.availableIPPool = availableIPPool
     self.availableAQueries = .init(capacity: 200)
     self.availableAAAAQueries = .init(capacity: 200)
@@ -89,7 +72,7 @@ actor LocalDNSProxy: PacketHandle {
             for await query in queries.stream {
               for serverAddress in additionalServers {
                 let envelope = try await AddressedEnvelope(
-                  remoteAddress: serverAddress,
+                  remoteAddress: serverAddress.address,
                   data: allocator.buffer(bytes: query.serializedBytes)
                 )
 
