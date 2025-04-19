@@ -3,6 +3,7 @@
 //
 
 import NEAddressProcessing
+import NIOCore
 
 extension Message {
 
@@ -54,10 +55,18 @@ extension Array where Element == UInt8 {
     }
   }
 
-  fileprivate mutating func _append(contentsOf: [Substring], compression: inout [String: Int]) {
-    var labels = contentsOf
+  fileprivate mutating func _append(
+    contentsOf newElements: [Substring], compression: inout [String: Int]
+  ) {
+    guard !newElements.isEmpty else {
+      append(.zero)
+      return
+    }
+
+    var labels = newElements[...]
     repeat {
-      let pointer = compression[labels.joined(separator: ".")]
+      let key = labels.joined(separator: ".")
+      let pointer = compression[key]
       guard pointer == nil else {
         // Found reusable compressed domain.
         // pointer here is non-nil force unwrapping is ok.
@@ -66,9 +75,10 @@ extension Array where Element == UInt8 {
       }
 
       // A new label is here, we need record offset for compressor to use.
-      compression[labels.joined(separator: ".")] = endIndex
+      compression[key] = endIndex
 
-      let label = labels.removeFirst()
+      let label = labels[labels.startIndex]
+      labels = labels.suffix(from: index(after: labels.startIndex))
 
       // Write label without compression.
       append(UInt8(label.utf8.count))
@@ -140,6 +150,8 @@ extension Array where Element == UInt8 {
       append(contentsOf: rr.data.regExp.utf8)
       labels = rr.data.replacement.split(separator: ".")
       _append(contentsOf: labels, compression: &compression)
+    case let rr as RAWRecord:
+      append(contentsOf: rr.data.readableBytesView)
     default:
       throw PrettyDNSError.notImplemented
     }

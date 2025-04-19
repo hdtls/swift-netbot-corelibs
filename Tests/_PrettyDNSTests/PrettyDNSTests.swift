@@ -965,4 +965,44 @@ struct PrettyDNSTests {
       #expect(ByteBuffer(bytes: serializedBytes) == parseInput)
     }
   }
+
+  @Test func serializeEmptyDomainInRR() async throws {
+    let answerRRs = [
+      CNAMERecord(
+        domainName: "example.com",
+        ttl: 60,
+        dataLength: .determined(0),
+        data: ""
+      )
+    ]
+
+    let questions = [
+      Question(domainName: "example.com", queryType: .cname)
+    ]
+
+    let message = Message(
+      headerFields: .init(
+        transactionID: 0xaaaa,
+        flags: .init(rawValue: 0x8180),
+        qestionCount: UInt16(questions.count),
+        answerCount: UInt16(answerRRs.count),
+        authorityCount: 0,
+        additionCount: 0
+      ),
+      questions: questions,
+      answerRRs: answerRRs,
+      authorityRRs: [],
+      additionalRRs: []
+    )
+
+    let parseInput = try ByteBuffer(
+      plainHexEncodedBytes:
+        "aaaa81800001000100000000076578616d706c6503636f6d0000050001c00c000500010000003c000100"
+    )
+
+    #expect(throws: Never.self) {
+      let serializedBytes = try message.serializedBytes
+      #expect(ByteBuffer(bytes: serializedBytes) == parseInput)
+    }
+  }
 }
