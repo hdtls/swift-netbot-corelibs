@@ -42,12 +42,7 @@ actor LocalDNSProxy: PacketHandle {
 
   private let queries = AsyncStream.makeStream(of: Message.self)
 
-  init(
-    server: String = "198.18.0.2",
-    additionalServers: [Address] = [],
-    availableIPPool: AvailableIPPool = .init(
-      bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-  ) {
+  init(server: String, additionalServers: [Address], availableIPPool: AvailableIPPool) {
     self.bindAddress = server
     self.additionalServers = additionalServers
     self.availableIPPool = availableIPPool

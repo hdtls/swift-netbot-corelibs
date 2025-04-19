@@ -69,7 +69,8 @@ struct LocalDNSProxyTests {
   @Test func runQueryBeforeActive() async throws {
     let p = LocalDNSProxy(
       server: "198.18.0.1",
-      additionalServers: [.hostPort(host: "1.1.1.1", port: 53)]
+      additionalServers: [.hostPort(host: "1.1.1.1", port: 53)],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     await #expect(throws: Never.self) {
       let name = "example.com"
@@ -106,14 +107,22 @@ struct LocalDNSProxyTests {
   }
 
   @Test func setResolverAfterActiveAutomatically() async throws {
-    let p = LocalDNSProxy(server: "198.18.0.1", additionalServers: [])
+    let p = LocalDNSProxy(
+      server: "198.18.0.1",
+      additionalServers: [],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    )
     await #expect(p.channel == nil)
     try await p.runIfActive()
     await #expect(p.channel != nil)
   }
 
   @Test func directlyPacketHandling() async throws {
-    let p = LocalDNSProxy(server: "198.18.1.1")
+    let p = LocalDNSProxy(
+      server: "198.18.1.1",
+      additionalServers: [],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    )
     try await p.runIfActive()
 
     let message = Message(
@@ -225,7 +234,11 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(additionalServers: [address.address])
+    let p = LocalDNSProxy(
+      server: "198.18.0.2",
+      additionalServers: [address.address],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    )
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -249,7 +262,11 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(additionalServers: [address.address])
+    let p = LocalDNSProxy(
+      server: "198.18.0.2",
+      additionalServers: [address.address],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    )
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -273,7 +290,11 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(additionalServers: [address.address])
+    let p = LocalDNSProxy(
+      server: "198.18.0.2",
+      additionalServers: [address.address],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    )
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -293,7 +314,11 @@ struct LocalDNSProxyTests {
       response: [AAAARecord(domainName: "example.com", ttl: 1, data: .init("::1")!)]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(additionalServers: [address.address])
+    let p = LocalDNSProxy(
+      server: "198.18.0.2",
+      additionalServers: [address.address],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    )
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -316,7 +341,11 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(additionalServers: [address.address])
+    let p = LocalDNSProxy(
+      server: "198.18.0.2",
+      additionalServers: [address.address],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    )
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -339,7 +368,11 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(additionalServers: [address.address])
+    let p = LocalDNSProxy(
+      server: "198.18.0.2",
+      additionalServers: [address.address],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    )
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -366,7 +399,11 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(additionalServers: [address.address])
+    let p = LocalDNSProxy(
+      server: "198.18.0.2",
+      additionalServers: [address.address],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    )
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -389,7 +426,11 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(additionalServers: [address.address])
+    let p = LocalDNSProxy(
+      server: "198.18.0.2",
+      additionalServers: [address.address],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    )
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -419,7 +460,11 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(additionalServers: [address.address])
+    let p = LocalDNSProxy(
+      server: "198.18.0.2",
+      additionalServers: [address.address],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    )
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -442,7 +487,11 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(additionalServers: [address.address])
+    let p = LocalDNSProxy(
+      server: "198.18.0.2",
+      additionalServers: [address.address],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    )
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -467,7 +516,11 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(additionalServers: [address.address])
+    let p = LocalDNSProxy(
+      server: "198.18.0.2",
+      additionalServers: [address.address],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    )
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {

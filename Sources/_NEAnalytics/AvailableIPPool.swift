@@ -37,23 +37,23 @@ extension IPv4Address {
   }
 }
 
-struct AvailableIPPool: Sendable {
+public struct AvailableIPPool: Sendable {
 
   private let _storage: ManagedAtomic<UInt32>
   private let bounds: (lower: UInt32, upper: UInt32)
 
-  var lower: IPv4Address {
+  public var lower: IPv4Address {
     IPv4Address(bounds.lower)
   }
 
-  var upper: IPv4Address {
+  public var upper: IPv4Address {
     IPv4Address(bounds.upper)
   }
 
   /// Create a new FakeIPPool with specific IP range.
   ///
   /// - Important: IP addresses lowerBound and upperBound is used for caculate range and will not be generated
-  init(bounds: (lower: IPv4Address, upper: IPv4Address)) {
+  public init(bounds: (lower: IPv4Address, upper: IPv4Address)) {
     self.bounds = (bounds.lower._address.bigEndian, bounds.upper._address.bigEndian)
     _storage = .init(bounds.lower._address.bigEndian)
   }
@@ -63,7 +63,7 @@ struct AvailableIPPool: Sendable {
   /// - Important: Network and broadcast address will not be generated.
   ///
   /// - Parameter desired: A block of IPv4 addresses string (e.g. 192.168.0.1/16).
-  init?(uncheckedBounds desired: String) {
+  public init?(uncheckedBounds desired: String) {
     let components = desired.split(separator: "/")
     let addressComponents = components[0].split(separator: ".")
     guard addressComponents.count == 4 else {
@@ -86,7 +86,7 @@ struct AvailableIPPool: Sendable {
   }
 
   /// Generate the usable IP excluding network and broadcast addresses.
-  func loadThenWrappingIncrement() -> IPv4Address {
+  public func loadThenWrappingIncrement() -> IPv4Address {
     var address = _storage.loadThenWrappingIncrement(ordering: .relaxed)
 
     if address == bounds.lower {

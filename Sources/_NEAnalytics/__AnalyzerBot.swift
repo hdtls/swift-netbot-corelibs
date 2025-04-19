@@ -16,15 +16,22 @@ public actor __AnalyzerBot {
 
   private nonisolated var logger: Logger { AnalyzerBot.shared.logger }
 
-  public init(packetFlow: PacketTunnelFlow, dnsServer: String, additionalDNSServers: [Address]) {
+  public init(
+    packetFlow: PacketTunnelFlow,
+    dnsServer: String,
+    additionalDNSServers: [Address],
+    availableIPPool: AvailableIPPool
+  ) {
     self.packetFlow = packetFlow
     self.dnsServer = dnsServer
     self.additionalDNSServers = additionalDNSServers
     self.handles = [
       LocalDNSProxy(
         server: dnsServer,
-        additionalServers: additionalDNSServers
-      )
+        additionalServers: additionalDNSServers,
+        availableIPPool: availableIPPool
+      ),
+      LogHandle(),
     ]
   }
 

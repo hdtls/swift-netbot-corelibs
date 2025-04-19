@@ -21,6 +21,7 @@
       }
     },
     {
+      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:",
         "identifier" : "NetbotMacrosTests",
@@ -28,6 +29,7 @@
       }
     },
     {
+      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:",
         "identifier" : "_PrettyDNSTests",
@@ -35,6 +37,7 @@
       }
     },
     {
+      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:",
         "identifier" : "_ResourceProcessingTests",
@@ -42,6 +45,7 @@
       }
     },
     {
+      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:",
         "identifier" : "NetbotTests",
