@@ -82,7 +82,9 @@ actor LocalDNSProxy: PacketHandle {
       // After `runIfActive0() the channel is set
       // and should not be nil, so it's ok unwrapping value.
       try await channel!.executeThenClose { inbound, outbound in
-        try await withThrowingTaskGroup { g in
+
+        // We need to specific type of ChildTaskResult to make it compatible with Swift 6.0.
+        try await withThrowingTaskGroup(of: Void.self) { g in
           g.addTask { [self] in
             for await query in queries.stream {
               for serverAddress in additionalServers {
