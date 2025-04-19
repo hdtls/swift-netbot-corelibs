@@ -136,7 +136,7 @@ struct LocalDNSProxyTests {
     #expect(response.totalLength == 71)
     #expect(response.flags == 0)
     #expect(response.fragmentOffset == 0)
-    #expect(response.timeToLive == 5)
+    #expect(response.timeToLive == 64)
     #expect(response.protocol == .udp)
     #expect(response.sourceAddress == .init("116.116.116.116")!)
     #expect(response.destinationAddress == .init("192.168.7.102")!)
@@ -166,7 +166,7 @@ struct LocalDNSProxyTests {
       questions: [Question(domainName: "swift.org", queryType: .a)],
       answerRRs: [
         ARecord(
-          domainName: "swift.org", ttl: 10, dataLength: .determined(4), data: .init("198.18.0.3")!)
+          domainName: "swift.org", ttl: 300, dataLength: .determined(4), data: .init("198.18.0.3")!)
       ],
       authorityRRs: [],
       additionalRRs: []

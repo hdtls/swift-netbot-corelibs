@@ -218,7 +218,7 @@ actor LocalDNSProxy: PacketHandle {
     packet.identification = .random(in: 0xC000 ... .max)
     packet.flags = 0
     packet.fragmentOffset = 0
-    packet.timeToLive = 5
+    packet.timeToLive = 64
     packet.destinationAddress = packet.sourceAddress
     packet.sourceAddress = destinationAddress
     packet.options = nil
@@ -244,7 +244,7 @@ actor LocalDNSProxy: PacketHandle {
       value.time = .now()
     } else {
       value = Expirable(
-        ARecord(domainName: name, ttl: 10, data: availableIPPool.loadThenWrappingIncrement())
+        ARecord(domainName: name, ttl: 300, data: availableIPPool.loadThenWrappingIncrement())
       )
     }
 
