@@ -5,6 +5,7 @@
 #if canImport(Darwin)
   @_implementationOnly import CNIOBoringSSL
   import Foundation
+  import NIOCore
   import Logging
   import Observation
   import Security
@@ -294,9 +295,11 @@
           let passphrase: String
           switch strategy {
           case .auto:
-            passphrase = Array(repeating: UInt8.zero, count: 4).map { _ in
-              UInt8.random(in: 0...UInt8.max)
-            }.hexEncodedString().uppercased()
+            passphrase = ByteBuffer(
+              bytes: Array(repeating: UInt8.zero, count: 4).map { _ in
+                UInt8.random(in: 0...UInt8.max)
+              }
+            ).hexDump(format: .compact).uppercased()
           case .custom(let value):
             passphrase = value
           }

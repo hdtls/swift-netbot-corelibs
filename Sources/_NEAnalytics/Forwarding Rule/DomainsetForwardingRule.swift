@@ -5,7 +5,7 @@
 import Anlzr
 import AnlzrReports
 import Crypto
-import NEPrettyBytes
+import NIOCore
 import _ResourceProcessing
 
 #if canImport(FoundationEssentials)
@@ -25,7 +25,7 @@ struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equat
     @usableFromInline var externalResourceURL: URL {
       let fileURL = externalResourceDirectory
       let digest = Insecure.MD5.hash(data: Array(originalURLString.utf8))
-      let filename = Array(digest).hexEncodedString()
+      let filename = ByteBuffer(bytes: digest).hexDump(format: .compact)
       if #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
         return fileURL.appending(path: filename)
       } else {
