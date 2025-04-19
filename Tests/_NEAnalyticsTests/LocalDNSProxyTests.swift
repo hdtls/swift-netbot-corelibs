@@ -133,7 +133,6 @@ struct LocalDNSProxyTests {
     let serializedBytes = try message.serializedBytes
 
     var datagram = Datagram(
-      data: .init(repeating: 0, count: serializedBytes.count + 8),
       pseudoFields: .init(
         sourceAddress: .init("198.18.0.1")!,
         destinationAddress: .init("198.18.1.1")!,
@@ -146,18 +145,15 @@ struct LocalDNSProxyTests {
     datagram.payload = ByteBuffer(bytes: serializedBytes)
     #expect(datagram.totalLength == serializedBytes.count + 8)
 
-    var data = ByteBuffer(repeating: 0, count: 20)
-    data.setInteger(UInt8(45), at: 0)
-    var query = IPPacket.IPv4Packet(data: data)
-    query.internetHeaderLength = 5
+    var query = IPPacket.IPv4Packet()
     query.differentiatedServicesCodePoint = 0
     query.explicitCongestionNotification = 0
-    query.totalLength = 20 + datagram.data.count
     query.identification = .random(in: 0...UInt16.max)
     query.timeToLive = 64
     query.protocol = .udp
     query.sourceAddress = datagram.pseudoFields.sourceAddress
     query.destinationAddress = datagram.pseudoFields.destinationAddress
+    query.options = nil
     query.payload = datagram.data
 
     await #expect(throws: Never.self) {
@@ -193,7 +189,6 @@ struct LocalDNSProxyTests {
       #expect(serializedBytes.count == 45)
 
       var datagram = Datagram(
-        data: .init(repeating: 0, count: 8),
         pseudoFields: .init(
           sourceAddress: .init("198.18.1.1")!,
           destinationAddress: .init("198.18.0.1")!,

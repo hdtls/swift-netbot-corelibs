@@ -50,12 +50,15 @@ extension IPPacket {
     ///
     /// The minimum value for this field is 5, which indicates a length of 5 × 32 bits = 160 bits = 20 bytes. As a 4-bit field, the
     /// maximum value is 15; this means that the maximum size of the IPv4 header is 15 × 32 bits = 480 bits = 60 bytes.
-    public var internetHeaderLength: Int {
+    public var internetHeaderLength: UInt8 {
+      _internetHeaderLength
+    }
+    private var _internetHeaderLength: UInt8 {
       get {
-        Int(_storage[_storage.startIndex] & 0b0000_1111)
+        _storage[_storage.startIndex] & 0b0000_1111
       }
       set {
-        precondition(newValue <= 15)
+        precondition(newValue <= 0b0000_1111)
         precondition(newValue >= 5)
         let newValue = _storage[_storage.startIndex] & 0b1111_0000 | UInt8(newValue)
         _storage[_storage.startIndex] = newValue
@@ -93,16 +96,17 @@ extension IPPacket {
     }
 
     /// This 16-bit field defines the entire packet size in bytes, including header and data.
-    public var totalLength: Int {
+    public var totalLength: UInt16 {
+      _totalLength
+    }
+    private var _totalLength: UInt16 {
       get {
-        let position = _storage.index(_storage.readerIndex, offsetBy: 2)
-        return Int(_storage.getInteger(at: position, as: UInt16.self)!)
+        let position = _storage.index(_storage.startIndex, offsetBy: 2)
+        return _storage.getInteger(at: position, as: UInt16.self)!
       }
       set {
-        precondition(newValue <= UInt16.max)
-        precondition(newValue >= 20)
-        precondition(newValue >= internetHeaderLength)
-        let position = _storage.index(_storage.readerIndex, offsetBy: 2)
+        precondition(newValue >= internetHeaderLength * 4)
+        let position = _storage.index(_storage.startIndex, offsetBy: 2)
         _storage.setInteger(UInt16(newValue), at: position)
       }
     }
@@ -174,7 +178,7 @@ extension IPPacket {
 
     /// The IPv4 header checksum used for error checking of the header.
     public var chksum: UInt16 {
-      let data = _storage.getSlice(at: _storage.readerIndex, length: internetHeaderLength * 4)!
+      let data = _storage.getSlice(at: _storage.readerIndex, length: Int(internetHeaderLength) * 4)!
       return _chksum(data, zeroization: true)
     }
 
@@ -206,7 +210,7 @@ extension IPPacket {
         }
         let position = _storage.index(_storage.readerIndex, offsetBy: 20)
         let length = internetHeaderLength * 4 - 20
-        return _storage.getSlice(at: position, length: length)
+        return _storage.getSlice(at: position, length: Int(length))
       }
       set {
         guard var newValue else {
@@ -215,8 +219,8 @@ extension IPPacket {
             return
           }
           _storage.removeSubrange(20..<20 + options.count)
-          internetHeaderLength = 5
-          totalLength = _storage.count
+          _internetHeaderLength = 5
+          _totalLength = UInt16(_storage.count)
           return
         }
 
@@ -229,21 +233,21 @@ extension IPPacket {
 
         guard let options else {
           _storage.insert(contentsOf: newValue, at: 20)
-          internetHeaderLength = 5 + newValue.count / 4
-          totalLength = _storage.count
+          _internetHeaderLength = UInt8(5 + newValue.count / 4)
+          _totalLength = UInt16(_storage.count)
           return
         }
 
         _storage.replaceSubrange(20..<20 + options.count, with: newValue)
-        internetHeaderLength = 5 + newValue.count / 4
-        totalLength = _storage.count
+        _internetHeaderLength = UInt8(5 + newValue.count / 4)
+        _totalLength = UInt16(_storage.count)
       }
     }
 
     /// Transport layer data.
     public var payload: Data? {
       get {
-        let l = internetHeaderLength * 4
+        let l = Int(internetHeaderLength * 4)
         guard _storage.count > l else {
           return nil
         }
@@ -251,12 +255,12 @@ extension IPPacket {
       }
       set {
         guard let newValue else {
-          _storage.removeSubrange((internetHeaderLength * 4)...)
-          totalLength = internetHeaderLength * 4
+          _storage.removeSubrange(Int(internetHeaderLength * 4)...)
+          _totalLength = UInt16(internetHeaderLength * 4)
           return
         }
-        _storage[(internetHeaderLength * 4)...] = newValue
-        totalLength = _storage.readableBytes
+        _storage[Int(internetHeaderLength * 4)...] = newValue
+        _totalLength = UInt16(_storage.readableBytes)
       }
     }
 
@@ -270,13 +274,19 @@ extension IPPacket {
     private var _storage: Data
 
     init(data: Data) {
-      self._storage = data
+      _storage = data
+      assert(data[data.startIndex] & 0b0100_0000 == 0b0100_0000)
+      assert(_internetHeaderLength >= 5)
+      assert(totalLength >= _internetHeaderLength * 4)
+      assert(totalLength == data.count)
+      assert((_internetHeaderLength - 5) * 4 == options?.count ?? 0)
+    }
 
-      // Ensure we have at least 20 bytes.
-      let bytesNeeded = 20 - data.readableBytes
-      if bytesNeeded > 0 {
-        self._storage.writeRepeatingByte(0, count: bytesNeeded)
-      }
+    init() {
+      _storage = Data(repeating: 0, count: 20)
+      _storage.setInteger(UInt8(45), at: 0)
+      _internetHeaderLength = 5
+      _totalLength = 20
     }
 
     public var customMirror: Mirror {

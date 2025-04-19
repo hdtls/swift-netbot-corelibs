@@ -62,15 +62,6 @@ import Testing
     #expect(datagram.data == data)
   }
 
-  @Test func setTotalLength() async throws {
-    var datagram = self.datagram
-    datagram._totalLength = 12
-    #expect(datagram.totalLength == 12)
-    datagram._totalLength = 46
-    #expect(datagram.totalLength == 46)
-    #expect(datagram.data == data)
-  }
-
   @Test func setPayload() async throws {
     var datagram = self.datagram
     let payload = datagram.payload

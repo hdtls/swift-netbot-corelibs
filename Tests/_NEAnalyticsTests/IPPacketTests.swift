@@ -32,11 +32,6 @@ import Testing
 
 @Suite struct IPPacketTests {
 
-  @Test func ensureHasAtLeast20Bytes() async throws {
-    let data = IPPacket(data: ByteBuffer(bytes: [0x45, 0x0]), protocolFamily: 2)
-    #expect(data?.data.readableBytes == 20)
-  }
-
   @Test func getValues() async throws {
     let data = try ByteBuffer(
       plainHexEncodedBytes:

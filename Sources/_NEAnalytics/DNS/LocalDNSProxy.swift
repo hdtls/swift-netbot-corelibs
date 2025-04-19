@@ -214,7 +214,6 @@ actor LocalDNSProxy: PacketHandle {
     datagram.pseudoFields.sourceAddress = destinationAddress
     datagram.pseudoFields.dataLength = datagram.totalLength
 
-    packet.internetHeaderLength = 5
     packet.differentiatedServicesCodePoint = 0
     packet.explicitCongestionNotification = 0
     packet.identification = .random(in: 0xC000 ... .max)

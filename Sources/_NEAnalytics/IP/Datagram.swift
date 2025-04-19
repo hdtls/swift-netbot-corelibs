@@ -34,7 +34,7 @@ public struct Datagram: Hashable, Sendable {
   public var totalLength: UInt16 {
     _totalLength
   }
-  var _totalLength: UInt16 {
+  private var _totalLength: UInt16 {
     get {
       let position = _storage.index(_storage.readerIndex, offsetBy: MemoryLayout<UInt16>.size * 2)
       return _storage.getInteger(at: position, as: UInt16.self)!
@@ -54,13 +54,15 @@ public struct Datagram: Hashable, Sendable {
   /// The payload of the UDP packet.
   public var payload: Data? {
     get {
-      return _storage[8...]
+      let startIndex = _storage.index(_storage.startIndex, offsetBy: MemoryLayout<UInt16>.size * 4)
+      return _storage[startIndex...]
     }
     set {
+      let startIndex = _storage.index(_storage.startIndex, offsetBy: MemoryLayout<UInt16>.size * 4)
       if let newValue {
-        _storage.replaceSubrange(8..., with: newValue)
+        _storage.replaceSubrange(startIndex..., with: newValue)
       } else {
-        _storage.removeSubrange(8...)
+        _storage.removeSubrange(startIndex...)
       }
       _totalLength = UInt16(truncatingIfNeeded: _storage.count)
       pseudoFields.dataLength = totalLength
@@ -80,8 +82,15 @@ public struct Datagram: Hashable, Sendable {
   private var _storage: Data
 
   public init(data: Data, pseudoFields: PseudoFields) {
-    assert(data.count >= MemoryLayout<UInt16>.size * 4)
     _storage = data
     self.pseudoFields = pseudoFields
+    assert(data.count >= MemoryLayout<UInt16>.size * 4)
+    assert(totalLength == (payload?.count ?? 0) + MemoryLayout<UInt16>.size * 4)
+  }
+
+  init(pseudoFields: PseudoFields) {
+    self._storage = Data(repeating: .zero, count: MemoryLayout<UInt16>.size * 4)
+    self.pseudoFields = pseudoFields
+    self._totalLength = UInt16(MemoryLayout<UInt16>.size * 4)
   }
 }
