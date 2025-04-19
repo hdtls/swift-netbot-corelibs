@@ -30,29 +30,11 @@ import _ResourceProcessing
 
   nonisolated private let analyzer: Analyzer
 
-  nonisolated public let logger: Logger
+  nonisolated public let logger = Logger(label: "AnalyzerBot")
 
   private var maxminddb: MaxMindDB?
 
   private init() {
-    LoggingSystem.bootstrap { label in
-      var handler: any Logging.LogHandler
-      #if canImport(Darwin)
-        if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
-          handler = LogHandler(label: label)
-        } else {
-          handler = StreamLogHandler.standardOutput(label: label)
-        }
-      #else
-        handler = StreamLogHandler.standardOutput(label: label)
-      #endif
-      if let rawValue = UserDefaults.applicationGroup?.string(forKey: Prefs.Name.logLevel) {
-        handler.logLevel = .init(rawValue: rawValue) ?? .info
-      }
-      return handler
-    }
-
-    logger = .init(label: "AnalyzerBot")
     var reporting: any ConnectionReporting = NoOpReporting()
 
     let containerURL = URL.applicationGroupDirectory
