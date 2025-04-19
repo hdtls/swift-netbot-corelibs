@@ -14,9 +14,7 @@ import NIOCore
 #if os(Windows)
   import ucrt
 
-  import let WinSDK.AF_INET
-  import let WinSDK.AF_INET6
-
+  // swift-format-ignore: TypeNamesShouldBeCapitalized
   private typealias sa_family_t = WinSDK.ADDRESS_FAMILY
 #elseif canImport(Darwin)
   import Darwin
