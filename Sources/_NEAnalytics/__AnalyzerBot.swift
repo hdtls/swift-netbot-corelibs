@@ -14,7 +14,7 @@ public actor __AnalyzerBot {
   private nonisolated let additionalDNSServers: [Address]
   private nonisolated let handles: [any PacketHandle]
 
-  private var logger: Logger { AnalyzerBot.shared.logger }
+  private nonisolated var logger: Logger { AnalyzerBot.shared.logger }
 
   public init(packetFlow: PacketTunnelFlow, dnsServer: String, additionalDNSServers: [Address]) {
     self.packetFlow = packetFlow
@@ -46,13 +46,14 @@ public actor __AnalyzerBot {
 
     for packetObject in await packetFlow.readPacketObjects() {
       for handle in handles {
-        guard case .handled(let response) = try await handle.handle(packetObject) else {
-          continue
+        if case .handled(let response) = try await handle.handle(packetObject) {
+          packetObjects.append(response)
+          break
         }
-        packetObjects.append(response)
       }
     }
 
+    guard !packetObjects.isEmpty else { return }
     _ = packetFlow.writePacketObjects(packetObjects)
   }
 
