@@ -33,8 +33,13 @@ func _chksum(
   _ data: ByteBuffer, pseudoFields: PseudoFields, zeroization: Bool = false, offset: Int = 6
 ) -> UInt16 {
   var combined = data
+  assert(data.readableBytes == pseudoFields.dataLength)
+
   // 12 bytes pseudo fields
-  combined.clear(minimumCapacity: data.count + 12)
+  let pseudoFieldsByteCount =
+    pseudoFields.sourceAddress.rawValue.count + pseudoFields.destinationAddress.rawValue.count
+    + MemoryLayout<UInt8>.size * 2 + MemoryLayout<UInt16>.size
+  combined.clear(minimumCapacity: data.count + pseudoFieldsByteCount)
   combined.writeBytes(pseudoFields.sourceAddress.rawValue)
   combined.writeBytes(pseudoFields.destinationAddress.rawValue)
   combined.writeInteger(pseudoFields.zero)
@@ -45,6 +50,6 @@ func _chksum(
     combined.writeInteger(UInt8.zero)
   }
 
-  let chksum = _chksum(combined, zeroization: zeroization, offset: 18)
+  let chksum = _chksum(combined, zeroization: zeroization, offset: pseudoFieldsByteCount + offset)
   return chksum == 0 ? 0xFFFF : chksum
 }

@@ -8,6 +8,28 @@ import Testing
 
 @testable import _NEAnalytics
 
+#if os(Windows)
+  import ucrt
+
+  // swift-format-ignore: TypeNamesShouldBeCapitalized
+  private typealias sa_family_t = WinSDK.ADDRESS_FAMILY
+#elseif canImport(Darwin)
+  import Darwin
+#elseif os(Linux) || os(FreeBSD) || os(Android)
+  #if canImport(Glibc)
+    import Glibc
+  #elseif canImport(Musl)
+    import Musl
+  #elseif canImport(Android)
+    import Android
+  #endif
+  import CNIOLinux
+#elseif canImport(WASILibc)
+  import WASILibc
+#else
+  #error("The Socket Addresses module was unable to identify your C library.")
+#endif
+
 @Suite struct IPPacketTests {
 
   @Test func ensureHasAtLeast20Bytes() async throws {
@@ -21,13 +43,13 @@ import Testing
         "45000034000040004006aaaac0a80764c0a80765de5ace644b2b31e3bc83ee838010005bf6a300000101080a4a8e33e1b7d3e48b"
     )
 
-    let p = IPPacket(data: data, protocolFamily: 2)
-    #expect(p?.protocolFamily == 2)
+    let p = IPPacket(data: data, protocolFamily: sa_family_t(AF_INET))
+    #expect(p?.protocolFamily == sa_family_t(AF_INET))
 
     let packet = IPPacket.IPv4Packet(data: data)
     #expect(p?.data == packet.data)
 
-    #expect(packet.protocolFamily == 2)
+    #expect(packet.protocolFamily == sa_family_t(AF_INET))
     #expect(packet.internetHeaderLength == 5)
     #expect(packet.differentiatedServicesCodePoint == 0)
     #expect(packet.explicitCongestionNotification == 0)
@@ -58,14 +80,14 @@ import Testing
     let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
     var packet = IPPacket.IPv4Packet(data: data)
-    #expect(packet.protocolFamily == 2)
+    #expect(packet.protocolFamily == sa_family_t(AF_INET))
     #expect(packet.internetHeaderLength == 5)
     #expect(packet.differentiatedServicesCodePoint == 0)
     #expect(packet.explicitCongestionNotification == 0)
     #expect(packet.totalLength == 20)
 
     packet.differentiatedServicesCodePoint = 4
-    #expect(packet.protocolFamily == 2)
+    #expect(packet.protocolFamily == sa_family_t(AF_INET))
     #expect(packet.internetHeaderLength == 5)
     #expect(packet.differentiatedServicesCodePoint == 4)
     #expect(packet.explicitCongestionNotification == 0)
@@ -80,14 +102,14 @@ import Testing
     let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
     var packet = IPPacket.IPv4Packet(data: data)
-    #expect(packet.protocolFamily == 2)
+    #expect(packet.protocolFamily == sa_family_t(AF_INET))
     #expect(packet.internetHeaderLength == 5)
     #expect(packet.differentiatedServicesCodePoint == 0)
     #expect(packet.explicitCongestionNotification == 0)
     #expect(packet.totalLength == 20)
 
     packet.explicitCongestionNotification = 3
-    #expect(packet.protocolFamily == 2)
+    #expect(packet.protocolFamily == sa_family_t(AF_INET))
     #expect(packet.internetHeaderLength == 5)
     #expect(packet.differentiatedServicesCodePoint == 0)
     #expect(packet.explicitCongestionNotification == 3)

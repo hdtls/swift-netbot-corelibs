@@ -112,67 +112,113 @@ struct LocalDNSProxyTests {
     await #expect(p.channel != nil)
   }
 
-  @Test func packetHandling() async throws {
-    let p = LocalDNSProxy(server: "116.116.116.116")
+  @Test func directlyPacketHandling() async throws {
+    let p = LocalDNSProxy(server: "198.18.1.1")
     try await p.runIfActive()
-
-    let query = try IPPacket.v4(
-      .init(
-        data: .init(
-          plainHexEncodedBytes:
-            "45000042ec3100004011dd82c0a8076674747474f0960035002e24b4cca801200001000000000001057377696674036f726700000100010000291000000000000000"
-        )))
-
-    guard case .handled(let packet) = try await p.handle(query) else {
-      #expect(Bool(false), "should handle correct DNS query")
-      return
-    }
-    guard case .v4(let response) = packet else {
-      return
-    }
-    #expect(response.internetHeaderLength == 5)
-    #expect(response.differentiatedServicesCodePoint == 0)
-    #expect(response.explicitCongestionNotification == 0)
-    #expect(response.totalLength == 71)
-    #expect(response.flags == 0)
-    #expect(response.fragmentOffset == 0)
-    #expect(response.timeToLive == 64)
-    #expect(response.protocol == .udp)
-    #expect(response.sourceAddress == .init("116.116.116.116")!)
-    #expect(response.destinationAddress == .init("192.168.7.102")!)
-
-    let datagram = Datagram(
-      data: response.payload!,
-      pseudoFields: .init(
-        sourceAddress: .init("116.116.116.116")!,
-        destinationAddress: .init("192.168.7.102")!,
-        protocol: .udp,
-        dataLength: 46
-      )
-    )
-    #expect(datagram.sourcePort == 53)
-    #expect(datagram.destinationPort == 61590)
-    #expect(datagram.totalLength == 51)
 
     let message = Message(
       headerFields: .init(
-        transactionID: 0xcca8,
-        flags: .init(rawValue: 0x8000),
+        transactionID: 0,
+        flags: .init(rawValue: 0x8180),
         qestionCount: 1,
-        answerCount: 1,
+        answerCount: 0,
         authorityCount: 0,
         additionCount: 0
       ),
-      questions: [Question(domainName: "swift.org", queryType: .a)],
-      answerRRs: [
-        ARecord(
-          domainName: "swift.org", ttl: 300, dataLength: .determined(4), data: .init("198.18.0.3")!)
-      ],
+      questions: [Question(domainName: "example.com", queryType: .a)],
+      answerRRs: [],
       authorityRRs: [],
       additionalRRs: []
     )
     let serializedBytes = try message.serializedBytes
-    #expect(datagram.payload == .init(bytes: serializedBytes))
+
+    var datagram = Datagram(
+      data: .init(repeating: 0, count: serializedBytes.count + 8),
+      pseudoFields: .init(
+        sourceAddress: .init("198.18.0.1")!,
+        destinationAddress: .init("198.18.1.1")!,
+        protocol: .udp,
+        dataLength: UInt16(serializedBytes.count + 8)
+      )
+    )
+    datagram.sourcePort = 12345
+    datagram.destinationPort = 53
+    datagram.payload = ByteBuffer(bytes: serializedBytes)
+    #expect(datagram.totalLength == serializedBytes.count + 8)
+
+    var data = ByteBuffer(repeating: 0, count: 20)
+    data.setInteger(UInt8(45), at: 0)
+    var query = IPPacket.IPv4Packet(data: data)
+    query.internetHeaderLength = 5
+    query.differentiatedServicesCodePoint = 0
+    query.explicitCongestionNotification = 0
+    query.totalLength = 20 + datagram.data.count
+    query.identification = .random(in: 0...UInt16.max)
+    query.timeToLive = 64
+    query.protocol = .udp
+    query.sourceAddress = datagram.pseudoFields.sourceAddress
+    query.destinationAddress = datagram.pseudoFields.destinationAddress
+    query.payload = datagram.data
+
+    await #expect(throws: Never.self) {
+      guard case .handled(let packet) = try await p.handle(.v4(query)) else {
+        #expect(Bool(false), "Should handle correct DNS query packet.")
+        return
+      }
+
+      guard case .v4(let response) = packet else {
+        #expect(Bool(false), "Should be IPv4 packet")
+        return
+      }
+
+      let message = Message(
+        headerFields: .init(
+          transactionID: 0,
+          flags: .init(rawValue: 0x8000),
+          qestionCount: 1,
+          answerCount: 1,
+          authorityCount: 0,
+          additionCount: 0
+        ),
+        questions: [Question(domainName: "example.com", queryType: .a)],
+        answerRRs: [
+          ARecord(
+            domainName: "example.com", ttl: 300, dataLength: .determined(4),
+            data: IPv4Address("198.18.0.3")!)
+        ],
+        authorityRRs: [],
+        additionalRRs: []
+      )
+      let serializedBytes = try message.serializedBytes
+      #expect(serializedBytes.count == 45)
+
+      var datagram = Datagram(
+        data: .init(repeating: 0, count: 8),
+        pseudoFields: .init(
+          sourceAddress: .init("198.18.1.1")!,
+          destinationAddress: .init("198.18.0.1")!,
+          protocol: .udp,
+          dataLength: UInt16(serializedBytes.count + 8)
+        )
+      )
+      datagram.sourcePort = 53
+      datagram.destinationPort = 12345
+      datagram.payload = ByteBuffer(bytes: serializedBytes)
+      #expect(datagram.totalLength == 53)
+
+      #expect(response.internetHeaderLength == 5)
+      #expect(response.differentiatedServicesCodePoint == 0)
+      #expect(response.differentiatedServicesCodePoint == 0)
+      #expect(response.totalLength == 73)
+      #expect(response.flags == 0)
+      #expect(response.fragmentOffset == 0)
+      #expect(response.timeToLive == 64)
+      #expect(response.protocol == .udp)
+      #expect(response.sourceAddress == datagram.pseudoFields.sourceAddress)
+      #expect(response.destinationAddress == datagram.pseudoFields.destinationAddress)
+      #expect(response.options == nil)
+      #expect(response.payload == datagram.data)
+    }
   }
 
   @Test func queryA() async throws {

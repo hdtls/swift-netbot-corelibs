@@ -157,12 +157,14 @@ actor LocalDNSProxy: PacketHandle {
     // Store address to make response by exchange source/destination address and port.
     let destinationAddress = packet.destinationAddress
     let destinationPort = datagram.destinationPort
+
+    // Confirm that the packet is send to our fake DNS server.
     guard IPv4Address(bindAddress) == destinationAddress, destinationPort == 53 else {
       return .discarded
     }
 
     guard let dnsPayload = datagram.payload, !dnsPayload.isEmpty else {
-      // TODO: Handle Missing Data Error.
+      // If DNS message is missing, we discard this packet.
       return .discarded
     }
 
@@ -204,12 +206,12 @@ actor LocalDNSProxy: PacketHandle {
       message = try await query(msg: message)
     }
 
+    // Revese source and destination address.
     datagram.destinationPort = datagram.sourcePort
     datagram.sourcePort = destinationPort
     datagram.payload = try allocator.buffer(bytes: message.serializedBytes)
-    datagram.pseudoFields.sourceAddress = destinationAddress
     datagram.pseudoFields.destinationAddress = datagram.pseudoFields.sourceAddress
-    datagram.pseudoFields.protocol = datagram.pseudoFields.protocol
+    datagram.pseudoFields.sourceAddress = destinationAddress
     datagram.pseudoFields.dataLength = datagram.totalLength
 
     packet.internetHeaderLength = 5
