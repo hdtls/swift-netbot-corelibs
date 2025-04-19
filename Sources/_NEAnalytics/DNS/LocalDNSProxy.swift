@@ -168,14 +168,9 @@ actor LocalDNSProxy: PacketHandle {
 
     var message = try parser.parse(dnsPayload)
 
-    var msg =
-      "\(packet.sourceAddress) => \(packet.destinationAddress) \(packet.totalLength) Standard query \(message.headerFields.transactionID)"
-    msg += message.questions.map { " \($0.queryType) \($0.domainName)" }.joined()
-    logger.debug("\(msg)")
-    msg += message.answerRRs.map { " \($0.dataType) \($0.domainName)" }.joined()
-    msg += message.authorityRRs.map { " \($0.dataType) \($0.domainName)" }.joined()
-    msg += message.additionalRRs.map { " \($0.dataType) \($0.domainName)" }.joined()
-    logger.trace("\(msg)")
+    var msg = "\(packet.sourceAddress) => \(packet.destinationAddress) \(packet.totalLength)"
+    logger.debug("\(msg) \(message.formatted())")
+    logger.trace("\(msg) \(message.formatted(.detailed))")
 
     // TODO: Multiple Qestions.
     if let question = message.questions.first {
@@ -229,14 +224,9 @@ actor LocalDNSProxy: PacketHandle {
     packet.options = nil
     packet.payload = datagram.data
 
-    msg =
-      "\(packet.sourceAddress) => \(packet.destinationAddress) \(packet.totalLength) Standard query response \(message.headerFields.transactionID)"
-    msg += message.questions.map { " \($0.queryType) \($0.domainName)" }.joined()
-    logger.debug("\(msg)")
-    msg += message.answerRRs.map { " \($0.dataType) \($0.domainName)" }.joined()
-    msg += message.authorityRRs.map { " \($0.dataType) \($0.domainName)" }.joined()
-    msg += message.additionalRRs.map { " \($0.dataType) \($0.domainName)" }.joined()
-    logger.trace("\(msg)")
+    msg = "\(packet.sourceAddress) => \(packet.destinationAddress) \(packet.totalLength)"
+    logger.debug("\(msg) \(message.formatted())")
+    logger.trace("\(msg) \(message.formatted(.detailed))")
 
     return .handled(.v4(packet))
   }
