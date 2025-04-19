@@ -324,7 +324,7 @@ actor LocalDNSProxy: PacketHandle {
   }
 }
 
-extension LocalDNSProxy: Resolver {
+extension LocalDNSProxy: _PrettyDNS.Resolver {
 
   func queryA(name: String) async throws -> [ARecord] {
     guard let task = availableAQueries.value(forKey: name) else {
@@ -416,6 +416,27 @@ extension LocalDNSProxy: Resolver {
   func querySRV(name: String) async throws -> [SRVRecord] {
     try await query(name: name, qt: .srv).answerRRs.compactMap { $0 as? SRVRecord }
   }
+}
+
+extension LocalDNSProxy: @preconcurrency Anlzr.Resolver, @preconcurrency NIOPosix.Resolver {
+
+  func initiateAQuery(host: String, port: Int) -> EventLoopFuture<[SocketAddress]> {
+    eventLoopGroup.next().makeFutureWithTask {
+      try await self.queryA(name: host).map {
+        try SocketAddress(ipAddress: "\($0.data)", port: port)
+      }
+    }
+  }
+
+  func initiateAAAAQuery(host: String, port: Int) -> EventLoopFuture<[SocketAddress]> {
+    eventLoopGroup.next().makeFutureWithTask {
+      try await self.queryAAAA(name: host).map {
+        try SocketAddress(ipAddress: "\($0.data)", port: port)
+      }
+    }
+  }
+
+  func cancelQueries() {}
 }
 
 private struct Expirable<Record: ResourceRecord>: Sendable {
