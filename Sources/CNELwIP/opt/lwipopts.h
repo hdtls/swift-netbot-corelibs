@@ -37,107 +37,46 @@
  */
 #ifndef LWIP_LWIPOPTS_H
 #define LWIP_LWIPOPTS_H
+#include "debug.h"
 
 /*
  * Include user defined options first. Anything not defined in these files
  * will be set to standard values. Override anything you dont like!
  */
 
-#ifdef __APPLE__
-#include <machine/endian.h>
-#else
-#include <endian.h>
-#endif
-
 #define LWIP_SOCKET_EXTERNAL_HEADERS 1
 #define LWIP_SOCKET_EXTERNAL_HEADER_SOCKETS_H "posix/sockets.h"
 #define LWIP_SOCKET_EXTERNAL_HEADER_INET_H "posix/inet.h"
 
-#define ip6_hdr LWIP_ip6_hdr
-#define icmp6_hdr LWIP_icmp6_hdr
-
+#define ip6_hdr CNELwIP_ip6_hdr
+#define icmp6_hdr CNELwIP_icmp6_hdr
 #define LWIP_ERR_T err_enum_t
 
+#ifndef LWIP_IPV6
 #define LWIP_IPV6 1
-
-#define TCP_LISTEN_BACKLOG 1
-
-#define TCP_MSS 512
-
-#define MEM_LIBC_MALLOC 1
-#define MEMP_MEM_MALLOC 1
-#define MEM_USE_POOLS 0
-
-#if defined __LP64__
-#define MEM_ALIGNMENT 8
-#else
-#define MEM_ALIGNMENT 4
 #endif
 
-#define LWIP_NOASSERT_ON_ERROR 1
+#ifndef TCP_LISTEN_BACKLOG
+#define TCP_LISTEN_BACKLOG 1
+#endif
 
-#define LWIP_TCPIP_CORE_LOCKING_INPUT 1
+#ifndef TCP_MSS
+#define TCP_MSS 512
+#endif
 
-#define LWIP_RAW 1
+#if defined __APPLE__
+#define MEM_LIBC_MALLOC 1
+#define MEMP_MEM_MALLOC 1
+#elif defined __ANDROID__
+#define MEM_LIBC_MALLOC 1
+#define MEMP_MEM_MALLOC 0
+#else
+#define MEM_LIBC_MALLOC 0
+#define MEMP_MEM_MALLOC 0
+#endif
 
-#define LWIP_UDP 1
-
-#define LWIP_TCP 1
-
-#define LWIP_NETCONN 0
-
+#ifndef LWIP_SOCKET
 #define LWIP_SOCKET 0
-
-#if defined(LWIP_DEBUG)
-
-#define NETIF_DEBUG LWIP_DBG_ON
-
-#define PBUF_DEBUG LWIP_DBG_ON
-
-#define ICMP_DEBUG LWIP_DBG_ON
-
-#define INET_DEBUG LWIP_DBG_ON
-
-#define IP_DEBUG LWIP_DBG_ON
-
-#define IP_REASS_DEBUG LWIP_DBG_ON
-
-#define RAW_DEBUG LWIP_DBG_ON
-
-#define MEM_DEBUG LWIP_DBG_ON
-
-#define MEMP_DEBUG LWIP_DBG_ON
-
-#define SYS_DEBUG LWIP_DBG_ON
-
-#define TIMERS_DEBUG LWIP_DBG_ON
-
-#define TCP_DEBUG LWIP_DBG_ON
-
-#define TCP_INPUT_DEBUG LWIP_DBG_ON
-
-#define TCP_FR_DEBUG LWIP_DBG_ON
-
-#define TCP_RTO_DEBUG LWIP_DBG_ON
-
-#define TCP_CWND_DEBUG LWIP_DBG_ON
-
-#define TCP_WND_DEBUG LWIP_DBG_ON
-
-#define TCP_OUTPUT_DEBUG LWIP_DBG_ON
-
-#define TCP_RST_DEBUG LWIP_DBG_ON
-
-#define TCP_QLEN_DEBUG LWIP_DBG_ON
-
-#define UDP_DEBUG LWIP_DBG_ON
-
-#define TCPIP_DEBUG LWIP_DBG_ON
-
-#define DNS_DEBUG LWIP_DBG_ON
-
-#define IP6_DEBUG LWIP_DBG_ON
-
 #endif
 
 void sys_check_core_locking(void);
