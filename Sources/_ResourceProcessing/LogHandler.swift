@@ -64,7 +64,7 @@
       case .debug: logLevel = .debug
       case .info: logLevel = .info
       case .notice: logLevel = .info
-      case .warning: logLevel = .info
+      case .warning: logLevel = .error
       case .error: logLevel = .error
       case .critical: logLevel = .fault
       }
