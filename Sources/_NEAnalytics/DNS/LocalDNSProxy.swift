@@ -4,6 +4,7 @@
 
 import Anlzr
 import AnlzrReports
+import Atomics
 import Dispatch
 import Logging
 import NEAddressProcessing
@@ -19,28 +20,32 @@ actor LocalDNSProxy: PacketHandle {
     channel!.channel.allocator
   }
 
-  private let parser = PrettyDNSParser()
-  private let availableAQueries: LRUCache<String, Task<[Expirable<ARecord>], any Error>>
-  private let disguisedARecords: LRUCache<String, Expirable<ARecord>>
-  private let availableAAAAQueries: LRUCache<String, Task<[Expirable<AAAARecord>], any Error>>
-  private let availableSOAQueries: LRUCache<String, Task<[Expirable<SOARecord>], any Error>>
-  private let availablePTRQueries: LRUCache<String, Task<[Expirable<PTRRecord>], any Error>>
+  private nonisolated let parser = PrettyDNSParser()
+  private nonisolated let availableAQueries: LRUCache<String, Task<[Expirable<ARecord>], any Error>>
+  private nonisolated let disguisedARecords: LRUCache<String, Expirable<ARecord>>
+  private nonisolated let availableAAAAQueries:
+    LRUCache<String, Task<[Expirable<AAAARecord>], any Error>>
+  private nonisolated let availableSOAQueries:
+    LRUCache<String, Task<[Expirable<SOARecord>], any Error>>
+  private nonisolated let availablePTRQueries:
+    LRUCache<String, Task<[Expirable<PTRRecord>], any Error>>
 
-  private let bindAddress: String
-  private let additionalServers: [Address]
-  private let availableIPPool: AvailableIPPool
+  private nonisolated let bindAddress: String
+  private nonisolated let additionalServers: [Address]
+  private nonisolated let availableIPPool: AvailableIPPool
 
-  private let logger = Logger(label: "dns")
+  private nonisolated let logger = Logger(label: "dns")
 
   internal typealias AsyncChannel = NIOAsyncChannel<
     AddressedEnvelope<ByteBuffer>, AddressedEnvelope<ByteBuffer>
   >
 
   internal var channel: AsyncChannel?
-  private var sessions: [UInt16: EventLoopPromise<Message>] = [:]
-  private let eventLoopGroup: any EventLoopGroup = NIOPosix.MultiThreadedEventLoopGroup.singleton
+  private var sessions = [UInt16: EventLoopPromise<Message>]()
+  private nonisolated let eventLoopGroup: any EventLoopGroup = NIOPosix.MultiThreadedEventLoopGroup
+    .singleton
 
-  private let queries = AsyncStream.makeStream(of: Message.self)
+  private nonisolated let queries = AsyncStream.makeStream(of: Message.self)
 
   init(server: String, additionalServers: [Address], availableIPPool: AvailableIPPool) {
     self.bindAddress = server
@@ -56,22 +61,21 @@ actor LocalDNSProxy: PacketHandle {
   nonisolated func runIfActive() async throws {
     try await runIfActive0()
 
-    Task {
+    Task.detached(priority: .background) {
       // After `runIfActive0() the channel is set
       // and should not be nil, so it's ok unwrapping value.
-      try await channel!.executeThenClose { inbound, outbound in
+      try await self.channel!.executeThenClose { inbound, outbound in
 
         // We need to specific type of ChildTaskResult to make it compatible with Swift 6.0.
         try await withThrowingTaskGroup(of: Void.self) { g in
           g.addTask { [self] in
             for await query in queries.stream {
               for serverAddress in additionalServers {
-                let envelope = try await AddressedEnvelope(
-                  remoteAddress: serverAddress.address,
-                  data: allocator.buffer(bytes: query.serializedBytes)
-                )
-
                 do {
+                  let envelope = try await AddressedEnvelope(
+                    remoteAddress: serverAddress.address,
+                    data: allocator.buffer(bytes: query.serializedBytes)
+                  )
                   try await outbound.write(envelope)
                   break
                 } catch {
@@ -84,16 +88,23 @@ actor LocalDNSProxy: PacketHandle {
 
           g.addTask { [self] in
             for try await envelop in inbound {
-              let message = try parser.parse(envelop.data)
+              // Channel read should not be interrupted.
+              guard let message = try? parser.parse(envelop.data) else {
+                continue
+              }
 
               // It's a DNS response if sessions contains promise for
               // specific transaction ID, otherwise it's a query.
               // For now, we don't support query handle, message will
               // be ignored.
-              guard let promise = await sessions[message.headerFields.transactionID] else {
-                return
+
+              let promise = await dnsqPromise(
+                transactionID: message.headerFields.transactionID,
+                loadIfNeeded: false
+              )
+              if let promise {
+                promise.succeed(message)
               }
-              promise.succeed(message)
             }
           }
 
@@ -121,7 +132,21 @@ actor LocalDNSProxy: PacketHandle {
       }
   }
 
-  func handle(_ packetObject: IPPacket) async throws -> PacketHandleResult {
+  private func dnsqPromise(transactionID: UInt16, loadIfNeeded: Bool = true) -> EventLoopPromise<
+    Message
+  >? {
+    guard loadIfNeeded else { return sessions[transactionID] }
+
+    let promise = eventLoopGroup.next().makePromise(of: Message.self)
+    sessions[transactionID] = promise
+    return promise
+  }
+
+  private func offloadDNSQPromise(transactionID: UInt16) {
+    sessions.removeValue(forKey: transactionID)
+  }
+
+  nonisolated func handle(_ packetObject: IPPacket) async throws -> PacketHandleResult {
     // Make it mutable, so we don't need alloc new packet for response.
     guard case .v4(var packet) = packetObject else {
       // IPv4 only now.
@@ -204,7 +229,7 @@ actor LocalDNSProxy: PacketHandle {
     // Revese source and destination address.
     datagram.destinationPort = datagram.sourcePort
     datagram.sourcePort = destinationPort
-    datagram.payload = try allocator.buffer(bytes: message.serializedBytes)
+    datagram.payload = try await allocator.buffer(bytes: message.serializedBytes)
     datagram.pseudoFields.destinationAddress = datagram.pseudoFields.sourceAddress
     datagram.pseudoFields.sourceAddress = destinationAddress
     datagram.pseudoFields.dataLength = datagram.totalLength
@@ -228,28 +253,27 @@ actor LocalDNSProxy: PacketHandle {
   }
 
   // Returns disguised records contains one reserved IPv4 address.
-  private func queryDisguisedA(name: String) async throws -> [ARecord] {
-    Task(priority: .background) {
-      // Query and update actual A records.
-      _ = try await queryA(name: name)
-    }
-
+  nonisolated private func queryDisguisedA(name: String) async throws -> [ARecord] {
     var value: Expirable<ARecord>
-    if let stored = disguisedARecords.value(forKey: name), !stored.isExpired {
+    if let stored = disguisedARecords.value(forKey: name) {
       value = stored
       value.time = .now()
     } else {
       value = Expirable(
         ARecord(domainName: name, ttl: 300, data: availableIPPool.loadThenWrappingIncrement())
       )
+      // Query A records for use later
+      Task.detached(priority: .background) {
+        _ = try await self.queryA(name: name)
+      }
     }
 
     disguisedARecords.setValue(value, forKey: name)
     return [value.record]
   }
 
-  func query(msg message: Message) async throws -> Message {
-    guard channel != nil else {
+  nonisolated func query(msg message: Message) async throws -> Message {
+    guard await channel != nil else {
       return Message(
         headerFields: .init(
           transactionID: message.headerFields.transactionID,
@@ -265,16 +289,53 @@ actor LocalDNSProxy: PacketHandle {
         additionalRRs: []
       )
     }
-    let promise = eventLoopGroup.next().makePromise(of: Message.self)
-    sessions[message.headerFields.transactionID] = promise
+
+    let eventLoop = eventLoopGroup.next()
+    let promise = eventLoop.makePromise(of: Message.self)
+    let queryPromise = await dnsqPromise(transactionID: message.headerFields.transactionID)!
+
     queries.continuation.yield(message)
-    defer {
-      sessions.removeValue(forKey: message.headerFields.transactionID)
+
+    // TODO: Read Resolv Configuration.
+    #if os(macOS) || os(Linux)
+      // Read those config from /etc/resolv.conf
+      let timeAmount = TimeAmount(.seconds(2))
+      let retryAttempts = ManagedAtomic<Int>(3)
+    #else
+      let timeAmount = TimeAmount(.seconds(2))
+      let retryAttempts = ManagedAtomic<Int>(3)
+    #endif
+
+    struct DNSQueryTimeoutError: Error {}
+    let schedule = eventLoop.scheduleTask(in: timeAmount) {
+      guard retryAttempts.loadThenWrappingDecrement(ordering: .relaxed) > 0 else {
+        queryPromise.fail(DNSQueryTimeoutError())
+        return
+      }
+      self.queries.continuation.yield(message)
     }
-    return try await promise.futureResult.get()
+
+    queryPromise.futureResult.whenComplete { result in
+      switch result {
+      case .success(let success):
+        promise.succeed(success)
+      case .failure(let failure):
+        promise.fail(failure)
+      }
+      schedule.cancel()
+    }
+
+    do {
+      let result = try await promise.futureResult.get()
+      await offloadDNSQPromise(transactionID: message.headerFields.transactionID)
+      return result
+    } catch {
+      await offloadDNSQPromise(transactionID: message.headerFields.transactionID)
+      throw error
+    }
   }
 
-  func query(name: String, qt: QTYPE) async throws -> Message {
+  nonisolated func query(name: String, qt: QTYPE) async throws -> Message {
     let message = Message(
       headerFields: .init(
         transactionID: UInt16.random(in: 0...UInt16.max),
@@ -295,7 +356,7 @@ actor LocalDNSProxy: PacketHandle {
 
 extension LocalDNSProxy: _PrettyDNS.Resolver {
 
-  func queryA(name: String) async throws -> [ARecord] {
+  nonisolated func queryA(name: String) async throws -> [ARecord] {
     guard let task = availableAQueries.value(forKey: name) else {
       return try await queryA0(name: name).map(\.record)
     }
@@ -315,19 +376,26 @@ extension LocalDNSProxy: _PrettyDNS.Resolver {
     return try await queryA0(name: name).map(\.record)
   }
 
-  private func queryA0(name: String) async throws -> [Expirable<ARecord>] {
-    guard channel != nil else { return [] }
+  nonisolated private func queryA0(name: String) async throws -> [Expirable<ARecord>] {
+    guard await channel != nil else { return [] }
 
-    let task = Task<[Expirable<ARecord>], any Error> {
-      try await query(name: name, qt: .a).answerRRs.lazy.compactMap { $0 as? ARecord }.map {
+    let task = Task<[Expirable<ARecord>], any Error>.detached {
+      try await self.query(name: name, qt: .a).answerRRs.lazy.compactMap { $0 as? ARecord }.map {
         Expirable($0)
       }
     }
     availableAQueries.setValue(task, forKey: name)
-    return try await task.value
+
+    do {
+      return try await task.value
+    } catch {
+      // If task failed we should remove it from cache.
+      availableAQueries.removeValue(forKey: name)
+      throw error
+    }
   }
 
-  func queryAAAA(name: String) async throws -> [AAAARecord] {
+  nonisolated func queryAAAA(name: String) async throws -> [AAAARecord] {
     guard let task = availableAAAAQueries.value(forKey: name) else {
       return try await self.queryAAAA0(name: name).map(\.record)
     }
@@ -346,43 +414,51 @@ extension LocalDNSProxy: _PrettyDNS.Resolver {
     return try await self.queryAAAA0(name: name).map(\.record)
   }
 
-  private func queryAAAA0(name: String) async throws -> [Expirable<AAAARecord>] {
-    guard channel != nil else { return [] }
+  nonisolated private func queryAAAA0(name: String) async throws -> [Expirable<AAAARecord>] {
+    guard await channel != nil else { return [] }
 
-    let task = Task<[Expirable<AAAARecord>], any Error> {
-      try await query(name: name, qt: .aaaa).answerRRs.lazy.compactMap { $0 as? AAAARecord }.map {
-        Expirable($0)
-      }
+    let task = Task<[Expirable<AAAARecord>], any Error>.detached {
+      try await self.query(name: name, qt: .aaaa).answerRRs.lazy.compactMap { $0 as? AAAARecord }
+        .map {
+          Expirable($0)
+        }
     }
     availableAAAAQueries.setValue(task, forKey: name)
-    return try await task.value
+
+    do {
+      return try await task.value
+    } catch {
+      // If task failed we should remove it from cache.
+      availableAAAAQueries.removeValue(forKey: name)
+      throw error
+    }
   }
 
-  func queryNS(name: String) async throws -> [NSRecord] {
+  nonisolated func queryNS(name: String) async throws -> [NSRecord] {
     try await query(name: name, qt: .ns).answerRRs.compactMap { $0 as? NSRecord }
   }
 
-  func queryCNAME(name: String) async throws -> [CNAMERecord] {
+  nonisolated func queryCNAME(name: String) async throws -> [CNAMERecord] {
     try await query(name: name, qt: .cname).answerRRs.compactMap { $0 as? CNAMERecord }
   }
 
-  func querySOA(name: String) async throws -> [SOARecord] {
+  nonisolated func querySOA(name: String) async throws -> [SOARecord] {
     try await query(name: name, qt: .soa).answerRRs.compactMap { $0 as? SOARecord }
   }
 
-  func queryPTR(name: String) async throws -> [PTRRecord] {
+  nonisolated func queryPTR(name: String) async throws -> [PTRRecord] {
     try await query(name: name, qt: .ptr).answerRRs.compactMap { $0 as? PTRRecord }
   }
 
-  func queryMX(name: String) async throws -> [MXRecord] {
+  nonisolated func queryMX(name: String) async throws -> [MXRecord] {
     try await query(name: name, qt: .mx).answerRRs.compactMap { $0 as? MXRecord }
   }
 
-  func queryTXT(name: String) async throws -> [TXTRecord] {
+  nonisolated func queryTXT(name: String) async throws -> [TXTRecord] {
     try await query(name: name, qt: .txt).answerRRs.compactMap { $0 as? TXTRecord }
   }
 
-  func querySRV(name: String) async throws -> [SRVRecord] {
+  nonisolated func querySRV(name: String) async throws -> [SRVRecord] {
     try await query(name: name, qt: .srv).answerRRs.compactMap { $0 as? SRVRecord }
   }
 }
