@@ -33,6 +33,7 @@ public actor __AnalyzerBot {
         availableIPPool: availableIPPool
       ),
       LogHandle(),
+      LwIPHandle(packetFlow: packetFlow),
     ]
   }
 
