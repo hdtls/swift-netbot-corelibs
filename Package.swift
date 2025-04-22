@@ -143,9 +143,8 @@ let package = Package(
       cSettings: [
         // Debugging options
         .define("LWIP_DEBUG", to: "1", .when(configuration: .debug)),
-
-        .headerSearchPath("opt"),
         .headerSearchPath("include"),
+        .headerSearchPath("third_party"),
       ]
     )
   )

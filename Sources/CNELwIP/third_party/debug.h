@@ -58,35 +58,6 @@
     #endif
   #endif
 
-  // Core locking
-  #define LWIP_TCPIP_CORE_LOCKING_INPUT 1
-
-  // Memory options
-  #define MEM_ALIGNMENT 8
-
-  // IP options
-  #define LWIP_IP4 1
-  #define LWIP_IP6 1
-
-  // TCP options
-  #define TCP_LISTEN_BACKLOG 1
-
-  // Network interfaces options
-  #define LWIP_SINGLE_NETIF 1
-
-  // Sequential layer options
-  #define LWIP_NETCONN 0
-
-  #define LWIP_TCPIP_TIMEOUT 1
-
-  // Socket options
-  #define LWIP_SOCKET 0
-
-  #define LWIP_TCP_KEEPALIVE 1
-
-  // Checksum options
-  #define LWIP_CHECKSUM_ON_COPY 1
-
   // Debugging options
   #if LWIP_DEBUG
     #define IP_DEBUG LWIP_DBG_ON
