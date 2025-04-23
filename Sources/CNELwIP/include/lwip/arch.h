@@ -36,14 +36,15 @@
  */
 #ifndef LWIP_HDR_ARCH_H
 #define LWIP_HDR_ARCH_H
-#include "opt.h"
 
+#ifndef __APPLE__
 #ifndef LITTLE_ENDIAN
 #define LITTLE_ENDIAN 1234
 #endif
 
 #ifndef BIG_ENDIAN
 #define BIG_ENDIAN 4321
+#endif
 #endif
 
 #include "arch/cc.h"

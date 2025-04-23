@@ -142,9 +142,7 @@ let package = Package(
       resources: privacyManifestResource,
       cSettings: [
         // Debugging options
-        .define("LWIP_DEBUG", to: "1", .when(configuration: .debug)),
-        .headerSearchPath("include"),
-        .headerSearchPath("third_party"),
+        .define("LWIP_DEBUG", to: "1", .when(configuration: .debug))
       ]
     )
   )

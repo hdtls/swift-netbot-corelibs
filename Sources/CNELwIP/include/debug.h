@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information
 //
 
-#ifndef LWIP_LWIPOPTS_DEBUG_H
-#define LWIP_LWIPOPTS_DEBUG_H
+#ifndef C_NE_LWIP_DEBUG_H
+#define C_NE_LWIP_DEBUG_H
 
   #if defined __APPLE__
     #include <os/log.h>
@@ -37,7 +37,12 @@
       va_end(args);
     }
 
-    #define LWIP_PLATFORM_DIAG(x) CNELwIP_log x
+    #if defined LWIP_PLATFORM_DIAG
+      #undef LWIP_PLATFORM_DIAG
+      #define LWIP_PLATFORM_DIAG(x) CNELwIP_log x
+    #else
+      #define LWIP_PLATFORM_DIAG(x) CNELwIP_log x
+    #endif
 
     #ifndef LWIP_ERROR
       #ifdef LWIP_DEBUG
@@ -54,7 +59,6 @@
     #ifndef LWIP_PLATFORM_ASSERT
       #define LWIP_PLATFORM_ASSERT(x) do {CNELwIP_log_with_type(OS_LOG_TYPE_FAULT, x); fflush(NULL); abort();} while(0)
       #include <stdio.h>
-      #include <stdlib.h>
     #endif
   #endif
 
@@ -87,4 +91,4 @@
     #define UDP_DEBUG LWIP_DBG_ON
   #endif
 
-#endif /* LWIP_LWIPOPTS_DEBUG_H */
+#endif /* C_NE_LWIP_DEBUG_H */
