@@ -38,3 +38,4 @@ dev/git.commit.template
 **/CNELwIP/*
 *.xcfilelist
 **/*.storyboard
+**/*.patch

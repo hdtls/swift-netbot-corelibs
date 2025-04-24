@@ -213,16 +213,17 @@ ip4_route(const ip4_addr_t *dest)
 #endif
 #endif /* !LWIP_SINGLE_NETIF */
 
-  if ((netif_default == NULL) || !netif_is_up(netif_default) || !netif_is_link_up(netif_default) ||
-      ip4_addr_isany_val(*netif_ip4_addr(netif_default)) || ip4_addr_isloopback(dest)) {
-    /* No matching netif found and default netif is not usable.
-       If this is not good enough for you, use LWIP_HOOK_IP4_ROUTE() */
-    LWIP_DEBUGF(IP_DEBUG | LWIP_DBG_LEVEL_SERIOUS, ("ip4_route: No route to %"U16_F".%"U16_F".%"U16_F".%"U16_F"\n",
-                ip4_addr1_16(dest), ip4_addr2_16(dest), ip4_addr3_16(dest), ip4_addr4_16(dest)));
-    IP_STATS_INC(ip.rterr);
-    MIB2_STATS_INC(mib2.ipoutnoroutes);
-    return NULL;
-  }
+  /* CNELwIP - Always use netif_default to route IPv4 traffic. */
+  //  if ((netif_default == NULL) || !netif_is_up(netif_default) || !netif_is_link_up(netif_default) ||
+  //      ip4_addr_isany_val(*netif_ip4_addr(netif_default)) || ip4_addr_isloopback(dest)) {
+  //    /* No matching netif found and default netif is not usable.
+  //       If this is not good enough for you, use LWIP_HOOK_IP4_ROUTE() */
+  //    LWIP_DEBUGF(IP_DEBUG | LWIP_DBG_LEVEL_SERIOUS, ("ip4_route: No route to %"U16_F".%"U16_F".%"U16_F".%"U16_F"\n",
+  //                ip4_addr1_16(dest), ip4_addr2_16(dest), ip4_addr3_16(dest), ip4_addr4_16(dest)));
+  //    IP_STATS_INC(ip.rterr);
+  //    MIB2_STATS_INC(mib2.ipoutnoroutes);
+  //    return NULL;
+  //  }
 
   return netif_default;
 }
@@ -438,6 +439,11 @@ ip4_input_accept(struct netif *netif)
       return 1;
     }
 #endif /* LWIP_AUTOIP */
+
+    /* CNELwIP - Our netif Accept ALL packets. */
+    LWIP_DEBUGF(IP_DEBUG, ("ip4_input: CNELwIP ACCEPT ALL packets on interface %c%c\n",
+                           netif->name[0], netif->name[1]));
+    return 1;
   }
   return 0;
 }

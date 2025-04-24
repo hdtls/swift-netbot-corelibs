@@ -88,6 +88,8 @@ rsync -avmz \
   "$DERIVED_FILES_DIR/contrib/ports/unix/posixlib/include/" "$SRCROOT/Sources/CNELwIP/include/"
 
 echo "PATCHING LwIP"
+git apply "$SRCROOT/scripts/CNELwIP.patch"
+
 # Patching ambiguous expansion of macro 'BIG_ENDIAN'.
 $sed -i '/#ifndef LITTLE_ENDIAN/i #ifndef __APPLE__' "$SRCROOT/Sources/CNELwIP/include/lwip/arch.h"
 $sed -i '/#define BIG_ENDIAN 4321/a #endif' "$SRCROOT/Sources/CNELwIP/include/lwip/arch.h"
