@@ -7,6 +7,18 @@
 import CompilerPluginSupport
 import PackageDescription
 
+// This doesn't work when cross-compiling: the privacy manifest will be included in the Bundle and
+// Foundation will be linked. This is, however, strictly better than unconditionally adding the
+// resource.
+#if canImport(Darwin)
+  let privacyManifestExclude: [String] = []
+  let privacyManifestResource: [PackageDescription.Resource] = [.copy("PrivacyInfo.xcprivacy")]
+#else
+  // Exclude on other platforms to avoid build warnings.
+  let privacyManifestExclude: [String] = ["PrivacyInfo.xcprivacy"]
+  let privacyManifestResource: [PackageDescription.Resource] = []
+#endif
+
 let package = Package(
   name: "swift-netbot-corelibs",
   platforms: [
@@ -49,6 +61,7 @@ let package = Package(
         "_PrettyDNS",
         "_PersistentStore",
         "_ResourceProcessing",
+        "CNELwIP",
         .product(name: "Anlzr", package: "swift-netbot-essentials"),
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "NIOCore", package: "swift-nio"),
@@ -76,6 +89,17 @@ let package = Package(
       dependencies: [
         .product(name: "HTTPTypes", package: "swift-http-types"),
         .product(name: "Logging", package: "swift-log"),
+      ]
+    ),
+    .target(
+      name: "CNELwIP",
+      exclude: privacyManifestExclude + [
+        "hash.txt"
+      ],
+      resources: privacyManifestResource,
+      cSettings: [
+        // Debugging options
+        .define("LWIP_DEBUG", to: "1", .when(configuration: .debug))
       ]
     ),
     .target(
@@ -118,36 +142,6 @@ let package = Package(
     ),
   ]
 )
-
-#if canImport(Darwin)
-  // This doesn't work when cross-compiling: the privacy manifest will be included in the Bundle and
-  // Foundation will be linked. This is, however, strictly better than unconditionally adding the
-  // resource.
-  #if canImport(Darwin)
-    let privacyManifestExclude: [String] = []
-    let privacyManifestResource: [PackageDescription.Resource] = [.copy("PrivacyInfo.xcprivacy")]
-  #else
-    // Exclude on other platforms to avoid build warnings.
-    let privacyManifestExclude: [String] = ["PrivacyInfo.xcprivacy"]
-    let privacyManifestResource: [PackageDescription.Resource] = []
-  #endif
-
-  // There is some issues that make CNELwIP unavailable on non-Darwin platform.
-  package.targets.append(
-    .target(
-      name: "CNELwIP",
-      exclude: privacyManifestExclude + [
-        "hash.txt"
-      ],
-      resources: privacyManifestResource,
-      cSettings: [
-        // Debugging options
-        .define("LWIP_DEBUG", to: "1", .when(configuration: .debug))
-      ]
-    )
-  )
-  package.targets.first(where: { $0.name == "_NEAnalytics" })?.dependencies.append("CNELwIP")
-#endif
 
 for target in package.targets {
   var settings = target.swiftSettings ?? []

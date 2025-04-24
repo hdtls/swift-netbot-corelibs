@@ -90,6 +90,10 @@ rsync -avmz \
 echo "PATCHING LwIP"
 git apply "$SRCROOT/scripts/CNELwIP.patch"
 
+$sed -i 's/struct icmp6_hdr {/struct CNELwIP_icmp6_hdr {/' "$SRCROOT/Sources/CNELwIP/include/lwip/prot/icmp6.h"
+$sed -i 's/struct ip6_hdr {/struct CNELwIP_ip6_hdr {/' "$SRCROOT/Sources/CNELwIP/include/lwip/prot/ip6.h"
+$sed -i 's/struct udp_hdr {/struct CNELwIP_udp_hdr {/' "$SRCROOT/Sources/CNELwIP/include/lwip/prot/udp.h"
+
 # Patching ambiguous expansion of macro 'BIG_ENDIAN'.
 $sed -i '/#ifndef LITTLE_ENDIAN/i #ifndef __APPLE__' "$SRCROOT/Sources/CNELwIP/include/lwip/arch.h"
 $sed -i '/#define BIG_ENDIAN 4321/a #endif' "$SRCROOT/Sources/CNELwIP/include/lwip/arch.h"
@@ -102,6 +106,19 @@ $sed -i -e "/#include \"lwip\/priv\/memp_std\.h\"/ { r $SRCROOT/Sources/CNELwIP/
 # Patching implicit conversion loses integer precision.
 $sed -i -e 's/int len = strlen/size_t len = strlen/' "$SRCROOT/Sources/CNELwIP/contrib/ports/unix/port/netif/sio.c"
 $sed -i -e 's/cnt = read( fd/cnt = (int)read( fd/' "$SRCROOT/Sources/CNELwIP/contrib/ports/unix/port/netif/fifo.c"
+$sed -i 's/u32_t sio_write/ssize_t sio_write/' "$SRCROOT/Sources/CNELwIP/include/lwip/sio.h"
+$sed -i 's/u32_t sio_read/ssize_t sio_read/' "$SRCROOT/Sources/CNELwIP/include/lwip/sio.h"
+$sed -i 's/u32_t sio_tryread/ssize_t sio_tryread/' "$SRCROOT/Sources/CNELwIP/include/lwip/sio.h"
+$sed -i 's/u32_t sio_write/ssize_t sio_write/' "$SRCROOT/Sources/CNELwIP/contrib/ports/unix/port/netif/sio.c"
+$sed -i 's/u32_t sio_read/ssize_t sio_read/' "$SRCROOT/Sources/CNELwIP/contrib/ports/unix/port/netif/sio.c"
+$sed -i '/void sio_read_abort(sio_status_t \* siostat)/i\
+ssize_t sio_tryread(sio_status_t \* siostat, u8_t \*buf, u32_t size)\
+{\
+    ssize_t rsz = read( siostat->fd, buf, size );\
+    return rsz < 0 ? 0 : rsz;\
+}\
+
+' "$SRCROOT/Sources/CNELwIP/contrib/ports/unix/port/netif/sio.c"
 
 echo "RECORDING LwIP revision"
 #$sed -i -e "s/LwIP Commit: [0-9a-f]\+/LwIP Commit: ${LWIP_REVISION}/" "$HERE/Package.swift"

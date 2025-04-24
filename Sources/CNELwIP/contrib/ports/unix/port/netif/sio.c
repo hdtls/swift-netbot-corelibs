@@ -305,13 +305,19 @@ void sio_expect_string( u8_t *str, sio_status_t * siostat )
 #endif /* ! (PPP_SUPPORT || LWIP_HAVE_SLIPIF) */
 
 #if (PPP_SUPPORT || LWIP_HAVE_SLIPIF)
-u32_t sio_write(sio_status_t * siostat, const u8_t *buf, u32_t size)
+ssize_t sio_write(sio_status_t * siostat, const u8_t *buf, u32_t size)
 {
     ssize_t wsz = write( siostat->fd, buf, size );
     return wsz < 0 ? 0 : wsz;
 }
 
-u32_t sio_read(sio_status_t * siostat, u8_t *buf, u32_t size)
+ssize_t sio_read(sio_status_t * siostat, u8_t *buf, u32_t size)
+{
+    ssize_t rsz = read( siostat->fd, buf, size );
+    return rsz < 0 ? 0 : rsz;
+}
+
+ssize_t sio_tryread(sio_status_t * siostat, u8_t *buf, u32_t size)
 {
     ssize_t rsz = read( siostat->fd, buf, size );
     return rsz < 0 ? 0 : rsz;

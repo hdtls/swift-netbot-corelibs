@@ -135,7 +135,7 @@ enum icmp6_pp_code {
 #  include "arch/bpstruct.h"
 #endif
 PACK_STRUCT_BEGIN
-struct icmp6_hdr {
+struct CNELwIP_icmp6_hdr {
   PACK_STRUCT_FLD_8(u8_t type);
   PACK_STRUCT_FLD_8(u8_t code);
   PACK_STRUCT_FIELD(u16_t chksum);

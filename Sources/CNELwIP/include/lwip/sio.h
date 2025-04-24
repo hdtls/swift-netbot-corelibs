@@ -96,7 +96,7 @@ u8_t sio_recv(sio_fd_t fd);
  * @note This function will block until data can be received. The blocking
  * can be cancelled by calling sio_read_abort().
  */
-u32_t sio_read(sio_fd_t fd, u8_t *data, u32_t len);
+ssize_t sio_read(sio_fd_t fd, u8_t *data, u32_t len);
 #endif
 
 #ifndef sio_tryread
@@ -109,7 +109,7 @@ u32_t sio_read(sio_fd_t fd, u8_t *data, u32_t len);
  * @param len maximum length (in bytes) of data to receive
  * @return number of bytes actually received
  */
-u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len);
+ssize_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len);
 #endif
 
 #ifndef sio_write
@@ -123,7 +123,7 @@ u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len);
  *
  * @note This function will block until all data can be sent.
  */
-u32_t sio_write(sio_fd_t fd, const u8_t *data, u32_t len);
+ssize_t sio_write(sio_fd_t fd, const u8_t *data, u32_t len);
 #endif
 
 #ifndef sio_read_abort
