@@ -23,24 +23,24 @@ final class _NELwIPTCPListener {
     Unmanaged<_NELwIPTCPListener>.fromOpaque(opaque).takeUnretainedValue()
   }
 
-  init(using virtualInterface: UnsafePointer<netif>?) {
+  init() {
     listener = tcp_new()
     var addr = ip_addr_any
     tcp_bind(listener, &addr, 0)
   }
 
   func start(queue: DispatchQueue) {
-    guard let newListener = tcp_listen_with_backlog(listener, u8_t(TCP_DEFAULT_LISTEN_BACKLOG))
-    else {
+    let newListener = tcp_listen_with_backlog(listener, UInt8(TCP_DEFAULT_LISTEN_BACKLOG))
+    guard let newListener else {
       tcp_close(listener)
       return
     }
     listener = newListener
 
-    tcp_arg(listener, UnsafeMutableRawPointer(listener))
-    tcp_accept(listener) { context, connection, error in
-      _NELwIPTCPListener.fromOpaque(context).accept(
-        context: context, connection: connection, error: error)
+    let args = Unmanaged<_NELwIPTCPListener>.passUnretained(self).toOpaque()
+    tcp_arg(listener, args)
+    tcp_accept(listener) { contextPtr, connection, error in
+      _NELwIPTCPListener.fromOpaque(contextPtr).accept(connection, error: error)
     }
   }
 
@@ -48,18 +48,13 @@ final class _NELwIPTCPListener {
 
   }
 
-  private func accept(
-    context: UnsafeMutableRawPointer?, connection: UnsafeMutablePointer<tcp_pcb>?, error: err_t
-  ) -> err_t {
-    guard let conn = connection, error == ERR_OK else {
+  private func accept(_ newConnection: UnsafeMutablePointer<tcp_pcb>?, error: err_t) -> err_t {
+    guard let newConnection, error == ERR_OK else {
       return error
     }
 
-    tcp_backlog_accepted(context?.assumingMemoryBound(to: tcp_pcb.self))
-
-    logger.trace("")
-    _NELwIPConnection(wrapped: conn).start(on: .global())
-
+    _NELwIPConnection(wrapped: newConnection).start(on: .global())
+    tcp_backlog_accepted(newConnection)
     return ERR_OK
   }
 }
@@ -77,15 +72,14 @@ final class _NELwIPConnection {
   }
 
   func start(on queue: DispatchQueue) {
-    tcp_arg(connection, UnsafeMutableRawPointer(connection))
-
-    tcp_err(connection) { context, error in
-      _NELwIPConnection.fromOpaque(context).errorCaught(context: context, error: error)
+    let args = Unmanaged<_NELwIPConnection>.passUnretained(self).toOpaque()
+    tcp_arg(connection, args)
+    tcp_err(connection) { contextPtr, error in
+      _NELwIPConnection.fromOpaque(contextPtr).errorCaught(context: contextPtr, error: error)
     }
-
-    tcp_recv(connection) { context, conn, data, error in
-      _NELwIPConnection.fromOpaque(context).channelRead(
-        context: context, pcb: conn, data: data, error: error)
+    tcp_recv(connection) { contextPtr, conn, data, error in
+      _NELwIPConnection.fromOpaque(contextPtr).channelRead(
+        context: contextPtr, pcb: conn, data: data, error: error)
     }
   }
 
@@ -116,13 +110,14 @@ final class _NELwIPConnection {
 final public class LwIPHandle: PacketHandle, @unchecked Sendable {
 
   private let v4: _NELwIPTCPListener
-  private let v6: _NELwIPTCPListener? = nil
+  private let v6: _NELwIPTCPListener
 
-  var packetFlow: any PacketTunnelFlow
+  let packetFlow: any PacketTunnelFlow
+
   private let logger = Logger(label: "LwIP")
   private let virtualInterface: UnsafeMutablePointer<netif>?
 
-  private static func fromOpaque(_ opaque: UnsafeMutablePointer<netif>!) -> LwIPHandle {
+  fileprivate static func fromOpaque(_ opaque: UnsafeMutablePointer<netif>) -> LwIPHandle {
     Unmanaged<LwIPHandle>.fromOpaque(UnsafeRawPointer(opaque)).takeUnretainedValue()
   }
 
@@ -132,54 +127,39 @@ final public class LwIPHandle: PacketHandle, @unchecked Sendable {
   }
 
   public init(packetFlow: any PacketTunnelFlow) {
-    lwip_init()
+    self.v4 = .init()
+    self.v6 = .init()
+    self.packetFlow = packetFlow
 
-    tcp_init()
     // Configure network interface in LwIP
-    virtualInterface = UnsafeMutablePointer.allocate(capacity: MemoryLayout<netif>.size)
-    virtualInterface?.initialize(to: .init())
+    self.virtualInterface = UnsafeMutablePointer.allocate(capacity: MemoryLayout<netif>.size)
+    self.virtualInterface?.initialize(to: .init())
 
-    func makeIP4Addr(_ a: UInt32, _ b: UInt32, _ c: UInt32, _ d: UInt32) -> ip4_addr_t {
-      var ipaddr = ip4_addr_t()
-      ipaddr.addr = lwip_htonl(((a) << 24) | ((b) << 16) | ((c) << 8) | (d))
-      return ipaddr
-    }
+    var ipaddr = CNELwIP_IP4_ADDR(198, 18, 0, 1)
+    var netmask = CNELwIP_IP4_ADDR(255, 254, 0, 0)
+    var gw = CNELwIP_IP4_ADDR(198, 18, 0, 1)
 
-    var ipaddr = makeIP4Addr(198, 18, 0, 1)
-    var netmask = makeIP4Addr(255, 254, 0, 0)
-    var gw = makeIP4Addr(198, 18, 0, 1)
-
-    netif_init()
+    let opaquePtr = Unmanaged.passUnretained(self).toOpaque()
     netif_add(
-      virtualInterface, &ipaddr, &netmask, &gw, nil,
-      {
-        $0?.pointee.output = { context, p, v4 in
-          guard let context, let p, let v4 else {
-            return ERR_ARG
-          }
-          let ipaddr = ip_addr_t(
-            u_addr: .init(ip4: v4.pointee), type: UInt8(IPADDR_TYPE_V4.rawValue))
-          return LwIPHandle.fromOpaque(context).commonOutput(
-            netif: context, p: p, ipaddr: ipaddr)
+      virtualInterface, &ipaddr, &netmask, &gw, opaquePtr,
+      { contextPtr in
+        guard let contextPtr = contextPtr else { return ERR_IF }
+        contextPtr.pointee.mtu = 1500
+        contextPtr.pointee.mtu6 = 1500
+        contextPtr.pointee.output = { contextPtr, bufferPtr, addressPtr in
+          guard let pointee = addressPtr?.pointee else { return ERR_OK }
+          var address = ip_addr_t(u_addr: .init(ip4: pointee), type: UInt8(IPADDR_TYPE_V4.rawValue))
+          return CNELwIP_common_write(contextPtr, bufferPtr, address)
         }
-        $0?.pointee.output_ip6 = { context, p, v6 in
-          guard let context, let p, let v6 else {
-            return ERR_ARG
-          }
-          let ipaddr = ip_addr_t(
-            u_addr: .init(ip6: v6.pointee), type: UInt8(IPADDR_TYPE_V6.rawValue))
-          return LwIPHandle.fromOpaque(context).commonOutput(
-            netif: context, p: p, ipaddr: ipaddr)
+        contextPtr.pointee.output_ip6 = { contextPtr, bufferPtr, addressPtr in
+          guard let pointee = addressPtr?.pointee else { return ERR_OK }
+          var address = ip_addr_t(u_addr: .init(ip6: pointee), type: UInt8(IPADDR_TYPE_V6.rawValue))
+          return CNELwIP_common_write(contextPtr, bufferPtr, address)
         }
         return ERR_OK
       }, ip_input)
-
     netif_set_default(virtualInterface)
     netif_set_up(virtualInterface)
-
-    self.v4 = _NELwIPTCPListener(using: virtualInterface)
-
-    self.packetFlow = packetFlow
   }
 
   func runIfActive() async throws {
@@ -210,13 +190,40 @@ final public class LwIPHandle: PacketHandle, @unchecked Sendable {
     return .discarded
   }
 
-  public func stopTunnel() async {
-    v4.cancel()
-  }
+  fileprivate func write(data: UnsafeMutablePointer<pbuf>?, context: ip_addr_t) -> err_t {
+    let protocolFamily = context.type == UInt8(IPADDR_TYPE_V4.rawValue) ? AF_INET : AF_INET6
+    guard protocolFamily == AF_INET else { return ERR_OK }
 
-  private func commonOutput(
-    netif: UnsafeMutablePointer<netif>?, p: UnsafeMutablePointer<pbuf>?, ipaddr: ip_addr_t
-  ) -> err_t {
-    ERR_OK
+    var packetObjects: [IPPacket] = []
+    var bufferPtr = data
+    while bufferPtr != nil {
+      var data = ByteBuffer()
+      let bytesToCopy = bufferPtr!.pointee.len
+      data.writeWithUnsafeMutableBytes(minimumWritableBytes: Int(bytesToCopy)) { dataPtr in
+        Int(pbuf_copy_partial(bufferPtr, dataPtr.baseAddress, bytesToCopy, 0))
+      }
+      let v4 = IPPacket.IPv4Packet(data: data)
+      packetObjects.append(.v4(v4))
+      bufferPtr = bufferPtr?.pointee.next
+    }
+
+    packetFlow.writePacketObjects(packetObjects)
+    return ERR_OK
   }
+}
+
+func CNELwIP_IP4_ADDR(_ a: UInt32, _ b: UInt32, _ c: UInt32, _ d: UInt32) -> ip4_addr_t {
+  let x = ((a & 0xff) << 24) | ((b & 0xff) << 16) | ((c & 0xff) << 8) | (d & 0xff)
+  return ip4_addr_t(addr: lwip_htonl(x))
+}
+
+func CNELwIP_common_write(
+  _ contextPtr: UnsafeMutablePointer<netif>?, _ bufferPtr: UnsafeMutablePointer<pbuf>?,
+  _ address: ip_addr_t
+) -> err_t {
+  guard let contextPtr else { return ERR_IF }
+  guard let bufferPtr else { return ERR_OK }
+  let handle = Unmanaged<LwIPHandle>.fromOpaque(UnsafeRawPointer(contextPtr.pointee.state))
+    .takeUnretainedValue()
+  return handle.write(data: bufferPtr, context: address)
 }
