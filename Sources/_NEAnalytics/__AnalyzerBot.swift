@@ -14,7 +14,7 @@ public actor __AnalyzerBot {
   private nonisolated let packetFlow: PacketTunnelFlow
   private nonisolated let dnsServer: String
   private nonisolated let additionalDNSServers: [Address]
-  private nonisolated let handles: [any PacketHandle]
+  private nonisolated let handles: [any PacketHandleProtocol & Sendable]
   private nonisolated var logger: Logger { AnalyzerBot.shared.logger }
 
   public init(
@@ -28,12 +28,12 @@ public actor __AnalyzerBot {
     self.additionalDNSServers = additionalDNSServers
     self.handles = [
       LocalDNSProxy(
+        packetFlow: packetFlow,
         server: dnsServer,
         additionalServers: additionalDNSServers,
         availableIPPool: availableIPPool
       ),
-      LogHandle(),
-      LwIPHandle(packetFlow: packetFlow),
+      LwIPStackProxy(packetFlow: packetFlow),
     ]
   }
 
@@ -53,19 +53,12 @@ public actor __AnalyzerBot {
   func runIfActive() async throws {
     guard isActive.load(ordering: .relaxed) else { return }
 
-    var packetObjects: [IPPacket] = []
-
     for packetObject in await packetFlow.readPacketObjects() {
       for handle in handles {
-        if case .handled(let response) = try await handle.handle(packetObject) {
-          packetObjects.append(response)
+        if case .handled = try await handle.handleInput(packetObject) {
           break
         }
       }
-    }
-
-    if !packetObjects.isEmpty {
-      _ = packetFlow.writePacketObjects(packetObjects)
     }
 
     try await runIfActive()

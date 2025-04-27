@@ -5,6 +5,7 @@
 import Anlzr
 import Atomics
 import NEAddressProcessing
+import NIOConcurrencyHelpers
 import NIOCore
 import NIOEmbedded
 import NIOPosix
@@ -15,6 +16,21 @@ import _PrettyDNS
 
 @Suite(.tags(.dns))
 struct LocalDNSProxyTests {
+
+  final class MockTunnelFlow: PacketTunnelFlow {
+    let writePacketObjects = NIOLockedValueBox<[IPPacket]>([])
+
+    func readPacketObjects() async -> [_NEAnalytics.IPPacket] {
+      []
+    }
+
+    func writePacketObjects(_ packets: [_NEAnalytics.IPPacket]) -> Bool {
+      writePacketObjects.withLock {
+        $0.append(contentsOf: packets)
+      }
+      return true
+    }
+  }
 
   final class MockDNSServer: Sendable {
     let queryCalls: ManagedAtomic<Int> = .init(0)
@@ -68,6 +84,7 @@ struct LocalDNSProxyTests {
 
   @Test func runQueryBeforeActive() async throws {
     let p = LocalDNSProxy(
+      packetFlow: MockTunnelFlow(),
       server: "198.18.0.1",
       additionalServers: [.hostPort(host: "1.1.1.1", port: 53)],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
@@ -108,6 +125,7 @@ struct LocalDNSProxyTests {
 
   @Test func setResolverAfterActiveAutomatically() async throws {
     let p = LocalDNSProxy(
+      packetFlow: MockTunnelFlow(),
       server: "198.18.0.1",
       additionalServers: [],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
@@ -118,14 +136,16 @@ struct LocalDNSProxyTests {
   }
 
   @Test func directlyPacketHandling() async throws {
+    let packetFlow = MockTunnelFlow()
     let p = LocalDNSProxy(
+      packetFlow: packetFlow,
       server: "198.18.1.1",
       additionalServers: [],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     try await p.runIfActive()
 
-    let message = Message(
+    var message = Message(
       headerFields: .init(
         transactionID: 0,
         flags: .init(rawValue: 0x8180),
@@ -139,7 +159,7 @@ struct LocalDNSProxyTests {
       authorityRRs: [],
       additionalRRs: []
     )
-    let serializedBytes = try message.serializedBytes
+    var serializedBytes = try message.serializedBytes
 
     var datagram = Datagram(
       pseudoFields: .init(
@@ -165,64 +185,62 @@ struct LocalDNSProxyTests {
     query.options = nil
     query.payload = datagram.data
 
-    await #expect(throws: Never.self) {
-      guard case .handled(let packet) = try await p.handle(.v4(query)) else {
-        #expect(Bool(false), "Should handle correct DNS query packet.")
-        return
-      }
-
-      guard case .v4(let response) = packet else {
-        #expect(Bool(false), "Should be IPv4 packet")
-        return
-      }
-
-      let message = Message(
-        headerFields: .init(
-          transactionID: 0,
-          flags: .init(rawValue: 0x8000),
-          qestionCount: 1,
-          answerCount: 1,
-          authorityCount: 0,
-          additionCount: 0
-        ),
-        questions: [Question(domainName: "example.com", queryType: .a)],
-        answerRRs: [
-          ARecord(
-            domainName: "example.com", ttl: 300, dataLength: .determined(4),
-            data: IPv4Address("198.18.0.3")!)
-        ],
-        authorityRRs: [],
-        additionalRRs: []
-      )
-      let serializedBytes = try message.serializedBytes
-      #expect(serializedBytes.count == 45)
-
-      var datagram = Datagram(
-        pseudoFields: .init(
-          sourceAddress: .init("198.18.1.1")!,
-          destinationAddress: .init("198.18.0.1")!,
-          protocol: .udp,
-          dataLength: UInt16(serializedBytes.count + 8)
-        )
-      )
-      datagram.sourcePort = 53
-      datagram.destinationPort = 12345
-      datagram.payload = ByteBuffer(bytes: serializedBytes)
-      #expect(datagram.totalLength == 53)
-
-      #expect(response.internetHeaderLength == 5)
-      #expect(response.differentiatedServicesCodePoint == 0)
-      #expect(response.differentiatedServicesCodePoint == 0)
-      #expect(response.totalLength == 73)
-      #expect(response.flags == 0)
-      #expect(response.fragmentOffset == 0)
-      #expect(response.timeToLive == 64)
-      #expect(response.protocol == .udp)
-      #expect(response.sourceAddress == datagram.pseudoFields.sourceAddress)
-      #expect(response.destinationAddress == datagram.pseudoFields.destinationAddress)
-      #expect(response.options == nil)
-      #expect(response.payload == datagram.data)
+    guard case .handled = try await p.handleInput(.v4(query)) else {
+      #expect(Bool(false), "Should handle correct DNS query packet.")
+      return
     }
+
+    guard case .v4(let response) = packetFlow.writePacketObjects.withLock({ $0.first }) else {
+      #expect(Bool(false), "Should be IPv4 packet")
+      return
+    }
+
+    message = Message(
+      headerFields: .init(
+        transactionID: 0,
+        flags: .init(rawValue: 0x8000),
+        qestionCount: 1,
+        answerCount: 1,
+        authorityCount: 0,
+        additionCount: 0
+      ),
+      questions: [Question(domainName: "example.com", queryType: .a)],
+      answerRRs: [
+        ARecord(
+          domainName: "example.com", ttl: 300, dataLength: .determined(4),
+          data: IPv4Address("198.18.0.3")!)
+      ],
+      authorityRRs: [],
+      additionalRRs: []
+    )
+    serializedBytes = try message.serializedBytes
+    #expect(serializedBytes.count == 45)
+
+    datagram = Datagram(
+      pseudoFields: .init(
+        sourceAddress: .init("198.18.1.1")!,
+        destinationAddress: .init("198.18.0.1")!,
+        protocol: .udp,
+        dataLength: UInt16(serializedBytes.count + 8)
+      )
+    )
+    datagram.sourcePort = 53
+    datagram.destinationPort = 12345
+    datagram.payload = ByteBuffer(bytes: serializedBytes)
+    #expect(datagram.totalLength == 53)
+
+    #expect(response.internetHeaderLength == 5)
+    #expect(response.differentiatedServicesCodePoint == 0)
+    #expect(response.differentiatedServicesCodePoint == 0)
+    #expect(response.totalLength == 73)
+    #expect(response.flags == 0)
+    #expect(response.fragmentOffset == 0)
+    #expect(response.timeToLive == 64)
+    #expect(response.protocol == .udp)
+    #expect(response.sourceAddress == datagram.pseudoFields.sourceAddress)
+    #expect(response.destinationAddress == datagram.pseudoFields.destinationAddress)
+    #expect(response.options == nil)
+    #expect(response.payload == datagram.data)
   }
 
   @Test func queryA() async throws {
@@ -235,6 +253,7 @@ struct LocalDNSProxyTests {
     )
     let address = try #require(await server.start())
     let p = LocalDNSProxy(
+      packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
       additionalServers: [address.address],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
@@ -263,6 +282,7 @@ struct LocalDNSProxyTests {
     )
     let address = try #require(await server.start())
     let p = LocalDNSProxy(
+      packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
       additionalServers: [address.address],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
@@ -291,6 +311,7 @@ struct LocalDNSProxyTests {
     )
     let address = try #require(await server.start())
     let p = LocalDNSProxy(
+      packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
       additionalServers: [address.address],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
@@ -315,6 +336,7 @@ struct LocalDNSProxyTests {
     )
     let address = try #require(await server.start())
     let p = LocalDNSProxy(
+      packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
       additionalServers: [address.address],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
@@ -342,6 +364,7 @@ struct LocalDNSProxyTests {
     )
     let address = try #require(await server.start())
     let p = LocalDNSProxy(
+      packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
       additionalServers: [address.address],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
@@ -369,6 +392,7 @@ struct LocalDNSProxyTests {
     )
     let address = try #require(await server.start())
     let p = LocalDNSProxy(
+      packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
       additionalServers: [address.address],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
@@ -400,6 +424,7 @@ struct LocalDNSProxyTests {
     )
     let address = try #require(await server.start())
     let p = LocalDNSProxy(
+      packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
       additionalServers: [address.address],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
@@ -427,6 +452,7 @@ struct LocalDNSProxyTests {
     )
     let address = try #require(await server.start())
     let p = LocalDNSProxy(
+      packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
       additionalServers: [address.address],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
@@ -461,6 +487,7 @@ struct LocalDNSProxyTests {
     )
     let address = try #require(await server.start())
     let p = LocalDNSProxy(
+      packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
       additionalServers: [address.address],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
@@ -488,6 +515,7 @@ struct LocalDNSProxyTests {
     )
     let address = try #require(await server.start())
     let p = LocalDNSProxy(
+      packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
       additionalServers: [address.address],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
@@ -517,6 +545,7 @@ struct LocalDNSProxyTests {
     )
     let address = try #require(await server.start())
     let p = LocalDNSProxy(
+      packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
       additionalServers: [address.address],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))

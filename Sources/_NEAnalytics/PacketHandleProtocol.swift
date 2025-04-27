@@ -5,15 +5,17 @@
 enum PacketHandleResult: Hashable, Sendable {
 
   /// The handler processed packet.
-  case handled(IPPacket)
+  case handled
 
   /// The handler discarded packet.
   case discarded
 }
 
-protocol PacketHandle: Sendable {
+protocol PacketHandleProtocol {
 
-  func handle(_ packetObject: IPPacket) async throws -> PacketHandleResult
+  var packetFlow: any PacketTunnelFlow { get }
 
   func runIfActive() async throws
+
+  func handleInput(_ packetObject: IPPacket) async throws -> PacketHandleResult
 }

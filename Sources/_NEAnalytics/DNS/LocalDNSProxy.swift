@@ -14,7 +14,7 @@ import NIOPosix
 import _PrettyDNS
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-actor LocalDNSProxy: PacketHandle {
+actor LocalDNSProxy: PacketHandleProtocol {
 
   private var allocator: ByteBufferAllocator {
     channel!.channel.allocator
@@ -30,6 +30,7 @@ actor LocalDNSProxy: PacketHandle {
   private nonisolated let availablePTRQueries:
     LRUCache<String, Task<[Expirable<PTRRecord>], any Error>>
 
+  internal nonisolated let packetFlow: any PacketTunnelFlow
   private nonisolated let bindAddress: String
   private nonisolated let additionalServers: [Address]
   private nonisolated let availableIPPool: AvailableIPPool
@@ -47,7 +48,13 @@ actor LocalDNSProxy: PacketHandle {
 
   private nonisolated let queries = AsyncStream.makeStream(of: Message.self)
 
-  init(server: String, additionalServers: [Address], availableIPPool: AvailableIPPool) {
+  init(
+    packetFlow: any PacketTunnelFlow,
+    server: String,
+    additionalServers: [Address],
+    availableIPPool: AvailableIPPool
+  ) {
+    self.packetFlow = packetFlow
     self.bindAddress = server
     self.additionalServers = additionalServers
     self.availableIPPool = availableIPPool
@@ -146,7 +153,7 @@ actor LocalDNSProxy: PacketHandle {
     sessions.removeValue(forKey: transactionID)
   }
 
-  nonisolated func handle(_ packetObject: IPPacket) async throws -> PacketHandleResult {
+  nonisolated func handleInput(_ packetObject: IPPacket) async throws -> PacketHandleResult {
     // Make it mutable, so we don't need alloc new packet for response.
     guard case .v4(var packet) = packetObject else {
       // IPv4 only now.
@@ -249,10 +256,11 @@ actor LocalDNSProxy: PacketHandle {
     logger.debug("\(msg) \(message.formatted())")
     logger.trace("\(msg) \(message.formatted(.detailed))")
 
-    return .handled(.v4(packet))
+    _ = packetFlow.writePacketObjects([.v4(packet)])
+    return .handled
   }
 
-  // Returns disguised records contains one reserved IPv4 address.
+  // Returns disguised records contains a reserved IPv4 address.
   nonisolated private func queryDisguisedA(name: String) async throws -> [ARecord] {
     var value: Expirable<ARecord>
     if let stored = disguisedARecords.value(forKey: name) {
