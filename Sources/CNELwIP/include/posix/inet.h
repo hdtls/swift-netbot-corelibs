@@ -39,6 +39,55 @@
 extern "C" {
 #endif
 
+#ifdef __APPLE__
+  #define IPPROTO_UDPLITE 136
+#endif
+
+/*
+ * The Type of Service provides an indication of the abstract
+ * parameters of the quality of service desired.  These parameters are
+ * to be used to guide the selection of the actual service parameters
+ * when transmitting a datagram through a particular network.  Several
+ * networks offer service precedence, which somehow treats high
+ * precedence traffic as more important than other traffic (generally
+ * by accepting only traffic above a certain precedence at time of high
+ * load).  The major choice is a three way tradeoff between low-delay,
+ * high-reliability, and high-throughput.
+ * The use of the Delay, Throughput, and Reliability indications may
+ * increase the cost (in some sense) of the service.  In many networks
+ * better performance for one of these parameters is coupled with worse
+ * performance on another.  Except for very unusual cases at most two
+ * of these three indications should be set.
+ */
+#define IPTOS_TOS_MASK          0x1E
+#define IPTOS_TOS(tos)          ((tos) & IPTOS_TOS_MASK)
+#define IPTOS_LOWCOST           0x02
+
+/*
+ * The Network Control precedence designation is intended to be used
+ * within a network only.  The actual use and control of that
+ * designation is up to each network. The Internetwork Control
+ * designation is intended for use by gateway control originators only.
+ * If the actual use of these precedence designations is of concern to
+ * a particular network, it is the responsibility of that network to
+ * control the access to, and use of, those precedence designations.
+ */
+#define IPTOS_PREC_MASK                 0xe0
+#define IPTOS_PREC(tos)                ((tos) & IPTOS_PREC_MASK)
+
+#if LWIP_IGMP
+  /*
+   * Options and types related to multicast membership
+   */
+  #define IP_ADD_MEMBERSHIP  3
+  #define IP_DROP_MEMBERSHIP 4
+
+  typedef struct ip_mreq {
+      struct in_addr imr_multiaddr; /* IP multicast address of group */
+      struct in_addr imr_interface; /* local IP address of interface */
+  } ip_mreq;
+#endif /* LWIP_IGMP */
+
 #if LWIP_IPV4
 
 #define inet_addr_from_ip4addr(target_inaddr, source_ipaddr) ((target_inaddr)->s_addr = ip4_addr_get_u32(source_ipaddr))

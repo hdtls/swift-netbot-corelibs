@@ -50,7 +50,7 @@ extern "C" {
 #  include "arch/bpstruct.h"
 #endif
 PACK_STRUCT_BEGIN
-struct CNELwIP_udp_hdr {
+struct udp_hdr {
   PACK_STRUCT_FIELD(u16_t src);
   PACK_STRUCT_FIELD(u16_t dest);  /* src/dest UDP ports */
   PACK_STRUCT_FIELD(u16_t len);

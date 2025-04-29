@@ -39,7 +39,6 @@
 #define LWIP_TCPIP_TIMEOUT 1
 
 // Socket options
-#define LWIP_SOCKET 0
 #define LWIP_TCP_KEEPALIVE 1
 
 // Checksum options
@@ -48,14 +47,14 @@
 #define LWIP_HAVE_SLIPIF 1
 #define SLIP_MAX_SIZE 1500
 
+#define LWIP_ERRNO_STDINCLUDE 1
+
 #define LWIP_SOCKET_EXTERNAL_HEADERS 1
 #define LWIP_SOCKET_EXTERNAL_HEADER_SOCKETS_H "posix/sockets.h"
 #define LWIP_SOCKET_EXTERNAL_HEADER_INET_H "posix/inet.h"
-
 #define ip6_hdr CNELwIP_ip6_hdr
 #define icmp6_hdr CNELwIP_icmp6_hdr
 #define LWIP_ERR_T err_enum_t
-#define udp_hdr CNELwIP_udp_hdr
 
 void sys_check_core_locking(void);
 #define LWIP_ASSERT_CORE_LOCKED() sys_check_core_locking()

@@ -29,6 +29,7 @@ echo "REMOVING any previously-vendored LwIP code"
 find "$SRCROOT/Sources/CNELwIP/include/" \
   ! -path "$SRCROOT/Sources/CNELwIP/include/debug.h" \
   ! -path "$SRCROOT/Sources/CNELwIP/include/lwipopts.h" \
+  ! -path "$SRCROOT/Sources/CNELwIP/include/posix/*" \
   -delete
 
 rm -rf "$SRCROOT/Sources/CNELwIP/contrib"
@@ -81,18 +82,11 @@ rsync -avmz \
   --exclude="*" \
  "$DERIVED_FILES_DIR/contrib/ports/unix/port/include/" "$SRCROOT/Sources/CNELwIP/include/"
 
-rsync -avmz \
-  --include="*/" \
-  --include="*.h" \
-  --exclude="*" \
-  "$DERIVED_FILES_DIR/contrib/ports/unix/posixlib/include/" "$SRCROOT/Sources/CNELwIP/include/"
-
 echo "PATCHING LwIP"
 git apply "$SRCROOT/scripts/CNELwIP.patch"
 
 $sed -i 's/struct icmp6_hdr {/struct CNELwIP_icmp6_hdr {/' "$SRCROOT/Sources/CNELwIP/include/lwip/prot/icmp6.h"
 $sed -i 's/struct ip6_hdr {/struct CNELwIP_ip6_hdr {/' "$SRCROOT/Sources/CNELwIP/include/lwip/prot/ip6.h"
-$sed -i 's/struct udp_hdr {/struct CNELwIP_udp_hdr {/' "$SRCROOT/Sources/CNELwIP/include/lwip/prot/udp.h"
 
 # Patching ambiguous expansion of macro 'BIG_ENDIAN'.
 $sed -i '/#ifndef LITTLE_ENDIAN/i #ifndef __APPLE__' "$SRCROOT/Sources/CNELwIP/include/lwip/arch.h"

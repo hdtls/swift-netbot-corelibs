@@ -31,116 +31,199 @@
 #include <poll.h>
 #include <errno.h>
 #include LWIP_SOCKET_EXTERNAL_HEADER_INET_H
-typedef size_t msg_iovlen_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef _HAVE_SA_LEN
-#define HAVE_SA_LEN	_HAVE_SA_LEN
-#else
-#define HAVE_SA_LEN	0
-#endif /* _HAVE_SA_LEN */
+/* sockaddr and pals include length fields */
+#if defined(__APPLE__) || defined(__FreeBSD__)
+  #define LWIP_SOCKET_HAVE_SA_LEN  1
+#endif
 
-/* Address length safe read and write */
-#if HAVE_SA_LEN
-#define IP4ADDR_SOCKADDR_SET_LEN(sin) \
-      (sin)->sin_len = sizeof(struct sockaddr_in)
-#define IP6ADDR_SOCKADDR_SET_LEN(sin6) \
-      (sin6)->sin6_len = sizeof(struct sockaddr_in6)
-#define IPADDR_SOCKADDR_GET_LEN(addr) \
-      (addr)->sa.sa_len
-#else
-#define IP4ADDR_SOCKADDR_SET_LEN(addr)
-#define IP6ADDR_SOCKADDR_SET_LEN(addr)
-#define IPADDR_SOCKADDR_GET_LEN(addr) \
-      ((addr)->sa.sa_family == AF_INET ? sizeof(struct sockaddr_in) \
-        : ((addr)->sa.sa_family == AF_INET6 ? sizeof(struct sockaddr_in6) : 0))
-#endif /* HAVE_SA_LEN */
+#ifndef __SOCKADDR_COMMON_SIZE
+  #define __SOCKADDR_COMMON_SIZE sizeof(sa_family_t)
+#endif
 
-#define SIN_ZERO_LEN	sizeof (struct sockaddr) - \
+#ifdef __APPLE__
+  #define s6_addr   __u6_addr.__u6_addr8
+  #define s6_addr16 __u6_addr.__u6_addr16
+  #define s6_addr32 __u6_addr.__u6_addr32
+#endif
+
+#define SIN_ZERO_LEN  sizeof (struct sockaddr) - \
                            __SOCKADDR_COMMON_SIZE - \
                            sizeof (in_port_t) - \
                            sizeof (struct in_addr)
 
 #if !defined IOV_MAX
-#define IOV_MAX 0xFFFF
+  #define IOV_MAX 0xFFFF
 #elif IOV_MAX > 0xFFFF
-#error "IOV_MAX larger than supported by LwIP"
+  #error "IOV_MAX larger than supported by LwIP"
 #endif /* IOV_MAX */
 
-#define LWIP_SELECT_MAXNFDS (FD_SETSIZE + LWIP_SOCKET_OFFSET)
+typedef int msg_iovlen_t;
+
+/* cmsg header/data alignment. NOTE: we align to native word size (double word
+size on 16-bit arch) so structures are not placed at an unaligned address.
+16-bit arch needs double word to ensure 32-bit alignment because socklen_t
+could be 32 bits. If we ever have cmsg data with a 64-bit variable, alignment
+will need to increase long long */
+#define ALIGN_H(size) (((size) + sizeof(long) - 1U) & ~(sizeof(long)-1U))
+#define ALIGN_D(size) ALIGN_H(size)
+
+/*
+ * Additional options, not kept in so_options.
+ */
+#define SO_DONTLINGER   ((int)(~SO_LINGER))
+#define SO_CONTIMEO     0x1009 /* Unimplemented: connect timeout */
+#ifdef __APPLE__
+  #define SO_NO_CHECK     0x100a /* don't create UDP checksum */
+#endif
+
+
+/* Flags we can use with send and recv. */
+//#define MSG_PEEK       0x01    /* Peeks at an incoming message */
+//#define MSG_WAITALL    0x02    /* Unimplemented: Requests that the function block until the full amount of data requested can be returned */
+//#define MSG_OOB        0x04    /* Unimplemented: Requests out-of-band data. The significance and semantics of out-of-band data are protocol-specific */
+//#define MSG_DONTWAIT   0x08    /* Nonblocking i/o for this operation only */
+#ifdef __APPLE__
+  #define MSG_MORE       0x10    /* Sender will send more */
+#endif
+//#define MSG_NOSIGNAL   0x20    /* Uninmplemented: Requests not to send the SIGPIPE signal if an attempt to send is made on a stream-oriented socket that is no longer connected. */
+
+#if LWIP_TCP
+/*
+ * Options for level IPPROTO_TCP
+ */
+#if __APPLE__
+  #define TCP_KEEPIDLE   0x03    /* set pcb->keep_idle  - Same as TCP_KEEPALIVE, but use seconds for get/setsockopt */
+#else
+  #define TCP_KEEPALIVE 0x10
+#endif
+#endif /* LWIP_TCP */
 
 #if LWIP_UDP && LWIP_UDPLITE
 /*
  * Options for level IPPROTO_UDPLITE
  */
-#define UDPLITE_SEND_CSCOV 0x01 /* sender checksum coverage */
-#define UDPLITE_RECV_CSCOV 0x02 /* minimal receiver checksum coverage */
+  #define UDPLITE_SEND_CSCOV 0x01 /* sender checksum coverage */
+  #define UDPLITE_RECV_CSCOV 0x02 /* minimal receiver checksum coverage */
 #endif /* LWIP_UDP && LWIP_UDPLITE*/
 
-#if 0
-void lwip_socket_thread_init(void); /* LWIP_NETCONN_SEM_PER_THREAD==1: initialize thread-local semaphore */
-void lwip_socket_thread_cleanup(void); /* LWIP_NETCONN_SEM_PER_THREAD==1: destroy thread-local semaphore */
 
-int lwip_accept(int s, struct sockaddr *addr, socklen_t *addrlen);
-int lwip_bind(int s, const struct sockaddr *name, socklen_t namelen);
-int lwip_shutdown(int s, int how);
-int lwip_getpeername (int s, struct sockaddr *name, socklen_t *namelen);
-int lwip_getsockname (int s, struct sockaddr *name, socklen_t *namelen);
-int lwip_getsockopt (int s, int level, int optname, void *optval, socklen_t *optlen);
-int lwip_setsockopt (int s, int level, int optname, const void *optval, socklen_t optlen);
- int lwip_close(int s);
-int lwip_connect(int s, const struct sockaddr *name, socklen_t namelen);
-int lwip_listen(int s, int backlog);
-ssize_t lwip_recv(int s, void *mem, size_t len, int flags);
-ssize_t lwip_read(int s, void *mem, size_t len);
-ssize_t lwip_readv(int s, const struct iovec *iov, int iovcnt);
-ssize_t lwip_recvfrom(int s, void *mem, size_t len, int flags,
-      struct sockaddr *from, socklen_t *fromlen);
-ssize_t lwip_recvmsg(int s, struct msghdr *message, int flags);
-ssize_t lwip_send(int s, const void *dataptr, size_t size, int flags);
-ssize_t lwip_sendmsg(int s, const struct msghdr *message, int flags);
-ssize_t lwip_sendto(int s, const void *dataptr, size_t size, int flags,
-    const struct sockaddr *to, socklen_t tolen);
-int lwip_socket(int domain, int type, int protocol);
-ssize_t lwip_write(int s, const void *dataptr, size_t size);
-ssize_t lwip_writev(int s, const struct iovec *iov, int iovcnt);
-#if LWIP_SOCKET_SELECT
-int lwip_select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset,
-                struct timeval *timeout);
+/*
+ * Commands for ioctlsocket(),  taken from the BSD file fcntl.h.
+ * lwip_ioctl only supports FIONREAD and FIONBIO, for now
+ *
+ * Ioctl's have the command encoded in the lower word,
+ * and the size of any in or out parameters in the upper
+ * word.  The high 2 bits of the upper word are used
+ * to encode the in/out status of the parameter; for now
+ * we restrict parameters to at most 128 bytes.
+ */
+#if !defined(FIONREAD) || !defined(FIONBIO)
+  #define IOCPARM_MASK    0x7fUL          /* parameters must be < 128 bytes */
+  #define IOC_VOID        0x20000000UL    /* no parameters */
+  #define IOC_OUT         0x40000000UL    /* copy out parameters */
+  #define IOC_IN          0x80000000UL    /* copy in parameters */
+  #define IOC_INOUT       (IOC_IN|IOC_OUT)
+                                          /* 0x20000000 distinguishes new &
+                                             old ioctl's */
+  #define _IO(x,y)        ((long)(IOC_VOID|((x)<<8)|(y)))
+
+  #define _IOR(x,y,t)     ((long)(IOC_OUT|((sizeof(t)&IOCPARM_MASK)<<16)|((x)<<8)|(y)))
+
+  #define _IOW(x,y,t)     ((long)(IOC_IN|((sizeof(t)&IOCPARM_MASK)<<16)|((x)<<8)|(y)))
+#endif /* !defined(FIONREAD) || !defined(FIONBIO) */
+
+#ifndef FIONREAD
+  #define FIONREAD    _IOR('f', 127, unsigned long) /* get # bytes to read */
 #endif
-#if LWIP_SOCKET_POLL
-int lwip_poll(struct pollfd *fds, nfds_t nfds, int timeout);
-#endif
-int lwip_ioctl(int s, long cmd, void *argp);
-int lwip_fcntl(int s, int cmd, int val);
-const char *lwip_inet_ntop(int af, const void *src, char *dst, socklen_t size);
-int lwip_inet_pton(int af, const char *src, void *dst);
+  #ifndef FIONBIO
+  #define FIONBIO     _IOW('f', 126, unsigned long) /* set/clear non-blocking i/o */
 #endif
 
-/* Unsupported identifiers */
-#ifndef SO_NO_CHECK
-#define SO_NO_CHECK         0xFF
+/* commands for fnctl */
+#ifndef F_GETFL
+  #define F_GETFL 3
 #endif
-#ifndef SO_BINDTODEVICE
-#define SO_BINDTODEVICE     0xFE
+#ifndef F_SETFL
+  #define F_SETFL 4
 #endif
-#ifndef MSG_MORE
-#define MSG_MORE            0x0
+
+/* File status flags and file access modes for fnctl,
+   these are bits in an int. */
+#ifndef O_NONBLOCK
+  #define O_NONBLOCK  1 /* nonblocking I/O */
 #endif
-#ifndef TCP_KEEPALIVE
-#define TCP_KEEPALIVE       0xFF
+#ifndef O_NDELAY
+  #define O_NDELAY    O_NONBLOCK /* same as O_NONBLOCK, for compatibility */
 #endif
-#ifndef TCP_KEEPIDLE
-#define TCP_KEEPIDLE        0xFE
+#ifndef O_RDONLY
+  #define O_RDONLY    2
 #endif
-#ifndef TCP_KEEPINTVL
-#define TCP_KEEPINTVL       0xFD
+#ifndef O_WRONLY
+  #define O_WRONLY    4
 #endif
-#ifndef TCP_KEEPCNT
-#define TCP_KEEPCNT         0xFC
+#ifndef O_RDWR
+  #define O_RDWR      (O_RDONLY|O_WRONLY)
+#endif
+
+#ifndef SHUT_RD
+  #define SHUT_RD   0
+  #define SHUT_WR   1
+  #define SHUT_RDWR 2
+#endif
+
+/* FD_SET used for lwip_select */
+#ifndef FD_SET
+  #undef  FD_SETSIZE
+  /* Make FD_SETSIZE match NUM_SOCKETS in socket.c */
+  #define FD_SETSIZE    MEMP_NUM_NETCONN
+  #define LWIP_SELECT_MAXNFDS (FD_SETSIZE + LWIP_SOCKET_OFFSET)
+  #define FDSETSAFESET(n, code) do { \
+    if (((n) - LWIP_SOCKET_OFFSET < MEMP_NUM_NETCONN) && (((int)(n) - LWIP_SOCKET_OFFSET) >= 0)) { \
+    code; }} while(0)
+  #define FDSETSAFEGET(n, code) (((n) - LWIP_SOCKET_OFFSET < MEMP_NUM_NETCONN) && (((int)(n) - LWIP_SOCKET_OFFSET) >= 0) ?\
+    (code) : 0)
+  #define FD_SET(n, p)  FDSETSAFESET(n, (p)->fd_bits[((n)-LWIP_SOCKET_OFFSET)/8] = (u8_t)((p)->fd_bits[((n)-LWIP_SOCKET_OFFSET)/8] |  (1 << (((n)-LWIP_SOCKET_OFFSET) & 7))))
+  #define FD_CLR(n, p)  FDSETSAFESET(n, (p)->fd_bits[((n)-LWIP_SOCKET_OFFSET)/8] = (u8_t)((p)->fd_bits[((n)-LWIP_SOCKET_OFFSET)/8] & ~(1 << (((n)-LWIP_SOCKET_OFFSET) & 7))))
+  #define FD_ISSET(n,p) FDSETSAFEGET(n, (p)->fd_bits[((n)-LWIP_SOCKET_OFFSET)/8] &   (1 << (((n)-LWIP_SOCKET_OFFSET) & 7)))
+  #define FD_ZERO(p)    memset((void*)(p), 0, sizeof(*(p)))
+
+  typedef struct fd_set
+  {
+    unsigned char fd_bits [(FD_SETSIZE+7)/8];
+  } fd_set;
+
+#elif FD_SETSIZE < (LWIP_SOCKET_OFFSET + MEMP_NUM_NETCONN)
+  #error "external FD_SETSIZE too small for number of sockets"
+#else
+  #define LWIP_SELECT_MAXNFDS FD_SETSIZE
+#endif /* FD_SET */
+
+/* poll-related defines and types */
+/* @todo: find a better way to guard the definition of these defines and types if already defined */
+#if !defined(POLLIN) && !defined(POLLOUT)
+  #define POLLIN     0x1
+  #define POLLOUT    0x2
+  #define POLLERR    0x4
+  #define POLLNVAL   0x8
+  /* Below values are unimplemented */
+  #define POLLRDNORM 0x10
+  #define POLLRDBAND 0x20
+  #define POLLPRI    0x40
+  #define POLLWRNORM 0x80
+  #define POLLWRBAND 0x100
+  #define POLLHUP    0x200
+  typedef unsigned int nfds_t;
+  struct pollfd
+  {
+    int fd;
+    short events;
+    short revents;
+  };
 #endif
 
 #ifdef __cplusplus
