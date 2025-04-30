@@ -106,4 +106,8 @@ public struct AvailableIPPool: Sendable {
   func store(_ desired: IPv4Address) {
     _storage.store(desired._address.bigEndian, ordering: .relaxed)
   }
+
+  public func contains(_ address: IPv4Address) -> Bool {
+    lower._address <= address._address && address._address <= upper._address
+  }
 }
