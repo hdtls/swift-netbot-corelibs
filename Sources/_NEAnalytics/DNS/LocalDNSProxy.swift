@@ -33,7 +33,7 @@ actor LocalDNSProxy: PacketHandleProtocol {
   internal nonisolated let packetFlow: any PacketTunnelFlow
   private nonisolated let bindAddress: String
   private nonisolated let additionalServers: [Address]
-  private nonisolated let availableIPPool: AvailableIPPool
+  internal nonisolated let availableIPPool: AvailableIPPool
 
   private nonisolated let logger = Logger(label: "dns")
 
@@ -198,7 +198,7 @@ actor LocalDNSProxy: PacketHandleProtocol {
     var message = try parser.parse(dnsPayload)
 
     var msg = "\(packet.sourceAddress) => \(packet.destinationAddress) \(packet.totalLength)"
-    logger.debug("\(msg) \(message.formatted())")
+    logger.info("\(msg) \(message.formatted())")
     logger.trace("\(msg) \(message.formatted(.detailed))")
 
     // TODO: Multiple Qestions.
@@ -253,7 +253,7 @@ actor LocalDNSProxy: PacketHandleProtocol {
     packet.payload = datagram.data
 
     msg = "\(packet.sourceAddress) => \(packet.destinationAddress) \(packet.totalLength)"
-    logger.debug("\(msg) \(message.formatted())")
+    logger.info("\(msg) \(message.formatted())")
     logger.trace("\(msg) \(message.formatted(.detailed))")
 
     _ = packetFlow.writePacketObjects([.v4(packet)])
@@ -455,7 +455,24 @@ extension LocalDNSProxy: _PrettyDNS.Resolver {
   }
 
   nonisolated func queryPTR(name: String) async throws -> [PTRRecord] {
-    try await query(name: name, qt: .ptr).answerRRs.compactMap { $0 as? PTRRecord }
+    // Check to avoid query PTR records for disguised address.
+    let v4 = ".in-addr.arpa"
+    guard name.hasSuffix(v4) else {
+      return try await query(name: name, qt: .ptr).answerRRs.compactMap { $0 as? PTRRecord }
+    }
+    var prefix = name[..<name.index(name.startIndex, offsetBy: name.count - v4.count)]
+    let ipaddr = prefix.split(separator: ".").reversed().joined(separator: ".")
+    guard let address = IPv4Address(ipaddr) else {
+      return try await query(name: name, qt: .ptr).answerRRs.compactMap { $0 as? PTRRecord }
+    }
+
+    guard availableIPPool.contains(address) else {
+      return try await query(name: name, qt: .ptr).answerRRs.compactMap { $0 as? PTRRecord }
+    }
+    guard let entry = disguisedARecords.first(where: { $0.1.record.data == address }) else {
+      return []
+    }
+    return [PTRRecord(domainName: name, ttl: entry.value.record.ttl, data: entry.key)]
   }
 
   nonisolated func queryMX(name: String) async throws -> [MXRecord] {
