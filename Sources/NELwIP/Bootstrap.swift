@@ -299,7 +299,7 @@ extension Address {
         }
       case .unix(let path):
         resolved = try SocketAddress(unixDomainSocketPath: path)
-      case .url(let url):
+      case .url:
         throw SocketAddressError.unsupported
       }
       return resolved

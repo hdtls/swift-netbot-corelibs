@@ -4,9 +4,9 @@
 
 import Atomics
 import CNELwIP
+import Logging
 import NIOConcurrencyHelpers
 import NIOCore
-import Logging
 
 private struct LwIPChannelLifecycleManager {
   // MARK: Types
@@ -664,7 +664,7 @@ final class ServerLwIPPCBChannel: BaseLwIPPCBChannel<ServerLwIPPCB>, @unchecked 
   private var backlog: Int32 = TCP_DEFAULT_LISTEN_BACKLOG
 
   init(socket: ServerLwIPPCB, eventLoop: any EventLoop) throws {
-    try super.init(socket: socket, parent: nil, eventLoop: eventLoop)
+    super.init(socket: socket, parent: nil, eventLoop: eventLoop)
     tcp_arg(socket.descriptor, Unmanaged.passUnretained(self).toOpaque())
   }
 

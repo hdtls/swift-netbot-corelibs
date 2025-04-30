@@ -42,12 +42,13 @@ struct LwIPError: Error {
     case ERR_CLSD: return "Connection closed."
     case ERR_ARG: return "Illegal argument."
     default: return ""
-    };
+    }
   }
 }
 
 public protocol LwIPStackDelegate: AnyObject {
-  func stack(_ stack: LwIPStack, didReceive channel: NIOAsyncChannel<ByteBuffer, ByteBuffer>) async throws
+  func stack(_ stack: LwIPStack, didReceive channel: NIOAsyncChannel<ByteBuffer, ByteBuffer>)
+    async throws
 
   func stack(_ stack: LwIPStack, didReceive response: [ByteBuffer])
 }

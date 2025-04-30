@@ -3,8 +3,8 @@
 //
 
 import CNELwIP
-import NIOCore
 import Logging
+import NIOCore
 
 protocol BaseLwIPPCBProtocol {
 
@@ -117,11 +117,11 @@ class LwIPPCB: BaseLwIPPCB, LwIPPCBProtocol {
 
   init(protocolFamily: NIOBSDSocket.ProtocolFamily) throws {
     let sock = try BaseLwIPPCB.makeSocket(protocolFamily: protocolFamily)
-    try super.init(socket: sock)
+    super.init(socket: sock)
   }
 
   override init(socket descriptor: UnsafeMutablePointer<tcp_pcb>) {
-    try super.init(socket: descriptor)
+    super.init(socket: descriptor)
   }
 
   func connect(to address: SocketAddress) throws -> Bool {
@@ -133,7 +133,7 @@ class ServerLwIPPCB: BaseLwIPPCB, ServerLwIPPCBProtocol {
 
   init(protocolFamily: NIOBSDSocket.ProtocolFamily) throws {
     let sock = try BaseLwIPPCB.makeSocket(protocolFamily: protocolFamily)
-    try super.init(socket: sock)
+    super.init(socket: sock)
   }
 
   func listen(backlog: Int32 = TCP_DEFAULT_LISTEN_BACKLOG) throws {
