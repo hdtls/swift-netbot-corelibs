@@ -2,7 +2,9 @@
 // See LICENSE.txt for license information
 //
 
+import Darwin
 import NEAddressProcessing
+import NIOCore
 import Testing
 
 @testable import _NEAnalytics
@@ -57,5 +59,14 @@ struct AvailableIPPoolTests {
       #expect(pool.loadThenWrappingIncrement() == IPv4Address("192.168.1.0"))
       #expect(pool.loadThenWrappingIncrement() == IPv4Address("192.168.1.1"))
     }
+  }
+
+  @Test func contains() async throws {
+    let p = AvailableIPPool(uncheckedBounds: "198.18.0.1/15")!
+    let na0 = IPv4Address("198.18.1.1")!
+    let na1 = IPv4Address("198.20.0.1")!
+
+    #expect(p.contains(na0))
+    #expect(!p.contains(na1))
   }
 }
