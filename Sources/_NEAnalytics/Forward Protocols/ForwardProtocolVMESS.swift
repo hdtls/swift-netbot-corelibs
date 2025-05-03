@@ -207,11 +207,14 @@ extension ForwardProtocolVMESS: ProxiableForwardProtocol {
         // if handler added after channel is active.
         channel.pipeline.fireChannelActive()
       } else {
-        finalize = channel.configureVMESSPipeline(
+        finalize = try await channel.configureVMESSPipeline(
           contentSecurity: .aes128Gcm,
           user: userID,
           destinationAddress: destinationAddress
-        ).map { channel }
+        ) {
+          channel.eventLoop.makeSucceededFuture(channel)
+        }
+        .get()
       }
     case .negotiated(let token):
       throw ALPNError.negotiatedTokenUnsupported(token)

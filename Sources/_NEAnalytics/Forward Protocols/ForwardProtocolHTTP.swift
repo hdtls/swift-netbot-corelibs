@@ -201,12 +201,14 @@ extension ForwardProtocolHTTP: ProxiableForwardProtocol {
 
     switch alpn {
     case .negotiated("http/1.1"), .fallback:
-      finalize = channel.configureHTTPTunnelPipeline(
+      finalize = try await channel.configureHTTPTunnelPipeline(
         authenticationRequired: authenticationRequired,
         passwordReference: passwordReference,
         destinationAddress: destinationAddress
-      )
-      .map { channel }
+      ) {
+        channel.eventLoop.makeSucceededFuture(channel)
+      }
+      .get()
     case .negotiated(let token):
       finalize = channel.close().flatMap {
         channel.eventLoop.makeFailedFuture(ALPNError.negotiatedTokenUnsupported(token))

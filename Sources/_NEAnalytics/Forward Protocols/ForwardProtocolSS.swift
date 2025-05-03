@@ -152,9 +152,11 @@ extension ForwardProtocolSS: ProxiableForwardProtocol {
           algorithm: algorithm,
           passwordReference: passwordReference,
           destinationAddress: destinationAddress
-        )
-        .map { channel }
+        ) {
+          channel.eventLoop.makeSucceededFuture(channel)
+        }
       }
+      .get()
   }
 }
 

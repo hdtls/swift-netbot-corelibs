@@ -125,12 +125,14 @@ private final class NEVMESSWebSocketClientUpgrader<Output: Sendable>:
         try channel.pipeline.syncOperations.addHandler(WebSocketProtocolErrorHandler())
       }
       try channel.pipeline.syncOperations.addHandler(NEVMESSWebSocketFrameProducer())
-      try channel.pipeline.syncOperations.configureVMESSPipeline(
+      _ = try channel.pipeline.syncOperations.configureVMESSPipeline(
         contentSecurity: contentSecurity,
         user: userID,
         commandCode: commandCode,
         destinationAddress: destinationAddress
-      )
+      ) {
+        channel.eventLoop.makeSucceededVoidFuture()
+      }
     }
     .flatMap {
       upgrade(channel, response)

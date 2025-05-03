@@ -211,13 +211,16 @@ extension ForwardProtocolSOCKS5: ProxiableForwardProtocol {
 
     switch alpn {
     case .negotiated("http/1.1"), .fallback:
-      finalize = channel.configureSOCKS5Pipeline(
+      finalize = try await channel.configureSOCKS5Pipeline(
         username: username,
         passwordReference: passwordReference,
         authenticationRequired: authenticationRequired,
         destinationAddress: destinationAddress
-      )
-      .map { channel }
+      ) {
+        channel.eventLoop.makeSucceededFuture(channel)
+      }
+      .get()
+
     case .negotiated(let token):
       finalize = channel.close().flatMap {
         channel.eventLoop.makeFailedFuture(ALPNError.negotiatedTokenUnsupported(token))
