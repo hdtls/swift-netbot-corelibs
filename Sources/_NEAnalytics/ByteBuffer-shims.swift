@@ -27,9 +27,9 @@ extension ByteBuffer {
 
   /// The position of the first element in a nonempty buffer.
   ///
-  /// For an instance of `ByteBuffer`, `startIndex` is always zero. If the buffer
-  /// is empty, `startIndex` is equal to `endIndex`.
-  @inlinable public var startIndex: Index { 0 }
+  /// For an instance of `ByteBuffer`, `startIndex` is equal to the `readerIndex`.
+  /// If the buffer is empty, `startIndex` is equal to `endIndex`.
+  @inlinable public var startIndex: Index { readerIndex }
 
   /// The buffer's "past the end" position---that is, the position one greater
   /// than the last valid subscript argument.
@@ -38,7 +38,7 @@ extension ByteBuffer {
   /// half-open range operator (`..<`) with `endIndex`. The `..<` operator
   /// creates a range that doesn't include the upper bound, so it's always
   /// safe to use with `endIndex`.
-  @inlinable public var endIndex: Index { readableBytes }
+  @inlinable public var endIndex: Index { writerIndex }
 
   /// Returns the position immediately after the given index.
   @inlinable public func index(after i: Index) -> Index {
@@ -106,12 +106,12 @@ extension ByteBuffer {
     get {
       _precondition(index < endIndex, "ByteBuffer index is out of range")
       _precondition(index >= startIndex, "Negative ByteBuffer index is out of range")
-      return getInteger(at: readerIndex + index)!
+      return getInteger(at: index)!
     }
     set {
       _precondition(index < endIndex, "ByteBuffer index is out of range")
       _precondition(index >= startIndex, "Negative ByteBuffer index is out of range")
-      setInteger(newValue, at: readerIndex + index)
+      setInteger(newValue, at: index)
     }
   }
 
@@ -121,7 +121,7 @@ extension ByteBuffer {
       _precondition(bounds.upperBound <= endIndex, "ByteBuffer index is out of range")
       _precondition(bounds.lowerBound >= startIndex, "Negative ByteBuffer index is out of range")
       return getSlice(
-        at: readerIndex + bounds.lowerBound,
+        at: bounds.lowerBound,
         length: bounds.upperBound - bounds.lowerBound
       )!
     }
@@ -174,7 +174,7 @@ extension ByteBuffer {
       _precondition(bounds.upperBound <= endIndex, "ByteBuffer index is out of range")
       _precondition(bounds.lowerBound >= startIndex, "Negative ByteBuffer index is out of range")
       return getBytes(
-        at: readerIndex + bounds.lowerBound,
+        at: bounds.lowerBound,
         length: bounds.upperBound - bounds.lowerBound
       )!
     }

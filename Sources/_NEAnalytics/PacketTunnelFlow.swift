@@ -10,24 +10,35 @@ import NIOCore
 
 public protocol PacketTunnelFlow: Sendable {
 
-  func readPacketObjects() async -> [IPPacket]
+  func readPacketObjects() async -> [NEPacket]
 
-  func writePacketObjects(_ packets: [IPPacket]) -> Bool
+  func writePacketObjects(_ packets: [NEPacket]) -> Bool
 }
 
 #if canImport(NetworkExtension)
   extension NEPacketTunnelFlow: @unchecked @retroactive Sendable, PacketTunnelFlow {
 
-    public func readPacketObjects() async -> [IPPacket] {
-      let packetObjects: [NEPacket] = await readPacketObjects()
-      return packetObjects.filter { $0.protocolFamily == sa_family_t(AF_INET) }.compactMap {
-        IPPacket(data: .init(bytes: $0.data), protocolFamily: $0.protocolFamily)
+    public func readPacketObjects() async -> [NEPacket] {
+      let packetObjects: [NetworkExtension.NEPacket] = await readPacketObjects()
+      return packetObjects.compactMap {
+        switch $0.protocolFamily {
+        case sa_family_t(AF_INET):
+          return NEPacket(data: .init(bytes: $0.data), protocolFamily: .inet)
+        case sa_family_t(AF_INET6):
+          return NEPacket(data: .init(bytes: $0.data), protocolFamily: .inet)
+        default:
+          return nil
+        }
       }
     }
 
-    public func writePacketObjects(_ packets: [IPPacket]) -> Bool {
+    public func writePacketObjects(_ packets: [NEPacket]) -> Bool {
       let packetObjects = packets.map {
-        NEPacket(data: .init(Array(buffer: $0.data)), protocolFamily: $0.protocolFamily)
+        NetworkExtension
+          .NEPacket(
+            data: .init(Array(buffer: $0.data)),
+            protocolFamily: sa_family_t($0.protocolFamily.rawValue)
+          )
       }
       return writePacketObjects(packetObjects)
     }

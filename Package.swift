@@ -7,24 +7,12 @@
 import CompilerPluginSupport
 import PackageDescription
 
-// This doesn't work when cross-compiling: the privacy manifest will be included in the Bundle and
-// Foundation will be linked. This is, however, strictly better than unconditionally adding the
-// resource.
-#if canImport(Darwin)
-  let privacyManifestExclude: [String] = []
-  let privacyManifestResource: [PackageDescription.Resource] = [.copy("PrivacyInfo.xcprivacy")]
-#else
-  // Exclude on other platforms to avoid build warnings.
-  let privacyManifestExclude: [String] = ["PrivacyInfo.xcprivacy"]
-  let privacyManifestResource: [PackageDescription.Resource] = []
-#endif
-
 let package = Package(
   name: "swift-netbot-corelibs",
   platforms: [
-    .iOS(.v17),
-    .macOS(.v14),
-    .tvOS(.v17),
+    .iOS(.v18),
+    .macOS(.v15),
+    .tvOS(.v18),
   ],
   products: [
     .library(name: "Netbot", targets: ["Netbot"]),
@@ -62,7 +50,6 @@ let package = Package(
         "_PrettyDNS",
         "_PersistentStore",
         "_ResourceProcessing",
-        "NELwIP",
         .product(name: "Anlzr", package: "swift-netbot-essentials"),
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "NIOCore", package: "swift-nio"),
@@ -93,17 +80,6 @@ let package = Package(
       ]
     ),
     .target(
-      name: "CNELwIP",
-      exclude: privacyManifestExclude + [
-        "hash.txt"
-      ],
-      resources: privacyManifestResource,
-      cSettings: [
-        // Debugging options
-        .define("LWIP_DEBUG", to: "1", .when(configuration: .debug))
-      ]
-    ),
-    .target(
       name: "Dashboard",
       dependencies: [
         "_PersistentStore",
@@ -111,15 +87,6 @@ let package = Package(
       ]
     ),
     .target(name: "DashboardUI", dependencies: ["Dashboard"]),
-    .target(
-      name: "NELwIP",
-      dependencies: [
-        "CNELwIP",
-        .product(name: "NIOCore", package: "swift-nio"),
-        .product(name: "NIOPosix", package: "swift-nio"),
-        .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
-        .product(name: "NEAddressProcessing", package: "swift-netbot-frame-processing"),
-      ]),
     .target(
       name: "Netbot",
       dependencies: [

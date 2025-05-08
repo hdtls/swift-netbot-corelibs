@@ -18,13 +18,13 @@ import _PrettyDNS
 struct LocalDNSProxyTests {
 
   final class MockTunnelFlow: PacketTunnelFlow {
-    let writePacketObjects = NIOLockedValueBox<[IPPacket]>([])
+    let writePacketObjects = NIOLockedValueBox<[NEPacket]>([])
 
-    func readPacketObjects() async -> [_NEAnalytics.IPPacket] {
+    func readPacketObjects() async -> [NEPacket] {
       []
     }
 
-    func writePacketObjects(_ packets: [_NEAnalytics.IPPacket]) -> Bool {
+    func writePacketObjects(_ packets: [NEPacket]) -> Bool {
       writePacketObjects.withLock {
         $0.append(contentsOf: packets)
       }
@@ -135,7 +135,7 @@ struct LocalDNSProxyTests {
     await #expect(p.channel != nil)
   }
 
-  @Test func directlyPacketHandling() async throws {
+  @Test func handleInput() async throws {
     let packetFlow = MockTunnelFlow()
     let p = LocalDNSProxy(
       packetFlow: packetFlow,
@@ -174,23 +174,32 @@ struct LocalDNSProxyTests {
     datagram.payload = ByteBuffer(bytes: serializedBytes)
     #expect(datagram.totalLength == serializedBytes.count + 8)
 
-    var query = IPPacket.IPv4Packet()
-    query.differentiatedServicesCodePoint = 0
-    query.explicitCongestionNotification = 0
-    query.identification = .random(in: 0...UInt16.max)
-    query.timeToLive = 64
-    query.protocol = .udp
-    query.sourceAddress = datagram.pseudoFields.sourceAddress
-    query.destinationAddress = datagram.pseudoFields.destinationAddress
-    query.options = nil
-    query.payload = datagram.data
+    var bytes = ByteBuffer(repeating: 0, count: 20)
+    bytes.setInteger(0x45, at: 0, as: UInt8.self)
+    bytes.setInteger(20, at: 2, as: UInt16.self)
+    var queryHeaderFields = NEIPFields.NEInFields(storage: bytes)
+    queryHeaderFields.explicitCongestionNotification = 0
+    queryHeaderFields.identification = .random(in: 0...UInt16.max)
+    queryHeaderFields.timeToLive = 64
+    queryHeaderFields.protocol = .udp
+    queryHeaderFields.sourceAddress = datagram.pseudoFields.sourceAddress
+    queryHeaderFields.destinationAddress = datagram.pseudoFields.destinationAddress
+    queryHeaderFields.options = nil
+    queryHeaderFields.totalLength = UInt16(20 + datagram.data.count)
 
-    guard case .handled = try await p.handleInput(.v4(query)) else {
+    var queryData = queryHeaderFields.data
+    queryData.append(contentsOf: datagram.data)
+    let query = try #require(NEPacket(data: queryData, protocolFamily: .inet))
+    guard case .handled = try await p.handleInput(query) else {
       #expect(Bool(false), "Should handle correct DNS query packet.")
       return
     }
 
-    guard case .v4(let response) = packetFlow.writePacketObjects.withLock({ $0.first }) else {
+    guard let packet = packetFlow.writePacketObjects.withLock({ $0.first }) else {
+      #expect(Bool(false), "Should be IPv4 packet")
+      return
+    }
+    guard case .v4(let response) = packet.headerFields else {
       #expect(Bool(false), "Should be IPv4 packet")
       return
     }
@@ -240,7 +249,7 @@ struct LocalDNSProxyTests {
     #expect(response.sourceAddress == datagram.pseudoFields.sourceAddress)
     #expect(response.destinationAddress == datagram.pseudoFields.destinationAddress)
     #expect(response.options == nil)
-    #expect(response.payload == datagram.data)
+    #expect(packet.payload == datagram.data)
   }
 
   @Test func queryA() async throws {

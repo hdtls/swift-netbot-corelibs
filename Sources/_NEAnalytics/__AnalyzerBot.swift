@@ -32,8 +32,7 @@ public actor __AnalyzerBot {
         server: dnsServer,
         additionalServers: additionalDNSServers,
         availableIPPool: availableIPPool
-      ),
-      LwIPStackProxy(packetFlow: packetFlow),
+      )
     ]
   }
 
