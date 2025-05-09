@@ -5,6 +5,7 @@
 import Anlzr
 import AnlzrReports
 import CoWOptimization
+import HTTPTypes
 import Logging
 import NEAddressProcessing
 import NEVMESS
@@ -20,6 +21,7 @@ import _ResourceProcessing
   import Foundation
 #endif
 #if canImport(Network)
+  import Network
   import NIOTransportServices
 #else
   import NIOPosix
@@ -101,10 +103,15 @@ extension ForwardProtocolVMESS: ProxiableForwardProtocol {
       options: options,
       sni: tlsOptions.sni.isEmpty ? nil : tlsOptions.sni
     )
-    let bootstrap = NIOClientTCPBootstrap(ClientBootstrap(group: eventLoop.next()), tls: tls)
+    let bootstrap = ClientBootstrap(group: eventLoop.next())
+    #if canImport(Network)
+      _ = bootstrap.configureNWParameters {
+        $0.preferNoProxies = true
+      }
+    #endif
 
     let (channel, alpn) =
-      try await bootstrap
+      try await NIOClientTCPBootstrap(bootstrap, tls: tls)
       .enableTLS(tlsOptions.isEnabled)
       .connect(to: destination) { channel in
         channel.eventLoop.makeCompletedFuture {

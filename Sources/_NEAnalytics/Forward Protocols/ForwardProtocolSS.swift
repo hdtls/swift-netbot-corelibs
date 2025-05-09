@@ -11,6 +11,7 @@ import NESS
 import NIOCore
 
 #if canImport(Network)
+  import Network
   import NIOTransportServices
 #else
   import NIOPosix
@@ -80,19 +81,22 @@ extension ForwardProtocolSS: ProxiableForwardProtocol {
       port: .init(rawValue: UInt16(port))
     )
 
-    let eventLoopGroup = eventLoop.next()
-
-    return try await ClientBootstrap(group: eventLoopGroup)
-      .connect(to: destination) { channel in
-        channel.configureSSPipeline(
-          algorithm: algorithm,
-          passwordReference: passwordReference,
-          destinationAddress: destinationAddress
-        ) {
-          channel.eventLoop.makeSucceededFuture(channel)
-        }
+    let bootstrap = ClientBootstrap(group: eventLoop.next())
+    #if canImport(Network)
+      _ = bootstrap.configureNWParameters {
+        $0.preferNoProxies = true
       }
-      .get()
+    #endif
+    return try await bootstrap.connect(to: destination) { channel in
+      channel.configureSSPipeline(
+        algorithm: algorithm,
+        passwordReference: passwordReference,
+        destinationAddress: destinationAddress
+      ) {
+        channel.eventLoop.makeSucceededFuture(channel)
+      }
+    }
+    .get()
   }
 }
 
