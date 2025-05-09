@@ -56,7 +56,7 @@ import Foundation
   #error("The Socket Addresses module was unable to identify your C library.")
 #endif
 
-struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equatable, Hashable {
+struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
   @usableFromInline final class _Storage: Hashable {
     @usableFromInline var classlessInterDomainRouting: String
@@ -148,7 +148,7 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equatabl
   }
 }
 
-extension IPCIDRForwardingRule: @unchecked Sendable {}
+extension IPCIDRForwardingRule._Storage: @unchecked Sendable {}
 
 extension IPCIDRForwardingRule {
 

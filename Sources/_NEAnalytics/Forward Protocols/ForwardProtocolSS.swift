@@ -4,6 +4,7 @@
 
 import Anlzr
 import AnlzrReports
+import CoWOptimization
 import Logging
 import NEAddressProcessing
 import NESS
@@ -15,100 +16,26 @@ import NIOCore
   import NIOPosix
 #endif
 
-struct ForwardProtocolSS: Equatable, Hashable {
+@_cowOptimization struct ForwardProtocolSS: Hashable, Sendable {
 
-  @usableFromInline final class _Storage: Hashable {
-    @usableFromInline var name: String
-    @usableFromInline var serverAddress: String
-    @usableFromInline var port: Int
-    @usableFromInline var algorithm: NESS.Algorithm
-    @usableFromInline var passwordReference: String
+  var name: String
 
-    @inlinable init(
-      name: String, serverAddress: String, port: Int, algorithm: NESS.Algorithm,
-      passwordReference: String
-    ) {
-      self.name = name
-      self.serverAddress = serverAddress
-      self.port = port
-      self.algorithm = algorithm
-      self.passwordReference = passwordReference
-    }
+  var serverAddress: String
 
-    @inlinable func copy() -> _Storage {
-      _Storage(
-        name: name,
-        serverAddress: serverAddress,
-        port: port,
-        algorithm: algorithm,
-        passwordReference: passwordReference
-      )
-    }
+  var port: Int
 
-    @inlinable static func == (lhs: _Storage, rhs: _Storage) -> Bool {
-      return lhs.name == rhs.name && lhs.serverAddress == rhs.serverAddress && lhs.port == rhs.port
-        && lhs.algorithm == rhs.algorithm && lhs.passwordReference == rhs.passwordReference
-    }
+  var algorithm: NESS.Algorithm
 
-    @inlinable func hash(into hasher: inout Hasher) {
-      hasher.combine(name)
-      hasher.combine(serverAddress)
-      hasher.combine(port)
-      hasher.combine(algorithm)
-      hasher.combine(passwordReference)
-    }
-  }
+  var passwordReference: String
 
-  @usableFromInline var _storage: _Storage
-
-  @inlinable var name: String {
-    get { _storage.name }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.name = newValue
-    }
-  }
-
-  @inlinable var serverAddress: String {
-    get { _storage.serverAddress }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.serverAddress = newValue
-    }
-  }
-
-  @inlinable var port: Int {
-    get { _storage.port }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.port = newValue
-    }
-  }
-
-  @inlinable var algorithm: NESS.Algorithm {
-    get { _storage.algorithm }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.algorithm = newValue
-    }
-  }
-
-  @inlinable var passwordReference: String {
-    get { _storage.passwordReference }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.passwordReference = newValue
-    }
-  }
-
-  @inlinable init(
+  init(
     name: String,
     serverAddress: String,
     port: Int,
     algorithm: NESS.Algorithm,
     passwordReference: String
   ) {
-    _storage = _Storage(
+    self._storage = _Storage(
       name: name,
       serverAddress: serverAddress,
       port: port,
@@ -116,15 +43,24 @@ struct ForwardProtocolSS: Equatable, Hashable {
       passwordReference: passwordReference
     )
   }
+}
 
-  @usableFromInline mutating func copyStorageIfNotUniquelyReferenced() {
-    if !isKnownUniquelyReferenced(&self._storage) {
-      self._storage = self._storage.copy()
-    }
+extension ForwardProtocolSS._Storage: Hashable {
+  static func == (lhs: ForwardProtocolSS._Storage, rhs: ForwardProtocolSS._Storage) -> Bool {
+    return lhs.name == rhs.name && lhs.serverAddress == rhs.serverAddress && lhs.port == rhs.port
+      && lhs.algorithm == rhs.algorithm && lhs.passwordReference == rhs.passwordReference
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(name)
+    hasher.combine(serverAddress)
+    hasher.combine(port)
+    hasher.combine(algorithm)
+    hasher.combine(passwordReference)
   }
 }
 
-extension ForwardProtocolSS: @unchecked Sendable {}
+extension ForwardProtocolSS._Storage: @unchecked Sendable {}
 
 extension ForwardProtocolSS: ProxiableForwardProtocol {
 

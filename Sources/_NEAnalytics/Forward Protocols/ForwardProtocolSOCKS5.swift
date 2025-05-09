@@ -4,6 +4,7 @@
 
 import Anlzr
 import AnlzrReports
+import CoWOptimization
 import Logging
 import NEAddressProcessing
 import NESOCKS
@@ -17,123 +18,27 @@ import _ResourceProcessing
   import NIOPosix
 #endif
 
-struct ForwardProtocolSOCKS5: Equatable, Hashable, Sendable {
+@_cowOptimization struct ForwardProtocolSOCKS5: Hashable, Sendable {
 
-  @usableFromInline final class _Storage: Hashable, @unchecked Sendable {
-    @usableFromInline var name: String
-    @usableFromInline var serverAddress: String
-    @usableFromInline var port: Int
-    @usableFromInline var username: String
-    @usableFromInline var passwordReference: String
-    @usableFromInline var authenticationRequired: Bool
-    @usableFromInline var tls: AnyProxy.TLS
+  var name: String
 
-    @inlinable init(
-      name: String, serverAddress: String, port: Int,
-      username: String, passwordReference: String, authenticationRequired: Bool,
-      tls: AnyProxy.TLS
-    ) {
-      self.name = name
-      self.serverAddress = serverAddress
-      self.port = port
-      self.username = username
-      self.passwordReference = passwordReference
-      self.authenticationRequired = authenticationRequired
-      self.tls = tls
-    }
+  var serverAddress: String
 
-    @inlinable func copy() -> _Storage {
-      _Storage(
-        name: name,
-        serverAddress: serverAddress,
-        port: port,
-        username: username,
-        passwordReference: passwordReference,
-        authenticationRequired: authenticationRequired,
-        tls: tls
-      )
-    }
+  var port: Int
 
-    @inlinable static func == (lhs: _Storage, rhs: _Storage) -> Bool {
-      return lhs.name == rhs.name && lhs.serverAddress == rhs.serverAddress && lhs.port == rhs.port
-        && lhs.username == rhs.username && lhs.passwordReference == rhs.passwordReference
-        && lhs.authenticationRequired == rhs.authenticationRequired && lhs.tls == rhs.tls
-    }
+  var username: String
 
-    @inlinable func hash(into hasher: inout Hasher) {
-      hasher.combine(name)
-      hasher.combine(serverAddress)
-      hasher.combine(port)
-      hasher.combine(username)
-      hasher.combine(passwordReference)
-      hasher.combine(authenticationRequired)
-      hasher.combine(tls)
-    }
-  }
+  var passwordReference: String
 
-  @usableFromInline var _storage: _Storage
+  var authenticationRequired: Bool
 
-  @inlinable var name: String {
-    get { _storage.name }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.name = newValue
-    }
-  }
+  var tls: AnyProxy.TLS
 
-  @inlinable var serverAddress: String {
-    get { _storage.serverAddress }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.serverAddress = newValue
-    }
-  }
-
-  @inlinable var port: Int {
-    get { _storage.port }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.port = newValue
-    }
-  }
-
-  @inlinable var username: String {
-    get { _storage.username }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.username = newValue
-    }
-  }
-
-  @inlinable var passwordReference: String {
-    get { _storage.passwordReference }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.passwordReference = newValue
-    }
-  }
-
-  @inlinable var authenticationRequired: Bool {
-    get { _storage.authenticationRequired }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.authenticationRequired = newValue
-    }
-  }
-
-  @inlinable var tls: AnyProxy.TLS {
-    get { _storage.tls }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.tls = newValue
-    }
-  }
-
-  @inlinable var tlsOptions: AnyProxy.TLS {
+  var tlsOptions: AnyProxy.TLS {
     tls
   }
 
-  @inlinable init(
+  init(
     name: String,
     serverAddress: String,
     port: Int,
@@ -142,7 +47,7 @@ struct ForwardProtocolSOCKS5: Equatable, Hashable, Sendable {
     authenticationRequired: Bool,
     tls: AnyProxy.TLS
   ) {
-    _storage = _Storage(
+    self._storage = _Storage(
       name: name,
       serverAddress: serverAddress,
       port: port,
@@ -152,13 +57,28 @@ struct ForwardProtocolSOCKS5: Equatable, Hashable, Sendable {
       tls: tls
     )
   }
+}
 
-  @usableFromInline mutating func copyStorageIfNotUniquelyReferenced() {
-    if !isKnownUniquelyReferenced(&self._storage) {
-      self._storage = self._storage.copy()
-    }
+extension ForwardProtocolSOCKS5._Storage: Hashable {
+  static func == (lhs: ForwardProtocolSOCKS5._Storage, rhs: ForwardProtocolSOCKS5._Storage) -> Bool
+  {
+    return lhs.name == rhs.name && lhs.serverAddress == rhs.serverAddress && lhs.port == rhs.port
+      && lhs.username == rhs.username && lhs.passwordReference == rhs.passwordReference
+      && lhs.authenticationRequired == rhs.authenticationRequired && lhs.tls == rhs.tls
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(name)
+    hasher.combine(serverAddress)
+    hasher.combine(port)
+    hasher.combine(username)
+    hasher.combine(passwordReference)
+    hasher.combine(authenticationRequired)
+    hasher.combine(tls)
   }
 }
+
+extension ForwardProtocolSOCKS5._Storage: @unchecked Sendable {}
 
 extension ForwardProtocolSOCKS5: ProxiableForwardProtocol {
 

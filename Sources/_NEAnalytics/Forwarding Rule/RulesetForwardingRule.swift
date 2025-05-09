@@ -14,7 +14,7 @@ import _ResourceProcessing
   import Foundation
 #endif
 
-struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equatable, Hashable {
+struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
   @usableFromInline final class _Storage: Hashable {
     @usableFromInline var originalURLString: String
@@ -166,4 +166,4 @@ struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equatab
   }
 }
 
-extension RulesetForwardingRule: @unchecked Sendable {}
+extension RulesetForwardingRule._Storage: @unchecked Sendable {}

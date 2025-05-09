@@ -14,7 +14,7 @@ import _ResourceProcessing
   import Foundation
 #endif
 
-struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equatable, Hashable {
+struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
   @usableFromInline final class _Storage: Hashable {
 
@@ -80,9 +80,9 @@ struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equat
 
   @inlinable var forwardProtocol: any ForwardProtocolConvertible {
     get { _storage.forwardProtocol }
-    set {
+    _modify {
       copyStorageIfNotUniquelyReferenced()
-      _storage.forwardProtocol = newValue
+      yield &_storage.forwardProtocol
     }
   }
 
@@ -146,4 +146,4 @@ struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equat
   }
 }
 
-extension DomainsetForwardingRule: @unchecked Sendable {}
+extension DomainsetForwardingRule._Storage: @unchecked Sendable {}

@@ -4,6 +4,7 @@
 
 import Anlzr
 import AnlzrReports
+import CoWOptimization
 import Logging
 import NEAddressProcessing
 import NEHTTP
@@ -17,138 +18,59 @@ import _ResourceProcessing
   import NIOPosix
 #endif
 
-struct ForwardProtocolHTTP: Equatable, Hashable {
+@_cowOptimization struct ForwardProtocolHTTP: Hashable, Sendable {
 
-  @usableFromInline final class _Storage: Hashable {
-    @usableFromInline var name: String
-    @usableFromInline var serverAddress: String
-    @usableFromInline var port: Int
-    @usableFromInline var passwordReference: String
-    @usableFromInline var authenticationRequired: Bool
-    @usableFromInline var forceHTTPTunneling: Bool
-    @usableFromInline var tls: AnyProxy.TLS
+  var name: String
 
-    @inlinable init(
-      name: String, serverAddress: String, port: Int, passwordReference: String,
-      authenticationRequired: Bool, forceHTTPTunneling: Bool, tls: AnyProxy.TLS
-    ) {
-      self.name = name
-      self.serverAddress = serverAddress
-      self.port = port
-      self.passwordReference = passwordReference
-      self.authenticationRequired = authenticationRequired
-      self.forceHTTPTunneling = forceHTTPTunneling
-      self.tls = tls
-    }
+  var serverAddress: String
 
-    @inlinable func copy() -> _Storage {
-      _Storage(
-        name: name, serverAddress: serverAddress, port: port, passwordReference: passwordReference,
-        authenticationRequired: authenticationRequired, forceHTTPTunneling: forceHTTPTunneling,
-        tls: tls
-      )
-    }
+  var port: Int
 
-    @inlinable static func == (lhs: _Storage, rhs: _Storage) -> Bool {
-      return lhs.name == rhs.name && lhs.serverAddress == rhs.serverAddress && lhs.port == rhs.port
-        && lhs.passwordReference == rhs.passwordReference
-        && lhs.authenticationRequired == rhs.authenticationRequired
-        && lhs.forceHTTPTunneling == rhs.forceHTTPTunneling
-        && lhs.tls == rhs.tls
-    }
+  var passwordReference: String
 
-    @inlinable func hash(into hasher: inout Hasher) {
-      hasher.combine(name)
-      hasher.combine(serverAddress)
-      hasher.combine(port)
-      hasher.combine(passwordReference)
-      hasher.combine(authenticationRequired)
-      hasher.combine(forceHTTPTunneling)
-      hasher.combine(tls)
-    }
-  }
+  var authenticationRequired: Bool
 
-  @usableFromInline var _storage: _Storage
+  var forceHTTPTunneling: Bool
 
-  @inlinable var name: String {
-    get { _storage.name }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.name = newValue
-    }
-  }
+  var tls: AnyProxy.TLS
 
-  @inlinable var serverAddress: String {
-    get { _storage.serverAddress }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.serverAddress = newValue
-    }
-  }
-
-  @inlinable var port: Int {
-    get { _storage.port }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.port = newValue
-    }
-  }
-
-  @inlinable var passwordReference: String {
-    get { _storage.passwordReference }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.passwordReference = newValue
-    }
-  }
-
-  @inlinable var authenticationRequired: Bool {
-    get { _storage.authenticationRequired }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.authenticationRequired = newValue
-    }
-  }
-
-  @inlinable var forceHTTPTunneling: Bool {
-    get { _storage.forceHTTPTunneling }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.forceHTTPTunneling = newValue
-    }
-  }
-
-  @inlinable var tls: AnyProxy.TLS {
-    get { _storage.tls }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.tls = newValue
-    }
-  }
-
-  @inlinable var tlsOptions: AnyProxy.TLS {
+  var tlsOptions: AnyProxy.TLS {
     tls
   }
 
-  @inlinable init(
+  init(
     name: String, serverAddress: String, port: Int, passwordReference: String,
     authenticationRequired: Bool, forceHTTPTunneling: Bool, tls: AnyProxy.TLS
   ) {
-    _storage = _Storage(
+    self._storage = _Storage(
       name: name, serverAddress: serverAddress, port: port, passwordReference: passwordReference,
       authenticationRequired: authenticationRequired, forceHTTPTunneling: forceHTTPTunneling,
       tls: tls
     )
   }
+}
 
-  @usableFromInline mutating func copyStorageIfNotUniquelyReferenced() {
-    if !isKnownUniquelyReferenced(&self._storage) {
-      self._storage = self._storage.copy()
-    }
+extension ForwardProtocolHTTP._Storage: Hashable {
+  static func == (lhs: ForwardProtocolHTTP._Storage, rhs: ForwardProtocolHTTP._Storage) -> Bool {
+    return lhs.name == rhs.name && lhs.serverAddress == rhs.serverAddress && lhs.port == rhs.port
+      && lhs.passwordReference == rhs.passwordReference
+      && lhs.authenticationRequired == rhs.authenticationRequired
+      && lhs.forceHTTPTunneling == rhs.forceHTTPTunneling
+      && lhs.tls == rhs.tls
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(name)
+    hasher.combine(serverAddress)
+    hasher.combine(port)
+    hasher.combine(passwordReference)
+    hasher.combine(authenticationRequired)
+    hasher.combine(forceHTTPTunneling)
+    hasher.combine(tls)
   }
 }
 
-extension ForwardProtocolHTTP: @unchecked Sendable {}
+extension ForwardProtocolHTTP._Storage: @unchecked Sendable {}
 
 extension ForwardProtocolHTTP: ProxiableForwardProtocol {
 

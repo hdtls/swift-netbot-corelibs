@@ -4,88 +4,35 @@
 
 import Anlzr
 import AnlzrReports
+import CoWOptimization
 import MaxMindDB
 import NEAddressProcessing
 
 /// Forwarding rule base on GeoIP country code.
-struct GeoIPForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equatable, Hashable {
-
-  @usableFromInline final class _Storage: Hashable {
-    @usableFromInline var db: MaxMindDB?
-    @usableFromInline var countryCode: String
-    @usableFromInline var forwardProtocol: any ForwardProtocolConvertible
-
-    @inlinable init(
-      db: MaxMindDB? = nil, countryCode: String, forwardProtocol: any ForwardProtocolConvertible
-    ) {
-      self.db = db
-      self.forwardProtocol = forwardProtocol
-      self.countryCode = countryCode
-    }
-
-    @inlinable func copy() -> _Storage {
-      _Storage(db: db, countryCode: countryCode, forwardProtocol: forwardProtocol)
-    }
-
-    @inlinable static func == (lhs: _Storage, rhs: _Storage) -> Bool {
-      lhs.countryCode == rhs.countryCode
-        && lhs.forwardProtocol.asForwardProtocol().name
-          == rhs.forwardProtocol.asForwardProtocol().name
-    }
-
-    @inlinable func hash(into hasher: inout Hasher) {
-      hasher.combine(countryCode)
-      hasher.combine(forwardProtocol.asForwardProtocol().name)
-    }
-  }
-
-  @usableFromInline var _storage: _Storage
+@_cowOptimization
+struct GeoIPForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
   /// MaxMind GeoLite2 database.
-  @inlinable var db: MaxMindDB? {
-    get { _storage.db }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.db = newValue
-    }
-  }
+  var db: MaxMindDB?
+
+  /// ISO country code.
+  var countryCode: String
+
+  var forwardProtocol: any ForwardProtocolConvertible
 
   let requireIPAddress = true
 
-  @inlinable var forwardProtocol: any ForwardProtocolConvertible {
-    get { _storage.forwardProtocol }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.forwardProtocol = newValue
-    }
-  }
-
-  @inlinable var description: String {
+  var description: String {
     "GEOIP,\(countryCode),\(forwardProtocol.asForwardProtocol().name)"
   }
 
-  /// ISO country code.
-  @inlinable var countryCode: String {
-    get { _storage.countryCode }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.countryCode = newValue
-    }
-  }
-
-  @inlinable init(
+  init(
     db: MaxMindDB?, countryCode: String, forwardProtocol: any ForwardProtocolConvertible
   ) {
     self._storage = _Storage(db: db, countryCode: countryCode, forwardProtocol: forwardProtocol)
   }
 
-  @usableFromInline mutating func copyStorageIfNotUniquelyReferenced() {
-    if !isKnownUniquelyReferenced(&self._storage) {
-      self._storage = self._storage.copy()
-    }
-  }
-
-  @inlinable func predicate(_ connection: Connection) throws -> Bool {
+  func predicate(_ connection: Connection) throws -> Bool {
     guard let db else { return false }
 
     var hasMatched = false
@@ -119,4 +66,17 @@ struct GeoIPForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equatable
   }
 }
 
-extension GeoIPForwardingRule: @unchecked Sendable {}
+extension GeoIPForwardingRule._Storage: Hashable {
+  static func == (lhs: GeoIPForwardingRule._Storage, rhs: GeoIPForwardingRule._Storage) -> Bool {
+    lhs.countryCode == rhs.countryCode
+      && lhs.forwardProtocol.asForwardProtocol().name
+        == rhs.forwardProtocol.asForwardProtocol().name
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(countryCode)
+    hasher.combine(forwardProtocol.asForwardProtocol().name)
+  }
+}
+
+extension GeoIPForwardingRule._Storage: @unchecked Sendable {}

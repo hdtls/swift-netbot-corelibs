@@ -4,68 +4,24 @@
 
 import Anlzr
 import AnlzrReports
+import CoWOptimization
 
-struct DomainSuffixForwardingRule: ForwardingRule, ForwardingRuleConvertible, Equatable, Hashable {
+@_cowOptimization
+struct DomainSuffixForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
-  @usableFromInline final class _Storage: Hashable {
+  var domainSuffix: String
 
-    @usableFromInline var domainSuffix: String
-    @usableFromInline var forwardProtocol: any ForwardProtocolConvertible
+  var forwardProtocol: any ForwardProtocolConvertible
 
-    @inlinable init(domainSuffix: String, forwardProtocol: any ForwardProtocolConvertible) {
-      self.domainSuffix = domainSuffix
-      self.forwardProtocol = forwardProtocol
-    }
-
-    @inlinable func copy() -> _Storage {
-      _Storage(domainSuffix: domainSuffix, forwardProtocol: forwardProtocol)
-    }
-
-    @inlinable static func == (lhs: _Storage, rhs: _Storage) -> Bool {
-      lhs.domainSuffix == rhs.domainSuffix
-        && lhs.forwardProtocol.asForwardProtocol().name
-          == rhs.forwardProtocol.asForwardProtocol().name
-    }
-
-    @inlinable func hash(into hasher: inout Hasher) {
-      hasher.combine(domainSuffix)
-      hasher.combine(forwardProtocol.asForwardProtocol().name)
-    }
-  }
-
-  @usableFromInline var _storage: _Storage
-
-  @inlinable var forwardProtocol: any ForwardProtocolConvertible {
-    get { _storage.forwardProtocol }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.forwardProtocol = newValue
-    }
-  }
-
-  @inlinable var description: String {
+  var description: String {
     "DOMAIN-SUFFIX,\(domainSuffix),\(forwardProtocol.asForwardProtocol().name)"
   }
 
-  @inlinable var domainSuffix: String {
-    get { _storage.domainSuffix }
-    set {
-      copyStorageIfNotUniquelyReferenced()
-      _storage.domainSuffix = newValue
-    }
-  }
-
-  @inlinable init(domainSuffix: String, forwardProtocol: any ForwardProtocolConvertible) {
+  init(domainSuffix: String, forwardProtocol: any ForwardProtocolConvertible) {
     self._storage = _Storage(domainSuffix: domainSuffix, forwardProtocol: forwardProtocol)
   }
 
-  @usableFromInline mutating func copyStorageIfNotUniquelyReferenced() {
-    if !isKnownUniquelyReferenced(&self._storage) {
-      self._storage = self._storage.copy()
-    }
-  }
-
-  @inlinable func predicate(_ connection: Connection) throws -> Bool {
+  func predicate(_ connection: Connection) throws -> Bool {
     guard let host = connection.originalRequest.host(percentEncoded: false) else {
       return false
     }
@@ -73,4 +29,19 @@ struct DomainSuffixForwardingRule: ForwardingRule, ForwardingRuleConvertible, Eq
   }
 }
 
-extension DomainSuffixForwardingRule: @unchecked Sendable {}
+extension DomainSuffixForwardingRule._Storage: Hashable {
+  static func == (
+    lhs: DomainSuffixForwardingRule._Storage, rhs: DomainSuffixForwardingRule._Storage
+  ) -> Bool {
+    lhs.domainSuffix == rhs.domainSuffix
+      && lhs.forwardProtocol.asForwardProtocol().name
+        == rhs.forwardProtocol.asForwardProtocol().name
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(domainSuffix)
+    hasher.combine(forwardProtocol.asForwardProtocol().name)
+  }
+}
+
+extension DomainSuffixForwardingRule._Storage: @unchecked Sendable {}
