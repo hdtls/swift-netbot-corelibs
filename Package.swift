@@ -38,6 +38,13 @@ let package = Package(
   ],
   targets: [
     .macro(
+      name: "CoWOptimizationMacros",
+      dependencies: [
+        .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+        .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+      ]
+    ),
+    .macro(
       name: "NetbotMacros",
       dependencies: [
         .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
@@ -50,6 +57,7 @@ let package = Package(
         "_PrettyDNS",
         "_PersistentStore",
         "_ResourceProcessing",
+        "CoWOptimization",
         .product(name: "Anlzr", package: "swift-netbot-essentials"),
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "NIOCore", package: "swift-nio"),
@@ -75,10 +83,12 @@ let package = Package(
     .target(
       name: "_ResourceProcessing",
       dependencies: [
+        "CoWOptimization",
         .product(name: "HTTPTypes", package: "swift-http-types"),
         .product(name: "Logging", package: "swift-log"),
       ]
     ),
+    .target(name: "CoWOptimization", dependencies: ["CoWOptimizationMacros"]),
     .target(
       name: "Dashboard",
       dependencies: [
@@ -109,6 +119,13 @@ let package = Package(
     ),
     .testTarget(name: "_PrettyDNSTests", dependencies: ["_PrettyDNS"]),
     .testTarget(name: "_ResourceProcessingTests", dependencies: ["_ResourceProcessing"]),
+    .testTarget(
+      name: "CoWOptimizationTests",
+      dependencies: [
+        "CoWOptimization",
+        .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+      ]
+    ),
     .testTarget(name: "NetbotTests", dependencies: ["Netbot"]),
     .testTarget(
       name: "NetbotMacrosTests",
