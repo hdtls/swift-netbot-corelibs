@@ -7,7 +7,7 @@ import NIOWebSocket
 
 /// A handler that unmask inbound `WebSocketFrame` to `ByteBuffer` and response to control codes, it also mask all outbound
 /// `IOData` to `WebSocketFrame` with `.binary` opcode.
-final class NEVMESSWebSocketFrameProducer: ChannelInboundHandler, ChannelOutboundHandler {
+final class WebSocketFrameAggregator: ChannelInboundHandler, ChannelOutboundHandler {
 
   typealias InboundIn = WebSocketFrame
 
@@ -104,3 +104,5 @@ final class NEVMESSWebSocketFrameProducer: ChannelInboundHandler, ChannelOutboun
     )
   }
 }
+
+extension WebSocketFrameAggregator: @unchecked Sendable {}

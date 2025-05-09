@@ -95,7 +95,7 @@ extension ForwardProtocolVMESS: ProxiableForwardProtocol {
       port: .init(rawValue: UInt16(port))
     )
 
-    let finalize: EventLoopFuture<any Channel>
+    var finalize: EventLoopFuture<any Channel>
 
     var options = TLSConfiguration.makeClientConfiguration()
     options.applicationProtocols = ["http/1.1"]
@@ -133,29 +133,53 @@ extension ForwardProtocolVMESS: ProxiableForwardProtocol {
     switch alpn {
     case .negotiated("http/1.1"), .fallback:
       if ws.isEnabled {
-        finalize = try await channel.configureAsyncVMESSTunnelPipeline(
-          contentSecurity: .aes128Gcm,
-          user: userID,
-          destinationAddress: destinationAddress,
-          ws: ws
-        ) { channel, _ in
-          channel.eventLoop.makeSucceededFuture(channel)
+        var headers = HTTPHeaders()
+        if let additionalHTTPFields = ws.additionalHTTPFields {
+          for field in additionalHTTPFields {
+            headers.replaceOrAdd(name: field.name.rawName, value: field.value)
+          }
         }
+        headers.add(name: "Host", value: "\(destination)")
+
+        finalize = try await channel.pipeline.configureUpgradableHTTPClientPipeline(
+          configuration: .init(
+            upgradeConfiguration: .init(
+              upgradeRequestHead: HTTPRequestHead(
+                version: .http1_1,
+                method: .GET,
+                uri: ws.uri,
+                headers: headers
+              ),
+              upgraders: [
+                NIOTypedWebSocketClientUpgrader { channel, response in
+                  channel.pipeline.addHandler(WebSocketFrameAggregator())
+                    .map { channel }
+                }
+              ],
+              notUpgradingCompletionHandler: { channel in
+                channel.close().flatMap {
+                  channel.eventLoop.makeFailedFuture(AnlzrError.connectionRefused)
+                }
+              }
+            )
+          )
+        )
         .get()
 
-        // Walkaround for NIOTypedHTTPClientUpgradeHandler it is a bug that request will not send
-        // if handler added after channel is active.
+        // Walkaround for
         channel.pipeline.fireChannelActive()
-      } else {
-        finalize = try await channel.configureVMESSPipeline(
-          contentSecurity: .aes128Gcm,
-          user: userID,
-          destinationAddress: destinationAddress
-        ) {
-          channel.eventLoop.makeSucceededFuture(channel)
-        }
-        .get()
+
+        _ = try await finalize.get()
       }
+
+      finalize = try await channel.configureVMESSPipeline(
+        contentSecurity: .aes128Gcm,
+        user: userID,
+        destinationAddress: destinationAddress
+      ) {
+        channel.eventLoop.makeSucceededFuture(channel)
+      }
+      .get()
     case .negotiated(let token):
       throw ALPNError.negotiatedTokenUnsupported(token)
     }
