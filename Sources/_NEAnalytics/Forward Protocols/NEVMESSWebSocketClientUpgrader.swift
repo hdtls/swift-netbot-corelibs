@@ -140,6 +140,7 @@ private final class NEVMESSWebSocketClientUpgrader<Output: Sendable>:
   }
 }
 
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 extension Channel {
 
   func configureAsyncVMESSTunnelPipeline<Output>(
@@ -177,6 +178,7 @@ extension Channel {
   }
 }
 
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 extension ChannelPipeline.SynchronousOperations {
 
   fileprivate func configureAsyncVMESSTunnelPipeline<Output>(

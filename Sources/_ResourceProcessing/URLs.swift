@@ -32,7 +32,7 @@ extension URL {
         .appending(path: "Default").appendingPathExtension(.profilePathExtension)
     } else {
       return applicationGroupDirectory.appendingPathComponent(pathComponent)
-        .appending(path: "Default").appendingPathExtension(.profilePathExtension)
+        .appendingPathComponent("Default").appendingPathExtension(.profilePathExtension)
     }
   }
 

@@ -6,6 +6,7 @@
   import Foundation
   import os
 
+  @available(macOS 13.0, *)
   extension NSXPCConnection {
 
     /// Return `remoteObjectProxy` as `any XPCServiceHandleProtocol` if possible.

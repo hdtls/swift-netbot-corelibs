@@ -9,6 +9,7 @@
 
   /// This object implements the protocol which we have defined. It provides the actual behavior for the service. It is 'exported' by the
   /// service to make it available to the process hosting the service over an NSXPCConnection.
+  @available(macOS 13.0, *)
   final public class HelperToolHandle: @unchecked Sendable {
 
     private let listener: NSXPCListener
@@ -99,6 +100,7 @@
     }
   }
 
+  @available(macOS 13.0, *)
   extension HelperToolHandle: AuthorizationHandleProtocol {
 
     public func systemVPNAuthorizationRights(authentication: Data) async throws -> Data {
@@ -132,6 +134,7 @@
     }
   }
 
+  @available(macOS 13.0, *)
   extension HelperToolHandle: HelperToolHandleProtocol {
 
     public func listenerEndpoint() async -> NSXPCListenerEndpoint {

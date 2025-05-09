@@ -6,6 +6,7 @@
   import Foundation
   import Security
 
+  @available(macOS 13.0, *)
   enum AuthorizationRightPresets: CaseIterable, Sendable {
 
     case systemVPNModification

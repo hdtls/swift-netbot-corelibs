@@ -5,6 +5,7 @@
 #if os(macOS)
   import Foundation
 
+  @available(macOS 13.0, *)
   @objc public protocol AuthorizationHandleProtocol: Sendable {
 
     /// Require authorization rights for modify system VPN settings.
@@ -16,6 +17,7 @@
 
   /// HelperToolHandleProtocol is the NSXPCConnection-based protocol implemented by the helper tool
   /// and called by the app.
+  @available(macOS 13.0, *)
   @objc public protocol HelperToolHandleProtocol: AuthorizationHandleProtocol {
 
     /// Not used by the standard app (it's part of the sandboxed XPC service support).

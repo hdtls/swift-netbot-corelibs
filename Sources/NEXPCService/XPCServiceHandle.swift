@@ -9,6 +9,7 @@
 
   /// This object implements the protocol which we have defined. It provides the actual behavior for the service. It is 'exported' by the
   /// service to make it available to the process hosting the service over an NSXPCConnection.
+  @available(macOS 13.0, *)
   final public class XPCServiceHandle: @unchecked Sendable {
 
     private let authorization: Data
@@ -128,6 +129,7 @@
     }
   }
 
+  @available(macOS 13.0, *)
   extension XPCServiceHandle: XPCServiceHandleProtocol {
 
     public func codeSigningRequirement() async -> String {

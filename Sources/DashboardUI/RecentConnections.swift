@@ -36,6 +36,11 @@
   }
 
   #if DEBUG
+    @available(swift 5.9)
+    @available(iOS 17.0, macOS 14.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(visionOS, unavailable)
     #Preview {
       @Previewable let data = RecentConnectionsControler(modelContainer: .makeSharedContext())
       @Previewable @State var selection: Connection?

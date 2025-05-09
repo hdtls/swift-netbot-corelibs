@@ -6,6 +6,12 @@ import Anlzr
 import AnlzrReports
 import CoWOptimization
 
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
 @_cowOptimization
 struct DomainKeywordForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 

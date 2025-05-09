@@ -102,7 +102,7 @@ struct NEClientTLSProvider<Bootstrap: NIOClientTCPBootstrapProtocol>: NIOClientT
         secTrustRoots = try certificates.compactMap { try $0._base }
 
       case .some(.file(let file)):
-        let pemString = try String(contentsOf: URL(filePath: file), encoding: .utf8)
+        let pemString = try String(contentsOfFile: file, encoding: .utf8)
         let certificates = [try Certificate(pemDocument: .init(pemString: pemString))]
         secTrustRoots = try certificates.compactMap { try $0._base }
       case .some(.default), .none:

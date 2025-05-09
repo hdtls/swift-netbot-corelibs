@@ -7,6 +7,7 @@
   import ServiceManagement
   import os
 
+  @available(macOS 13.0, *)
   @globalActor public actor PrivilegeScope {
 
     public static let shared = PrivilegeScope()

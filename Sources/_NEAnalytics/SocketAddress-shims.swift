@@ -28,10 +28,17 @@ extension Address {
       case .unix(let path):
         return try SocketAddress(unixDomainSocketPath: path)
       case .url(let url):
-        guard let host = url.host(percentEncoded: false), let port = url.port else {
-          throw SocketAddressError.unsupported
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+          guard let host = url.host(percentEncoded: false), let port = url.port else {
+            throw SocketAddressError.unsupported
+          }
+          return try SocketAddress.makeAddressResolvingHost(host, port: port)
+        } else {
+          guard let host = url.host, let port = url.port else {
+            throw SocketAddressError.unsupported
+          }
+          return try SocketAddress.makeAddressResolvingHost(host, port: port)
         }
-        return try SocketAddress.makeAddressResolvingHost(host, port: port)
       }
     }
   }

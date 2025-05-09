@@ -311,14 +311,9 @@ actor LocalDNSProxy: PacketHandleProtocol {
     queries.continuation.yield(message)
 
     // TODO: Read Resolv Configuration.
-    #if os(macOS) || os(Linux)
-      // Read those config from /etc/resolv.conf
-      let timeAmount = TimeAmount(.seconds(2))
-      let retryAttempts = ManagedAtomic<Int>(3)
-    #else
-      let timeAmount = TimeAmount(.seconds(2))
-      let retryAttempts = ManagedAtomic<Int>(3)
-    #endif
+    // Read those config from /etc/resolv.conf
+    let timeAmount = TimeAmount.seconds(2)
+    let retryAttempts = ManagedAtomic<Int>(3)
 
     struct DNSQueryTimeoutError: Error {}
     let schedule = eventLoop.scheduleTask(in: timeAmount) {

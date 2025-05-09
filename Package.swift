@@ -10,9 +10,9 @@ import PackageDescription
 let package = Package(
   name: "swift-netbot-corelibs",
   platforms: [
-    .iOS(.v18),
-    .macOS(.v15),
-    .tvOS(.v18),
+    .iOS(.v16),
+    .macOS(.v13),
+    .tvOS(.v16),
   ],
   products: [
     .library(name: "Netbot", targets: ["Netbot"]),

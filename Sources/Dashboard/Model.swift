@@ -11,6 +11,7 @@
   import SwiftData
   import NEAddressProcessing
 
+  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
   @ModelActor private actor RecentConnectionsModelActor {
     typealias Element = Connection.PersistentModel
 
@@ -56,6 +57,7 @@
     }
   }
 
+  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
   @MainActor @Observable public class RecentConnectionsControler {
 
     /// The ModelContainer for the ModelActor.

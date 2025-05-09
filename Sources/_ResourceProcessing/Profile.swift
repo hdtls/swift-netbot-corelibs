@@ -222,9 +222,13 @@ extension Profile._Storage: @unchecked Sendable {}
 
 extension Profile {
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
   public init(contentsOf url: URL) throws {
-    let parseInput = try String(contentsOf: url, encoding: .utf8)
+    let parseInput: String
+    if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+      parseInput = try String(contentsOf: url, encoding: .utf8)
+    } else {
+      parseInput = try String(contentsOfFile: url.path, encoding: .utf8)
+    }
     self = try Profile(parseInput, strategy: .profile)
     self.url = url
   }
