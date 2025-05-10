@@ -210,13 +210,26 @@ import _ResourceProcessing
                 let session = self._session(
                   host: profile.httpListenAddress, port: UInt16(profile.httpListenPort ?? 6152))
                 let (url, _) = try await session.download(from: url)
+
                 let filename = "GeoLite2-Country.mmdb"
-                let file = URL.maxmind.appending(path: filename, directoryHint: .notDirectory)
-                if FileManager.default.fileExists(atPath: file.path(percentEncoded: false)) {
-                  try FileManager.default.removeItem(at: file)
+                let fileURL: URL
+                let filePath: String
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                  fileURL = URL.maxmind.appending(path: filename, directoryHint: .notDirectory)
+                  filePath = fileURL.path(percentEncoded: false)
+                } else {
+                  fileURL = URL.maxmind.appendingPathComponent(filename, isDirectory: false)
+                  filePath = fileURL.path
                 }
-                try FileManager.default.moveItem(at: url, to: file)
-                let db = try MaxMindDB(file: file.path(percentEncoded: false), mode: .mmap)
+
+                let fs = FileManager.default
+                try fs.createDirectory(at: .maxmind, withIntermediateDirectories: true)
+                if fs.fileExists(atPath: filePath) {
+                  try fs.removeItem(at: fileURL)
+                }
+                try fs.moveItem(at: url, to: fileURL)
+
+                let db = try MaxMindDB(file: filePath, mode: .mmap)
                 self.maxminddbLastUpdatedDate = .now
                 self.delegate?.eventMonitor(self, willChangeMaxMindDB: db)
               } catch {

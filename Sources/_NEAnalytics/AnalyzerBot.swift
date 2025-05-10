@@ -37,26 +37,34 @@ import _ResourceProcessing
   private init() {
     var reporting: any ConnectionReporting = NoOpReporting()
 
-    let containerURL = URL.applicationGroupDirectory
-    let filename = "GeoLite2-Country.mmdb"
+    let containerURL = URL.securityApplicationGroupDirectory
+    var dbFilename = "GeoLite2-Country.mmdb"
     let persistentStorage: URL
-    let dbPath: String
+
     #if canImport(Darwin)
-      let pathComponent = "/Library/Caches/Netbot/analyzed.store"
+      let pathComponent = "Library/Caches/Netbot/analyzed.store"
       if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
         persistentStorage = containerURL.appending(component: pathComponent)
-        dbPath = URL.maxmind.appending(path: filename).path(percentEncoded: false)
+        maxminddb = try? MaxMindDB(
+          file: URL.maxmind.appending(path: dbFilename).path(percentEncoded: false),
+          mode: .mmap
+        )
       } else {
         persistentStorage = containerURL.appendingPathComponent(pathComponent)
-        dbPath = URL.maxmind.appendingPathComponent(filename).path
+        maxminddb = try? MaxMindDB(
+          file: URL.maxmind.appendingPathComponent(dbFilename).path,
+          mode: .mmap
+        )
       }
     #else
-      let pathComponent = "~/.cache/com.tenbits.netbot/analyzed.store"
+      let pathComponent = "analyzed.store"
       persistentStorage = containerURL.appending(component: pathComponent)
-      dbPath = URL.maxmind.appending(path: filename).path(percentEncoded: false)
+      maxminddb = try? MaxMindDB(
+        file: URL.maxmind.appending(path: dbFilename).path(percentEncoded: false),
+        mode: .mmap
+      )
     #endif
     reporting = Analyzed(persistentStorage: persistentStorage)
-    maxminddb = try? MaxMindDB(file: dbPath, mode: .mmap)
 
     analyzer = Analyzer(logger: logger, reporter: reporting)
   }
