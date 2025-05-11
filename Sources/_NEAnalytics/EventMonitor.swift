@@ -104,8 +104,10 @@ import _ResourceProcessing
     public weak var delegate: (any EventMonitorDelegate)?
 
     private let logger: Logger
+    private let eventLoopGroup: any EventLoopGroup
 
-    public init(logger: Logger) {
+    public init(group: any EventLoopGroup, logger: Logger) {
+      self.eventLoopGroup = group
       self.logger = logger
     }
 
@@ -197,14 +199,13 @@ import _ResourceProcessing
             return
           }
 
-          let eventLoop = MultiThreadedEventLoopGroup.singleton.any()
           let initialDelay = TimeAmount.seconds(
             max(0, 86400 * 7 - Int64(Date.now.timeIntervalSince(date))))
           let delay = TimeAmount.seconds(86400 * 7)
-          existingGeoLite2AutoUpdateTask = eventLoop.scheduleRepeatedAsyncTask(
+          existingGeoLite2AutoUpdateTask = eventLoopGroup.any().scheduleRepeatedTask(
             initialDelay: initialDelay, delay: delay
           ) { _ in
-            eventLoop.makeFutureWithTask {
+            Task.detached {
               do {
                 let profile = try Profile(contentsOf: self.profileURL)
                 let session = self._session(
@@ -248,19 +249,19 @@ import _ResourceProcessing
             return
           }
 
-          let eventLoop = MultiThreadedEventLoopGroup.singleton.any()
+          let seconds: Int64 = 24 * 60 * 60
           let initialDelay = TimeAmount.seconds(
-            max(0, 86400 - Int64(Date.now.timeIntervalSince(date))))
-          let delay = TimeAmount.seconds(86400)
-          existingForwardingRulesAutoUpdateTask = eventLoop.scheduleRepeatedAsyncTask(
+            max(0, seconds - Int64(Date.now.timeIntervalSince(date))))
+          let delay = TimeAmount.seconds(seconds)
+          existingForwardingRulesAutoUpdateTask = eventLoopGroup.any().scheduleRepeatedTask(
             initialDelay: initialDelay, delay: delay
           ) { _ in
-            eventLoop.makeFutureWithTask {
-              guard let profile = try? Profile(contentsOf: self.profileURL) else {
-                return
-              }
-
+            Task.detached {
               await withTaskGroup(of: Void.self) { g in
+                guard let profile = try? Profile(contentsOf: self.profileURL) else {
+                  return
+                }
+
                 let session = self._session(
                   host: profile.httpListenAddress, port: UInt16(profile.httpListenPort ?? 6152))
 

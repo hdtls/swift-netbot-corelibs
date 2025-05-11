@@ -23,6 +23,12 @@ import _ResourceProcessing
   import UserNotifications
 #endif
 
+#if canImport(Network)
+  import NIOTransportServices
+#else
+  import NIOPosix
+#endif
+
 /// Assistant to manage PacketTunnelProvider and NIO proxy servers backend.
 @globalActor public actor AnalyzerBot {
 
@@ -30,11 +36,14 @@ import _ResourceProcessing
 
   nonisolated private let analyzer: Analyzer
 
+  nonisolated public let eventLoopGroup: any EventLoopGroup
   nonisolated public let logger = Logger(label: "AnalyzerBot")
 
   private var maxminddb: MaxMindDB?
 
   private init() {
+    eventLoopGroup = MultiThreadedEventLoopGroup.singleton
+
     var reporting: any ConnectionReporting = NoOpReporting()
 
     let containerURL = URL.securityApplicationGroupDirectory
@@ -66,7 +75,7 @@ import _ResourceProcessing
     #endif
     reporting = Analyzed(persistentStorage: persistentStorage)
 
-    analyzer = Analyzer(logger: logger, reporter: reporting)
+    analyzer = Analyzer(group: eventLoopGroup, logger: logger, reporter: reporting)
   }
 
   /// Start analyzer tunnel.

@@ -43,11 +43,7 @@
 
     private let expiredPath: NIOLockedValueBox<(String, String)>
 
-    private var logger: Logger {
-      bot.logger
-    }
-
-    private let bot = AnalyzerBot.shared
+    private let logger = Logger(label: "path-monitor")
 
     /// Create a network path monitor to monitor overall network state for the
     /// system and to enumerate all interfaces that are available for

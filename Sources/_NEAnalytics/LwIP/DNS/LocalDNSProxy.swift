@@ -43,17 +43,18 @@ actor LocalDNSProxy: PacketHandleProtocol {
 
   internal var channel: AsyncChannel?
   private var sessions = [UInt16: EventLoopPromise<Message>]()
-  private nonisolated let eventLoopGroup: any EventLoopGroup = NIOPosix.MultiThreadedEventLoopGroup
-    .singleton
+  private nonisolated let eventLoopGroup: any EventLoopGroup
 
   private nonisolated let queries = AsyncStream.makeStream(of: Message.self)
 
   init(
+    group: NIOPosix.MultiThreadedEventLoopGroup = .singleton,
     packetFlow: any PacketTunnelFlow,
     server: String,
     additionalServers: [Address],
     availableIPPool: AvailableIPPool
   ) {
+    self.eventLoopGroup = group
     self.packetFlow = packetFlow
     self.bindAddress = server
     self.additionalServers = additionalServers
@@ -124,7 +125,7 @@ actor LocalDNSProxy: PacketHandleProtocol {
   private func runIfActive0() async throws {
     guard channel == nil else { return }
 
-    channel = try await DatagramBootstrap(group: MultiThreadedEventLoopGroup.singleton)
+    channel = try await DatagramBootstrap(group: eventLoopGroup)
       .channelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
       .bind(to: .init(ipAddress: "0.0.0.0", port: 0)) { channel in
         channel.eventLoop.makeCompletedFuture {
