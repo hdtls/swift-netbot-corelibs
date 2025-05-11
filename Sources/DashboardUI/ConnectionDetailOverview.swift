@@ -200,7 +200,7 @@
                       Text("Upload:")
                       Text(
                         Int64(
-                          truncatingIfNeeded: data.dataTransferReport.aggregatePathReport
+                          clamping: data.dataTransferReport.aggregatePathReport
                             .sentApplicationByteCount),
                         format: .byteCount(style: .binary)
                       )
@@ -209,7 +209,7 @@
                       Text("Download:")
                       Text(
                         Int64(
-                          truncatingIfNeeded: data.dataTransferReport.aggregatePathReport
+                          clamping: data.dataTransferReport.aggregatePathReport
                             .receivedApplicationByteCount),
                         format: .byteCount(style: .binary))
                     }
@@ -221,15 +221,17 @@
                   Grid(alignment: .leading) {
                     GridRow {
                       Text("Upload:")
-                      //                      Text(
-                      //                        "\(Text(data.dataTransferReport.sentTransportByteCountPerSecond, format: .byteCount(style: .binary)))/s"
-                      //                      )
+                      let byteCount = Int64(
+                        clamping: data.dataTransferReport
+                          .pathReports.first?.sentApplicationByteCount ?? 0)
+                      Text("\(Text(byteCount, format: .byteCount(style: .binary)))/s")
                     }
                     GridRow {
                       Text("Download:")
-                      //                      Text(
-                      //                        "\(Text(data.dataTransferReport.receivedTransportByteCountPerSecond, format: .byteCount(style: .binary)))/s"
-                      //                      )
+                      let byteCount = Int64(
+                        clamping: data.dataTransferReport
+                          .pathReports.first?.receivedApplicationByteCount ?? 0)
+                      Text("\(Text(byteCount, format: .byteCount(style: .binary)))/s")
                     }
                   }
                   .frame(width: 145, alignment: .leading)

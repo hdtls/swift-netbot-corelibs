@@ -64,7 +64,7 @@ public struct Datagram: Hashable, Sendable {
       } else {
         _storage.removeSubrange(startIndex...)
       }
-      _totalLength = UInt16(truncatingIfNeeded: _storage.count)
+      _totalLength = UInt16(clamping: _storage.count)
       pseudoFields.dataLength = totalLength
     }
   }

@@ -86,8 +86,8 @@
             TableColumn("Up") { (conn: Connection) in
               Text(
                 Int64(
-                  truncatingIfNeeded: conn.dataTransferReport.aggregatePathReport
-                    .sentTransportByteCount
+                  clamping: conn.dataTransferReport.aggregatePathReport
+                    .sentApplicationByteCount
                 ),
                 format: .byteCount(style: .binary, spellsOutZero: false)
               )
@@ -95,8 +95,8 @@
             TableColumn("Down") {
               Text(
                 Int64(
-                  truncatingIfNeeded: $0.dataTransferReport.aggregatePathReport
-                    .receivedTransportByteCount),
+                  clamping: $0.dataTransferReport.aggregatePathReport
+                    .receivedApplicationByteCount),
                 format: .byteCount(style: .binary, spellsOutZero: false)
               )
             }
@@ -118,6 +118,9 @@
           ForEach(data)
         }
         .onChange(of: selectedConnectionID) {
+          selection = data.first(where: { $0.taskIdentifier == selectedConnectionID })
+        }
+        .onChange(of: data) { oldValue, newValue in
           selection = data.first(where: { $0.taskIdentifier == selectedConnectionID })
         }
       #else

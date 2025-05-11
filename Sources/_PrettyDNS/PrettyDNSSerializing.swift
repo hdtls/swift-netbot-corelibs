@@ -69,8 +69,8 @@ extension Array where Element == UInt8 {
       let pointer = compression[key]
       guard pointer == nil else {
         // Found reusable compressed domain.
-        // pointer here is non-nil force unwrapping is ok.
-        _append(UInt16(truncatingIfNeeded: pointer!) | 0xC000)
+        // pointer here is validated non-nil, so it is safe to force unwrap the value.
+        _append(UInt16(clamping: pointer!) | 0xC000)
         break
       }
 
@@ -158,7 +158,7 @@ extension Array where Element == UInt8 {
 
     // Replace data length placeholder to determined numer.
     var determined = UInt16(
-      truncatingIfNeeded: endIndex - dataLengthBytesStartOffset - MemoryLayout<UInt16>.size
+      clamping: endIndex - dataLengthBytesStartOffset - MemoryLayout<UInt16>.size
     ).bigEndian
 
     Swift.withUnsafeBytes(of: &determined) {
