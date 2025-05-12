@@ -42,7 +42,7 @@ import _ResourceProcessing
   private var maxminddb: MaxMindDB?
 
   private init() {
-    eventLoopGroup = MultiThreadedEventLoopGroup.singleton
+    eventLoopGroup = MultiThreadedEventLoopGroup.shared
 
     var reporting: any ConnectionReporting = NoOpReporting()
 

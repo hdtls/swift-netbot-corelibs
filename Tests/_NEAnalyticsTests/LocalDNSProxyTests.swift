@@ -32,17 +32,18 @@ struct LocalDNSProxyTests {
     }
   }
 
-  final class MockDNSServer: Sendable {
+  final class MockDNSServer: @unchecked Sendable {
     let queryCalls: ManagedAtomic<Int> = .init(0)
     let response: [any ResourceRecord]
     let parser = PrettyDNSParser()
+    private var channel: LocalDNSProxy.AsyncChannel!
 
     init(response: [any ResourceRecord]) {
       self.response = response
     }
 
     func start() async throws -> SocketAddress? {
-      let channel = try await DatagramBootstrap(group: .singletonMultiThreadedEventLoopGroup)
+      channel = try await DatagramBootstrap(group: .singletonMultiThreadedEventLoopGroup)
         .bind(to: .init(ipAddress: "127.0.0.1", port: 0)) { channel in
           channel.eventLoop.makeCompletedFuture {
             try LocalDNSProxy.AsyncChannel(wrappingChannelSynchronously: channel)
@@ -80,59 +81,10 @@ struct LocalDNSProxyTests {
       }
       return channel.channel.localAddress
     }
-  }
 
-  @Test func runQueryBeforeActive() async throws {
-    let p = LocalDNSProxy(
-      packetFlow: MockTunnelFlow(),
-      server: "198.18.0.1",
-      additionalServers: [.hostPort(host: "1.1.1.1", port: 53)],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
-    await #expect(throws: Never.self) {
-      let name = "example.com"
-      var result: [any ResourceRecord] = try await p.queryA(name: name)
-      #expect(result.isEmpty)
-
-      result = try await p.queryA(name: name)
-      #expect(result.isEmpty)
-
-      result = try await p.queryAAAA(name: name)
-      #expect(result.isEmpty)
-
-      result = try await p.queryNS(name: name)
-      #expect(result.isEmpty)
-
-      result = try await p.queryCNAME(name: name)
-      #expect(result.isEmpty)
-
-      result = try await p.querySOA(name: name)
-      #expect(result.isEmpty)
-
-      result = try await p.queryPTR(name: name)
-      #expect(result.isEmpty)
-
-      result = try await p.queryMX(name: name)
-      #expect(result.isEmpty)
-
-      result = try await p.queryTXT(name: name)
-      #expect(result.isEmpty)
-
-      result = try await p.querySRV(name: name)
-      #expect(result.isEmpty)
+    func close(promise: EventLoopPromise<Void>?) {
+      channel.channel.close(promise: promise)
     }
-  }
-
-  @Test func setResolverAfterActiveAutomatically() async throws {
-    let p = LocalDNSProxy(
-      packetFlow: MockTunnelFlow(),
-      server: "198.18.0.1",
-      additionalServers: [],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
-    await #expect(p.channel == nil)
-    try await p.runIfActive()
-    await #expect(p.channel != nil)
   }
 
   @Test func handleInput() async throws {
@@ -250,6 +202,8 @@ struct LocalDNSProxyTests {
     #expect(response.destinationAddress == datagram.pseudoFields.destinationAddress)
     #expect(response.options == nil)
     #expect(packet.payload == datagram.data)
+
+    p.close(promise: nil)
   }
 
   @Test func queryA() async throws {
@@ -261,6 +215,7 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
+
     let p = LocalDNSProxy(
       packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
@@ -279,6 +234,9 @@ struct LocalDNSProxyTests {
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
       #expect(result == server.response as? [ARecord])
     }
+
+    server.close(promise: nil)
+    p.close(promise: nil)
   }
 
   @Test func handleExpiredARecord() async throws {
@@ -309,6 +267,9 @@ struct LocalDNSProxyTests {
       _ = try await p.queryA(name: "example.com")
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
     }
+
+    server.close(promise: nil)
+    p.close(promise: nil)
   }
 
   @Test func queryAAAA() async throws {
@@ -337,6 +298,9 @@ struct LocalDNSProxyTests {
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
       #expect(result == server.response as? [AAAARecord])
     }
+
+    server.close(promise: nil)
+    p.close(promise: nil)
   }
 
   @Test func handleExpiredAAAARecord() async throws {
@@ -363,6 +327,9 @@ struct LocalDNSProxyTests {
       _ = try await p.queryAAAA(name: "example.com")
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
     }
+
+    server.close(promise: nil)
+    p.close(promise: nil)
   }
 
   @Test func queryNS() async throws {
@@ -390,6 +357,9 @@ struct LocalDNSProxyTests {
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
       #expect(result == server.response as? [NSRecord])
     }
+
+    server.close(promise: nil)
+    p.close(promise: nil)
   }
 
   @Test func queryCNAME() async throws {
@@ -418,6 +388,9 @@ struct LocalDNSProxyTests {
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
       #expect(result == server.response as? [CNAMERecord])
     }
+
+    server.close(promise: nil)
+    p.close(promise: nil)
   }
 
   @Test func querySOA() async throws {
@@ -450,6 +423,9 @@ struct LocalDNSProxyTests {
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
       #expect(result == server.response as? [SOARecord])
     }
+
+    server.close(promise: nil)
+    p.close(promise: nil)
   }
 
   @Test func queryPTR() async throws {
@@ -478,6 +454,9 @@ struct LocalDNSProxyTests {
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
       #expect(result == server.response as? [PTRRecord])
     }
+
+    server.close(promise: nil)
+    p.close(promise: nil)
   }
 
   @Test func queryMX() async throws {
@@ -513,6 +492,9 @@ struct LocalDNSProxyTests {
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
       #expect(result == server.response as? [MXRecord])
     }
+
+    server.close(promise: nil)
+    p.close(promise: nil)
   }
 
   @Test func queryTXT() async throws {
@@ -541,6 +523,9 @@ struct LocalDNSProxyTests {
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
       #expect(result == server.response as? [TXTRecord])
     }
+
+    server.close(promise: nil)
+    p.close(promise: nil)
   }
 
   @Test func querySRV() async throws {
@@ -571,5 +556,8 @@ struct LocalDNSProxyTests {
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
       #expect(result == server.response as? [SRVRecord])
     }
+
+    server.close(promise: nil)
+    p.close(promise: nil)
   }
 }

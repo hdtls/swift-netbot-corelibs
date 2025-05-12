@@ -62,6 +62,7 @@ let package = Package(
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "NIOCore", package: "swift-nio"),
         .product(name: "NIOSSL", package: "swift-nio-ssl"),
+        .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
         .product(name: "Preference", package: "swift-preference"),
         .product(name: "X509", package: "swift-certificates"),
       ]
