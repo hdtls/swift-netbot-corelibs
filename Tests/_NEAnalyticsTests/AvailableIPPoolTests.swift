@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information
 //
 
-import Darwin
 import NEAddressProcessing
 import NIOCore
 import Testing

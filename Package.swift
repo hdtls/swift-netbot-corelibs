@@ -123,7 +123,7 @@ let package = Package(
     .testTarget(
       name: "CoWOptimizationTests",
       dependencies: [
-        "CoWOptimization",
+        "CoWOptimizationMacros",
         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
       ]
     ),

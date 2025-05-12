@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information
 //
 
-import CoWOptimizationMacros
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
@@ -10,8 +9,8 @@ import SwiftSyntaxMacrosTestSupport
 import XCTest
 
 // Macro implementations build for the host, so the corresponding module is not available when cross-compiling. Cross-compiled tests may still make use of the macro itself in end-to-end tests.
-#if canImport(NetbotMacros)
-  import CoWOptimization
+#if canImport(CoWOptimizationMacros)
+  import CoWOptimizationMacros
 
   let testMacros: [String: Macro.Type] = [
     "_cowOptimization": CoWOptimizationMacro.self,
@@ -23,7 +22,7 @@ import XCTest
 final class CopyonWriteMacrosTests: XCTestCase {
 
   func testCoWOptimizationMacro() throws {
-    #if canImport(NetbotMacros)
+    #if canImport(CoWOptimizationMacros)
       let originalSources = [
         """
         @_cowOptimization struct Contact {
@@ -99,7 +98,7 @@ final class CopyonWriteMacrosTests: XCTestCase {
   }
 
   func testCoWOptimizationIgnoredMacro() throws {
-    #if canImport(NetbotMacros)
+    #if canImport(CoWOptimizationMacros)
       let originalSources = [
         """
         @_cowOptimization struct Contact {
@@ -162,7 +161,7 @@ final class CopyonWriteMacrosTests: XCTestCase {
   }
 
   func testCoWOptimizationTrackedMacro() throws {
-    #if canImport(NetbotMacros)
+    #if canImport(CoWOptimizationMacros)
       let originalSources = [
         """
         @_cowOptimization struct Contact {
