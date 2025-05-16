@@ -6,6 +6,7 @@ import Anlzr
 import AnlzrReports
 import Logging
 import MaxMindDB
+import NEAddressProcessing
 import NIOConcurrencyHelpers
 import NIOCore
 import NIOSSL
@@ -41,52 +42,55 @@ import _ResourceProcessing
 
   private var maxminddb: MaxMindDB?
 
+  private var pulse: ConnectionPulse
+
   private init() {
     eventLoopGroup = MultiThreadedEventLoopGroup.shared
 
-    var reporting: any ConnectionReporting = NoOpReporting()
-
-    let containerURL = URL.securityApplicationGroupDirectory
-    var dbFilename = "GeoLite2-Country.mmdb"
-    let persistentStorage: URL
+    let dbFilename = "GeoLite2-Country.mmdb"
 
     #if canImport(Darwin)
-      let pathComponent = "Library/Caches/Netbot/analyzed.store"
       if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-        persistentStorage = containerURL.appending(component: pathComponent)
         maxminddb = try? MaxMindDB(
           file: URL.maxmind.appending(path: dbFilename).path(percentEncoded: false),
           mode: .mmap
         )
       } else {
-        persistentStorage = containerURL.appendingPathComponent(pathComponent)
         maxminddb = try? MaxMindDB(
           file: URL.maxmind.appendingPathComponent(dbFilename).path,
           mode: .mmap
         )
       }
     #else
-      let pathComponent = "analyzed.store"
-      persistentStorage = containerURL.appending(component: pathComponent)
       maxminddb = try? MaxMindDB(
         file: URL.maxmind.appending(path: dbFilename).path(percentEncoded: false),
         mode: .mmap
       )
     #endif
-    reporting = Analyzed(persistentStorage: persistentStorage)
-
-    analyzer = Analyzer(group: eventLoopGroup, logger: logger, reporter: reporting)
+    pulse = ConnectionPulse(
+      group: eventLoopGroup,
+      address: .hostPort(host: "127.0.0.1", port: 6170)
+    )
+    analyzer = Analyzer(group: eventLoopGroup, logger: logger, connectionTransmissionService: pulse)
   }
 
   /// Start analyzer tunnel.
   nonisolated public func startVPNTunnel() async throws {
     try await self.analyzer.run()
+    Task {
+      do {
+        try await self.pulse.run()
+      } catch {
+        print(error)
+      }
+    }
   }
 
   /// Stop current running analyzer tunnel.
   nonisolated public func stopVPNTunnel() async {
     do {
-      try await self.analyzer.shutdownGracefully()
+      try? await self.analyzer.shutdownGracefully()
+      try? await self.pulse.shutdownGracyfully()
     } catch {}
   }
 
