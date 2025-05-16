@@ -353,7 +353,7 @@ actor LocalDNSProxy: PacketHandleProtocol {
     let maxRetryAttempts = 3
 
     for additionalServer in additionalServers {
-      let server = try additionalServer.address
+      let server = try additionalServer.asAddress()
 
       for _ in 0..<maxRetryAttempts {
         do {

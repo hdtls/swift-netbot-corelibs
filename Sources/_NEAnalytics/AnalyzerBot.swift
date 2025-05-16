@@ -88,10 +88,8 @@ import _ResourceProcessing
 
   /// Stop current running analyzer tunnel.
   nonisolated public func stopVPNTunnel() async {
-    do {
-      try? await self.analyzer.shutdownGracefully()
-      try? await self.pulse.shutdownGracyfully()
-    } catch {}
+    try? await self.analyzer.shutdownGracefully()
+    try? await self.pulse.shutdownGracyfully()
   }
 
   /// Modify MaxMind GeoLite2-Country.mmdb.

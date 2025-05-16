@@ -219,7 +219,7 @@ struct LocalDNSProxyTests {
     let p = LocalDNSProxy(
       packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
-      additionalServers: [address.address],
+      additionalServers: [try address.asAddress()],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     try await p.runIfActive()
@@ -251,7 +251,7 @@ struct LocalDNSProxyTests {
     let p = LocalDNSProxy(
       packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
-      additionalServers: [address.address],
+      additionalServers: [try address.asAddress()],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     try await p.runIfActive()
@@ -283,7 +283,7 @@ struct LocalDNSProxyTests {
     let p = LocalDNSProxy(
       packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
-      additionalServers: [address.address],
+      additionalServers: [try address.asAddress()],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     try await p.runIfActive()
@@ -311,7 +311,7 @@ struct LocalDNSProxyTests {
     let p = LocalDNSProxy(
       packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
-      additionalServers: [address.address],
+      additionalServers: [try address.asAddress()],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     try await p.runIfActive()
@@ -342,7 +342,7 @@ struct LocalDNSProxyTests {
     let p = LocalDNSProxy(
       packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
-      additionalServers: [address.address],
+      additionalServers: [try address.asAddress()],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     try await p.runIfActive()
@@ -373,7 +373,7 @@ struct LocalDNSProxyTests {
     let p = LocalDNSProxy(
       packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
-      additionalServers: [address.address],
+      additionalServers: [try address.asAddress()],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     try await p.runIfActive()
@@ -408,7 +408,7 @@ struct LocalDNSProxyTests {
     let p = LocalDNSProxy(
       packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
-      additionalServers: [address.address],
+      additionalServers: [try address.asAddress()],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     try await p.runIfActive()
@@ -439,7 +439,7 @@ struct LocalDNSProxyTests {
     let p = LocalDNSProxy(
       packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
-      additionalServers: [address.address],
+      additionalServers: [try address.asAddress()],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     try await p.runIfActive()
@@ -477,7 +477,7 @@ struct LocalDNSProxyTests {
     let p = LocalDNSProxy(
       packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
-      additionalServers: [address.address],
+      additionalServers: [try address.asAddress()],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     try await p.runIfActive()
@@ -508,7 +508,7 @@ struct LocalDNSProxyTests {
     let p = LocalDNSProxy(
       packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
-      additionalServers: [address.address],
+      additionalServers: [try address.asAddress()],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     try await p.runIfActive()
@@ -541,7 +541,7 @@ struct LocalDNSProxyTests {
     let p = LocalDNSProxy(
       packetFlow: MockTunnelFlow(),
       server: "198.18.0.2",
-      additionalServers: [address.address],
+      additionalServers: [try address.asAddress()],
       availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     try await p.runIfActive()
