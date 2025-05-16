@@ -4,13 +4,13 @@
 
 import X509
 
-#if canImport(Network) && ENABLE_NIO_TRANSPORT_SERVICES
+#if canImport(Network)
   import Network
 #else
   import NIOSSL
 #endif
 
-#if canImport(Network) && ENABLE_NIO_TRANSPORT_SERVICES
+#if canImport(Network)
   enum TLSVersion: Sendable {
     case tlsv1
     case tlsv11

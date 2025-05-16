@@ -16,7 +16,7 @@ import _ResourceProcessing
   import Foundation
 #endif
 
-#if canImport(Network) && ENABLE_NIO_TRANSPORT_SERVICES
+#if canImport(Network)
   import Network
   import NIOTransportServices
   import Security
@@ -30,7 +30,7 @@ private let offlineQueue = DispatchQueue(label: "com.tenbits.AnalyzerBot.tls.off
 struct NEClientTLSProvider<Bootstrap: NIOClientTCPBootstrapProtocol>: NIOClientTLSProvider {
   typealias Bootstrap = Bootstrap
 
-  #if canImport(Network) && ENABLE_NIO_TRANSPORT_SERVICES
+  #if canImport(Network)
     private let tlsOptions = NWProtocolTLS.Options()
   #else
     let context: NIOSSLContext
@@ -71,7 +71,7 @@ struct NEClientTLSProvider<Bootstrap: NIOClientTCPBootstrapProtocol>: NIOClientT
     if let sni, !sni.isEmpty, sni.isIPAddress() {
       serverNameIndicator = sni
     }
-    #if canImport(Network) && ENABLE_NIO_TRANSPORT_SERVICES
+    #if canImport(Network)
       serverNameIndicator?.withCString { serverNameIndicatorOverride in
         sec_protocol_options_set_tls_server_name(
           tlsOptions.securityProtocolOptions, serverNameIndicatorOverride)
@@ -186,7 +186,7 @@ struct NEClientTLSProvider<Bootstrap: NIOClientTCPBootstrapProtocol>: NIOClientT
   /// Enable TLS on the bootstrap. This is not a function you will typically call as a user, it is called by
   /// `NIOClientTCPBootstrap`.
   func enableTLS(_ bootstrap: Bootstrap) -> Bootstrap {
-    #if canImport(Network) && ENABLE_NIO_TRANSPORT_SERVICES
+    #if canImport(Network)
       if let bootstrap = bootstrap as? NIOTSConnectionBootstrap {
         return bootstrap.tlsOptions(self.tlsOptions) as! Bootstrap
       } else {
@@ -210,7 +210,7 @@ struct NEClientTLSProvider<Bootstrap: NIOClientTCPBootstrapProtocol>: NIOClientT
 }
 
 extension Certificate {
-  #if canImport(Network) && ENABLE_NIO_TRANSPORT_SERVICES
+  #if canImport(Network)
     fileprivate var _base: SecCertificate? {
       get throws {
         var serializer = DER.Serializer()
