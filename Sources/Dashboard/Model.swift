@@ -84,6 +84,10 @@
     }
   }
 
+  public enum RecentConnectionsError: Error {
+    case operationUnsupported
+  }
+
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
   @MainActor @Observable public class RecentConnectionsControler {
 
@@ -103,7 +107,7 @@
     public var fetchError: (any Error)? {
       _fetchError
     }
-    @ObservationIgnored private var _fetchError: (any Error)?
+    private var _fetchError: (any Error)?
 
     public typealias Result = [Connection]
 
@@ -173,7 +177,9 @@
         case .setup:
           break
         case .waiting(let error):
-          print("error: \(error)")
+          Task { @MainActor in
+            self._fetchError = error
+          }
         case .preparing:
           break
         case .ready:
@@ -181,18 +187,22 @@
             await self.runReadLoop()
           }
         case .failed(let error):
-          print("error: \(error)")
+          Task { @MainActor in
+            self._fetchError = error
+          }
         case .cancelled:
           break
         @unknown default:
-          fatalError()
+          Task { @MainActor in
+            self._fetchError = RecentConnectionsError.operationUnsupported
+          }
         }
       }
       connection.start(queue: .global())
     }
 
     nonisolated private func runReadLoop() async {
-      guard await connection.state == .ready else {
+      guard connection.state == .ready else {
         return
       }
 
