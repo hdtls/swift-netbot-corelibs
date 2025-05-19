@@ -6,11 +6,11 @@
   import Foundation
   import SecurityFoundation
   import os
+  import SystemConfiguration
 
   /// This object implements the protocol which we have defined. It provides the actual behavior for the service. It is 'exported' by the
   /// service to make it available to the process hosting the service over an NSXPCConnection.
-  @available(macOS 13.0, *)
-  final public class HelperToolHandle: @unchecked Sendable {
+  public class PHTHandle {
 
     private let listener: NSXPCListener
 
@@ -100,13 +100,14 @@
     }
   }
 
-  @available(macOS 13.0, *)
-  extension HelperToolHandle: AuthorizationHandleProtocol {
+  extension PHTHandle: @unchecked Sendable {}
+
+  extension PHTHandle: AuthorizationHandleProtocol {
 
     public func systemVPNAuthorizationRights(authentication: Data) async throws -> Data {
       logger.debug("Obtain the authorization to modify the system VPN configurations")
       let selector = #selector(
-        (any HelperToolHandleProtocol).systemVPNAuthorizationRights(authentication:))
+        (any PHTHandleProtocol).systemVPNAuthorizationRights(authentication:))
       do {
         try checkValidity(authentication: authentication, selector: selector)
       } catch {
@@ -121,7 +122,7 @@
     public func systemNetworkingAuthorizationRights(authentication: Data) async throws -> Data {
       logger.debug("Obtain the authorization to modify the system network settings")
       let selector = #selector(
-        (any HelperToolHandleProtocol).systemNetworkingAuthorizationRights(authentication:))
+        (any PHTHandleProtocol).systemNetworkingAuthorizationRights(authentication:))
       do {
         try checkValidity(authentication: authentication, selector: selector)
       } catch {
@@ -134,8 +135,7 @@
     }
   }
 
-  @available(macOS 13.0, *)
-  extension HelperToolHandle: HelperToolHandleProtocol {
+  extension PHTHandle: PHTHandleProtocol {
 
     public func listenerEndpoint() async -> NSXPCListenerEndpoint {
       listener.endpoint
@@ -145,6 +145,54 @@
       // We specifically don't check for authorization here.  Everyone is always allowed to get
       // the version of the helper tool.
       Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as! String
+    }
+
+    public func setNWProtocolProxies(processName: String, options: NEProtocolProxies.Options)
+      async throws
+    {
+      guard let prefs = SCPreferencesCreate(nil, processName as CFString, nil) else {
+        throw SCCopyLastError()
+      }
+
+      guard let networkSet = SCNetworkSetCopyCurrent(prefs),
+        let networkServices = SCNetworkSetCopyServices(networkSet) as? [SCNetworkService]
+      else {
+        return
+      }
+
+      for service in networkServices {
+        guard let serviceName = SCNetworkServiceGetName(service) as? String else {
+          continue
+        }
+        guard ["AirPort", "Wi-Fi", "Ethernet"].contains(serviceName) else {
+          continue
+        }
+
+        guard
+          let protocolProxies = SCNetworkServiceCopyProtocol(service, kSCNetworkProtocolTypeProxies)
+        else {
+          continue
+        }
+
+        var optionsDictionary =
+          SCNetworkProtocolGetConfiguration(protocolProxies) as? [CFString: Any] ?? [:]
+        optionsDictionary.merge(options.options, uniquingKeysWith: { _, rhs in rhs })
+
+        guard SCNetworkProtocolSetConfiguration(protocolProxies, optionsDictionary as CFDictionary)
+        else {
+          throw SCCopyLastError()
+        }
+      }
+
+      guard SCPreferencesCommitChanges(prefs) else {
+        throw SCCopyLastError()
+      }
+
+      SCPreferencesSynchronize(prefs)
+
+      guard SCPreferencesApplyChanges(prefs) else {
+        throw SCCopyLastError()
+      }
     }
   }
 #endif

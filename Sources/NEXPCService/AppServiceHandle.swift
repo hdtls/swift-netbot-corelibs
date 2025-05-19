@@ -9,13 +9,13 @@
 
   /// This object implements the protocol which we have defined. It provides the actual behavior for the service. It is 'exported' by the
   /// service to make it available to the process hosting the service over an NSXPCConnection.
-  @available(macOS 13.0, *)
-  final public class XPCServiceHandle: @unchecked Sendable {
+  final public class AppServiceHandle {
 
-    private let authorization: Data
+    private let authorizationExternalForm: Data
 
     /// only accessed or modified by operations on self.queue
     private var connection: NSXPCConnection!
+    private let lock = NSLock()
 
     private var authorizationRef: AuthorizationRef?
 
@@ -30,9 +30,9 @@
         err = AuthorizationMakeExternalForm(authorizationRef, &extForm)
       }
       if err == errAuthorizationSuccess {
-        authorization = withUnsafeBytes(of: &extForm) { Data($0) }
+        authorizationExternalForm = withUnsafeBytes(of: &extForm) { Data($0) }
       } else {
-        authorization = Data()
+        authorizationExternalForm = Data()
       }
       assert(err == errAuthorizationSuccess)
     }
@@ -104,33 +104,38 @@
       }
     }
 
-    private func setToolIfNeeded(matchServiceName name: String) {
-      // Because we access connection, we have to run on the operation queue.
-      guard connection == nil else {
-        return
+    private func connect0(matchService name: String) {
+      lock.withLock {
+        // Because we access connection, we have to run on the operation queue.
+        guard connection == nil else {
+          return
+        }
+
+        connection = NSXPCConnection(machServiceName: name, options: .privileged)
+        connection?.remoteObjectInterface = NSXPCInterface(with: (any PHTHandleProtocol).self)
+
+        // We can ignore the retain cycle warning because a) the retain taken by the
+        // invalidation handler block is released by us setting it to nil when the block
+        // actually runs, and b) the retain taken by the block passed to -addOperationWithBlock:
+        // will be released when that operation completes and the operation itself is deallocated
+        // (notably self does not have a reference to the NSBlockOperation).
+        connection?.invalidationHandler = {
+          // If the connection gets invalidated then, on our operation queue thread, nil out our
+          // reference to it.  This ensures that we attempt to rebuild it the next time around.
+          self.lock.withLock {
+            self.connection?.invalidationHandler = nil
+
+            self.connection = nil
+          }
+        }
+        connection?.resume()
       }
-
-      connection = NSXPCConnection(machServiceName: name, options: .privileged)
-      connection?.remoteObjectInterface = NSXPCInterface(with: (any HelperToolHandleProtocol).self)
-
-      // We can ignore the retain cycle warning because a) the retain taken by the
-      // invalidation handler block is released by us setting it to nil when the block
-      // actually runs, and b) the retain taken by the block passed to -addOperationWithBlock:
-      // will be released when that operation completes and the operation itself is deallocated
-      // (notably self does not have a reference to the NSBlockOperation).
-      connection?.invalidationHandler = {
-        // If the connection gets invalidated then, on our operation queue thread, nil out our
-        // reference to it.  This ensures that we attempt to rebuild it the next time around.
-        self.connection?.invalidationHandler = nil
-
-        self.connection = nil
-      }
-      connection?.resume()
     }
   }
 
-  @available(macOS 13.0, *)
-  extension XPCServiceHandle: XPCServiceHandleProtocol {
+  extension AppServiceHandle: @unchecked Sendable {}
+
+  extension AppServiceHandle: AppServiceHandleProtocol {
 
     public func codeSigningRequirement() async -> String {
       var codeSigningRequirementParts: [Substring] = []
@@ -151,50 +156,66 @@
     }
 
     public func register(daemon plistName: String) async throws {
-      let daemon = SMAppService.daemon(plistName: plistName)
-      try await register(plistName: plistName, service: daemon)
+      if #available(macOS 13.0, *) {
+        let daemon = SMAppService.daemon(plistName: plistName)
+        try await register(plistName: plistName, service: daemon)
+      }
     }
 
     public func register(agent plistName: String) async throws {
-      let agent = SMAppService.agent(plistName: plistName)
-      try await register(plistName: plistName, service: agent)
+      if #available(macOS 13.0, *) {
+        let agent = SMAppService.agent(plistName: plistName)
+        try await register(plistName: plistName, service: agent)
+      }
     }
 
     public func register(loginItem identifier: String) async throws {
-      let loginItem = SMAppService.loginItem(identifier: identifier)
-      try await register(plistName: identifier, service: loginItem)
+      if #available(macOS 13.0, *) {
+        let loginItem = SMAppService.loginItem(identifier: identifier)
+        try await register(plistName: identifier, service: loginItem)
+      }
     }
 
     public func unregister(daemon plistName: String) async throws {
-      let daemon = SMAppService.daemon(plistName: plistName)
-      try await unregister(plistName: plistName, service: daemon)
+      if #available(macOS 13.0, *) {
+        let daemon = SMAppService.daemon(plistName: plistName)
+        try await unregister(plistName: plistName, service: daemon)
+      }
     }
 
     public func unregister(agent plistName: String) async throws {
-      let agent = SMAppService.agent(plistName: plistName)
-      try await unregister(plistName: plistName, service: agent)
+      if #available(macOS 13.0, *) {
+        let agent = SMAppService.agent(plistName: plistName)
+        try await unregister(plistName: plistName, service: agent)
+      }
     }
 
     public func unregister(loginItem identifier: String) async throws {
-      let loginItem = SMAppService.loginItem(identifier: identifier)
-      try await unregister(plistName: identifier, service: loginItem)
+      if #available(macOS 13.0, *) {
+        let loginItem = SMAppService.loginItem(identifier: identifier)
+        try await unregister(plistName: identifier, service: loginItem)
+      }
     }
 
+    @available(macOS 13.0, *)
     public func status(daemon plistName: String) async -> SMAppService.Status {
       let daemon = SMAppService.daemon(plistName: plistName)
       return daemon.status
     }
 
+    @available(macOS 13.0, *)
     public func status(agent plistName: String) async -> SMAppService.Status {
       let agent = SMAppService.agent(plistName: plistName)
       return agent.status
     }
 
+    @available(macOS 13.0, *)
     public func status(loginItem identifier: String) async -> SMAppService.Status {
       let loginItem = SMAppService.loginItem(identifier: identifier)
       return loginItem.status
     }
 
+    @available(macOS 13.0, *)
     public func openSystemSettingsLoginItems() async {
       SMAppService.openSystemSettingsLoginItems()
     }
@@ -207,15 +228,63 @@
     }
 
     public func connect(matchService name: String) async throws -> NSXPCListenerEndpoint {
-      setToolIfNeeded(matchServiceName: name)
+      connect0(matchService: name)
 
       // Call the helper tool to get the endpoint we need.
-      let endpoint = try await connection.tool().listenerEndpoint()
+      let tool = try lock.withLock {
+        try connection.remotePHTHandle()
+      }
+      let endpoint = await tool.listenerEndpoint()
       return endpoint
     }
 
-    public func authorization() async -> Data {
-      authorization
+    public func authorizationExternalForm() async -> Data {
+      lock.withLock {
+        authorizationExternalForm
+      }
+    }
+  }
+
+  extension NSXPCConnection {
+
+    /// Convert `remoteObjectProxy` to `any PHTHandleProtocol` if possible.
+    ///
+    /// Throw operationUnsupported if remote object proxy is not a `any PHTHandleProtocol` object, or
+    /// error that `remoteObjectProxyWithErrorHandler` throws.
+    func remotePHTHandle() throws -> any PHTHandleProtocol {
+      try remoteObjectProxy(as: (any PHTHandleProtocol).self)
+    }
+
+    func remoteObjectProxy<Proxy: Sendable>(as type: Proxy.Type = Proxy.self) throws -> Proxy {
+      var error: (any Error)?
+
+      let remoteObjectProxy = remoteObjectProxyWithErrorHandler { error = $0 } as? Proxy
+
+      guard error == nil else {
+        throw error!
+      }
+
+      guard let remoteObjectProxy else {
+        throw NEXPCServiceError.operationUnsupported
+      }
+      return remoteObjectProxy
+    }
+  }
+
+  enum NEXPCServiceError: Error {
+    case operationUnsupported
+  }
+
+  extension Data {
+    var authorizationExternalForm: AuthorizationExternalForm {
+      get throws {
+        guard self.count == MemoryLayout<AuthorizationExternalForm>.size else {
+          throw NSError(domain: NSOSStatusErrorDomain, code: Int(errAuthorizationInvalidRef))
+        }
+        return self.withUnsafeBytes {
+          $0.load(as: AuthorizationExternalForm.self)
+        }
+      }
     }
   }
 #endif

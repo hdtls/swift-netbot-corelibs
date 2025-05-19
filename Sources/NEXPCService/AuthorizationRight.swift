@@ -6,7 +6,6 @@
   import Foundation
   import Security
 
-  @available(macOS 13.0, *)
   enum AuthorizationRightPresets: CaseIterable, Sendable {
 
     case systemVPNModification
@@ -44,11 +43,11 @@
     private init?(rawValue: String) {
       switch rawValue {
       case NSStringFromSelector(
-        #selector((any HelperToolHandleProtocol).systemVPNAuthorizationRights(authentication:))):
+        #selector((any PHTHandleProtocol).systemVPNAuthorizationRights(authentication:))):
         self = .systemVPNModification
       case NSStringFromSelector(
         #selector(
-          (any HelperToolHandleProtocol).systemNetworkingAuthorizationRights(authentication:))
+          (any PHTHandleProtocol).systemNetworkingAuthorizationRights(authentication:))
       ):
         self = .systemNetworkingModification
       default:
