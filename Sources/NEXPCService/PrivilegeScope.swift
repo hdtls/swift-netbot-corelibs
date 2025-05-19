@@ -7,6 +7,7 @@
   import ServiceManagement
   import os
 
+  // swift-format-ignore: AlwaysUseLowerCamelCase
   public var PHT: PrivilegeScope { PrivilegeScope.shared }
 
   @globalActor public actor PrivilegeScope {

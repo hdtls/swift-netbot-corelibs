@@ -95,7 +95,8 @@ extension CoWOptimizationMacro: MemberAttributeMacro {
     )
     let optimizationTracked = AttributeSyntax(
       attributeName: IdentifierTypeSyntax(
-        name: .identifier(CoWOptimizationMacro.optimizationTracked)),
+        name: .identifier(CoWOptimizationMacro.optimizationTracked)
+      )
     )
 
     if property.hasMacro(named: CoWOptimizationMacro.optimizationTracked) {

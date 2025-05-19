@@ -73,7 +73,6 @@ extension Sequence where Element == String {
   ///
   /// - Parameters:
   ///   - elementToDuplicate: The element to duplicate.
-  ///   - name: The name keyPath identifier duplicated element.
   /// - Returns: Duplicated element.
   public func duplicate(_ elementToDuplicate: Element) -> Element {
     let prefix = "\(elementToDuplicate) copy"

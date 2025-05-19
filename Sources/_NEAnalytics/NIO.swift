@@ -1,8 +1,5 @@
 //
-//  NIO.swift
-//  swift-netbot-corelibs
-//
-//  Created by Jeff on 2025/5/12.
+// See LICENSE.txt for license information
 //
 
 #if canImport(Network)
