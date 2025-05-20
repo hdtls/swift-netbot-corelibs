@@ -48,12 +48,12 @@
     @available(macOS 13.0, *)
     func openSystemSettingsLoginItems() async
 
+    /// Called by the app to get an endpoint that's connected to the helper tool.
+    func connect(matchService name: String) async throws -> NSXPCListenerEndpoint
+
     /// Called by the app at startup time to set up our authorization rights in the
     /// authorization database.
     func setupAuthorizationRights() async throws
-
-    /// Called by the app to get an endpoint that's connected to the helper tool.
-    func connect(matchService name: String) async throws -> NSXPCListenerEndpoint
 
     /// Returns the XPC service's authorization reference so that
     /// the app can pass that to the requests it sends to the helper tool.

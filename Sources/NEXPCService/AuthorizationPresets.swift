@@ -6,50 +6,33 @@
   import Foundation
   import Security
 
-  enum AuthorizationRightPresets: CaseIterable, Sendable {
+  enum AuthorizationPresets: CaseIterable, Sendable {
 
-    case systemVPNModification
-
-    case systemNetworkingModification
+    case systemProtocolProxiesModification
 
     private var name: String {
       switch self {
-      case .systemVPNModification:
-        return "com.tenbits.netbot.system-vpn-modification"
-      case .systemNetworkingModification:
-        return "com.tenbits.netbot.system-networking-modification"
+      case .systemProtocolProxiesModification:
+        return "com.tenbits.netbot.system-protocol-proxies-modification"
       }
     }
 
     private var definition: String {
       switch self {
-      case .systemVPNModification:
-        return kAuthorizationRuleAuthenticateAsAdmin
-      case .systemNetworkingModification:
+      case .systemProtocolProxiesModification:
         return kAuthorizationRuleAuthenticateAsAdmin
       }
     }
 
     private var description: String {
       switch self {
-      case .systemVPNModification:
-        // All network activity on this Mac may be filtered or monitered when using VPN.
-        return String(localized: "\"Netbot\" Would Like to Add VPN Configurations")
-      case .systemNetworkingModification:
+      case .systemProtocolProxiesModification:
         return String(localized: "Netbot is trying to modify the system network configuration.")
       }
     }
 
     private init?(rawValue: String) {
       switch rawValue {
-      case NSStringFromSelector(
-        #selector((any PHTHandleProtocol).systemVPNAuthorizationRights(authentication:))):
-        self = .systemVPNModification
-      case NSStringFromSelector(
-        #selector(
-          (any PHTHandleProtocol).systemNetworkingAuthorizationRights(authentication:))
-      ):
-        self = .systemNetworkingModification
       default:
         return nil
       }
@@ -57,20 +40,20 @@
 
     static func authorizationItem(identified selector: Selector) -> AuthorizationItem? {
       guard
-        let authorizationRightPresets = AuthorizationRightPresets(
+        let authorizationPresets = AuthorizationPresets(
           rawValue: NSStringFromSelector(selector))
       else {
         return nil
       }
 
-      let authorizationItem = authorizationRightPresets.name.withCString {
+      let authorizationItem = authorizationPresets.name.withCString {
         AuthorizationItem(name: $0, valueLength: 0, value: nil, flags: 0)
       }
       return authorizationItem
     }
 
     static func setupAuthorizationRights(_ authorizationRef: AuthorizationRef) {
-      for right in AuthorizationRightPresets.allCases {
+      for right in AuthorizationPresets.allCases {
         var errorCode = right.name.withCString {
           AuthorizationRightGet($0, nil)
         }
@@ -90,7 +73,7 @@
             right.definition as CFTypeRef,
             right.description as CFString,
             nil,
-            String(describing: AuthorizationRightPresets.self) as CFString
+            String(describing: AuthorizationPresets.self) as CFString
           )
         }
         assert(errorCode == errAuthorizationSuccess)

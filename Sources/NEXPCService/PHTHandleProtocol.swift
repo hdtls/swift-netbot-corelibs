@@ -5,15 +5,6 @@
 #if os(macOS)
   import Foundation
 
-  @objc public protocol AuthorizationHandleProtocol: Sendable {
-
-    /// Require authorization rights for modify system VPN settings.
-    func systemVPNAuthorizationRights(authentication: Data) async throws -> Data
-
-    /// Require authorization rights for modify system proxy settings.
-    func systemNetworkingAuthorizationRights(authentication: Data) async throws -> Data
-  }
-
   public class NEProxyServer: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
@@ -203,7 +194,7 @@
 
   /// PHTHandleProtocol is the NSXPCConnection-based protocol implemented by the helper tool
   /// and called by the app.
-  @objc public protocol PHTHandleProtocol: AuthorizationHandleProtocol {
+  @objc public protocol PHTHandleProtocol: Sendable {
 
     /// Not used by the standard app (it's part of the sandboxed XPC service support).
     func listenerEndpoint() async -> NSXPCListenerEndpoint

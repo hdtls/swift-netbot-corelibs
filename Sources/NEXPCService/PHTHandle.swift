@@ -79,7 +79,7 @@
       }
 
       guard
-        var authorizationItem = AuthorizationRightPresets.authorizationItem(identified: selector)
+        var authorizationItem = AuthorizationPresets.authorizationItem(identified: selector)
       else {
         throw NSError(domain: NSOSStatusErrorDomain, code: Int(errAuthorizationDenied))
       }
@@ -101,39 +101,6 @@
   }
 
   extension PHTHandle: @unchecked Sendable {}
-
-  extension PHTHandle: AuthorizationHandleProtocol {
-
-    public func systemVPNAuthorizationRights(authentication: Data) async throws -> Data {
-      logger.debug("Obtain the authorization to modify the system VPN configurations")
-      let selector = #selector(
-        (any PHTHandleProtocol).systemVPNAuthorizationRights(authentication:))
-      do {
-        try checkValidity(authentication: authentication, selector: selector)
-      } catch {
-        logger.error(
-          "Obtain the authorization to modify the system VPN configurations failure with error: \(error)"
-        )
-        throw error
-      }
-      return authentication
-    }
-
-    public func systemNetworkingAuthorizationRights(authentication: Data) async throws -> Data {
-      logger.debug("Obtain the authorization to modify the system network settings")
-      let selector = #selector(
-        (any PHTHandleProtocol).systemNetworkingAuthorizationRights(authentication:))
-      do {
-        try checkValidity(authentication: authentication, selector: selector)
-      } catch {
-        logger.error(
-          "Obtain the authorization to modify the system network settings failure with error: \(error)"
-        )
-        throw error
-      }
-      return authentication
-    }
-  }
 
   extension PHTHandle: PHTHandleProtocol {
 

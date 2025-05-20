@@ -220,13 +220,6 @@
       SMAppService.openSystemSettingsLoginItems()
     }
 
-    public func setupAuthorizationRights() async throws {
-      guard let authorizationRef else {
-        throw NSError(domain: NSOSStatusErrorDomain, code: Int(errAuthorizationInvalidRef))
-      }
-      AuthorizationRightPresets.setupAuthorizationRights(authorizationRef)
-    }
-
     public func connect(matchService name: String) async throws -> NSXPCListenerEndpoint {
       connect0(matchService: name)
 
@@ -236,6 +229,12 @@
       }
       let endpoint = await tool.listenerEndpoint()
       return endpoint
+    }
+
+    public func setupAuthorizationRights() async throws {
+      guard let authorizationRef else {
+        throw NSError(domain: NSOSStatusErrorDomain, code: Int(errAuthorizationInvalidRef))
+      }
     }
 
     public func authorizationExternalForm() async -> Data {
