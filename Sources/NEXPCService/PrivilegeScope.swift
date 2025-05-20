@@ -164,6 +164,12 @@
         try await tool.setNWProtocolProxies(processName: processName, options: options)
       }
     }
+
+    public func processInfo(address: UInt16) async throws -> ProcessInfo? {
+      try await submit { tool, _ in
+        try await tool.processInfo(address: address)
+      }
+    }
   }
 
   extension NSXPCConnection {

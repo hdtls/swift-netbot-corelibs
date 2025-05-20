@@ -3,6 +3,8 @@
 //
 
 #if os(macOS)
+  import AppKit
+  import Darwin
   import Foundation
   import SecurityFoundation
   import os
@@ -160,6 +162,60 @@
       guard SCPreferencesApplyChanges(prefs) else {
         throw SCCopyLastError()
       }
+    }
+
+    public func processInfo(address: UInt16) async throws -> ProcessInfo? {
+      for app in NSWorkspace.shared.runningApplications {
+        var size = Int(proc_pidinfo(app.processIdentifier, PROC_PIDLISTFDS, 0, nil, 0))
+        guard size > 0 else {
+          continue
+        }
+
+        let buffer = UnsafeMutablePointer<proc_fdinfo>.allocate(
+          capacity: size / MemoryLayout<proc_fdinfo>.stride
+        )
+        defer { buffer.deallocate() }
+
+        size =
+          Int(proc_pidinfo(app.processIdentifier, PROC_PIDLISTFDS, 0, buffer, Int32(size)))
+          / MemoryLayout<proc_fdinfo>.stride
+
+        for i in 0..<size {
+          guard buffer[i].proc_fdtype == PROX_FDTYPE_SOCKET else {
+            continue
+          }
+
+          var fdinfo = socket_fdinfo()
+          let rc = proc_pidfdinfo(
+            app.processIdentifier,
+            buffer[i].proc_fd,
+            PROC_PIDFDSOCKETINFO,
+            &fdinfo,
+            Int32(MemoryLayout<socket_fdinfo>.stride)
+          )
+          guard rc > 0 else {
+            continue
+          }
+
+          switch fdinfo.psi.soi_kind {
+          case Int32(SOCKINFO_TCP):
+            let lport = UInt16(
+              truncatingIfNeeded: fdinfo.psi.soi_proto.pri_tcp.tcpsi_ini.insi_lport)
+            if lport.bigEndian == address {
+              let processInfo = ProcessInfo()
+              processInfo.processName = app.localizedName ?? ""
+              processInfo.processBundleURL = app.bundleURL
+              processInfo.processExecutableURL = app.executableURL
+              processInfo.processIdentifier = app.processIdentifier
+              processInfo.processIconTIFFRepresentation = app.icon?.tiffRepresentation
+              return processInfo
+            }
+          default:
+            continue
+          }
+        }
+      }
+      return nil
     }
   }
 #endif
