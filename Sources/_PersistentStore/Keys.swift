@@ -36,9 +36,7 @@ extension Prefs.Name {
 
   public static let selectionRecordForGroups = "Policy Group - Preferred Policy Selection Record for Policy Groups"
 
-  public static let enableSystemProxy = "Enable System Proxy"
-
-    public static let enableEnhancedMode = "Enable Enhanced Mode"
+  public static let proxyMode = "Proxies - Proxy Mode"
 
   public static let enabledHTTPCapabilities = "HTTP - Enabled HTTP Capabilities"
   public static let outboundMode = "Outbound Mode"

@@ -46,11 +46,8 @@
     @Preference(Prefs.Name.profileAutoreload, store: .applicationGroup)
     public var profileAutoreload = false
 
-    @Preference(Prefs.Name.enableEnhancedMode, store: .applicationGroup)
-    public var enableEnhancedMode = false
-
-    @Preference(Prefs.Name.enableSystemProxy, store: .applicationGroup)
-    public var enableSystemProxy = false
+    @Preference(Prefs.Name.proxyMode, store: .applicationGroup)
+    public var proxyMode: ProxyMode = [.webProxy]
 
     @Preference(Prefs.Name.outboundMode, store: .applicationGroup)
     public var outboundMode = OutboundMode.direct
@@ -110,16 +107,7 @@
         Prefs.Name.profileAutoreload,
         store: store
       )
-      self._enableSystemProxy = .init(
-        wrappedValue: false,
-        Prefs.Name.enableSystemProxy,
-        store: store
-      )
-      self._enableEnhancedMode = .init(
-        wrappedValue: false,
-        Prefs.Name.enableEnhancedMode,
-        store: store
-      )
+      self._proxyMode = .init(wrappedValue: [.webProxy], Prefs.Name.proxyMode, store: store)
       self._outboundMode = .init(wrappedValue: .direct, Prefs.Name.outboundMode, store: store)
       self._enabledHTTPCapabilities = .init(
         wrappedValue: [],
