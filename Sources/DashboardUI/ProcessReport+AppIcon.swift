@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-#if canImport(SwiftUI)
+#if os(macOS)
   import AnlzrReports
   import AppKit
   import SwiftUI

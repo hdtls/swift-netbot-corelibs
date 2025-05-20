@@ -30,6 +30,10 @@ import _ResourceProcessing
   import NIOPosix
 #endif
 
+#if os(macOS)
+  import NEXPCService
+#endif
+
 /// Assistant to manage PacketTunnelProvider and NIO proxy servers backend.
 @globalActor public actor AnalyzerBot {
 
@@ -43,6 +47,8 @@ import _ResourceProcessing
   private var maxminddb: MaxMindDB?
 
   private var pulse: ConnectionPulse
+
+  private var processName: String { ProcessInfo.processInfo.processName }
 
   private init() {
     eventLoopGroup = MultiThreadedEventLoopGroup.shared
@@ -72,6 +78,10 @@ import _ResourceProcessing
       address: .hostPort(host: "127.0.0.1", port: 6170)
     )
     analyzer = Analyzer(group: eventLoopGroup, logger: logger, connectionTransmissionService: pulse)
+
+    #if os(macOS)
+      analyzer.processes = PHT
+    #endif
   }
 
   /// Start analyzer tunnel.
@@ -196,8 +206,36 @@ import _ResourceProcessing
         SocketAddress(
           ipAddress: newProfile.socksListenAddress, port: newProfile.socksListenPort ?? 6153)
       ))
+
+    #if os(macOS)
+      let proxySettings = NEProxySettings()
+      proxySettings.exceptionList = newProfile.exceptions
+      proxySettings.excludeSimpleHostnames = newProfile.excludeSimpleHostnames
+
+      if let port = newProfile.httpListenPort {
+        proxySettings.httpEnabled = true
+        proxySettings.httpServer = .init(address: newProfile.httpListenAddress, port: port)
+        proxySettings.httpsEnabled = true
+        proxySettings.httpsServer = .init(address: newProfile.httpListenAddress, port: port)
+      }
+
+      if let port = newProfile.socksListenPort {
+        proxySettings.socksEnabled = true
+        proxySettings.socksServer = .init(address: newProfile.socksListenAddress, port: port)
+      }
+
+      try await PHT.setNWProtocolProxies(
+        processName: ProcessInfo.processInfo.processName,
+        options: proxySettings
+      )
+    #endif
+
     await setForwardProtocol(newProfile.asForwardProtocol())
     await setForwardingRules(newProfile.asForwardingRules())
     try await setDecryptionSSLPKCS12Bundle(newProfile.asDecryptionPKCS12Bundle())
+  }
+
+  public func setProtocolProxies(_ options: NEProtocolProxies.Options) async throws {
+    try await PHT.setNWProtocolProxies(processName: processName, options: options)
   }
 }

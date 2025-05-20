@@ -31,23 +31,27 @@
         Dashboard(data)
           .navigationSplitViewColumnWidth(235)
       } detail: {
-        VSplitView {
-          RecentConnections(data, selection: $connection)
+        #if os(macOS)
+          VSplitView {
+            RecentConnections(data, selection: $connection)
 
-          if let connection {
-            ConnectionDetail(connection)
-              .padding(.horizontal)
-              .padding(.vertical, 8)
-              .frame(minHeight: 260, maxHeight: .infinity, alignment: .top)
+            if let connection {
+              ConnectionDetail(connection)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .frame(minHeight: 260, maxHeight: .infinity, alignment: .top)
+            }
           }
-        }
-        .frame(minWidth: 835)
+          .frame(minWidth: 835)
+        #else
+          RecentConnections(data, selection: $connection)
+        #endif
       }
     }
   }
 
   #if DEBUG
-    @available(iOS 18.0, macOS 15.0, *)
+    @available(iOS 17.0, macOS 14.0, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)

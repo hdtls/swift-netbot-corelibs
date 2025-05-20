@@ -8,8 +8,7 @@
   import AnlzrReports
 
   @available(swift 5.9)
-  @available(macOS 14.0, *)
-  @available(iOS, unavailable)
+  @available(iOS 17.0, macOS 14.0, *)
   @available(tvOS, unavailable)
   @available(watchOS, unavailable)
   @available(visionOS, unavailable)
@@ -45,20 +44,23 @@
               NavigationLink("All Clients", value: ConnectionFilter.client(nil))
             }
             Section("Local Clients") {
-              ForEach(data.processes, id: \.taskIdentifier) { connection in
-                NavigationLink(value: ConnectionFilter.client(connection.processReport.processName))
-                {
-                  Label(
-                    title: {
-                      Text(connection.processReport.processName ?? "Unknown")
-                    },
-                    icon: {
-                      connection.processReport.processIcon
-                        .frame(width: 20, height: 20)
-                    }
-                  )
+              #if os(macOS)
+                ForEach(data.processes, id: \.taskIdentifier) { connection in
+                  NavigationLink(
+                    value: ConnectionFilter.client(connection.processReport.processName)
+                  ) {
+                    Label(
+                      title: {
+                        Text(connection.processReport.processName ?? "Unknown")
+                      },
+                      icon: {
+                        connection.processReport.processIcon
+                          .frame(width: 20, height: 20)
+                      }
+                    )
+                  }
                 }
-              }
+              #endif
             }
             Section("Remote Clients") {
             }
@@ -85,8 +87,7 @@
 
   #if DEBUG
     @available(swift 5.9)
-    @available(macOS 14.0, *)
-    @available(iOS, unavailable)
+    @available(iOS 17.0, macOS 14.0, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)

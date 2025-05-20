@@ -58,6 +58,7 @@ let package = Package(
         "_PersistentStore",
         "_ResourceProcessing",
         "CoWOptimization",
+        "NEXPCService",
         .product(name: "Anlzr", package: "swift-netbot-essentials"),
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "NIOCore", package: "swift-nio"),
