@@ -22,6 +22,6 @@ public macro _cowOptimization() =
 public macro _cowOptimizationTracked() =
   #externalMacro(module: "CoWOptimizationMacros", type: "CoWOptimizationTrackedMacro")
 
-@attached(accessor)
+@attached(peer)
 public macro _cowOptimizationIgnored() =
   #externalMacro(module: "CoWOptimizationMacros", type: "CoWOptimizationIgnoredMacro")

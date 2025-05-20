@@ -152,11 +152,12 @@ public struct CoWOptimizationTrackedMacro: AccessorMacro {
   }
 }
 
-public struct CoWOptimizationIgnoredMacro: AccessorMacro {
+public struct CoWOptimizationIgnoredMacro: PeerMacro {
   public static func expansion(
-    of node: AttributeSyntax, providingAccessorsOf declaration: some DeclSyntaxProtocol,
+    of node: AttributeSyntax,
+    providingPeersOf declaration: some DeclSyntaxProtocol,
     in context: some MacroExpansionContext
-  ) throws -> [AccessorDeclSyntax] {
+  ) throws -> [DeclSyntax] {
     return []
   }
 }
