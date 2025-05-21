@@ -29,7 +29,11 @@
       public var dnsSettings = AnyDNSSettings(servers: [])
 
       /// Exceptions use for system proxy.
-      public var exceptions: [String] = []
+      public var exceptions: [String] {
+        get { _exceptions.split(separator: ",").map(String.init) }
+        set { _exceptions = newValue.joined(separator: ",") }
+      }
+      public var _exceptions: String = ""
 
       /// Http listen address use for system http proxy.
       public var httpListenAddress = "0.0.0.0"
@@ -50,7 +54,11 @@
       public var skipCertificateVerification = false
 
       /// Hostnames that should perform MitM.
-      public var hostnames: [String] = []
+      public var hostnames: [String] {
+        get { _hostnames.split(separator: ",").map(String.init) }
+        set { _hostnames = newValue.joined(separator: ",") }
+      }
+      public var _hostnames: String = ""
 
       /// Base64 encoded CA P12 bundle.
       public var base64EncodedP12String = ""
