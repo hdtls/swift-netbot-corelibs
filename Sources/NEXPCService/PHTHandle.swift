@@ -174,6 +174,9 @@
           processInfo.processBundleURL = app.bundleURL
           processInfo.processExecutableURL = app.executableURL
         } else {
+          // Because the pbi_name may be truncated to 31 chars, so when
+          // length of pbi_name is great than 31, we will move to use the
+          // last component of executable path as process name.
           var bsdinfo = proc_bsdinfo()
           let size = proc_pidinfo(
             processIdentifier, PROC_PIDTBSDINFO, 0, &bsdinfo,
@@ -190,6 +193,9 @@
           if proc_pidpath(processIdentifier, &buffer, PROC_PIDPATHINFO_MAXSIZE) > 0 {
             let filePath = String(cString: buffer, encoding: .utf8) ?? ""
             processInfo.processExecutableURL = filePath.isEmpty ? nil : URL(filePath: filePath)
+            if processInfo.processName == nil || (processInfo.processName?.count ?? 0) >= 31 {
+              processInfo.processName = processInfo.processExecutableURL?.lastPathComponent
+            }
           }
         }
         return processInfo
