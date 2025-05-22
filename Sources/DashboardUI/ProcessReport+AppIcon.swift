@@ -14,19 +14,25 @@
       if let data = processIconTIFFRepresentation, let image = NSImage(data: data) {
         return image
       }
-      guard let url = processBundleURL ?? processExecutableURL else {
+
+      if let url = processBundleURL {
+        if #available(macOS 13.0, *) {
+          return NSWorkspace.shared.icon(forFile: url.path())
+        } else {
+          // Fallback on earlier versions
+          return NSWorkspace.shared.icon(forFile: url.path)
+        }
+      }
+
+      if let url = processExecutableURL {
         if #available(macOS 11.0, *) {
           return NSWorkspace.shared.icon(for: .unixExecutable)
         } else {
           return NSWorkspace.shared.icon(forFileType: "public.unix-executable")
         }
       }
-      if #available(macOS 13.0, *) {
-        return NSWorkspace.shared.icon(forFile: url.path())
-      } else {
-        // Fallback on earlier versions
-        return NSWorkspace.shared.icon(forFile: url.path)
-      }
+
+      return NSImage()
     }
 
     public var processIcon: some View {
