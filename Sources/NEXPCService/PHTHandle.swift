@@ -165,8 +165,54 @@
     }
 
     public func processInfo(address: UInt16) async throws -> ProcessInfo? {
-      for app in NSWorkspace.shared.runningApplications {
-        var size = Int(proc_pidinfo(app.processIdentifier, PROC_PIDLISTFDS, 0, nil, 0))
+      func processInfo(processIdentifier: pid_t) -> ProcessInfo {
+        let processInfo = ProcessInfo()
+        processInfo.processIdentifier = processIdentifier
+
+        if let app = NSRunningApplication(processIdentifier: processIdentifier) {
+          processInfo.processName = app.localizedName
+          processInfo.processBundleURL = app.bundleURL
+          processInfo.processExecutableURL = app.executableURL
+        } else {
+          var bsdinfo = proc_bsdinfo()
+          let size = proc_pidinfo(
+            processIdentifier, PROC_PIDTBSDINFO, 0, &bsdinfo,
+            Int32(MemoryLayout<proc_bsdinfo>.stride)
+          )
+          if size == MemoryLayout<proc_bsdinfo>.stride {
+            processInfo.processName = withUnsafeBytes(of: &bsdinfo.pbi_name) {
+              String(cString: $0.bindMemory(to: CChar.self).baseAddress!)
+            }
+          }
+
+          let PROC_PIDPATHINFO_MAXSIZE: UInt32 = 4096
+          var buffer = [CChar](repeating: 0, count: Int(PROC_PIDPATHINFO_MAXSIZE))
+          if proc_pidpath(processIdentifier, &buffer, PROC_PIDPATHINFO_MAXSIZE) > 0 {
+            let filePath = String(cString: buffer, encoding: .utf8) ?? ""
+            processInfo.processExecutableURL = filePath.isEmpty ? nil : URL(filePath: filePath)
+          }
+        }
+        return processInfo
+      }
+
+      var listpids = proc_listpids(UInt32(PROC_ALL_PIDS), 0, nil, 0)
+      guard listpids > 0 else {
+        return nil
+      }
+
+      let capacity = Int(listpids)
+      let pids = UnsafeMutablePointer<pid_t>.allocate(capacity: capacity)
+      defer { pids.deallocate() }
+
+      listpids = proc_listpids(UInt32(PROC_ALL_PIDS), 0, pids, Int32(capacity))
+
+      for i in 0..<Int(listpids) {
+        let processIdentifier = pids[i]
+        guard processIdentifier > 0 else {
+          continue
+        }
+
+        var size = Int(proc_pidinfo(processIdentifier, PROC_PIDLISTFDS, 0, nil, 0))
         guard size > 0 else {
           continue
         }
@@ -177,7 +223,7 @@
         defer { buffer.deallocate() }
 
         size =
-          Int(proc_pidinfo(app.processIdentifier, PROC_PIDLISTFDS, 0, buffer, Int32(size)))
+          Int(proc_pidinfo(processIdentifier, PROC_PIDLISTFDS, 0, buffer, Int32(size)))
           / MemoryLayout<proc_fdinfo>.stride
 
         for i in 0..<size {
@@ -187,29 +233,27 @@
 
           var fdinfo = socket_fdinfo()
           let rc = proc_pidfdinfo(
-            app.processIdentifier,
-            buffer[i].proc_fd,
-            PROC_PIDFDSOCKETINFO,
-            &fdinfo,
-            Int32(MemoryLayout<socket_fdinfo>.stride)
-          )
+            processIdentifier, buffer[i].proc_fd, PROC_PIDFDSOCKETINFO, &fdinfo,
+            Int32(MemoryLayout<socket_fdinfo>.stride))
           guard rc > 0 else {
             continue
           }
 
-          switch fdinfo.psi.soi_kind {
-          case Int32(SOCKINFO_TCP):
+          switch fdinfo.psi.soi_protocol {
+          case IPPROTO_TCP:
             let lport = UInt16(
-              truncatingIfNeeded: fdinfo.psi.soi_proto.pri_tcp.tcpsi_ini.insi_lport)
-            if lport.bigEndian == address {
-              let processInfo = ProcessInfo()
-              processInfo.processName = app.localizedName ?? ""
-              processInfo.processBundleURL = app.bundleURL
-              processInfo.processExecutableURL = app.executableURL
-              processInfo.processIdentifier = app.processIdentifier
-              processInfo.processIconTIFFRepresentation = app.icon?.tiffRepresentation
-              return processInfo
+              truncatingIfNeeded: fdinfo.psi.soi_proto.pri_tcp.tcpsi_ini.insi_lport
+            ).bigEndian
+            guard lport == address else {
+              continue
             }
+            return processInfo(processIdentifier: processIdentifier)
+          case IPPROTO_UDP:
+            let lport = UInt16(truncatingIfNeeded: fdinfo.psi.soi_proto.pri_in.insi_lport).bigEndian
+            guard lport == address else {
+              continue
+            }
+            return processInfo(processIdentifier: processIdentifier)
           default:
             continue
           }

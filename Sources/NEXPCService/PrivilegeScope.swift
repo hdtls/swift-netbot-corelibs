@@ -18,6 +18,7 @@
 
     private var privileges: NSXPCConnection!
     private var tc: NSXPCConnection!
+    private var isActive = false
 
     public let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "com.apple.xpc")
 
@@ -87,6 +88,10 @@
     ///
     /// Call this function to register helper tool.
     public func activate() async throws {
+      guard !isActive else {
+        return
+      }
+
       let plistName = "com.tenbits.netbot.sbd.plist"
 
       do {
@@ -96,6 +101,7 @@
           return
         }
         try await proxy.register(daemon: plistName)
+        isActive = true
       } catch {
         self.logger.error("Launch daemon \(plistName) register failure with error: \(error)")
         throw error
@@ -106,6 +112,8 @@
     ///
     /// Call this function to unregister helper tool.
     public func invalidate() async throws {
+      isActive = false
+
       try await setAppServiceHandleIfNeeded()
 
       let plistName = "com.tenbits.netbot.sbd.plist"

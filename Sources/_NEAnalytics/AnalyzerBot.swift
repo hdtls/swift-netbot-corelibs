@@ -234,8 +234,4 @@ import _ResourceProcessing
     await setForwardingRules(newProfile.asForwardingRules())
     try await setDecryptionSSLPKCS12Bundle(newProfile.asDecryptionPKCS12Bundle())
   }
-
-  public func setProtocolProxies(_ options: NEProtocolProxies.Options) async throws {
-    try await PHT.setNWProtocolProxies(processName: processName, options: options)
-  }
 }
