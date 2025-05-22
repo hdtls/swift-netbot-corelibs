@@ -67,7 +67,7 @@
               Text(
                 connection.processReport.processIdentifier == nil
                   ? "\(connection.processReport.processName ?? "Unknown")"
-                  : "\(connection.processReport.processName ?? "Unknown") (\(connection.processReport.processIdentifier!))"
+                  : "\(connection.processReport.processName ?? "Unknown") (\(String(connection.processReport.processIdentifier!)))"
               )
             } icon: {
               connection.processReport.processIcon
