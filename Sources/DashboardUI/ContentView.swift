@@ -31,21 +31,7 @@
         Dashboard(data)
           .navigationSplitViewColumnWidth(235)
       } detail: {
-        #if os(macOS)
-          VSplitView {
-            RecentConnections(data, selection: $connection)
-
-            if let connection {
-              ConnectionDetail(connection)
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                .frame(minHeight: 260, maxHeight: .infinity, alignment: .top)
-            }
-          }
-          .frame(minWidth: 835)
-        #else
-          RecentConnections(data, selection: $connection)
-        #endif
+        RecentConnections(data)
       }
     }
   }

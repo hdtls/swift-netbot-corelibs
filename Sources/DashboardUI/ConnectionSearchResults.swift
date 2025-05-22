@@ -14,24 +14,20 @@
   @available(visionOS, unavailable)
   struct ConnectionSearchResults: View {
 
-    @Binding private var selection: Connection?
-
-    #if os(macOS)
-      @State private var selectedConnectionID: Connection.ID?
-    #endif
+    @Binding private var selectedConnectionID: Connection.ID?
     @State private var sortOrder: [KeyPathComparator<Connection>] = []
 
     typealias Data = [Connection]
     private let data: Data
 
-    init(_ data: Data, selection: Binding<Connection?>) {
+    init(_ data: Data, selection: Binding<Connection.ID?>) {
       self.data = data
-      self._selection = selection
+      self._selectedConnectionID = selection
     }
 
     var body: some View {
       #if os(iOS)
-        List(data, selection: $selection) { connection in
+        List(data, selection: $selectedConnectionID) { connection in
           NavigationLink(value: connection) {
             VStack(alignment: .leading, spacing: 4) {
               if let host = connection.currentRequest.host(percentEncoded: false),
@@ -117,12 +113,6 @@
         } rows: {
           ForEach(data)
         }
-        .onChange(of: selectedConnectionID) {
-          selection = data.first(where: { $0.taskIdentifier == selectedConnectionID })
-        }
-        .onChange(of: data) { oldValue, newValue in
-          selection = data.first(where: { $0.taskIdentifier == selectedConnectionID })
-        }
       #else
         EmptyView()
       #endif
@@ -136,7 +126,7 @@
     @available(visionOS, unavailable)
     #Preview {
       @Previewable let data: [Connection] = []
-      @Previewable @State var selection: Connection?
+      @Previewable @State var selection: Connection.ID?
 
       ConnectionSearchResults(data, selection: $selection)
     }
