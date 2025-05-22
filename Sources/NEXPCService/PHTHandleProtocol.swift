@@ -262,6 +262,7 @@
       coder.encode(processName, forKey: CodingKeys.processName.rawValue)
       coder.encode(processBundleURL, forKey: CodingKeys.processBundleURL.rawValue)
       coder.encode(processExecutableURL, forKey: CodingKeys.processExecutableURL.rawValue)
+      coder.encode(processIdentifier, forKey: CodingKeys.processIdentifier.rawValue)
       coder.encode(
         processIconTIFFRepresentation, forKey: CodingKeys.processIconTIFFRepresentation.rawValue)
     }
