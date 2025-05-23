@@ -23,61 +23,37 @@
     private var lastLoadError: Error?
     private var managerLoadingTask: Task<Void, any Error>?
 
-    private var statusUpdatesTask: Task<Void, Never>?
-    private var configurationUpdatesTask: Task<Void, Never>?
-
-    private init() {
-      Task.detached(priority: .background) {
-        try await self.waitUntilLoaded()
-        await self.setupListenerTasksIfNeeded()
-      }
+    private var processName: String {
+      ProcessInfo.processInfo.processName
     }
+
+    private init() {}
 
     /// Start packet tunnel with specific options.
     public func startVPNTunnel(options: [String: Any]) async throws {
       do {
         try await waitUntilLoaded()
-        guard let manager else {
-          return
-        }
-        let session = manager.connection as! NETunnelProviderSession
-        switch session.status {
-        case .invalid: break
-        case .disconnected:
-          try session.startTunnel()
-        case .connecting: break
-        case .connected: break
-        case .reasserting: break
-        case .disconnecting:
-          try session.startTunnel()
-        @unknown default:
-          assertionFailure()
-        }
+        assert(manager != nil)
+
+        logger.trace("\(processName) VPN session start...")
+        let session = manager?.connection as? NETunnelProviderSession
+        try session?.startTunnel()
+        logger.trace("\(processName) VPN session start successfully")
       } catch {
-        logger.error("\(error)")
+        logger.error("\(processName) VPN session start failure with error: \(error)")
+        lastLoadError = error
         throw error
       }
     }
 
     /// Stop current running packet tunnel.
     public func stopVPNTunnel() async {
-      guard let manager else {
-        return
-      }
-      let session = manager.connection as! NETunnelProviderSession
-      switch session.status {
-      case .invalid: break
-      case .disconnected: break
-      case .connecting:
-        session.stopTunnel()
-      case .connected:
-        session.stopTunnel()
-      case .reasserting:
-        session.stopTunnel()
-      case .disconnecting: break
-      @unknown default:
-        assertionFailure()
-      }
+      let session = manager?.connection as? NETunnelProviderSession
+      session?.stopTunnel()
+      manager = nil
+      managerLoadingTask?.cancel()
+      managerLoadingTask = nil
+      lastLoadError = nil
     }
 
     @discardableResult
@@ -129,9 +105,8 @@
             let configuration = NETunnelProviderProtocol()
             configuration.serverAddress = "127.0.0.1"
             configuration.providerBundleIdentifier = bundleID
-            configuration.disconnectOnSleep = false
             manager.protocolConfiguration = configuration
-            manager.localizedDescription = "Netbot"
+            manager.localizedDescription = processName
             manager.isEnabled = true
             manager.isOnDemandEnabled = true
 
@@ -150,8 +125,6 @@
             try await manager.loadFromPreferences()
             self.manager = manager
           } catch {
-            logger.error("Failed to get tunnel provider managers: \(error)")
-            lastLoadError = error
             throw error
           }
           managerLoadingTask = nil
@@ -159,38 +132,6 @@
         managerLoadingTask = newTask
         try await newTask.value
       }
-    }
-
-    private func setupListenerTasksIfNeeded() {
-      let nc = NotificationCenter.default
-
-      if statusUpdatesTask == nil {
-        statusUpdatesTask = Task.detached(priority: .background) {
-          if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            for await _ in nc.notifications(named: .NEVPNStatusDidChange).map({ $0.name }) {
-              await self.handleVPNStatusUpdate()
-            }
-          }
-        }
-      }
-
-      if configurationUpdatesTask == nil {
-        configurationUpdatesTask = Task.detached(priority: .background) {
-          if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            for await _ in nc.notifications(named: .NEVPNConfigurationChange).map({ $0.name }) {
-              await self.handleVPNConfigurationUpdate()
-            }
-          }
-        }
-      }
-    }
-
-    private func handleVPNStatusUpdate() async {
-
-    }
-
-    private func handleVPNConfigurationUpdate() async {
-
     }
   }
 #endif
