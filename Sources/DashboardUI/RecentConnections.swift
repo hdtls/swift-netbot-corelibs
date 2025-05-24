@@ -15,38 +15,33 @@
   @available(visionOS, unavailable)
   struct RecentConnections: View {
 
-    typealias Data = RecentConnectionsControler
+    private typealias Element = Connection
 
     @AppStorage(Prefs.Name.enabledHTTPCapabilities, store: .applicationGroup)
     private var enabledHTTPCapabilities = CapabilityFlags()
 
+    @Environment(RecentConnectionsControler.self) private var connections
+    @Binding var options: ConnectionFilter?
+
     @State private var height = CGFloat.zero
     @State private var controlSize = CGSize.zero
-    @State var selection: Connection.ID?
-
-    private let data: Data
-
-    init(_ data: Data) {
-      self.data = data
-    }
+    @State private var selection: Element.ID?
 
     var body: some View {
       GeometryReader { geometry in
         VStack(spacing: 0) {
-          ConnectionSearchResults(data.searchResult, selection: $selection)
+          ConnectionSearchResults($options, selection: $selection)
 
           VStack(spacing: 0) {
             Divider()
             HStack {
               Button("Clear") {
-                Task {
-                  await data.erase()
-                }
+                connections.erase()
               }
 
               Button("Reload") {
                 Task {
-                  await data.update()
+                  await connections.update()
                 }
               }
 
@@ -132,13 +127,14 @@
             }
           }
 
-          if let connection = data.searchResult.first(where: { $0.taskIdentifier == selection }) {
-            ConnectionDetail(connection)
+          if let selection {
+            ConnectionDetail(selection)
               .padding(.horizontal)
               .padding(.vertical, 8)
               .frame(height: height, alignment: .top)
           } else {
-            Color.clear.frame(height: height)
+            EmptyView()
+              .frame(height: height)
           }
         }
         .onChange(of: selection) { _, n in
@@ -162,14 +158,13 @@
 
   #if DEBUG
     @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, *)
+    @available(iOS 18.0, macOS 15.0, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
-    #Preview {
-      @Previewable let data = RecentConnectionsControler(modelContainer: .makeSharedContext())
-
-      RecentConnections(data)
+    #Preview(traits: .persistentStore()) {
+      @Previewable @State var options: ConnectionFilter? = .none
+      RecentConnections(options: $options)
     }
   #endif
 #endif

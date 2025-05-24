@@ -14,23 +14,28 @@
   @available(visionOS, unavailable)
   struct ConnectionSearchResults: View {
 
-    @Environment(\.displayScale) private var displayScale
+    typealias Element = Connection
 
-    @Binding private var selectedConnectionID: Connection.ID?
+    @Binding private var selectedConnectionID: Element.ID?
+    @Environment(RecentConnectionsControler.self) private var connections
+    @State private var sortOrder: [KeyPathComparator<Element>] = [.init(\.taskIdentifier)]
 
-    @State private var sortOrder: [KeyPathComparator<Connection>] = []
+    private var searchResult: [Element] {
+      if let options {
+        return connections.search(tokens: [options])
+      }
+      return connections.search(tokens: [])
+    }
+    private let options: ConnectionFilter?
 
-    typealias Data = [Connection]
-    private let data: Data
-
-    init(_ data: Data, selection: Binding<Connection.ID?>) {
-      self.data = data
+    init(_ options: Binding<ConnectionFilter?>, selection: Binding<Element.ID?>) {
       self._selectedConnectionID = selection
+      self.options = options.wrappedValue
     }
 
     var body: some View {
       #if os(iOS)
-        List(data, selection: $selectedConnectionID) { connection in
+        List(searchResult, selection: $selectedConnectionID) { connection in
           NavigationLink(value: connection) {
             VStack(alignment: .leading, spacing: 4) {
               if let host = connection.currentRequest.host(percentEncoded: false),
@@ -50,7 +55,7 @@
         .navigationTitle("Recent Requests")
       #elseif os(macOS)
         Table(
-          of: Connection.self, selection: $selectedConnectionID, sortOrder: $sortOrder
+          of: Element.self, selection: $selectedConnectionID, sortOrder: $sortOrder
         ) {
           TableColumn("") { connection in
             ConnectionState(connection.state)
@@ -59,7 +64,7 @@
           .width(12)
           TableColumn("ID", value: \.taskIdentifier.description)
           TableColumn("Date") {
-            Text($0.earliestBeginDate, format: .dateTime.hour().minute().second()).equatable()
+            Text($0.earliestBeginDate, format: .dateTime.hour().minute().second())
           }
           TableColumn("Client") { connection in
             Label {
@@ -69,8 +74,7 @@
                   : "\(connection.processReport.processName ?? "Unknown") (\(String(connection.processReport.processIdentifier!)))"
               )
             } icon: {
-              connection.processReport.processIcon
-                .frame(width: 18 * displayScale, height: 18 * displayScale)
+              connection.processReport.processIcon.frame(width: 18, height: 18)
             }
           }
           TableColumn("Status", value: \.state.localizedName)
@@ -82,7 +86,7 @@
             )
           }
           Group {
-            TableColumn("Up") { (conn: Connection) in
+            TableColumn("Up") { (conn: Element) in
               Text(
                 Int64(
                   clamping: conn.dataTransferReport.aggregatePathReport
@@ -114,7 +118,7 @@
             Text($0.currentRequest.url())
           }
         } rows: {
-          ForEach(data)
+          ForEach(searchResult)
         }
       #else
         EmptyView()
@@ -127,11 +131,11 @@
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
-    #Preview {
-      @Previewable let data: [Connection] = []
+    #Preview(traits: .persistentStore()) {
+      @Previewable @State var options: ConnectionFilter?
       @Previewable @State var selection: Connection.ID?
 
-      ConnectionSearchResults(data, selection: $selection)
+      ConnectionSearchResults($options, selection: $selection)
     }
   #endif
 #endif

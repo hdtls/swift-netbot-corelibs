@@ -4,6 +4,7 @@
 
 #if canImport(SwiftUI)
   import Dashboard
+  import SwiftData
   import SwiftUI
   import AnlzrReports
 
@@ -13,15 +14,32 @@
   @available(watchOS, unavailable)
   @available(visionOS, unavailable)
   struct Dashboard: View {
-    @State private var filter: ConnectionFilter?
+
+    typealias Element = Connection
+
+    @Binding var options: ConnectionFilter?
+    @Environment(RecentConnectionsControler.self) private var connections
     @State private var segmented: ConnectionFilter = .client(nil)
 
-    typealias Data = RecentConnectionsControler
+    private var searchResult: [Element] { connections.search(tokens: []) }
 
-    private let data: Data
+    private var processes: [ProcessReport] {
+      var seen = Set<String?>()
+      return searchResult.compactMap {
+        seen.insert($0.processReport.processName).inserted ? $0.processReport : nil
+      }
+    }
 
-    init(_ data: Data) {
-      self.data = data
+    private var hostnames: [String] {
+      var seen = Set<String?>()
+      return searchResult.compactMap {
+        let hostname = $0.originalRequest.host(percentEncoded: false)
+        return seen.insert(hostname).inserted ? hostname : nil
+      }
+    }
+
+    init(options: Binding<ConnectionFilter?>) {
+      self._options = options
     }
 
     var body: some View {
@@ -37,7 +55,7 @@
         .padding(.horizontal)
         .frame(width: 185)
 
-        List(selection: $filter) {
+        List(selection: $options) {
           switch segmented {
           case .client:
             Section("All Clients") {
@@ -45,16 +63,16 @@
             }
             Section("Local Clients") {
               #if os(macOS)
-                ForEach(data.processes, id: \.taskIdentifier) { connection in
+                ForEach(processes, id: \.processName) { process in
                   NavigationLink(
-                    value: ConnectionFilter.client(connection.processReport.processName)
+                    value: ConnectionFilter.client(process.processName)
                   ) {
                     Label(
                       title: {
-                        Text(connection.processReport.processName ?? "Unknown")
+                        Text(process.processName ?? "Unknown")
                       },
                       icon: {
-                        connection.processReport.processIcon
+                        process.processIcon
                           .frame(width: 20, height: 20)
                       }
                     )
@@ -69,7 +87,7 @@
               NavigationLink("All Hosts", value: ConnectionFilter.hostname(nil))
             }
             Section("Remote Hosts") {
-              ForEach(data.hostnames, id: \.self) {
+              ForEach(hostnames, id: \.self) {
                 NavigationLink($0, value: ConnectionFilter.hostname($0))
               }
             }
@@ -77,25 +95,22 @@
         }
       }
       .onChange(of: segmented) {
-        filter = segmented
-      }
-      .onChange(of: filter) {
-        data.query(filter: filter)
+        options = segmented
       }
     }
   }
 
   #if DEBUG
     @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, *)
+    @available(iOS 18.0, macOS 15.0, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
-    #Preview {
-      @Previewable let data = RecentConnectionsControler(modelContainer: .makeSharedContext())
+    #Preview(traits: .persistentStore()) {
+      @Previewable @State var options: ConnectionFilter?
 
       NavigationStack {
-        Dashboard(data)
+        Dashboard(options: $options)
       }
     }
   #endif

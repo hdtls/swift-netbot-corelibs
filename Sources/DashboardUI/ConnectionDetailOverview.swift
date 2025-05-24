@@ -283,24 +283,4 @@
       #endif
     }
   }
-
-  #if DEBUG
-    @available(iOS 17.0, macOS 14.0, *)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(visionOS, unavailable)
-    #Preview {
-      @Previewable var data = Connection(
-        originalRequest: .init(address: .hostPort(host: "swift.org", port: .https)))
-
-      #if os(iOS)
-        List {
-          ConnectionDetail.Overview(data)
-        }
-      #elseif os(macOS)
-        ConnectionDetail.Overview(data)
-          .frame(width: 800)
-      #endif
-    }
-  #endif
 #endif

@@ -86,6 +86,7 @@
           }
         }
       }
+      try? modelContext.save()
     }
   }
 
@@ -98,11 +99,8 @@
 
     /// The ModelContainer for the ModelActor.
     /// The container that manages the app’s schema and model storage configuration.
-    public static var modelContainer: ModelContainer {
-      let schema = Schema(versionedSchema: V1.self)
-      let configuration: ModelConfiguration = .init(isStoredInMemoryOnly: true)
-      let modelContainer = try! ModelContainer(for: schema, configurations: [configuration])
-      return modelContainer
+    public var modelContainer: ModelContainer {
+      store.modelContainer
     }
 
     /// An error encountered during the most recent attempt to fetch data.
@@ -116,47 +114,10 @@
 
     public typealias Result = [Connection]
 
-    private var result: Result = []
-
-    private var filter: ConnectionFilter?
-
-    public var searchResult: Result {
-      guard let filter else {
-        return result
-      }
-
-      let searchResult = result.filter {
-        switch filter {
-        case .client(let processName):
-          guard let processName else {
-            return true
-          }
-          return $0.processReport.processName == processName
-
-        case .hostname(let hostname):
-          guard let hostname else {
-            return true
-          }
-          return $0.currentRequest.address?.host(percentEncoded: false) == hostname
-        }
-      }
-
-      return searchResult
+    public var result: Result {
+      _result
     }
-
-    public var processes: [Connection] {
-      var seen = Set<String>()
-      return result.filter {
-        guard let processName = $0.processReport.processName else {
-          return false
-        }
-        return seen.insert(processName).inserted
-      }
-    }
-
-    public var hostnames: [String] {
-      result.compactMap { $0.currentRequest.host(percentEncoded: false) }.removeDuplicates()
-    }
+    private var _result: Result = []
 
     private nonisolated let store: RecentConnectionsModelActor
 
@@ -165,7 +126,16 @@
 
     private let connection: NWConnection
 
-    public init(modelContainer: ModelContainer = modelContainer) {
+    @ObservationIgnored private var earliestBeginDate = Date.distantPast
+
+    nonisolated public convenience init() {
+      let schema = Schema(versionedSchema: V1.self)
+      let configuration: ModelConfiguration = .init(isStoredInMemoryOnly: true)
+      let modelContainer = try! ModelContainer(for: schema, configurations: [configuration])
+      self.init(modelContainer: modelContainer)
+    }
+
+    nonisolated public init(modelContainer: ModelContainer) {
       store = RecentConnectionsModelActor(modelContainer: modelContainer)
 
       let parameters = NWParameters.tcp
@@ -220,7 +190,7 @@
           do {
             let models = try JSONDecoder().decode([Connection].self, from: data)
             await self.store.insert(models)
-            await self.update()
+            await self.insert(models)
           } catch {
             assertionFailure("BUG IN NETBOT CORE, please report: illegal data format \(error)")
             self.logger.critical("decoding connection failure with error: \(error)")
@@ -231,12 +201,25 @@
       }
     }
 
-    /// Query results with a predicate.
-    @discardableResult
-    public func query(filter: ConnectionFilter?) -> Result {
-      self.filter = filter
+    public func search(tokens: [ConnectionFilter]) -> Result {
+      var predicate: ((Result.Element) -> Bool)?
+      if let token = tokens.first {
+        switch token {
+        case .client(let processName):
+          if let processName {
+            predicate = { $0.processReport.processName == processName }
+          }
+        case .hostname(let hostname):
+          if let hostname {
+            predicate = { $0.originalRequest.host(percentEncoded: false) == hostname }
+          }
+        }
+      }
 
-      return searchResult
+      if let predicate {
+        return result.filter(predicate)
+      }
+      return result
     }
 
     /// Updates the underlying value of the stored value.
@@ -254,33 +237,35 @@
       let fetchError = await store.fetchError
 
       Task { @MainActor in
+        self.earliestBeginDate = .distantPast
         self._fetchError = fetchError
-        self.result = result
+        self._result = result
       }
     }
 
-    private func update(_ models: [Connection]) async {
-      for model in models {
-        if let index = result.firstIndex(where: { $0.taskIdentifier == model.taskIdentifier }) {
-          result[index].originalRequest = model.originalRequest
-          result[index].currentRequest = model.currentRequest
-          result[index].response = model.response
-          result[index].earliestBeginDate = model.earliestBeginDate
-          result[index].taskDescription = model.taskDescription
-          result[index].tls = model.tls
-          result[index].state = model.state
-          result[index].establishmentReport = model.establishmentReport
-          result[index].forwardingReport = model.forwardingReport
-          result[index].dataTransferReport = model.dataTransferReport
-          result[index].processReport = model.processReport
+    private func insert(_ models: [Connection]) {
+      for model in models where model.earliestBeginDate > earliestBeginDate {
+        if let index = result.firstIndex(where: { $0.id == model.id }) {
+          self._result[index].originalRequest = model.originalRequest
+          self._result[index].currentRequest = model.currentRequest
+          self._result[index].response = model.response
+          self._result[index].earliestBeginDate = model.earliestBeginDate
+          self._result[index].taskDescription = model.taskDescription
+          self._result[index].tls = model.tls
+          self._result[index].state = model.state
+          self._result[index].establishmentReport = model.establishmentReport
+          self._result[index].forwardingReport = model.forwardingReport
+          self._result[index].dataTransferReport = model.dataTransferReport
+          self._result[index].processReport = model.processReport
         } else {
-          result.append(model)
+          self._result.append(model)
         }
       }
     }
 
-    public func erase() async {
-      result = []
+    public func erase() {
+      self.earliestBeginDate = Date.now
+      self._result = []
     }
   }
 #endif

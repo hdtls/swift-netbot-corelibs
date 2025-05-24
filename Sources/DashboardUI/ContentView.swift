@@ -13,38 +13,31 @@
   @available(watchOS, unavailable)
   @available(visionOS, unavailable)
   public struct ContentView: View {
+
     @AppStorage(Prefs.Name.enabledHTTPCapabilities, store: .applicationGroup)
     private var enabledHTTPCapabilities = CapabilityFlags()
 
-    @State private var connection: Connection?
+    @State private var options: ConnectionFilter?
 
-    public typealias Data = RecentConnectionsControler
-
-    private let data: Data
-
-    public init(_ data: Data = Data()) {
-      self.data = data
-    }
+    public init() {}
 
     public var body: some View {
       NavigationSplitView {
-        Dashboard(data)
+        Dashboard(options: $options)
           .navigationSplitViewColumnWidth(235)
       } detail: {
-        RecentConnections(data)
+        RecentConnections(options: $options)
       }
     }
   }
 
   #if DEBUG
-    @available(iOS 17.0, macOS 14.0, *)
+    @available(iOS 18.0, macOS 15.0, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
-    #Preview {
-      @Previewable let data = RecentConnectionsControler(modelContainer: .makeSharedContext())
-
-      ContentView(data)
+    #Preview(traits: .persistentStore()) {
+      ContentView()
     }
   #endif
 #endif
