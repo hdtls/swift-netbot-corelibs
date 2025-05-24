@@ -32,6 +32,8 @@
     @AppStorage(Prefs.Name.enabledHTTPCapabilities, store: .applicationGroup)
     private var enabledHTTPCapabilities: CapabilityFlags = []
 
+    @Environment(\.displayScale) private var displayScale
+
     @State private var segmented: SegmentedPickerTag = .overview
 
     typealias Data = Connection
@@ -72,7 +74,7 @@
         VStack(alignment: .leading) {
           HStack {
             data.processReport.processIcon
-              .frame(width: 29, height: 29)
+              .frame(width: 29 * displayScale, height: 29 * displayScale)
 
             VStack(alignment: .leading, spacing: 4) {
               Text(data.processReport.processName ?? "Unknown")

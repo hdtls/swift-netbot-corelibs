@@ -14,7 +14,10 @@
   @available(visionOS, unavailable)
   struct ConnectionSearchResults: View {
 
+    @Environment(\.displayScale) private var displayScale
+
     @Binding private var selectedConnectionID: Connection.ID?
+
     @State private var sortOrder: [KeyPathComparator<Connection>] = []
 
     typealias Data = [Connection]
@@ -67,7 +70,7 @@
               )
             } icon: {
               connection.processReport.processIcon
-                .frame(width: 18, height: 18)
+                .frame(width: 18 * displayScale, height: 18 * displayScale)
             }
           }
           TableColumn("Status", value: \.state.localizedName)

@@ -69,17 +69,22 @@
       }
     }
 
-    fileprivate func insert(_ connection: Connection) {
-      let term = connection.taskIdentifier
+    fileprivate func insert(_ connections: [Connection]) {
+      let term = connections.map { $0.taskIdentifier }
 
-      var persistentModel: Element
-      if let originalModel = query0(filter: #Predicate { $0.taskIdentifier == term }).first {
-        persistentModel = originalModel
-        persistentModel.mergeValues(connection)
-      } else {
-        persistentModel = Element()
-        persistentModel.mergeValues(connection)
-        modelContext.insert(persistentModel)
+      let models = query0(filter: #Predicate { term.contains($0.taskIdentifier) })
+
+      try? modelContext.transaction {
+        for connection in connections {
+          let index = models.firstIndex(where: { $0.taskIdentifier == connection.taskIdentifier })
+          if let index {
+            models[index].mergeValues(connection)
+          } else {
+            let persistentModel = Element()
+            persistentModel.mergeValues(connection)
+            modelContext.insert(persistentModel)
+          }
+        }
       }
     }
   }
@@ -213,8 +218,8 @@
 
         Task.detached {
           do {
-            let model = try JSONDecoder().decode(Connection.self, from: data)
-            await self.store.insert(model)
+            let models = try JSONDecoder().decode([Connection].self, from: data)
+            await self.store.insert(models)
             await self.update()
           } catch {
             assertionFailure("BUG IN NETBOT CORE, please report: illegal data format \(error)")
@@ -230,6 +235,7 @@
     @discardableResult
     public func query(filter: ConnectionFilter?) -> Result {
       self.filter = filter
+
       return searchResult
     }
 
@@ -250,6 +256,26 @@
       Task { @MainActor in
         self._fetchError = fetchError
         self.result = result
+      }
+    }
+
+    private func update(_ models: [Connection]) async {
+      for model in models {
+        if let index = result.firstIndex(where: { $0.taskIdentifier == model.taskIdentifier }) {
+          result[index].originalRequest = model.originalRequest
+          result[index].currentRequest = model.currentRequest
+          result[index].response = model.response
+          result[index].earliestBeginDate = model.earliestBeginDate
+          result[index].taskDescription = model.taskDescription
+          result[index].tls = model.tls
+          result[index].state = model.state
+          result[index].establishmentReport = model.establishmentReport
+          result[index].forwardingReport = model.forwardingReport
+          result[index].dataTransferReport = model.dataTransferReport
+          result[index].processReport = model.processReport
+        } else {
+          result.append(model)
+        }
       }
     }
 
