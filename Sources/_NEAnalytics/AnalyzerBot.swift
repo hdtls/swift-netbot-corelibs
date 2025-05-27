@@ -46,8 +46,6 @@ import _ResourceProcessing
 
   private var maxminddb: MaxMindDB?
 
-  private var pulse: ConnectionPulse
-
   private var processName: String { ProcessInfo.processInfo.processName }
 
   private init() {
@@ -73,33 +71,33 @@ import _ResourceProcessing
         mode: .mmap
       )
     #endif
-    pulse = ConnectionPulse(
+
+    analyzer = Analyzer(group: eventLoopGroup, logger: logger)
+
+    let pulse = ConnectionPulse(
       group: eventLoopGroup,
       address: .hostPort(host: "127.0.0.1", port: 6170)
     )
-    analyzer = Analyzer(group: eventLoopGroup, logger: logger, connectionTransmissionService: pulse)
+    analyzer.services.connectionTrasmission.use { _ in pulse }
 
     #if os(macOS)
-      analyzer.processes = PHT
+    analyzer.services.processReport.use { _ in PHT }
     #endif
   }
 
   /// Start analyzer tunnel.
   nonisolated public func startVPNTunnel() async throws {
+    #if os(macOS) && DEBUG
+      // TODO: REMOVE AFTER DAEMON DEVELOPMENT FINISHED
+      try? await PHT.invalidate()
+    #endif
+
     try await self.analyzer.run()
-    Task {
-      do {
-        try await self.pulse.run()
-      } catch {
-        print(error)
-      }
-    }
   }
 
   /// Stop current running analyzer tunnel.
   nonisolated public func stopVPNTunnel() async {
     try? await self.analyzer.shutdownGracefully()
-    try? await self.pulse.shutdownGracyfully()
   }
 
   /// Modify MaxMind GeoLite2-Country.mmdb.
