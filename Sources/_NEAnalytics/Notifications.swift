@@ -21,11 +21,11 @@
 
   extension UNUserNotificationCenter {
 
-    static var `default`: UNUserNotificationCenter {
+    public static var `default`: UNUserNotificationCenter {
       .current()
     }
 
-    func post(_ note: UNNotificationRequest) async {
+    public func post(_ note: UNNotificationRequest) async {
       do {
         let notificationCenter = UNUserNotificationCenter.current()
         let settings = await notificationCenter.notificationSettings()

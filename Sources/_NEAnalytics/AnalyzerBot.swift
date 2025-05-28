@@ -20,10 +20,6 @@ import _ResourceProcessing
   import Foundation
 #endif
 
-#if canImport(UserNotifications)
-  import UserNotifications
-#endif
-
 #if canImport(Network)
   import NIOTransportServices
 #else
@@ -39,7 +35,7 @@ import _ResourceProcessing
 
   public static let shared = AnalyzerBot()
 
-  nonisolated private let analyzer: Analyzer
+  nonisolated private let core: Analyzer
 
   nonisolated public let eventLoopGroup: any EventLoopGroup
   nonisolated public let logger = Logger(label: "AnalyzerBot")
@@ -72,16 +68,16 @@ import _ResourceProcessing
       )
     #endif
 
-    analyzer = Analyzer(group: eventLoopGroup, logger: logger)
+    core = Analyzer(group: eventLoopGroup, logger: logger)
 
     let pulse = ConnectionPulse(
       group: eventLoopGroup,
       address: .hostPort(host: "127.0.0.1", port: 6170)
     )
-    analyzer.services.connectionTrasmission.use { _ in pulse }
+    core.services.connectionTrasmission.use { _ in pulse }
 
     #if os(macOS)
-    analyzer.services.processReport.use { _ in PHT }
+      core.services.processReport.use { _ in PHT }
     #endif
   }
 
@@ -92,70 +88,39 @@ import _ResourceProcessing
       try? await PHT.invalidate()
     #endif
 
-    try await self.analyzer.run()
+    try await self.core.run()
   }
 
   /// Stop current running analyzer tunnel.
   nonisolated public func stopVPNTunnel() async {
-    try? await self.analyzer.shutdownGracefully()
+    try? await self.core.shutdownGracefully()
   }
 
   /// Modify MaxMind GeoLite2-Country.mmdb.
-  public func setGeoLite2DB(_ db: MaxMindDB) async throws {
+  public func setGeoLite2DB(_ db: MaxMindDB) async {
     maxminddb = db
-    await setForwardingRules(analyzer.forwardingRules)
+
+    // GEOIP rules are affected by the GeoLite2 country database, so
+    // we need reload rules.
+    await setForwardingRules(core.forwardingRules)
   }
 
   /// Modify Web and SOCKS proxy settings.
   private func setTunnelNetworkSettings(_ networkSettings: Analyzer.NetworkSettings) async throws {
-    try await analyzer.setTunnelNetworkSettings(networkSettings)
+    try await core.setTunnelNetworkSettings(networkSettings)
   }
 
   /// Modify outbound mode.
   public func setOutboundMode(_ outboundMode: OutboundMode) async {
-    guard outboundMode != analyzer.outboundMode else { return }
+    guard outboundMode != core.outboundMode else { return }
 
-    await self.analyzer.setOutboundMode(outboundMode)
+    await self.core.setOutboundMode(outboundMode)
     logger.info("Outbound mode has been changed to \(outboundMode.localizedName)")
-
-    #if canImport(UserNotifications)
-      Task.detached {
-        let content = UNMutableNotificationContent()
-        content.title = String(
-          localized: "Outbound Mode Changed",
-          comment: "The title for outbound mode change notification"
-        )
-        switch outboundMode {
-        case .direct:
-          content.body = String(
-            localized: "The outbound mode has been changed to Direct Outbound",
-            comment: "Outbound mode changed to Direct notification body"
-          )
-        case .globalProxy:
-          content.body = String(
-            localized: "The outbound mode has been changed to Global Proxy",
-            comment: "Outbound mode changed to Proxy notification body"
-          )
-        case .ruleBased:
-          content.body = String(
-            localized: "The outbound mode has been changed to Rule-based Proxy",
-            comment: "Outbound mode changed to Rule-based notification body"
-          )
-        }
-
-        let notification = UNNotificationRequest(
-          identifier: content.title,
-          content: content,
-          trigger: nil
-        )
-        await UNUserNotificationCenter.default.post(notification)
-      }
-    #endif
   }
 
   /// Modify global forward protocol.
   public func setForwardProtocol(_ forwardProtocol: any ForwardProtocolConvertible) async {
-    await analyzer.setForwardProtocol(forwardProtocol)
+    await core.setForwardProtocol(forwardProtocol)
   }
 
   /// Modify forwarding rules.
@@ -180,22 +145,34 @@ import _ResourceProcessing
 
       return $0
     }
-    await analyzer.setForwardingRules(forwardingRules)
+    await core.setForwardingRules(forwardingRules)
   }
 
   /// Modify enabled HTTP capabilities.
   public func setEnabledHTTPCapabilities(_ enabledHTTPCapabilities: CapabilityFlags) async {
-    await self.analyzer.setEnabledHTTPCapabilities(enabledHTTPCapabilities)
+    await self.core.setEnabledHTTPCapabilities(enabledHTTPCapabilities)
   }
 
   /// Modify HTTPS decryption PKCS#12 bundle.
   public func setDecryptionSSLPKCS12Bundle(_ sslPKCS12Bundle: NIOSSLPKCS12Bundle?) async {
-    guard sslPKCS12Bundle != analyzer.decryptionSSLPKCS12Bundle else { return }
-
-    await self.analyzer.setDecryptionSSLPKCS12Bundle(sslPKCS12Bundle)
+    await self.core.setDecryptionSSLPKCS12Bundle(sslPKCS12Bundle)
   }
 
-  /// Modify current analyzer settings using specific profile.
+  #if os(macOS)
+    public func setNWProtocolProxiesOptions(_ options: NEProtocolProxies.Options) async throws {
+      do {
+        try await PHT.setNWProtocolProxies(
+          processName: ProcessInfo.processInfo.processName,
+          options: options
+        )
+        logger.trace("System proxies has been changed to \(options)")
+      } catch {
+        logger.error("System proxies modification failure with error: \(error)")
+      }
+    }
+  #endif
+
+  /// Modify settings using specific profile.
   public func setProfile(_ newProfile: Profile) async throws {
     try await setTunnelNetworkSettings(
       (
@@ -204,29 +181,6 @@ import _ResourceProcessing
         SocketAddress(
           ipAddress: newProfile.socksListenAddress, port: newProfile.socksListenPort ?? 6153)
       ))
-
-    #if os(macOS)
-      let proxySettings = NEProxySettings()
-      proxySettings.exceptionList = newProfile.exceptions
-      proxySettings.excludeSimpleHostnames = newProfile.excludeSimpleHostnames
-
-      if let port = newProfile.httpListenPort {
-        proxySettings.httpEnabled = true
-        proxySettings.httpServer = .init(address: newProfile.httpListenAddress, port: port)
-        proxySettings.httpsEnabled = true
-        proxySettings.httpsServer = .init(address: newProfile.httpListenAddress, port: port)
-      }
-
-      if let port = newProfile.socksListenPort {
-        proxySettings.socksEnabled = true
-        proxySettings.socksServer = .init(address: newProfile.socksListenAddress, port: port)
-      }
-
-      try await PHT.setNWProtocolProxies(
-        processName: ProcessInfo.processInfo.processName,
-        options: proxySettings
-      )
-    #endif
 
     await setForwardProtocol(newProfile.asForwardProtocol())
     await setForwardingRules(newProfile.asForwardingRules())

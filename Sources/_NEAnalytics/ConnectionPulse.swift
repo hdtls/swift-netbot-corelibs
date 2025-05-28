@@ -4,9 +4,9 @@
 
 import Anlzr
 import AnlzrReports
-import NIOCore
 import NEAddressProcessing
 import NIOConcurrencyHelpers
+import NIOCore
 
 #if canImport(Network)
   import Network
@@ -18,9 +18,9 @@ import NIOConcurrencyHelpers
 #endif
 
 #if canImport(FoundationEssentials)
-import FoundationEssentials
+  import FoundationEssentials
 #else
-import Foundation
+  import Foundation
 #endif
 
 @Lockable final class ConnectionPulse: ConnectionTransmissionService, Sendable {
