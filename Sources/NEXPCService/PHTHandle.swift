@@ -143,11 +143,7 @@
           continue
         }
 
-        var optionsDictionary =
-          SCNetworkProtocolGetConfiguration(protocolProxies) as? [CFString: Any] ?? [:]
-        optionsDictionary.merge(options.options, uniquingKeysWith: { _, rhs in rhs })
-
-        guard SCNetworkProtocolSetConfiguration(protocolProxies, optionsDictionary as CFDictionary)
+        guard SCNetworkProtocolSetConfiguration(protocolProxies, options.options as CFDictionary)
         else {
           throw SCCopyLastError()
         }

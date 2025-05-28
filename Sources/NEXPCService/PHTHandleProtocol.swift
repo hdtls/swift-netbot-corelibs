@@ -128,19 +128,19 @@
     private var _exceptionList: [String]?
 
     var options: [CFString: Any] {
-      [
-        kCFNetworkProxiesHTTPEnable: httpEnabled ? 1 : 0,
-        kCFNetworkProxiesHTTPProxy: httpsServer?.address as Any,
-        kCFNetworkProxiesHTTPPort: httpServer?.port as Any,
-        kCFNetworkProxiesHTTPSEnable: httpEnabled ? 1 : 0,
-        kCFNetworkProxiesHTTPSProxy: httpsServer?.address as Any,
-        kCFNetworkProxiesHTTPSPort: httpsServer?.port as Any,
-        kCFNetworkProxiesSOCKSEnable: socksEnabled ? 1 : 0,
-        kCFNetworkProxiesSOCKSProxy: socksServer?.address as Any,
-        kCFNetworkProxiesSOCKSPort: socksServer?.port as Any,
-        kCFNetworkProxiesExcludeSimpleHostnames: excludeSimpleHostnames ? 1 : 0,
-        kCFNetworkProxiesExceptionsList: exceptionList as Any,
-      ]
+      var options: [CFString: Any] = [:]
+      options[kCFNetworkProxiesHTTPEnable] = httpEnabled ? 1 : 0
+      options[kCFNetworkProxiesHTTPProxy] = httpsServer?.address
+      options[kCFNetworkProxiesHTTPPort] = httpServer?.port
+      options[kCFNetworkProxiesHTTPSEnable] = httpEnabled ? 1 : 0
+      options[kCFNetworkProxiesHTTPSProxy] = httpsServer?.address
+      options[kCFNetworkProxiesHTTPSPort] = httpsServer?.port
+      options[kCFNetworkProxiesSOCKSEnable] = socksEnabled ? 1 : 0
+      options[kCFNetworkProxiesSOCKSProxy] = socksServer?.address
+      options[kCFNetworkProxiesSOCKSPort] = socksServer?.port
+      options[kCFNetworkProxiesExcludeSimpleHostnames] = excludeSimpleHostnames ? 1 : 0
+      options[kCFNetworkProxiesExceptionsList] = exceptionList
+      return options
     }
 
     private let _lock = NSLock()
