@@ -348,7 +348,7 @@
       }
     }
 
-    public func shutdownGracefully() async throws {
+    public func shutdownGracefully() async {
       lock.withLock {
         for cancellable in cancellables {
           cancellable.cancel()

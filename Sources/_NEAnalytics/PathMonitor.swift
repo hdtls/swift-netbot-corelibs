@@ -3,6 +3,7 @@
 //
 
 #if canImport(Network)
+  import Anlzr
   import Darwin
   import Logging
   import Network
@@ -17,7 +18,7 @@
   #endif
 
   /// A wrap class for `NWPathMonitor` providing default `pathUpdateHandler`.
-  final public class PathMonitor: Sendable {
+  @Lockable final public class PathMonitor: Sendable {
 
     private let pathMonitor: NWPathMonitor
 
@@ -27,21 +28,14 @@
     }
 
     /// Set a block to be called when the network path changes. pathUpdateHandler will not be called until `start` is called.
-    @preconcurrency final public var pathUpdateHandler: (@Sendable (_ newPath: NWPath) -> Void)? {
-      get {
-        pathMonitor.pathUpdateHandler
-      }
-      set {
-        pathMonitor.pathUpdateHandler = newValue
-      }
-    }
+    @preconcurrency final public var pathUpdateHandler: (@Sendable (_ newPath: NWPath) -> Void)?
 
     /// Get queue used for delivering the pathUpdateHandler block.
     /// If the path monitor has not yet been started, the queue will be nil. Once the
     /// path monitor has been started, the queue will be non-nil.
     final public var queue: DispatchQueue? { pathMonitor.queue }
 
-    private let expiredPath: NIOLockedValueBox<(String, String)>
+    private var expiredPath: (String, String)
 
     private let logger = Logger(label: "path-monitor")
 
@@ -50,8 +44,9 @@
     /// general use by applications.
     public init() {
       self.pathMonitor = NWPathMonitor()
-      self.expiredPath = NIOLockedValueBox<(String, String)>(("", ""))
-      pathMonitor.pathUpdateHandler = pathUpdateHandler
+      self._pathUpdateHandler = .init(nil)
+      self._expiredPath = .init(("", ""))
+      self.pathMonitor.pathUpdateHandler = pathUpdateHandler0
     }
 
     /// Start the path monitor and set a queue on which path updates
@@ -59,18 +54,22 @@
     /// Start should only be called once on a monitor, and multiple calls to start will
     /// be ignored.
     /// Once started, the path monitor must be explicitly cancelled when it is no longer needed.
-    public func startMonitoring() async throws {
-      pathMonitor.start(queue: .global(qos: .background))
+    public func run() async throws {
+      pathMonitor.start(queue: .global())
     }
 
     /// Cancel the path monitor, after which point no more path updates will
     /// be delivered.
-    public func stopMonitoring() async {
+    public func shutdownGracefully() async {
       pathMonitor.cancel()
     }
 
-    private func pathUpdateHandler(_ path: NWPath) {
+    private func pathUpdateHandler0(_ path: NWPath) {
       Task.detached {
+        self.queue?.async {
+          self.pathUpdateHandler?(path)
+        }
+
         #if os(macOS)
           let ssid = CWWiFiClient.shared().interface()?.ssid()
         #else
@@ -94,11 +93,10 @@
         guard let ssid, let address = addresses.first else {
           return
         }
-        let expiredPath = self.expiredPath.withLockedValue { $0 }
-        guard ssid != expiredPath.0 || address != expiredPath.1 else {
+        guard ssid != self.expiredPath.0 || address != self.expiredPath.1 else {
           return
         }
-        self.expiredPath.withLockedValue { $0 = (ssid, address) }
+        self.expiredPath = (ssid, address)
 
         self.logger.info("Network has been changed to \(ssid), New IP address: \(address)")
 

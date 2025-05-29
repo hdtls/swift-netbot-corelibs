@@ -82,7 +82,7 @@ import _ResourceProcessing
   }
 
   /// Start analyzer tunnel.
-  nonisolated public func startVPNTunnel() async throws {
+  public func run() async throws {
     #if os(macOS) && DEBUG
       // TODO: REMOVE AFTER DAEMON DEVELOPMENT FINISHED
       try? await PHT.invalidate()
@@ -92,7 +92,7 @@ import _ResourceProcessing
   }
 
   /// Stop current running analyzer tunnel.
-  nonisolated public func stopVPNTunnel() async {
+  public func shutdownGracefully() async {
     try? await self.core.shutdownGracefully()
   }
 
