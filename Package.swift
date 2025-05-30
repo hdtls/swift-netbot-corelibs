@@ -56,6 +56,7 @@ let package = Package(
         "_DNSSupport",
         "_PreferenceSupport",
         "_ProfileSupport",
+        "CNELwIP",
         "CoWOptimization",
         "_PrivilegeSupport",
         .product(name: "Anlzr", package: "swift-netbot-essentials"),
@@ -89,6 +90,7 @@ let package = Package(
         .product(name: "Logging", package: "swift-log"),
       ]
     ),
+    .target(name: "CNELwIP"),
     .target(name: "CoWOptimization", dependencies: ["CoWOptimizationMacros"]),
     .target(
       name: "Dashboard",

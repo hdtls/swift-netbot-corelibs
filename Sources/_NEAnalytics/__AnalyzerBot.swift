@@ -56,8 +56,14 @@ public actor __AnalyzerBot {
 
     for packetObject in await packetFlow.readPacketObjects() {
       for handle in handles {
-        if case .handled = try await handle.handleInput(packetObject) {
-          break
+        do {
+          if case .handled = try await handle.handleInput(packetObject) {
+            break
+          }
+        } catch {
+          // Drop packet.
+          logger.error("Packet object \(packetObject) input failure with error: \(error)")
+          continue
         }
       }
     }
