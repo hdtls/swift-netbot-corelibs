@@ -24,7 +24,7 @@
         }
       }
 
-      if let url = processExecutableURL {
+      if processExecutableURL != nil {
         if #available(macOS 11.0, *) {
           return NSWorkspace.shared.icon(for: .unixExecutable)
         } else {

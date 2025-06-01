@@ -529,9 +529,9 @@ extension LocalDNSProxy: _PrettyDNS.Resolver {
   }
 }
 
-extension LocalDNSProxy: @preconcurrency Anlzr.Resolver {
+extension LocalDNSProxy: Anlzr.Resolver {
 
-  func initiateAQuery(host: String, port: Int) -> EventLoopFuture<[SocketAddress]> {
+  nonisolated func initiateAQuery(host: String, port: Int) -> EventLoopFuture<[SocketAddress]> {
     eventLoopGroup.next().makeFutureWithTask {
       try await self.queryA(name: host).map {
         try SocketAddress(ipAddress: "\($0.data)", port: port)
@@ -539,7 +539,7 @@ extension LocalDNSProxy: @preconcurrency Anlzr.Resolver {
     }
   }
 
-  func initiateAAAAQuery(host: String, port: Int) -> EventLoopFuture<[SocketAddress]> {
+  nonisolated func initiateAAAAQuery(host: String, port: Int) -> EventLoopFuture<[SocketAddress]> {
     eventLoopGroup.next().makeFutureWithTask {
       try await self.queryAAAA(name: host).map {
         try SocketAddress(ipAddress: "\($0.data)", port: port)
@@ -547,11 +547,11 @@ extension LocalDNSProxy: @preconcurrency Anlzr.Resolver {
     }
   }
 
-  func cancelQueries() {}
+  nonisolated func cancelQueries() {}
 }
 
 #if !canImport(Network)
-  extension LocalDNSProxy: @preconcurrency NIOPosix.Resolver {}
+  extension LocalDNSProxy: NIOPosix.Resolver {}
 #endif
 
 private struct Expirable<Record: ResourceRecord>: Sendable {

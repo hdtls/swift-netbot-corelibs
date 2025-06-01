@@ -3,15 +3,15 @@
 //
 
 #if canImport(Darwin)
-  import Atomics
   import Anlzr
   import AnlzrReports
-  import HTTPTypes
-  import Testing
+  import Atomics
   import Foundation
-  import NIOTransportServices
-  import _PersistentStore
+  import HTTPTypes
   import Logging
+  import NIOTransportServices
+  import Testing
+  import _PersistentStore
 
   @testable import _NEAnalytics
 
@@ -93,7 +93,7 @@
         #expect(delegate.autoReloadOutboundModeCalls.load(ordering: .relaxed) == 1)
         #expect(delegate.autoReloadProfileCalls.load(ordering: .relaxed) == 1)
 
-        try await autoreload.shutdownGracefully()
+        await autoreload.shutdownGracefully()
 
         autoreload.enabledHTTPCapabilities = .httpsDecryption
         #expect(delegate.autoReloadEnabledHTTPCapabilitiesCalls.load(ordering: .relaxed) == 1)
@@ -129,7 +129,7 @@
         #expect(delegate.autoReloadOutboundModeCalls.load(ordering: .relaxed) == 1)
         #expect(delegate.autoReloadProfileCalls.load(ordering: .relaxed) == 1)
 
-        try await autoreload.shutdownGracefully()
+        await autoreload.shutdownGracefully()
 
         try await autoreload.run()
         #expect(delegate.autoReloadEnabledHTTPCapabilitiesCalls.load(ordering: .relaxed) == 2)

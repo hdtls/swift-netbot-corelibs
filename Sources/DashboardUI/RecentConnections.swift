@@ -138,7 +138,7 @@
           }
         }
         .onChange(of: selection) { _, n in
-          if let n {
+          if n != nil {
             openDetails(at: height >= _openDetails ? height : _openDetails)
           } else {
             openDetails(at: 0)

@@ -184,6 +184,7 @@
             }
           }
 
+          // swift-format-ignore: AlwaysUseLowerCamelCase
           let PROC_PIDPATHINFO_MAXSIZE: UInt32 = 4096
           var buffer = [CChar](repeating: 0, count: Int(PROC_PIDPATHINFO_MAXSIZE))
           if proc_pidpath(processIdentifier, &buffer, PROC_PIDPATHINFO_MAXSIZE) > 0 {

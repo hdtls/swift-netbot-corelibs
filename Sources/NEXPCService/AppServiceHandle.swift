@@ -232,7 +232,7 @@
     }
 
     public func setupAuthorizationRights() async throws {
-      guard let authorizationRef else {
+      guard authorizationRef != nil else {
         throw NSError(domain: NSOSStatusErrorDomain, code: Int(errAuthorizationInvalidRef))
       }
     }
