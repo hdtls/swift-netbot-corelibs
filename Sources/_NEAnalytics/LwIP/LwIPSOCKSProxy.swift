@@ -16,25 +16,10 @@ import _DNSSupport
   import NIOPosix
 #endif
 
-let __workq: DispatchQueue = {
-  let label = "com.tenbits.LwIP-core-workq"
-  let q = DispatchQueue(label: label)
-  q.setSpecific(key: DispatchQueue.inQueuekey, value: label)
-  return q
-}()
+final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
 
-extension DispatchQueue {
-  fileprivate static let inQueuekey = DispatchSpecificKey<String>()
-  var inQueue: Bool {
-    DispatchQueue.getSpecific(key: Self.inQueuekey) == "com.tenbits.LwIP-core-workq"
-  }
-}
-
-final class LwIPStack: PacketHandleProtocol, @unchecked Sendable {
-
-  public func runIfActive() async throws {
-    try await run()
-  }
+  private let group: any EventLoopGroup
+  private let eventLoop: any EventLoop
 
   private let listener: LwIPListener
 
@@ -45,14 +30,18 @@ final class LwIPStack: PacketHandleProtocol, @unchecked Sendable {
   public let packetFlow: any PacketTunnelFlow
   let dns: LocalDNSProxy
 
-  init(packetFlow: any PacketTunnelFlow, dns: LocalDNSProxy) {
+  init(group: any EventLoopGroup = .shared, packetFlow: any PacketTunnelFlow, dns: LocalDNSProxy) {
+    let eventLoop = group.any()
+    self.eventLoop = eventLoop
+
+    self.group = group
     self.packetFlow = packetFlow
     self.dns = dns
 
     // Configure network interface in LwIP
     self.device = UnsafeMutablePointer.allocate(capacity: MemoryLayout<netif>.size)
     self.device.initialize(to: .init())
-    self.listener = LwIPListener()
+    self.listener = LwIPListener(eventLoop: eventLoop, group: eventLoop)
     self.listener.newConnectionHandler = newConnectionHandler
     self.initialize()
   }
@@ -60,6 +49,10 @@ final class LwIPStack: PacketHandleProtocol, @unchecked Sendable {
   deinit {
     device.deinitialize(count: MemoryLayout<netif>.size)
     device.deallocate()
+  }
+
+  public func runIfActive() async throws {
+    try await run()
   }
 
   public func run() async throws {
@@ -85,10 +78,10 @@ final class LwIPStack: PacketHandleProtocol, @unchecked Sendable {
         self.device.pointee.input(p, self.device)
       }
     }
-    if __workq.inQueue {
+    if self.eventLoop.inEventLoop {
       execute()
     } else {
-      __workq.sync(execute: execute)
+      self.eventLoop.execute(execute)
     }
     return .handled
   }
@@ -114,7 +107,7 @@ final class LwIPStack: PacketHandleProtocol, @unchecked Sendable {
               return ERR_OK
             }
 
-            let stack = Unmanaged<LwIPStack>.fromOpaque(opaquePtr).takeUnretainedValue()
+            let stack = Unmanaged<LwIPSOCKSProxy>.fromOpaque(opaquePtr).takeUnretainedValue()
 
             var byteBuffer = ByteBuffer()
             byteBuffer.writeWithUnsafeMutableBytes(minimumWritableBytes: Int(data.pointee.tot_len))
@@ -140,10 +133,10 @@ final class LwIPStack: PacketHandleProtocol, @unchecked Sendable {
       netif_set_up(self.device)
     }
 
-    if __workq.inQueue {
+    if self.eventLoop.inEventLoop {
       execute()
     } else {
-      __workq.sync(execute: execute)
+      self.eventLoop.execute(execute)
     }
   }
 

@@ -27,14 +27,18 @@ public actor __AnalyzerBot {
     self.packetFlow = packetFlow
     self.dnsServer = dnsServer
     self.additionalDNSServers = additionalDNSServers.map { .hostPort(host: .ipv4($0), port: 53) }
+
+    let dns = LocalDNSProxy(
+      group: group,
+      packetFlow: packetFlow,
+      server: dnsServer,
+      additionalServers: additionalDNSServers,
+      availableIPPool: availableIPPool
+    )
+
     self.handles = [
-      LocalDNSProxy(
-        group: group,
-        packetFlow: packetFlow,
-        server: dnsServer,
-        additionalServers: additionalDNSServers,
-        availableIPPool: availableIPPool
-      )
+      dns,
+      LwIPSOCKSProxy(packetFlow: packetFlow, dns: dns),
     ]
   }
 

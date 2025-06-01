@@ -6,21 +6,73 @@ import Anlzr
 import CNELwIP
 import NEAddressProcessing
 import NIOConcurrencyHelpers
+import NIOCore
 
-@Lockable final class LwIPListener: @unchecked Sendable {
+final class LwIPListener: @unchecked Sendable {
 
-  public var localAddress: Address?
+  var localAddress: Address? {
+    if self.eventLoop.inEventLoop {
+      return self._localAddress
+    } else {
+      return self._offEventLoopLock.withLock {
+        self._localAddress
+      }
+    }
+  }
+  private var _localAddress: Address?
 
-  public var remoteAddress: Address?
+  var remoteAddress: Address? {
+    if self.eventLoop.inEventLoop {
+      return self._remoteAddress
+    } else {
+      return self._offEventLoopLock.withLock {
+        self._remoteAddress
+      }
+    }
+  }
+  private var _remoteAddress: Address?
 
   private var wrapped: UnsafeMutablePointer<tcp_pcb>?
 
-  var queue: DispatchQueue?
+  private let eventLoop: any EventLoop
+  private let group: any EventLoopGroup
+
+  var queue: DispatchQueue? {
+    if self.eventLoop.inEventLoop {
+      return self._queue
+    } else {
+      return self._offEventLoopLock.withLock {
+        self._queue
+      }
+    }
+  }
+  private var _queue: DispatchQueue?
 
   @preconcurrency final var newConnectionHandler:
-    (
-      @Sendable (_ connection: LwIPConnection) -> Void
-    )?
+    (@Sendable (_ connection: LwIPConnection) -> Void)?
+  {
+    get {
+      if self.eventLoop.inEventLoop {
+        return self._newConnectionHandler
+      } else {
+        return self._offEventLoopLock.withLock {
+          self._newConnectionHandler
+        }
+      }
+    }
+    set {
+      if self.eventLoop.inEventLoop {
+        self._newConnectionHandler = newValue
+      } else {
+        self.eventLoop.execute {
+          self._newConnectionHandler = newValue
+        }
+      }
+    }
+  }
+  private var _newConnectionHandler: (@Sendable (_ state: LwIPConnection) -> Void)?
+
+  private let _offEventLoopLock = NIOLock()
 
   public var port: UInt16? {
     if let port = localAddress?.port {
@@ -29,37 +81,29 @@ import NIOConcurrencyHelpers
     return nil
   }
 
-  init() {
-    let wrapped = tcp_new()
-    self._wrapped = .init(wrapped)
-    self._newConnectionHandler = .init(nil)
-    self._queue = .init(nil)
-    self._localAddress = .init(nil)
-    self._remoteAddress = .init(nil)
+  init(eventLoop: any EventLoop, group: any EventLoopGroup) {
+    self.wrapped = tcp_new()
+    self.eventLoop = eventLoop
+    self.group = group
   }
 
   func start(queue: DispatchQueue) {
-    self.queue = queue
-
-    let execute = {
+    let execute: @Sendable () -> Void = {
       var ipaddr = ip_addr_any
       tcp_bind(self.wrapped, &ipaddr, 0)
       self.wrapped = tcp_listen_with_backlog(self.wrapped, UInt8(TCP_DEFAULT_LISTEN_BACKLOG))
 
       if let wrapped = self.wrapped {
-        self._localAddress.withLock {
-          guard let ipaddr = ipaddr_ntoa(&wrapped.pointee.local_ip) else {
-            return
-          }
+        if let ipaddr = ipaddr_ntoa(&wrapped.pointee.local_ip) {
           let port = wrapped.pointee.local_port
-          $0 = .hostPort(host: .init(String(cString: ipaddr)), port: .init(rawValue: port))
+          self._localAddress =
+            .hostPort(host: .init(String(cString: ipaddr)), port: .init(rawValue: port))
         }
-        self._remoteAddress.withLock {
-          guard let ipaddr = ipaddr_ntoa(&wrapped.pointee.remote_ip) else {
-            return
-          }
+
+        if let ipaddr = ipaddr_ntoa(&wrapped.pointee.remote_ip) {
           let port = wrapped.pointee.remote_port
-          $0 = .hostPort(host: .init(String(cString: ipaddr)), port: .init(rawValue: port))
+          self._remoteAddress =
+            .hostPort(host: .init(String(cString: ipaddr)), port: .init(rawValue: port))
         }
       }
 
@@ -71,7 +115,10 @@ import NIOConcurrencyHelpers
         }
 
         let listener = Unmanaged<LwIPListener>.fromOpaque(contextPtr).takeUnretainedValue()
-        let newConnection = LwIPConnection(wrapped: connection)
+        let newConnection = LwIPConnection(
+          socket: connection, parent: listener, eventLoop: listener.eventLoop
+        )
+        newConnection.start(queue: .global())
         listener.queue?.async {
           listener.newConnectionHandler?(newConnection)
         }
@@ -79,18 +126,22 @@ import NIOConcurrencyHelpers
       }
     }
 
-    if __workq.inQueue {
+    if self.eventLoop.inEventLoop {
+      self._queue = queue
       execute()
     } else {
-      __workq.sync(execute: execute)
+      self._offEventLoopLock.withLock {
+        self._queue = queue
+      }
+      self.eventLoop.execute(execute)
     }
   }
 
   func cancel() {
-    if __workq.inQueue {
+    if self.eventLoop.inEventLoop {
       tcp_close(self.wrapped)
     } else {
-      __workq.sync {
+      self.eventLoop.execute {
         tcp_close(self.wrapped)
       }
     }
