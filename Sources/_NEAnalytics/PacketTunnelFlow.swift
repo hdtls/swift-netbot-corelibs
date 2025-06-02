@@ -8,7 +8,7 @@ import NIOCore
   import NetworkExtension
 #endif
 
-public protocol PacketTunnelFlow: Sendable {
+public protocol PacketTunnelFlow: AnyObject, Sendable {
 
   func readPacketObjects() async -> [NEPacket]
 

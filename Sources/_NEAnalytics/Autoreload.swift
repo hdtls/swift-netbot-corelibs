@@ -73,16 +73,16 @@
 
     public weak var delegate: (any AutoreloadDelegate)?
 
-    private let logger: Logger
+    @LockableTracked public var logger: Logger
+
     private let eventLoopGroup: any EventLoopGroup
 
     public init(
       group: any EventLoopGroup,
-      logger: Logger,
       store: UserDefaults? = .applicationGroup
     ) {
       self.eventLoopGroup = group
-      self.logger = logger
+      self._logger = .init(Logger(label: "AnalyzerBot-autoreload"))
       self._profileURL = .init(wrappedValue: .profile, Prefs.Name.profileURL, store: store)
       self._profileLastContentModificationDate = .init(
         wrappedValue: .distantFuture,

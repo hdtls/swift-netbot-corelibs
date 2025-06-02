@@ -7,7 +7,7 @@
   import NIOCore
   import NIOTransportServices
 
-  typealias MultiThreadedEventLoopGroup = NIOTSEventLoopGroup
+  public typealias MultiThreadedEventLoopGroup = NIOTSEventLoopGroup
   typealias DatagramClientBootstrap = NIOTSDatagramBootstrap
 
   extension DatagramClientBootstrap {
@@ -24,12 +24,13 @@
 #else
   import NIOPosix
 
-  typealias MultiThreadedEventLoopGroup = NIOPosix.MultiThreadedEventLoopGroup
+  public typealias MultiThreadedEventLoopGroup = NIOPosix.MultiThreadedEventLoopGroup
   typealias DatagramClientBootstrap = DatagramBootstrap
 #endif
 
-extension MultiThreadedEventLoopGroup {
-  static var shared: MultiThreadedEventLoopGroup {
-    .singleton
+extension EventLoopGroup where Self == MultiThreadedEventLoopGroup {
+
+  public static var shared: any EventLoopGroup {
+    MultiThreadedEventLoopGroup.singleton
   }
 }

@@ -31,21 +31,18 @@ import _ResourceProcessing
 #endif
 
 /// Assistant to manage PacketTunnelProvider and NIO proxy servers backend.
-@globalActor public actor AnalyzerBot {
-
-  public static let shared = AnalyzerBot()
+public actor AnalyzerBot: Actor {
 
   nonisolated private let core: Analyzer
 
   nonisolated public let eventLoopGroup: any EventLoopGroup
-  nonisolated public let logger = Logger(label: "AnalyzerBot")
+
+  public var logger: Logger = Logger(label: "AnalyzerBot")
 
   private var maxminddb: MaxMindDB?
 
-  private var processName: String { ProcessInfo.processInfo.processName }
-
-  private init() {
-    eventLoopGroup = MultiThreadedEventLoopGroup.shared
+  public init(group: any EventLoopGroup = .shared) {
+    self.eventLoopGroup = group
 
     let dbFilename = "GeoLite2-Country.mmdb"
 
@@ -94,6 +91,10 @@ import _ResourceProcessing
   /// Stop current running analyzer tunnel.
   public func shutdownGracefully() async {
     try? await self.core.shutdownGracefully()
+  }
+
+  public func setLogger(_ logger: Logger) async {
+    self.logger = logger
   }
 
   /// Modify MaxMind GeoLite2-Country.mmdb.

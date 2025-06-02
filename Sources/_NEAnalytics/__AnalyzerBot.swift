@@ -12,22 +12,24 @@ public actor __AnalyzerBot {
   private nonisolated let allocator = ByteBufferAllocator()
   private nonisolated let isActive = ManagedAtomic<Bool>(false)
   private nonisolated let packetFlow: PacketTunnelFlow
-  private nonisolated let dnsServer: String
+  private nonisolated let dnsServer: IPv4Address
   private nonisolated let additionalDNSServers: [Address]
   private nonisolated let handles: [any PacketHandleProtocol & Sendable]
-  private nonisolated var logger: Logger { AnalyzerBot.shared.logger }
+  private nonisolated let logger: Logger = Logger(label: "AnalyzerBot")
 
   public init(
+    group: any EventLoopGroup,
     packetFlow: PacketTunnelFlow,
-    dnsServer: String,
-    additionalDNSServers: [Address],
+    dnsServer: IPv4Address,
+    additionalDNSServers: [IPv4Address],
     availableIPPool: AvailableIPPool
   ) {
     self.packetFlow = packetFlow
     self.dnsServer = dnsServer
-    self.additionalDNSServers = additionalDNSServers
+    self.additionalDNSServers = additionalDNSServers.map { .hostPort(host: .ipv4($0), port: 53) }
     self.handles = [
       LocalDNSProxy(
+        group: group,
         packetFlow: packetFlow,
         server: dnsServer,
         additionalServers: additionalDNSServers,
@@ -37,7 +39,7 @@ public actor __AnalyzerBot {
   }
 
   /// Start analyzer tunnel.
-  nonisolated public func startVPNTunnel() async throws {
+  public func run() async throws {
     isActive.store(true, ordering: .relaxed)
 
     for handle in handles {
@@ -64,7 +66,7 @@ public actor __AnalyzerBot {
   }
 
   /// Stop current running analyzer tunnel.
-  nonisolated public func stopVPNTunnel() async {
+  public func shutdownGracefully() async {
     isActive.store(false, ordering: .relaxed)
   }
 }

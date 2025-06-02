@@ -32,7 +32,7 @@ actor LocalDNSProxy: PacketHandleProtocol {
     LRUCache<String, Task<[Expirable<PTRRecord>], any Error>>
 
   internal nonisolated let packetFlow: any PacketTunnelFlow
-  private nonisolated let bindAddress: String
+  private nonisolated let bindAddress: IPv4Address
   private nonisolated let additionalServers: [Address]
   internal nonisolated let availableIPPool: AvailableIPPool
 
@@ -51,16 +51,16 @@ actor LocalDNSProxy: PacketHandleProtocol {
     )]]
 
   init(
-    group: MultiThreadedEventLoopGroup = .shared,
+    group: any EventLoopGroup,
     packetFlow: any PacketTunnelFlow,
-    server: String,
-    additionalServers: [Address],
+    server: IPv4Address,
+    additionalServers: [IPv4Address],
     availableIPPool: AvailableIPPool
   ) {
     self.eventLoopGroup = group
     self.packetFlow = packetFlow
     self.bindAddress = server
-    self.additionalServers = additionalServers
+    self.additionalServers = additionalServers.map { .hostPort(host: .ipv4($0), port: 53) }
     self.availableIPPool = availableIPPool
     self.availableAQueries = .init(capacity: 200)
     self.availableAAAAQueries = .init(capacity: 200)
@@ -246,7 +246,7 @@ actor LocalDNSProxy: PacketHandleProtocol {
     let destinationPort = datagram.destinationPort
 
     // Confirm that the packet is send to our fake DNS server.
-    guard IPv4Address(bindAddress) == destinationAddress, destinationPort == 53 else {
+    guard bindAddress == destinationAddress, destinationPort == 53 else {
       return .discarded
     }
 
