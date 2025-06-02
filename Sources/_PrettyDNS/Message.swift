@@ -772,6 +772,8 @@ public struct NAPTRRecord: ResourceRecord {
 /// A RAW record is a type erased resource record.
 public struct RAWRecord: ResourceRecord {
 
+  public typealias Data = ByteBuffer
+
   public var domainName: String
 
   public var ttl: Int32
