@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information
 //
 
+import NIOCore
+
 #if canImport(Network)
   import Network
-  import NIOCore
   import NIOTransportServices
 
   public typealias MultiThreadedEventLoopGroup = NIOTSEventLoopGroup

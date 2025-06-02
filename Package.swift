@@ -142,7 +142,6 @@ let package = Package(
 for target in package.targets {
   var settings = target.swiftSettings ?? []
   settings.append(.define("EXTENDED_ALL"))
-  settings.append(.define("ENABLE_NIO_TRANSPORT_SERVICES"))
   target.swiftSettings = settings
 }
 
