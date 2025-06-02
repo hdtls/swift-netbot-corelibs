@@ -9,8 +9,8 @@
   import NIOConcurrencyHelpers
   import NIOCore
   import Preference
-  import _PersistentStore
-  import _ResourceProcessing
+  import _PreferenceSupport
+  import _ProfileSupport
 
   #if canImport(FoundationEssentials)
     import FoundationEssentials

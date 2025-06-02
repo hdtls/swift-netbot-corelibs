@@ -11,7 +11,7 @@
   import Logging
   import NIOTransportServices
   import Testing
-  import _PersistentStore
+  import _PreferenceSupport
 
   @testable import _NEAnalytics
 
@@ -58,7 +58,6 @@
       let delegate = Delegate()
       let autoreload = AutoreloadSubscription(
         group: NIOTSEventLoopGroup(numberOfThreads: 1),
-        logger: .init(label: ""),
         store: defaults
       )
       autoreload.delegate = delegate

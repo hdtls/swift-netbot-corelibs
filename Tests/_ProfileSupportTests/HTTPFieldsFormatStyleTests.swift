@@ -5,7 +5,7 @@
 import HTTPTypes
 import Testing
 
-@testable import _ResourceProcessing
+@testable import _ProfileSupport
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

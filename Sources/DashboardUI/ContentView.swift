@@ -4,9 +4,9 @@
 
 #if canImport(SwiftUI)
   import AnlzrReports
-  import _PersistentStore
   import Dashboard
   import SwiftUI
+  import _PreferenceSupport
 
   @available(iOS 17.0, macOS 14.0, *)
   @available(tvOS, unavailable)

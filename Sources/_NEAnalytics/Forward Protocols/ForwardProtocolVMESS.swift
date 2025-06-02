@@ -13,7 +13,7 @@ import NIOCore
 import NIOHTTP1
 import NIOTLS
 import NIOWebSocket
-import _ResourceProcessing
+import _ProfileSupport
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

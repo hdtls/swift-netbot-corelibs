@@ -10,7 +10,7 @@ import Logging
 import NEAddressProcessing
 import NIOConcurrencyHelpers
 import NIOCore
-import _PrettyDNS
+import _DNSSupport
 
 #if canImport(Network)
   import NIOTransportServices
@@ -51,7 +51,7 @@ actor LocalDNSProxy: PacketHandleProtocol {
     )]]
 
   init(
-    group: any EventLoopGroup,
+    group: any EventLoopGroup = .shared,
     packetFlow: any PacketTunnelFlow,
     server: IPv4Address,
     additionalServers: [IPv4Address],
@@ -61,6 +61,26 @@ actor LocalDNSProxy: PacketHandleProtocol {
     self.packetFlow = packetFlow
     self.bindAddress = server
     self.additionalServers = additionalServers.map { .hostPort(host: .ipv4($0), port: 53) }
+    self.availableIPPool = availableIPPool
+    self.availableAQueries = .init(capacity: 200)
+    self.availableAAAAQueries = .init(capacity: 200)
+    self.availableSOAQueries = .init(capacity: 50)
+    self.availablePTRQueries = .init(capacity: 200)
+    self.disguisedARecords = .init(capacity: 200)
+    self.queries = [:]
+  }
+
+  init(
+    group: any EventLoopGroup = .shared,
+    packetFlow: any PacketTunnelFlow,
+    server: IPv4Address,
+    additionalServers: [Address],
+    availableIPPool: AvailableIPPool
+  ) {
+    self.eventLoopGroup = group
+    self.packetFlow = packetFlow
+    self.bindAddress = server
+    self.additionalServers = additionalServers
     self.availableIPPool = availableIPPool
     self.availableAQueries = .init(capacity: 200)
     self.availableAAAAQueries = .init(capacity: 200)
@@ -407,7 +427,7 @@ actor LocalDNSProxy: PacketHandleProtocol {
   }
 }
 
-extension LocalDNSProxy: _PrettyDNS.Resolver {
+extension LocalDNSProxy: _DNSSupport.Resolver {
 
   nonisolated func queryA(name: String) async throws -> [ARecord] {
     guard let task = availableAQueries.value(forKey: name) else {

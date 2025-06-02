@@ -4,7 +4,7 @@
 
 import Dispatch
 import Logging
-import _ResourceProcessing
+import _ProfileSupport
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

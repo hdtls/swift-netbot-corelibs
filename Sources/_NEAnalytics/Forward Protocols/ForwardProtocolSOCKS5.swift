@@ -10,7 +10,7 @@ import NEAddressProcessing
 import NESOCKS
 import NIOCore
 import NIOTLS
-import _ResourceProcessing
+import _ProfileSupport
 
 #if canImport(Network)
   import Network

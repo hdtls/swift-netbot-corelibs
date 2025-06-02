@@ -3,7 +3,7 @@
 //
 
 import Logging
-import _PrettyDNS
+import _DNSSupport
 
 extension Message {
 

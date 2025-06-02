@@ -8,7 +8,7 @@ import NIOCore
 import NIOSSL
 import SwiftASN1
 import X509
-import _ResourceProcessing
+import _ProfileSupport
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

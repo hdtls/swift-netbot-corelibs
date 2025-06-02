@@ -9,8 +9,8 @@ import NIOSSL
 import SwiftASN1
 import X509
 import _CryptoExtras
-import _PersistentStore
-import _ResourceProcessing
+import _PreferenceSupport
+import _ProfileSupport
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

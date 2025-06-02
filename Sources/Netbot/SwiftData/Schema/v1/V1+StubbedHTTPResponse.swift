@@ -6,7 +6,7 @@
   import HTTPTypes
   import Foundation
   import SwiftData
-  import _ResourceProcessing
+  import _ProfileSupport
 
   @available(swift 5.9)
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)

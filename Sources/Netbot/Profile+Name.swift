@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-import _ResourceProcessing
+import _ProfileSupport
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

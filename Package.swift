@@ -19,7 +19,7 @@ let package = Package(
     .library(name: "Dashboard", targets: ["Dashboard"]),
     .library(name: "DashboardUI", targets: ["DashboardUI"]),
     .library(name: "_NEAnalytics", targets: ["_NEAnalytics"]),
-    .library(name: "NEXPCService", targets: ["NEXPCService"]),
+    .library(name: "_PrivilegeSupport", targets: ["_PrivilegeSupport"]),
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-asn1.git", from: "1.0.0"),
@@ -54,11 +54,11 @@ let package = Package(
     .target(
       name: "_NEAnalytics",
       dependencies: [
-        "_PrettyDNS",
-        "_PersistentStore",
-        "_ResourceProcessing",
+        "_DNSSupport",
+        "_PreferenceSupport",
+        "_ProfileSupport",
         "CoWOptimization",
-        "NEXPCService",
+        "_PrivilegeSupport",
         .product(name: "Anlzr", package: "swift-netbot-essentials"),
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "NIOCore", package: "swift-nio"),
@@ -69,21 +69,21 @@ let package = Package(
       ]
     ),
     .target(
-      name: "_PersistentStore",
+      name: "_PreferenceSupport",
       dependencies: [
         .product(name: "Logging", package: "swift-log"),
         .product(name: "Preference", package: "swift-preference"),
       ]
     ),
     .target(
-      name: "_PrettyDNS",
+      name: "_DNSSupport",
       dependencies: [
         .product(name: "NIOCore", package: "swift-nio"),
         .product(name: "NEAddressProcessing", package: "swift-netbot-frame-processing"),
       ]
     ),
     .target(
-      name: "_ResourceProcessing",
+      name: "_ProfileSupport",
       dependencies: [
         "CoWOptimization",
         .product(name: "HTTPTypes", package: "swift-http-types"),
@@ -94,7 +94,7 @@ let package = Package(
     .target(
       name: "Dashboard",
       dependencies: [
-        "_PersistentStore",
+        "_PreferenceSupport",
         .product(name: "AnlzrReports", package: "swift-netbot-essentials"),
       ]
     ),
@@ -103,8 +103,8 @@ let package = Package(
       name: "Netbot",
       dependencies: [
         "NetbotMacros",
-        "_PersistentStore",
-        "_ResourceProcessing",
+        "_PreferenceSupport",
+        "_ProfileSupport",
         .product(name: "_CryptoExtras", package: "swift-crypto"),
         .product(name: "Crypto", package: "swift-crypto"),
         .product(name: "NIOSSL", package: "swift-nio-ssl"),
@@ -113,14 +113,14 @@ let package = Package(
         .product(name: "X509", package: "swift-certificates"),
       ]
     ),
-    .target(name: "NEXPCService"),
+    .target(name: "_PrivilegeSupport"),
     .testTarget(
       name: "_NEAnalyticsTests",
       dependencies: ["_NEAnalytics"],
       exclude: ["External Resource"]
     ),
-    .testTarget(name: "_PrettyDNSTests", dependencies: ["_PrettyDNS"]),
-    .testTarget(name: "_ResourceProcessingTests", dependencies: ["_ResourceProcessing"]),
+    .testTarget(name: "_DNSSupportTests", dependencies: ["_DNSSupport"]),
+    .testTarget(name: "_ProfileSupportTests", dependencies: ["_ProfileSupport"]),
     .testTarget(
       name: "CoWOptimizationTests",
       dependencies: [

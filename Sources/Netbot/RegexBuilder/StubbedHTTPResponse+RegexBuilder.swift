@@ -4,7 +4,7 @@
 
 import HTTPTypes
 import RegexBuilder
-import _ResourceProcessing
+import _ProfileSupport
 
 extension StubbedHTTPResponse {
 

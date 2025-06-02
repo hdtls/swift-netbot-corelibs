@@ -7,7 +7,7 @@
   import Testing
 
   @testable import Netbot
-  import _ResourceProcessing
+  import _ProfileSupport
 
   @Suite("V1._URLRewriteTests", .tags(.swiftData, .schema, .urlRewrite))
   struct V1_URLRewriteTests {

@@ -6,7 +6,7 @@ import NEAddressProcessing
 import NIOCore
 import Testing
 
-@testable import _PrettyDNS
+@testable import _DNSSupport
 
 @Suite(.tags(.dns))
 struct PrettyDNSTests {

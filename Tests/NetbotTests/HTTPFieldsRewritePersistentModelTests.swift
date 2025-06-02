@@ -7,7 +7,7 @@
   import Testing
 
   @testable import Netbot
-  import _ResourceProcessing
+  import _ProfileSupport
 
   @Suite("v1.HTTPFieldsRewriteTests", .tags(.httpFieldsRewrite))
   struct V1_HTTPFieldsRewriteTests {

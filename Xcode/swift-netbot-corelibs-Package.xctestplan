@@ -21,27 +21,10 @@
       }
     },
     {
-      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:",
-        "identifier" : "NetbotMacrosTests",
-        "name" : "NetbotMacrosTests"
-      }
-    },
-    {
-      "parallelizable" : false,
-      "target" : {
-        "containerPath" : "container:",
-        "identifier" : "_PrettyDNSTests",
-        "name" : "_PrettyDNSTests"
-      }
-    },
-    {
-      "parallelizable" : false,
-      "target" : {
-        "containerPath" : "container:",
-        "identifier" : "_ResourceProcessingTests",
-        "name" : "_ResourceProcessingTests"
+        "identifier" : "CoWOptimizationTests",
+        "name" : "CoWOptimizationTests"
       }
     },
     {
@@ -50,6 +33,28 @@
         "containerPath" : "container:",
         "identifier" : "NetbotTests",
         "name" : "NetbotTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "_DNSSupportTests",
+        "name" : "_DNSSupportTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "_ProfileSupportTests",
+        "name" : "_ProfileSupportTests"
+      }
+    },
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "NetbotMacrosTests",
+        "name" : "NetbotMacrosTests"
       }
     }
   ],

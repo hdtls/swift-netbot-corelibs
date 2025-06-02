@@ -4,7 +4,7 @@
 
 import Logging
 import RegexBuilder
-import _ResourceProcessing
+import _ProfileSupport
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

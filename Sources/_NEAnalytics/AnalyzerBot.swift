@@ -10,8 +10,8 @@ import NEAddressProcessing
 import NIOConcurrencyHelpers
 import NIOCore
 import NIOSSL
-import _PersistentStore
-import _ResourceProcessing
+import _PreferenceSupport
+import _ProfileSupport
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
@@ -27,7 +27,7 @@ import _ResourceProcessing
 #endif
 
 #if os(macOS)
-  import NEXPCService
+  import _PrivilegeSupport
 #endif
 
 /// Assistant to manage PacketTunnelProvider and NIO proxy servers backend.

@@ -4,7 +4,7 @@
 
 import Testing
 
-@testable import _ResourceProcessing
+@testable import _ProfileSupport
 
 @Suite(.tags(.dnsMapping))
 struct DNSMappingTests {

@@ -6,7 +6,7 @@ import Anlzr
 import AnlzrReports
 import Crypto
 import NIOCore
-import _ResourceProcessing
+import _ProfileSupport
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

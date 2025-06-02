@@ -6,7 +6,7 @@
   import Anlzr
   import AnlzrReports
   import NEAddressProcessing
-  import NEXPCService
+  import _PrivilegeSupport
 
   extension PrivilegeScope: ProcessReporting {
 
