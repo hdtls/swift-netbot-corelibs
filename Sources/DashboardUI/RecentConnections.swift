@@ -3,10 +3,8 @@
 //
 
 #if canImport(SwiftUI)
-  import AnlzrReports
   import Dashboard
   import SwiftUI
-  import _PreferenceSupport
 
   @available(swift 5.9)
   @available(iOS 17.0, macOS 14.0, *)

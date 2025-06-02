@@ -6,7 +6,6 @@
   import Dashboard
   import SwiftData
   import SwiftUI
-  import AnlzrReports
 
   @available(swift 5.9)
   @available(iOS 17.0, macOS 14.0, *)

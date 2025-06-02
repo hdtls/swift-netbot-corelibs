@@ -3,8 +3,8 @@
 //
 
 #if os(macOS)
-  import AnlzrReports
   import AppKit
+  import Dashboard
   import SwiftUI
   import UniformTypeIdentifiers
 

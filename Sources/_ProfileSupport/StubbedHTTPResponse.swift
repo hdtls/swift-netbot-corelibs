@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-import HTTPTypes
+@_exported import HTTPTypes
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

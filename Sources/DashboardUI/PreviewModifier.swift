@@ -4,7 +4,6 @@
 
 #if canImport(SwiftUI)
   #if DEBUG
-    import AnlzrReports
     import Dashboard
     import SwiftData
     import SwiftUI
