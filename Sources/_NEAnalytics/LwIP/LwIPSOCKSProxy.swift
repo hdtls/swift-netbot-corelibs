@@ -71,11 +71,13 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
       return .discarded
     }
 
-    let execute = {
+    let execute: @Sendable () -> Void = {
       packetObject.data.withUnsafeReadableBytes {
         let p = pbuf_alloc(PBUF_IP, u16_t($0.count), PBUF_RAM)
         pbuf_take(p, $0.baseAddress, u16_t($0.count))
-        self.device.pointee.input(p, self.device)
+        if self.device.pointee.input(p, self.device) != ERR_OK {
+          pbuf_free(p)
+        }
       }
     }
     if self.eventLoop.inEventLoop {
@@ -87,7 +89,7 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
   }
 
   private func initialize() {
-    let execute = {
+    let execute: @Sendable () -> Void = {
       lwip_init()
 
       var ipaddr = ip4_addr(addr: ipaddr_addr("198.18.0.1"))
@@ -117,7 +119,7 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
             guard let packetObject = NEPacket(data: byteBuffer, protocolFamily: .inet) else {
               return ERR_BUF
             }
-            stack.packetFlow.writePacketObjects([packetObject])
+            _ = stack.packetFlow.writePacketObjects([packetObject])
             return ERR_OK
           }
           //      contextPtr.pointee.output_ip6 = { contextPtr, bufferPtr, addressPtr in
@@ -141,13 +143,13 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
   }
 
   private func newConnectionHandler(_ connection: LwIPConnection) {
-    connection.start(queue: .global())
-    guard var destinationAddress = connection.localAddress else {
-      connection.close()
-      return
-    }
-
     Task {
+      connection.start(queue: .global())
+      guard var destinationAddress = connection.localAddress else {
+        connection.close()
+        return
+      }
+
       // Reverse reserved IPs to domain name if needed.
       if case .hostPort(host: let host, port: let port) = destinationAddress {
         if case .ipv4(let address) = host, dns.availableIPPool.contains(address) {
@@ -169,16 +171,14 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
       }
 
       do {
+        let destinationAddress = destinationAddress
         let channel = try await ClientBootstrap(group: .shared)
           .channelOption(.allowRemoteHalfClosure, value: true)
-          .channelInitializer { channel in
-            channel.eventLoop.makeFutureWithTask {
-              try await channel.configureSOCKS5Pipeline(destinationAddress: destinationAddress) {
-                channel.pipeline.addHandler(ResponseHandler(connection: connection)).map { channel }
-              }.get()
+          .connect(to: .init(ipAddress: "127.0.0.1", port: 6153)) { channel in
+            channel.configureSOCKS5Pipeline(destinationAddress: destinationAddress) {
+              channel.pipeline.addHandler(ResponseHandler(connection: connection)).map { channel }
             }
           }
-          .connect(to: .init(ipAddress: "127.0.0.1", port: 6153))
           .get()
 
         @Sendable func read() {

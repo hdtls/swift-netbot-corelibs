@@ -32,10 +32,15 @@ final class LwIPListener: @unchecked Sendable {
   }
   private var _remoteAddress: Address?
 
-  private var wrapped: UnsafeMutablePointer<tcp_pcb>?
+  private let socket: ServerSocket
 
-  private let eventLoop: any EventLoop
+  internal let eventLoop: any EventLoop
   private let group: any EventLoopGroup
+
+  var closeFuture: EventLoopFuture<Void> {
+    closePromise.futureResult
+  }
+  private var closePromise: EventLoopPromise<Void>
 
   var queue: DispatchQueue? {
     if self.eventLoop.inEventLoop {
@@ -82,41 +87,73 @@ final class LwIPListener: @unchecked Sendable {
   }
 
   init(eventLoop: any EventLoop, group: any EventLoopGroup) {
-    self.wrapped = tcp_new()
+    self.socket = ServerSocket()
     self.eventLoop = eventLoop
     self.group = group
+    self.closePromise = eventLoop.makePromise()
   }
 
   func start(queue: DispatchQueue) {
-    let execute: @Sendable () -> Void = {
-      var ipaddr = ip_addr_any
-      tcp_bind(self.wrapped, &ipaddr, 0)
-      self.wrapped = tcp_listen_with_backlog(self.wrapped, UInt8(TCP_DEFAULT_LISTEN_BACKLOG))
-
-      if let wrapped = self.wrapped {
-        if let ipaddr = ipaddr_ntoa(&wrapped.pointee.local_ip) {
-          let port = wrapped.pointee.local_port
-          self._localAddress =
-            .hostPort(host: .init(String(cString: ipaddr)), port: .init(rawValue: port))
-        }
-
-        if let ipaddr = ipaddr_ntoa(&wrapped.pointee.remote_ip) {
-          let port = wrapped.pointee.remote_port
-          self._remoteAddress =
-            .hostPort(host: .init(String(cString: ipaddr)), port: .init(rawValue: port))
-        }
+    let address = Address.hostPort(host: "0.0.0.0", port: .any)
+    if self.eventLoop.inEventLoop {
+      self._queue = queue
+      self.bind0(to: address, promise: nil)
+    } else {
+      self._offEventLoopLock.withLock {
+        self._queue = queue
       }
+      self.eventLoop.execute {
+        self.bind0(to: address, promise: nil)
+      }
+    }
+  }
+
+  func cancel() {
+    if self.eventLoop.inEventLoop {
+      self.close0(error: ChannelError.ioOnClosedChannel, mode: .all, promise: nil)
+    } else {
+      self.eventLoop.execute {
+        self.close0(error: ChannelError.ioOnClosedChannel, mode: .all, promise: nil)
+      }
+    }
+  }
+
+  func localAddress0() throws -> Address {
+    self.eventLoop.assertInEventLoop()
+    guard self.socket.isOpen else {
+      throw ChannelError.ioOnClosedChannel
+    }
+    return try self.socket.localAddress()
+  }
+
+  func remoteAddress0() throws -> Address {
+    self.eventLoop.assertInEventLoop()
+    guard self.socket.isOpen else {
+      throw ChannelError.ioOnClosedChannel
+    }
+    return try self.socket.remoteAddress()
+  }
+
+  func bind0(to address: Address, promise: EventLoopPromise<Void>?) {
+    self.eventLoop.assertInEventLoop()
+
+    do {
+      try self.socket.bind(to: address)
+      try self.socket.listen()
+
+      self._localAddress = try self.localAddress0()
+      self._remoteAddress = try self.remoteAddress0()
 
       let opaquePtr = Unmanaged.passUnretained(self).toOpaque()
-      tcp_arg(self.wrapped, opaquePtr)
-      tcp_accept(self.wrapped) { contextPtr, connection, error in
+      tcp_arg(self.socket.descriptor, opaquePtr)
+      tcp_accept(self.socket.descriptor) { contextPtr, connection, error in
         guard let contextPtr, let connection else {
           return ERR_ARG
         }
 
         let listener = Unmanaged<LwIPListener>.fromOpaque(contextPtr).takeUnretainedValue()
         let newConnection = LwIPConnection(
-          socket: connection, parent: listener, eventLoop: listener.eventLoop
+          socket: .init(socket: connection), parent: listener, eventLoop: listener.eventLoop
         )
         newConnection.start(queue: .global())
         listener.queue?.async {
@@ -124,26 +161,19 @@ final class LwIPListener: @unchecked Sendable {
         }
         return ERR_OK
       }
-    }
-
-    if self.eventLoop.inEventLoop {
-      self._queue = queue
-      execute()
-    } else {
-      self._offEventLoopLock.withLock {
-        self._queue = queue
-      }
-      self.eventLoop.execute(execute)
+    } catch {
+      promise?.fail(error)
     }
   }
 
-  func cancel() {
-    if self.eventLoop.inEventLoop {
-      tcp_close(self.wrapped)
-    } else {
-      self.eventLoop.execute {
-        tcp_close(self.wrapped)
-      }
+  func close0(error: any Error, mode: CloseMode, promise: EventLoopPromise<Void>?) {
+    self.eventLoop.assertInEventLoop()
+    do {
+      try self.socket.close()
+      promise?.succeed()
+    } catch {
+      promise?.fail(error)
     }
+    self.closePromise.succeed()
   }
 }

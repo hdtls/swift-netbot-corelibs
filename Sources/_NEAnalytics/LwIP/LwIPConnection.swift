@@ -33,8 +33,13 @@ final class LwIPConnection: @unchecked Sendable {
   }
   private var _remoteAddress: Address?
 
-  private var socket: UnsafeMutablePointer<tcp_pcb>?
+  private var socket: Socket
   private let eventLoop: any EventLoop
+
+  var closeFuture: EventLoopFuture<Void> {
+    closePromise.futureResult
+  }
+  private var closePromise: EventLoopPromise<Void>
 
   private var recvBuffer: [(context: ContentContext, data: ByteBuffer?)]
 
@@ -111,22 +116,13 @@ final class LwIPConnection: @unchecked Sendable {
     static let defaultStream = ContentContext()
   }
 
-  init(socket: UnsafeMutablePointer<tcp_pcb>, parent: LwIPListener?, eventLoop: any EventLoop) {
+  init(socket: Socket, parent: LwIPListener?, eventLoop: any EventLoop) {
     self.socket = socket
     self.recvBuffer = []
     self.eventLoop = eventLoop
-
-    if let ipaddr = ipaddr_ntoa(&socket.pointee.local_ip) {
-      let host = Address.Host(String(cString: ipaddr))
-      let port = Address.Port(rawValue: socket.pointee.local_port)
-      self._localAddress = .hostPort(host: host, port: port)
-    }
-
-    if let ipaddr = ipaddr_ntoa(&socket.pointee.remote_ip) {
-      let host = Address.Host(String(cString: ipaddr))
-      let port = Address.Port(rawValue: socket.pointee.remote_port)
-      self._remoteAddress = .hostPort(host: host, port: port)
-    }
+    self.closePromise = eventLoop.makePromise()
+    self._localAddress = try? socket.localAddress()
+    self._remoteAddress = try? socket.remoteAddress()
   }
 
   deinit {
@@ -134,10 +130,10 @@ final class LwIPConnection: @unchecked Sendable {
   }
 
   func start(queue: DispatchQueue) {
-    let execute = {
+    let execute: @Sendable () -> Void = {
       let opaquePtr = Unmanaged.passUnretained(self).toOpaque()
-      tcp_arg(self.socket, opaquePtr)
-      tcp_recv(self.socket) { contextPtr, connectionPtr, data, err in
+      tcp_arg(self.socket.descriptor, opaquePtr)
+      tcp_recv(self.socket.descriptor) { contextPtr, connectionPtr, data, err in
         guard let contextPtr, let connectionPtr else {
           return ERR_ARG
         }
@@ -163,8 +159,8 @@ final class LwIPConnection: @unchecked Sendable {
         tcp_recved(connectionPtr, totalLength)
         return ERR_OK
       }
-      tcp_sent(self.socket) { contextPtr, connectionPtr, _ in
-        guard let contextPtr, let connectionPtr else {
+      tcp_sent(self.socket.descriptor) { contextPtr, connectionPtr, _ in
+        guard let contextPtr else {
           return ERR_ARG
         }
 
@@ -179,14 +175,14 @@ final class LwIPConnection: @unchecked Sendable {
         connection.send0(content: data, completion: promise)
         return ERR_OK
       }
-      tcp_err(self.socket) { contextPtr, error in
+      tcp_err(self.socket.descriptor) { contextPtr, error in
         guard let contextPtr else {
           return
         }
         let connection = Unmanaged<LwIPConnection>.fromOpaque(contextPtr).takeUnretainedValue()
         connection.eventLoop.assertInEventLoop()
         connection._state = .failed(LwIPError(code: err_to_errno(error)))
-        connection.socket = nil
+        //        connection.socket = nil
       }
     }
 
@@ -241,13 +237,15 @@ final class LwIPConnection: @unchecked Sendable {
   ) {
     self.eventLoop.assertInEventLoop()
 
-    @Sendable func flush0(_ promise: (((any Error)?) -> Void)?) {
+    @Sendable func flush0(_ promise: (@Sendable ((any Error)?) -> Void)?) {
       self.eventLoop.assertInEventLoop()
 
-      let errno = err_to_errno(tcp_output(self.socket))
-      var error: (any Error)?
+      let errno = err_to_errno(tcp_output(self.socket.descriptor))
+      let error: (any Error)?
       if errno != 0 {
         error = LwIPError(code: errno)
+      } else {
+        error = nil
       }
       self.queue?.async {
         promise?(error)
@@ -260,7 +258,7 @@ final class LwIPConnection: @unchecked Sendable {
       return
     }
 
-    guard case .ready = self.state, let wrapped = self.socket else {
+    guard case .ready = self.state, self.socket.isOpen else {
       self.queue?.async {
         completion?(ChannelError.ioOnClosedChannel)
       }
@@ -270,10 +268,11 @@ final class LwIPConnection: @unchecked Sendable {
     // It's safe to convert Int to UInt16, because we have already checked
     // that the bigest value of min(_,_) result is clamping into 0xFFFF
     // witch is equal to UInt16.max.
-    let length = UInt16(min(data.count, Int(min(wrapped.pointee.snd_buf, 0xFFFF))))
+    let length = UInt16(min(data.count, Int(min(self.socket.descriptor.pointee.snd_buf, 0xFFFF))))
 
     let error = data.withUnsafeReadableBytes {
-      err_to_errno(tcp_write(wrapped, $0.baseAddress, length, UInt8(TCP_WRITE_FLAG_COPY)))
+      err_to_errno(
+        tcp_write(self.socket.descriptor, $0.baseAddress, length, UInt8(TCP_WRITE_FLAG_COPY)))
     }
     if error == 0 {
       data.moveReaderIndex(to: Int(length))
@@ -300,54 +299,66 @@ final class LwIPConnection: @unchecked Sendable {
       _ error: LwIPError?
     ) -> Void
   ) {
-    var contentContext = ContentContext.defaultStream
-    var content: ByteBuffer?
+    let execute: @Sendable () -> (ByteBuffer?, ContentContext) = {
+      var contentContext = ContentContext.defaultStream
+      var content: ByteBuffer?
 
-    while !self.recvBuffer.isEmpty, (content?.readableBytes ?? 0) < maximumLength {
-      let (context, data) = self.recvBuffer.removeFirst()
-      // If total bytes of `content` and current `data` is less then or equal to `maximumLength`
-      // we should write hole data into `content`, otherwise read part of data into content.
-      if (content?.readableBytes ?? 0) + (data?.readableBytes ?? 0) <= maximumLength {
-        if let data {
-          content.setOrWriteImmutableBuffer(data)
-        }
-
-        // If this is the final message, break the receive loop.
-        if context === LwIPConnection.ContentContext.finalMessage {
-          contentContext = .finalMessage
-          break
-        }
-      } else {
-        // Why we need read operations if no data in `recvBuffer`'s current data.
-        if var data {
-          let bytesToRead = maximumLength - (content?.readableBytes ?? 0)
-          content.setOrWriteImmutableBuffer(data.readSlice(length: bytesToRead)!)
-          data.discardReadBytes()
-
-          if !data.isEmpty {
-            // Prepend the left data to recvBuffer, so that we can read it in another loop.
-            self.recvBuffer.insert((context, data), at: 0)
-          } else {
-
-            // If no data left, we should check whether we should break read loop.
-            if context === LwIPConnection.ContentContext.finalMessage {
-              break
-            }
+      while !self.recvBuffer.isEmpty, (content?.readableBytes ?? 0) < maximumLength {
+        let (context, data) = self.recvBuffer.removeFirst()
+        // If total bytes of `content` and current `data` is less then or equal to `maximumLength`
+        // we should write hole data into `content`, otherwise read part of data into content.
+        if (content?.readableBytes ?? 0) + (data?.readableBytes ?? 0) <= maximumLength {
+          if let data {
+            content.setOrWriteImmutableBuffer(data)
           }
-        } else {
-          // If current data is nil and the context is final message, we should break the loop.
+
+          // If this is the final message, break the receive loop.
           if context === LwIPConnection.ContentContext.finalMessage {
             contentContext = .finalMessage
             break
           }
+        } else {
+          // Why we need read operations if no data in `recvBuffer`'s current data.
+          if var data {
+            let bytesToRead = maximumLength - (content?.readableBytes ?? 0)
+            content.setOrWriteImmutableBuffer(data.readSlice(length: bytesToRead)!)
+            data.discardReadBytes()
+
+            if !data.isEmpty {
+              // Prepend the left data to recvBuffer, so that we can read it in another loop.
+              self.recvBuffer.insert((context, data), at: 0)
+            } else {
+
+              // If no data left, we should check whether we should break read loop.
+              if context === LwIPConnection.ContentContext.finalMessage {
+                break
+              }
+            }
+          } else {
+            // If current data is nil and the context is final message, we should break the loop.
+            if context === LwIPConnection.ContentContext.finalMessage {
+              contentContext = .finalMessage
+              break
+            }
+          }
         }
       }
+
+      return (content, contentContext)
     }
 
-    let data = content
-
-    self.queue?.async {
-      completion(data, contentContext, true, nil)
+    if self.eventLoop.inEventLoop {
+      let (data, contentContext) = execute()
+      self.queue?.async {
+        completion(data, contentContext, true, nil)
+      }
+    } else {
+      self.eventLoop.execute {
+        let (data, contentContext) = execute()
+        self.queue?.async {
+          completion(data, contentContext, true, nil)
+        }
+      }
     }
   }
 
@@ -355,31 +366,48 @@ final class LwIPConnection: @unchecked Sendable {
     close()
   }
 
-  internal func close(mode: CloseMode = .all) {
-    let execute: @Sendable () -> Void = {
+  func close(mode: CloseMode = .all) {
+    let error: any Error
+    switch mode {
+    case .output:
+      error = ChannelError.outputClosed
+    case .input:
+      error = ChannelError.inputClosed
+    case .all:
+      error = ChannelError.ioOnClosedChannel
+    }
+    if self.eventLoop.inEventLoop {
+      self.close0(error: error, mode: mode, promise: nil)
+    } else {
+      self.eventLoop.execute {
+        self.close0(error: error, mode: mode, promise: nil)
+      }
+    }
+  }
+
+  func close0(error: any Error, mode: CloseMode, promise: EventLoopPromise<Void>?) {
+    self.eventLoop.assertInEventLoop()
+    do {
       switch mode {
       case .output:
         break
       case .input:
-        tcp_recv(self.socket, tcp_recv_null)
-        tcp_close(self.socket)
+        tcp_recv(self.socket.descriptor, tcp_recv_null)
+        try self.socket.close()
       case .all:
-        tcp_arg(self.socket, nil)
-        tcp_err(self.socket) { _, _ in }
-        tcp_close(self.socket)
-        self.socket = nil
+        tcp_arg(self.socket.descriptor, nil)
+        tcp_err(self.socket.descriptor) { _, _ in }
+        try self.socket.close()
 
-        guard case .failed = self.state else {
-          self._state = .cancelled
-          return
+        if case .failed = self.state {
+          break
         }
+        self._state = .cancelled
       }
+      promise?.succeed()
+    } catch {
+      promise?.fail(error)
     }
-
-    if self.eventLoop.inEventLoop {
-      execute()
-    } else {
-      self.eventLoop.execute(execute)
-    }
+    self.closePromise.succeed()
   }
 }
