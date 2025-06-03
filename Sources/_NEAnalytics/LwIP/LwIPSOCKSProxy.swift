@@ -56,11 +56,13 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
   }
 
   public func run() async throws {
-    listener.start(queue: .global())
+    let address = try SocketAddress(ipAddress: "0.0.0.0", port: 0)
+    try await listener.register()
+    try await listener.bind(to: address)
   }
 
   public func shutdownGracefully() async {
-    listener.cancel()
+    listener.close(promise: nil)
   }
 
   public func handleInput(_ packetObject: NEPacket) async throws -> PacketHandleResult {
@@ -144,108 +146,116 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
 
   private func newConnectionHandler(_ connection: LwIPConnection) {
     Task {
-      connection.start(queue: .global())
-      guard var destinationAddress = connection.localAddress else {
-        connection.close()
-        return
-      }
-
-      // Reverse reserved IPs to domain name if needed.
-      if case .hostPort(host: let host, port: let port) = destinationAddress {
-        if case .ipv4(let address) = host, dns.availableIPPool.contains(address) {
-          // According to our dns proxy settings that every reserved IPs should
-          // be able to query PTR records.
-          //
-          // Consider as invalid connection if we can't query valid PTR records,
-          // and close the connection.
-          let prefix = "\(address)".split(separator: ".").reversed().joined(separator: ".")
-          let name = try? await self.dns.queryPTR(name: "\(prefix).in-addr.arpa").first?.data
-          guard let name else {
-            connection.close()
+      try await withThrowingTaskGroup(of: Void.self) { g in
+        g.addTask {
+          try await connection.closeFuture.get()
+          self.logger.trace("LwIP connection closed")
+        }
+        g.addTask {
+          guard let destination = connection.localAddress, let host = destination.ipAddress,
+            let port = destination.port
+          else {
+            connection.close(promise: nil)
             return
           }
 
-          // Update destination address to use original domain name and port.
-          destinationAddress = .hostPort(host: .name(name), port: port)
+          var destinationAddress: Address = .hostPort(
+            host: .init(host),
+            port: .init(rawValue: UInt16(port))
+          )
+
+          // Reverse reserved IPs to domain name if needed.
+          if case .hostPort(let host, let port) = destinationAddress {
+            if case .ipv4(let address) = host, self.dns.availableIPPool.contains(address) {
+              // According to our dns proxy settings that every reserved IPs should
+              // be able to query PTR records.
+              //
+              // Consider as invalid connection if we can't query valid PTR records,
+              // and close the connection.
+              let prefix = "\(address)".split(separator: ".").reversed().joined(separator: ".")
+              let name = try? await self.dns.queryPTR(name: "\(prefix).in-addr.arpa").first?.data
+              guard let name else {
+                connection.close(promise: nil)
+                return
+              }
+
+              // Update destination address to use original domain name and port.
+              destinationAddress = .hostPort(host: .name(name), port: port)
+            }
+          }
+
+          do {
+            let destinationAddress = destinationAddress
+            let channel = try await ClientBootstrap(group: .shared)
+              .channelOption(.allowRemoteHalfClosure, value: true)
+              .connect(to: .init(ipAddress: "127.0.0.1", port: 6153)) { channel in
+                channel.configureSOCKS5Pipeline(destinationAddress: destinationAddress) {
+                  channel.pipeline.addHandler(ResponseHandler(connection: connection)).map {
+                    channel
+                  }
+                }
+              }
+              .get()
+
+            @Sendable func read() {
+              connection.receive(maximumLength: 8192) {
+                content, contentContext, isComplete, error in
+                // If current read contains valid data then write to connected SOCKS5 server.
+                if let content {
+                  Task {
+                    try await channel.writeAndFlush(content)
+                  }
+                }
+
+                guard contentContext !== LwIPConnection.ContentContext.finalMessage else {
+                  // EOF
+                  Task {
+                    try await channel.close(mode: .output)
+                  }
+                  return
+                }
+
+                // If current read contains data then perform a new read immediately.
+                // otherwise wait for a short time then read.
+                if let content, !content.isEmpty {
+                  read()
+                } else {
+                  Task {
+                    try await Task.sleep(for: .seconds(0.1))
+                    read()
+                  }
+                }
+              }
+            }
+
+            read()
+
+            try await channel.closeFuture.get()
+            self.logger.trace("LwIP SOCKS5 connection closed")
+            connection.close(mode: .output, promise: nil)
+          } catch {
+            self.logger.error("\(error)")
+            connection.close(promise: nil)
+          }
         }
-      }
-
-      do {
-        let destinationAddress = destinationAddress
-        let channel = try await ClientBootstrap(group: .shared)
-          .channelOption(.allowRemoteHalfClosure, value: true)
-          .connect(to: .init(ipAddress: "127.0.0.1", port: 6153)) { channel in
-            channel.configureSOCKS5Pipeline(destinationAddress: destinationAddress) {
-              channel.pipeline.addHandler(ResponseHandler(connection: connection)).map { channel }
-            }
-          }
-          .get()
-
-        @Sendable func read() {
-          // After connection started the state should be changed to .ready if no error accord.
-          guard case .ready = connection.state else {
-            return
-          }
-
-          connection.receive(maximumLength: 8192) { content, contentContext, isComplete, error in
-            // If current read contains valid data then write to connected SOCKS5 server.
-            if let content {
-              Task {
-                self.logger.trace("\(String(buffer: content))")
-                try await channel.writeAndFlush(content)
-              }
-            }
-
-            guard contentContext !== LwIPConnection.ContentContext.finalMessage else {
-              // EOF
-              Task {
-                try await channel.close(mode: .output)
-              }
-              return
-            }
-
-            // If current read contains data then perform a new read immediately.
-            // otherwise wait for a short time then read.
-            if let content, !content.isEmpty {
-              read()
-            } else {
-              Task {
-                try await Task.sleep(for: .seconds(0.1))
-                read()
-              }
-            }
-          }
-        }
-
-        read()
-
-        try await channel.closeFuture.get()
-        logger.trace("SOCKS5 connection closed")
-      } catch {
-        logger.error("\(error)")
-        connection.close()
+        try await g.waitForAll()
       }
     }
   }
 }
 
-final class ResponseHandler: ChannelInboundHandler, Sendable {
+final private class ResponseHandler: ChannelInboundHandler, Sendable {
   typealias InboundIn = ByteBuffer
 
-  private let logger = Logger(label: "lwip-response")
-  let connection: LwIPConnection
+  private let connection: LwIPConnection
+
   init(connection: LwIPConnection) {
     self.connection = connection
   }
 
   func channelRead(context: ChannelHandlerContext, data: NIOAny) {
     let buffer = unwrapInboundIn(data)
-    logger.trace("\(String(buffer: buffer))")
-    connection.send(content: buffer, contentContext: .defaultStream, isComplete: true) { error in
-      if let error {
-        self.logger.error("\(error)")
-      }
-    }
+    connection.writeAndFlush(buffer, promise: nil)
     context.fireChannelRead(data)
   }
 }

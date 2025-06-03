@@ -2,60 +2,15 @@
 // See LICENSE.txt for license information
 //
 
-import Anlzr
 import CNELwIP
-import NEAddressProcessing
 import NIOConcurrencyHelpers
 import NIOCore
 
-final class LwIPListener: @unchecked Sendable {
+final class LwIPListener: BaseSocketChannel<ServerSocket>, @unchecked Sendable {
 
-  var localAddress: Address? {
-    if self.eventLoop.inEventLoop {
-      return self._localAddress
-    } else {
-      return self._offEventLoopLock.withLock {
-        self._localAddress
-      }
-    }
-  }
-  private var _localAddress: Address?
-
-  var remoteAddress: Address? {
-    if self.eventLoop.inEventLoop {
-      return self._remoteAddress
-    } else {
-      return self._offEventLoopLock.withLock {
-        self._remoteAddress
-      }
-    }
-  }
-  private var _remoteAddress: Address?
-
-  private let socket: ServerSocket
-
-  internal let eventLoop: any EventLoop
   private let group: any EventLoopGroup
 
-  var closeFuture: EventLoopFuture<Void> {
-    closePromise.futureResult
-  }
-  private var closePromise: EventLoopPromise<Void>
-
-  var queue: DispatchQueue? {
-    if self.eventLoop.inEventLoop {
-      return self._queue
-    } else {
-      return self._offEventLoopLock.withLock {
-        self._queue
-      }
-    }
-  }
-  private var _queue: DispatchQueue?
-
-  @preconcurrency final var newConnectionHandler:
-    (@Sendable (_ connection: LwIPConnection) -> Void)?
-  {
+  final var newConnectionHandler: (@Sendable (_ connection: LwIPConnection) -> Void)? {
     get {
       if self.eventLoop.inEventLoop {
         return self._newConnectionHandler
@@ -75,77 +30,51 @@ final class LwIPListener: @unchecked Sendable {
       }
     }
   }
-  private var _newConnectionHandler: (@Sendable (_ state: LwIPConnection) -> Void)?
-
-  private let _offEventLoopLock = NIOLock()
-
-  public var port: UInt16? {
-    if let port = localAddress?.port {
-      return UInt16(port)
-    }
-    return nil
-  }
+  private var _newConnectionHandler: (@Sendable (_ connection: LwIPConnection) -> Void)?
 
   init(eventLoop: any EventLoop, group: any EventLoopGroup) {
-    self.socket = ServerSocket()
-    self.eventLoop = eventLoop
     self.group = group
-    self.closePromise = eventLoop.makePromise()
+    super.init(socket: ServerSocket(), eventLoop: eventLoop)
   }
 
-  func start(queue: DispatchQueue) {
-    let address = Address.hostPort(host: "0.0.0.0", port: .any)
-    if self.eventLoop.inEventLoop {
-      self._queue = queue
-      self.bind0(to: address, promise: nil)
-    } else {
-      self._offEventLoopLock.withLock {
-        self._queue = queue
-      }
-      self.eventLoop.execute {
-        self.bind0(to: address, promise: nil)
-      }
-    }
-  }
-
-  func cancel() {
-    if self.eventLoop.inEventLoop {
-      self.close0(error: ChannelError.ioOnClosedChannel, mode: .all, promise: nil)
-    } else {
-      self.eventLoop.execute {
-        self.close0(error: ChannelError.ioOnClosedChannel, mode: .all, promise: nil)
-      }
-    }
-  }
-
-  func localAddress0() throws -> Address {
+  final override func channelRead0(_ data: NIOAny) {
     self.eventLoop.assertInEventLoop()
-    guard self.socket.isOpen else {
-      throw ChannelError.ioOnClosedChannel
+
+    let channel = self.unwrapData(data, as: LwIPConnection.self)
+    let p: EventLoopPromise<Void> = channel.eventLoop.makePromise()
+    channel.registerAlreadyConfigured0(promise: p)
+    p.futureResult.whenFailure { (_: Error) in
+      channel.close(promise: nil)
     }
-    return try self.socket.localAddress()
   }
 
-  func remoteAddress0() throws -> Address {
+  final override func bind0(to address: SocketAddress, promise: EventLoopPromise<Void>?) {
     self.eventLoop.assertInEventLoop()
-    guard self.socket.isOpen else {
-      throw ChannelError.ioOnClosedChannel
-    }
-    return try self.socket.remoteAddress()
-  }
 
-  func bind0(to address: Address, promise: EventLoopPromise<Void>?) {
-    self.eventLoop.assertInEventLoop()
+    guard self.isOpen else {
+      promise?.fail(ChannelError.ioOnClosedChannel)
+      return
+    }
+
+    let p = self.eventLoop.makePromise(of: Void.self)
+    p.futureResult.map {
+      self.becomeActive0(promise: promise)
+    }.whenFailure { error in
+      promise?.fail(error)
+    }
 
     do {
       try self.socket.bind(to: address)
       try self.socket.listen()
 
-      self._localAddress = try self.localAddress0()
-      self._remoteAddress = try self.remoteAddress0()
+      let cached = self.addressesCached
+      self.addressesCached = .init(local: try? self.localAddress0(), remote: cached.remote)
 
       let opaquePtr = Unmanaged.passUnretained(self).toOpaque()
       tcp_arg(self.socket.descriptor, opaquePtr)
+      // register0(promise:) is execute before bind0 called, so if we
+      // register tcp_accept in register0(promise:) the handler will
+      // be reset by socket.listen().
       tcp_accept(self.socket.descriptor) { contextPtr, connection, error in
         guard let contextPtr, let connection else {
           return ERR_ARG
@@ -155,25 +84,22 @@ final class LwIPListener: @unchecked Sendable {
         let newConnection = LwIPConnection(
           socket: .init(socket: connection), parent: listener, eventLoop: listener.eventLoop
         )
-        newConnection.start(queue: .global())
-        listener.queue?.async {
-          listener.newConnectionHandler?(newConnection)
-        }
+        listener.pipeline.fireChannelRead(newConnection)
+        listener.pipeline.fireChannelReadComplete()
+        listener.newConnectionHandler?(newConnection)
         return ERR_OK
       }
+
+      p.succeed()
     } catch {
-      promise?.fail(error)
+      p.fail(error)
     }
   }
 
-  func close0(error: any Error, mode: CloseMode, promise: EventLoopPromise<Void>?) {
-    self.eventLoop.assertInEventLoop()
-    do {
-      try self.socket.close()
-      promise?.succeed()
-    } catch {
-      promise?.fail(error)
-    }
-    self.closePromise.succeed()
+  final override func hasFlushedPendingWrites() -> Bool {
+    false
+  }
+
+  final override func markFlushPoint() {
   }
 }

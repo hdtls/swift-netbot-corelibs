@@ -38,7 +38,7 @@ public actor __AnalyzerBot {
 
     self.handles = [
       dns,
-      LwIPSOCKSProxy(packetFlow: packetFlow, dns: dns),
+      LwIPSOCKSProxy(group: group, packetFlow: packetFlow, dns: dns),
     ]
   }
 
