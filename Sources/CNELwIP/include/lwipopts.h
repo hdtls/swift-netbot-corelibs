@@ -5,6 +5,9 @@
  * will be set to standard values. Override anything you dont like!
  */
 
+#if defined __APPLE__
+  #include <netinet/tcp.h>
+#endif
 #include "debug.h"
 
 // Core locking
@@ -16,7 +19,6 @@
 #define LWIP_IP4 1
 
 // TCP options
-#define TCP_MSS 1460
 #define TCP_LISTEN_BACKLOG 1
 
 // Memory options
