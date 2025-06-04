@@ -3,7 +3,6 @@
 //
 
 import Anlzr
-import CNELwIP
 import Logging
 import NEAddressProcessing
 import NESOCKS
@@ -23,7 +22,7 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
 
   private let listener: LwIPListener
 
-  let device: UnsafeMutablePointer<netif>
+  private let core: LwIP
 
   private let logger = Logger(label: "LwIP")
 
@@ -39,16 +38,14 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
     self.dns = dns
 
     // Configure network interface in LwIP
-    self.device = UnsafeMutablePointer.allocate(capacity: MemoryLayout<netif>.size)
-    self.device.initialize(to: .init())
+    self.core = LwIP(
+      packetFlow: packetFlow,
+      ipaddr: IPv4Address("198.18.0.1")!,
+      netmask: IPv4Address("255.254.0.0")!,
+      gateway: IPv4Address("198.18.0.1")!
+    )
     self.listener = LwIPListener(eventLoop: eventLoop, group: eventLoop)
     self.listener.newConnectionHandler = newConnectionHandler
-    self.initialize()
-  }
-
-  deinit {
-    device.deinitialize(count: MemoryLayout<netif>.size)
-    device.deallocate()
   }
 
   public func runIfActive() async throws {
@@ -73,75 +70,14 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
       return .discarded
     }
 
-    let execute: @Sendable () -> Void = {
-      packetObject.data.withUnsafeReadableBytes {
-        let p = pbuf_alloc(PBUF_IP, u16_t($0.count), PBUF_RAM)
-        pbuf_take(p, $0.baseAddress, u16_t($0.count))
-        if self.device.pointee.input(p, self.device) != ERR_OK {
-          pbuf_free(p)
-        }
-      }
-    }
     if self.eventLoop.inEventLoop {
-      execute()
+      try self.core.handleInput(packetObject)
     } else {
-      self.eventLoop.execute(execute)
+      try await self.eventLoop.submit {
+        try self.core.handleInput(packetObject)
+      }.get()
     }
     return .handled
-  }
-
-  private func initialize() {
-    let execute: @Sendable () -> Void = {
-      lwip_init()
-
-      var ipaddr = ip4_addr(addr: ipaddr_addr("198.18.0.1"))
-      var netmask = ip4_addr(addr: ipaddr_addr("255.254.0.0"))
-      var gw = ip4_addr(addr: ipaddr_addr("198.18.0.1"))
-
-      netif_add(
-        self.device, &ipaddr, &netmask, &gw, Unmanaged.passUnretained(self).toOpaque(),
-        { contextPtr in
-          guard let contextPtr = contextPtr else { return ERR_IF }
-          contextPtr.pointee.mtu = 1500
-          contextPtr.pointee.output = { contextPtr, bufferPtr, addressPtr in
-            guard let opaquePtr = contextPtr?.pointee.state else {
-              return ERR_IF
-            }
-            guard let data = bufferPtr else {
-              return ERR_OK
-            }
-
-            let stack = Unmanaged<LwIPSOCKSProxy>.fromOpaque(opaquePtr).takeUnretainedValue()
-
-            var byteBuffer = ByteBuffer()
-            byteBuffer.writeWithUnsafeMutableBytes(minimumWritableBytes: Int(data.pointee.tot_len))
-            {
-              Int(pbuf_copy_partial(data, $0.baseAddress, data.pointee.tot_len, 0))
-            }
-            guard let packetObject = NEPacket(data: byteBuffer, protocolFamily: .inet) else {
-              return ERR_BUF
-            }
-            _ = stack.packetFlow.writePacketObjects([packetObject])
-            return ERR_OK
-          }
-          //      contextPtr.pointee.output_ip6 = { contextPtr, bufferPtr, addressPtr in
-          //        guard let pointee = addressPtr?.pointee else { return ERR_OK }
-          //        let address = ip_addr_t(
-          //          u_addr: .init(ip6: pointee), type: UInt8(IPADDR_TYPE_V6.rawValue))
-          //        c_ne_lwip_write_bridge(contextPtr, bufferPtr, address)
-          //        return ERR_OK
-          //      }
-          return ERR_OK
-        }, ip_input)
-      netif_set_default(self.device)
-      netif_set_up(self.device)
-    }
-
-    if self.eventLoop.inEventLoop {
-      execute()
-    } else {
-      self.eventLoop.execute(execute)
-    }
   }
 
   private func newConnectionHandler(_ connection: LwIPConnection) {
