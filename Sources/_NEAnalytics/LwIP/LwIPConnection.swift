@@ -80,7 +80,7 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
       _ content: ByteBuffer?,
       _ contentContext: ContentContext?,
       _ isComplete: Bool,
-      _ error: LwIPError?
+      _ error: (any Error)?
     ) -> Void
   ) {
     let execute: @Sendable () -> (ByteBuffer?, ContentContext) = {
@@ -189,6 +189,7 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
         return ERR_OK
       }
       connection.flushNow()
+      connection.pipeline.fireChannelWritabilityChanged()
       return ERR_OK
     }
     tcp_err(self.socket.descriptor) { contextPtr, errno in
@@ -258,7 +259,7 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
           if !pendingWrite.data.isEmpty {
             let errno = err_to_errno(tcp_output(self.socket.descriptor))
             if errno != 0 {
-              pendingWrite.promise?.fail(LwIPError(code: errno))
+              pendingWrite.promise?.fail(IOError(errnoCode: errno, reason: #function))
               break
             }
 
@@ -279,7 +280,7 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
         if isMarked {
           let errno = err_to_errno(tcp_output(self.socket.descriptor))
           if errno != 0 {
-            pendingWrite.promise?.fail(LwIPError(code: errno))
+            pendingWrite.promise?.fail(IOError(errnoCode: errno, reason: #function))
             break
           }
         }
