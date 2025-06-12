@@ -40,7 +40,7 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
     // Configure network interface in LwIP
     self.core = LwIP(
       packetFlow: packetFlow,
-      ipaddr: IPv4Address("198.18.0.1")!,
+      address: IPv4Address("198.18.0.1")!,
       netmask: IPv4Address("255.254.0.0")!,
       gateway: IPv4Address("198.18.0.1")!
     )

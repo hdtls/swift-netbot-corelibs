@@ -44,12 +44,9 @@ class BaseSocket: BaseSocketProtocol {
   ///
   /// - Returns: The local bound address.
   /// - Throws: An `IOError` if the retrieval of the address failed.
-  func localAddress() throws -> SocketAddress {
-    guard let ipaddr = ipaddr_ntoa(&descriptor.pointee.local_ip) else {
-      throw IOError(errnoCode: EINVAL, reason: "inet_ntoa")
-    }
-    let port = descriptor.pointee.local_port
-    let host = String(cString: ipaddr)
+  final func localAddress() throws -> SocketAddress {
+    let port = self.descriptor.pointee.local_port
+    let host = try LwIP.inet_ntoa(self.descriptor.pointee.local_ip)
     return try SocketAddress(ipAddress: host, port: Int(port))
   }
 
@@ -57,29 +54,22 @@ class BaseSocket: BaseSocketProtocol {
   ///
   /// - Returns: The connected address.
   /// - Throws: An `IOError` if the retrieval of the address failed.
-  func remoteAddress() throws -> SocketAddress {
-    guard let ipaddr = ipaddr_ntoa(&descriptor.pointee.remote_ip) else {
-      throw IOError(errnoCode: EINVAL, reason: "inet_ntoa")
-    }
-    let port = descriptor.pointee.remote_port
-    let host = String(cString: ipaddr)
+  final func remoteAddress() throws -> SocketAddress {
+    let port = self.descriptor.pointee.remote_port
+    let host = try LwIP.inet_ntoa(self.descriptor.pointee.remote_ip)
     return try SocketAddress(ipAddress: host, port: Int(port))
   }
 
   func bind(to address: SocketAddress) throws {
-    guard let host = address.ipAddress, let port = address.port else {
-      throw IOError(errnoCode: EADDRNOTAVAIL, reason: "bind")
+    guard case .v4 = address, let host = address.ipAddress, let port = address.port else {
+      throw IOError(errnoCode: EADDRNOTAVAIL, reason: #function)
     }
 
-    try host.withCString {
-      var ipaddr: ip_addr_t = ip_addr_any
-      guard ipaddr_aton($0, &ipaddr) == 1 else {
-        throw IOError(errnoCode: EADDRNOTAVAIL, reason: "inet_aton")
-      }
-      let errno = err_to_errno(tcp_bind(descriptor, &ipaddr, UInt16(port)))
-      if errno != 0 {
-        throw IOError(errnoCode: errno, reason: "bind")
-      }
+    var ipaddr: ip_addr_t = ip_addr_any
+    try LwIP.inet_aton(host, &ipaddr)
+    let errno = err_to_errno(tcp_bind(descriptor, &ipaddr, UInt16(port)))
+    if errno != 0 {
+      throw IOError(errnoCode: errno, reason: #function)
     }
   }
 
