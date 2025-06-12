@@ -90,12 +90,29 @@
     }
   }
 
-  public enum RecentConnectionsError: Error {
-    case operationUnsupported
-  }
-
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
   @MainActor @Observable public class RecentConnectionsControler {
+
+    public enum LocalizedError: Foundation.LocalizedError, Equatable {
+      case nw(NWError)
+      case operationUnsupported
+
+      public var errorDescription: String? {
+        switch self {
+        case .nw(let error):
+          switch error {
+          case .posix(let code):
+            return error.localizedDescription
+          case .dns, .tls:
+            return error.localizedDescription
+          @unknown default:
+            return error.localizedDescription
+          }
+        case .operationUnsupported:
+          return "Operation Unsupported"
+        }
+      }
+    }
 
     /// The ModelContainer for the ModelActor.
     /// The container that manages the app’s schema and model storage configuration.
@@ -107,10 +124,10 @@
     ///
     /// This value is `nil` unless an fetch attempt failed. It contains the
     /// latest error from SwiftData.
-    public var fetchError: (any Error)? {
+    public var fetchError: LocalizedError? {
       _fetchError
     }
-    private var _fetchError: (any Error)?
+    private var _fetchError: LocalizedError?
 
     public typealias Result = [Connection]
 
@@ -124,7 +141,7 @@
     private nonisolated let logger = Logger(
       subsystem: "com.tenbits.netbot.dashboard", category: "connections")
 
-    private let connection: NWConnection
+    private var connection: NWConnection!
 
     @ObservationIgnored private var earliestBeginDate = Date.distantPast
 
@@ -137,47 +154,55 @@
 
     nonisolated public init(modelContainer: ModelContainer) {
       store = RecentConnectionsModelActor(modelContainer: modelContainer)
+    }
 
+    public func resume() {
+      self._fetchError = nil
       let parameters = NWParameters.tcp
       let options = NWProtocolWebSocket.Options()
       parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
       connection = NWConnection(to: .url(URL(string: "ws://127.0.0.1:6170")!), using: parameters)
+      connection.stateUpdateHandler = { [weak self] state in
+        guard let self else { return }
 
-      Task {
-        await self.update()
-      }
-
-      connection.stateUpdateHandler = { state in
         switch state {
         case .setup:
           break
         case .waiting(let error):
           Task { @MainActor in
-            self._fetchError = error
+            self.logger.error("Fetch connections failure with error: \(error.localizedDescription)")
+            self._fetchError = LocalizedError.nw(error)
           }
         case .preparing:
           break
         case .ready:
-          Task.detached {
-            await self.runReadLoop()
+          Task { @MainActor in
+            self.runReadLoop()
           }
         case .failed(let error):
           Task { @MainActor in
-            self._fetchError = error
+            self.logger.error("Fetch connections failure with error: \(error.localizedDescription)")
+            self._fetchError = LocalizedError.nw(error)
           }
         case .cancelled:
           break
         @unknown default:
           Task { @MainActor in
-            self._fetchError = RecentConnectionsError.operationUnsupported
+            self._fetchError = LocalizedError.operationUnsupported
           }
         }
       }
       connection.start(queue: .global())
     }
 
-    nonisolated private func runReadLoop() async {
-      guard connection.state == .ready else {
+    public func cancel() {
+      self._fetchError = nil
+      connection.cancel()
+      connection = nil
+    }
+
+    private func runReadLoop() {
+      guard connection?.state == .ready else {
         return
       }
 
@@ -186,17 +211,18 @@
           return
         }
 
-        Task.detached {
-          do {
-            let models = try JSONDecoder().decode([Connection].self, from: data)
-            await self.store.insert(models)
+        do {
+          let models = try JSONDecoder().decode([Connection].self, from: data)
+          Task.detached {
             await self.insert(models)
-          } catch {
-            assertionFailure("BUG IN NETBOT CORE, please report: illegal data format \(error)")
-            self.logger.critical("decoding connection failure with error: \(error)")
           }
+        } catch {
+          assertionFailure("BUG IN NETBOT CORE, please report: illegal data format \(error)")
+          logger.critical("decoding connection failure with error: \(error)")
+        }
 
-          await self.runReadLoop()
+        Task { @MainActor in
+          runReadLoop()
         }
       }
     }
@@ -234,16 +260,20 @@
       fd.sortBy = [SortDescriptor(\.taskIdentifier)]
 
       let result = await store.query(fd)
-      let fetchError = await store.fetchError
+      if let fetchError = await store.fetchError {
+        self.logger
+          .error("Fetch recent connections failure with error: \(fetchError.localizedDescription)")
+      }
 
       Task { @MainActor in
         self.earliestBeginDate = .distantPast
-        self._fetchError = fetchError
         self._result = result
       }
     }
 
-    private func insert(_ models: [Connection]) {
+    private func insert(_ models: [Connection]) async {
+      await self.store.insert(models)
+
       for model in models where model.earliestBeginDate > earliestBeginDate {
         if let index = result.firstIndex(where: { $0.id == model.id }) {
           self._result[index].originalRequest = model.originalRequest
