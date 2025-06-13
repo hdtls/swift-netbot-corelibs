@@ -32,7 +32,7 @@ let package = Package(
     .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.0"),
     .package(url: "https://github.com/hdtls/swift-netbot-frame-processing.git", branch: "main"),
     .package(url: "https://github.com/hdtls/swift-netbot-essentials.git", branch: "main"),
-    .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.2.1"),
+    .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.3.0"),
     .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
   ],
   targets: [
