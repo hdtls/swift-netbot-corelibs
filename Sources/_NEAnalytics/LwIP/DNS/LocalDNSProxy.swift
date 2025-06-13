@@ -42,12 +42,12 @@ actor LocalDNSProxy: PacketHandleProtocol {
     AddressedEnvelope<ByteBuffer>, AddressedEnvelope<ByteBuffer>
   >
 
-  private var sessions = [UInt16: EventLoopPromise<Message>]()
   private nonisolated let eventLoopGroup: any EventLoopGroup
 
   private var queries:
     [SocketAddress: [UInt16: (
-      stream: AsyncStream<Message>, continuation: AsyncStream<Message>.Continuation
+      promise: EventLoopPromise<Message>, stream: AsyncStream<Message>,
+      continuation: AsyncStream<Message>.Continuation
     )]]
 
   init(
@@ -95,12 +95,14 @@ actor LocalDNSProxy: PacketHandleProtocol {
   func close() async throws {
     for queries in self.queries.values {
       for query in queries.values {
+        // Fail all in-progress queries with CancellationError.
+        query.promise.fail(CancellationError())
+
+        // Finish all in-progress query stream.
         query.continuation.finish()
       }
     }
-    for promise in sessions.values {
-      promise.fail(CancellationError())
-    }
+    self.queries.removeAll()
   }
 
   nonisolated func close(promise: EventLoopPromise<Void>?) {
@@ -111,10 +113,10 @@ actor LocalDNSProxy: PacketHandleProtocol {
   }
 
   private func startDNSq(server: SocketAddress, transactionID: UInt16) async throws -> (
-    stream: AsyncStream<Message>, continuation: AsyncStream<Message>.Continuation
+    promise: EventLoopPromise<Message>, stream: AsyncStream<Message>,
+    continuation: AsyncStream<Message>.Continuation
   ) {
-    if let queries = queries[server], let query = queries[transactionID] {
-      // We have already verified that queries non-nil here, so force unwrap is safe.
+    if let queries = self.queries[server], let query = queries[transactionID] {
       return query
     }
 
@@ -145,92 +147,80 @@ actor LocalDNSProxy: PacketHandleProtocol {
         #endif
       }
 
-    let query = AsyncStream<Message>.makeStream()
-    query.continuation.onTermination = { _ in
-      channel.channel.close(promise: nil)
+    let stream = AsyncStream<Message>.makeStream()
+    stream.continuation.onTermination = { _ in
+      // Close output once stream finished.
+      channel.channel.close(mode: .output, promise: nil)
     }
+    let promise = self.eventLoopGroup.next().makePromise(of: Message.self)
+
+    let query = (promise: promise, stream: stream.stream, continuation: stream.continuation)
     var q = self.queries[server] ?? [:]
     q[transactionID] = query
     self.queries[server] = q
 
-    Task(priority: .background) {
-      do {
-        try await channel.executeThenClose { inbound, outbound in
+    Task.detached {
+      try await channel.executeThenClose { inbound, outbound in
 
-          // We need to specific type of ChildTaskResult to make it compatible with Swift 6.0.
-          try await withThrowingTaskGroup(of: Void.self) { g in
-            g.addTask {
-              for try await query in query.stream {
-                do {
-                  let envelope = try AddressedEnvelope(
-                    remoteAddress: server,
-                    data: channel.channel.allocator.buffer(bytes: query.serializedBytes)
-                  )
-                  try await outbound.write(envelope)
-                } catch {
-                  // Failed to write data to remote address, try with next server.
-                  let promise = await self.dnsqPromise(
-                    transactionID: query.headerFields.transactionID,
-                    loadIfNeeded: false
-                  )
-                  if let promise {
-                    promise.fail(error)
-                  }
-
-                  throw error
-                }
-              }
-            }
-
-            g.addTask { [self] in
-              for try await envelop in inbound {
-                // Channel read should not be interrupted.
-                let message = try parser.parse(envelop.data)
-
-                // It's a DNS response if sessions contains promise for
-                // specific transaction ID, otherwise it's a query.
-                // For now, we don't support query handle, message will
-                // be ignored.
-                let promise = await dnsqPromise(
-                  transactionID: message.headerFields.transactionID,
-                  loadIfNeeded: false
+        // We need to specific type of ChildTaskResult to make it compatible with Swift 6.0.
+        try await withThrowingTaskGroup(of: Void.self) { g in
+          g.addTask {
+            for try await query in query.stream {
+              do {
+                let envelope = try AddressedEnvelope(
+                  remoteAddress: server,
+                  data: channel.channel.allocator.buffer(bytes: query.serializedBytes)
                 )
-                if let promise {
-                  promise.succeed(message)
-                }
+                try await outbound.write(envelope)
+              } catch {
+                // Notify that we are failed to write dns query message to the server.
+                promise.fail(error)
 
-                #if !canImport(Network)
-                  throw ChannelError.eof
-                #endif
+                throw error
               }
             }
-
-            try await g.waitForAll()
           }
+
+          g.addTask {
+            for try await envelop in inbound {
+              do {
+                // Channel read should not be interrupted.
+                let message = try self.parser.parse(envelop.data)
+
+                // Notify that we have received dns response if needed.
+                promise.succeed(message)
+              } catch {
+                // Notify that we received data but can't decode as DNS reponse message.
+                promise.fail(error)
+                throw error
+              }
+
+              #if !canImport(Network)
+                // FIXME: continue receiving DNS response.
+                // There is a bug in current version of NIOTransportService that causes each
+                // dns response to interrupt the connection.
+                // In order to maintain multi-platform consistency we throw ChannelError.eof
+                // to interrupt connection that use NIOPosix.
+                throw ChannelError.eof
+              #endif
+            }
+          }
+
+          try await g.waitForAll()
         }
-      } catch {
-        self.offloadDNSq(server: server, transactionID: transactionID)
       }
     }
 
     return query
   }
 
-  private func dnsqPromise(transactionID: UInt16, loadIfNeeded: Bool = true) -> EventLoopPromise<
-    Message
-  >? {
-    guard loadIfNeeded else { return sessions[transactionID] }
-
-    let promise = eventLoopGroup.next().makePromise(of: Message.self)
-    sessions[transactionID] = promise
-    return promise
-  }
-
   private func offloadDNSq(server: SocketAddress, transactionID: UInt16) {
     var queries = queries[server]
-    queries?.removeValue(forKey: transactionID)
+    if let query = queries?.removeValue(forKey: transactionID) {
+      query.promise.fail(CancellationError())
+      query.continuation.finish()
+    }
     self.queries[server] = queries
-    self.sessions.removeValue(forKey: transactionID)
   }
 
   nonisolated func handleInput(_ packetObject: NEPacket) async throws -> PacketHandleResult {
@@ -379,22 +369,24 @@ actor LocalDNSProxy: PacketHandleProtocol {
         do {
           let eventLoop = eventLoopGroup.next()
 
-          let queries = try await startDNSq(
+          let query = try await startDNSq(
             server: server,
             transactionID: message.headerFields.transactionID
           )
-          let queryPromise = await dnsqPromise(transactionID: message.headerFields.transactionID)!
+          let queryPromise = query.promise
 
           let schedule = eventLoop.scheduleTask(in: timeAmount) {
             struct DNSQueryTimeoutError: Error {}
             queryPromise.fail(DNSQueryTimeoutError())
           }
 
-          // TODO: Handle yield failure.
-          queries.continuation.yield(message)
+          query.continuation.yield(message)
 
           let result = try await queryPromise.futureResult.get()
+
+          // Cancel timeout task once we have received dns response.
           schedule.cancel()
+
           await offloadDNSq(server: server, transactionID: message.headerFields.transactionID)
           return result
         } catch {
