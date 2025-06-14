@@ -138,8 +138,6 @@ class BaseSocketChannel<SocketType: BaseSocketProtocol>: Channel, ChannelCore, @
     )
   }
 
-  deinit {}
-
   final func localAddress0() throws -> SocketAddress {
     self.eventLoop.assertInEventLoop()
     guard self.isOpen else {
@@ -207,6 +205,8 @@ class BaseSocketChannel<SocketType: BaseSocketProtocol>: Channel, ChannelCore, @
     self._isOpen.store(false, ordering: .relaxed)
 
     eventLoop.execute {
+      self.removeHandlers(pipeline: self.pipeline)
+
       self.closePromise.succeed()
 
       // Now reset the addresses as we notified all handlers / futures.

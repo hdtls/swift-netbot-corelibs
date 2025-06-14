@@ -10,7 +10,12 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
 
   private var recvBuffer: [(context: ContentContext, data: ByteBuffer?)] = []
 
-  private let pendingWrites = PendingStreamWritesManager()
+  private struct PendingStreamWrite {
+    var data: ByteBuffer
+    var promise: EventLoopPromise<Void>?
+  }
+
+  private var pendingWrites = MarkedCircularBuffer<PendingStreamWrite>(initialCapacity: 16)
 
   private var inputClosed = false
   private var outputClosed = false
@@ -43,14 +48,11 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
     tcp_arg(self.socket.descriptor, opaquePtr)
   }
 
-  deinit {
-
-  }
-
   override func close0(error: any Error, mode: CloseMode, promise: EventLoopPromise<Void>?) {
     self.eventLoop.assertInEventLoop()
     switch mode {
     case .output:
+      tcp_sent(self.socket.descriptor, nil)
       self.outputClosed = true
       self.pipeline.fireUserInboundEventTriggered(ChannelEvent.outputClosed)
       if self.inputClosed {
@@ -58,7 +60,7 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
         return
       }
     case .input:
-      tcp_recv(self.socket.descriptor, tcp_recv_null)
+      tcp_recv(self.socket.descriptor, nil)
       self.readPending = false
       self.inputClosed = true
       self.pipeline.fireUserInboundEventTriggered(ChannelEvent.inputClosed)
@@ -67,6 +69,10 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
         return
       }
     case .all:
+      tcp_arg(self.socket.descriptor, nil)
+      tcp_recv(self.socket.descriptor, nil)
+      tcp_sent(self.socket.descriptor, nil)
+      tcp_err(self.socket.descriptor, nil)
       self.inputClosed = true
       self.outputClosed = true
       super.close0(error: error, mode: mode, promise: promise)
@@ -171,6 +177,7 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
         }
         connection.recvBuffer.append((.defaultStream, byteBuffer))
         connection.pipeline.fireChannelRead(byteBuffer)
+        connection.pipeline.fireChannelReadComplete()
       }
       pbuf_free(data)
       tcp_recved(connectionPtr, totalLength)
@@ -201,10 +208,10 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
       let error = IOError(errnoCode: err_to_errno(errno), reason: "tcp_err")
       switch errno {
       case ERR_CLSD:
-        try? connection.socket.takeDescriptorOwnership()
+        connection.socket.isOpen = false
         connection.close(promise: nil)
       default:
-        try? connection.socket.takeDescriptorOwnership()
+        connection.socket.isOpen = false
         connection.pipeline.fireErrorCaught(error)
         connection.close(promise: nil)
       }
@@ -232,72 +239,63 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
     return super.readIfNeeded0()
   }
 
-  final override func writeToSocket() {
-    self.pendingWrites.write { pendingStreamWrites in
-      var sentBytes = 0
+  final override func writeToSocket() throws {
+    while var pendingWrite = self.pendingWrites.first {
+      // It's safe to convert Int to UInt16, because we have already checked
+      // that the bigest value of min(_,_) result is clamping into 0xFFFF
+      // witch is equal to UInt16.max.
+      let writableBytes = UInt16(
+        min(pendingWrite.data.count, Int(min(self.socket.descriptor.pointee.snd_buf, 0xFFFF)))
+      )
 
-      for (offset, pendingWrite) in pendingStreamWrites.enumerated() {
-        // It's safe to convert Int to UInt16, because we have already checked
-        // that the bigest value of min(_,_) result is clamping into 0xFFFF
-        // witch is equal to UInt16.max.
-        let length = UInt16(
-          min(pendingWrite.data.count, Int(min(self.socket.descriptor.pointee.snd_buf, 0xFFFF)))
-        )
+      var flags = TCP_WRITE_FLAG_COPY
+      if writableBytes < pendingWrite.data.count {
+        flags |= TCP_WRITE_FLAG_MORE
+      }
 
-        var flags = TCP_WRITE_FLAG_COPY
-        if length < pendingWrite.data.count {
-          flags |= TCP_WRITE_FLAG_MORE
-        }
-
-        do {
-          try pendingWrite.data.peekSlice(length: Int(length))?.withUnsafeReadableBytes {
+      do {
+        try pendingWrite.data
+          .getSlice(at: pendingWrite.data.startIndex, length: Int(writableBytes))?
+          .withUnsafeReadableBytes {
             try self.socket.write(pointer: $0, flags: flags)
           }
 
-          // If data is still contains bytes, we should prepend write to write buffer
-          // and waiting for next write loop.
-          if !pendingWrite.data.isEmpty {
-            let errno = err_to_errno(tcp_output(self.socket.descriptor))
-            if errno != 0 {
-              pendingWrite.promise?.fail(IOError(errnoCode: errno, reason: #function))
-              break
-            }
-
-            sentBytes += Int(length)
-            break
-          }
-        } catch {
-          pendingWrite.promise?.fail(error)
-          break
-        }
-
-        let isMarked =
-          pendingStreamWrites.index(
-            pendingStreamWrites.startIndex,
-            offsetBy: offset
-          ) == pendingStreamWrites.markedElementIndex
-
-        if isMarked {
+        if self.pendingWrites.isMarked(index: self.pendingWrites.startIndex) {
           let errno = err_to_errno(tcp_output(self.socket.descriptor))
           if errno != 0 {
-            pendingWrite.promise?.fail(IOError(errnoCode: errno, reason: #function))
-            break
+            throw IOError(errnoCode: errno, reason: #function)
           }
         }
 
-        sentBytes += Int(length)
-      }
+        guard pendingWrite.data.readableBytes > writableBytes else {
+          self.pendingWrites.removeFirst()
+          pendingWrite.promise?.succeed()
+          continue
+        }
 
-      return .processed(sentBytes)
+        pendingWrite.data.moveReaderIndex(forwardBy: Int(writableBytes))
+        pendingWrite.data.discardReadBytes()
+        self.pendingWrites[self.pendingWrites.startIndex] = pendingWrite
+
+        // Writable buffer is full, try to flush enqueued tcp writes and break write loop.
+        let errno = err_to_errno(tcp_output(self.socket.descriptor))
+        if errno != 0 {
+          throw IOError(errnoCode: errno, reason: #function)
+        }
+        break
+      } catch {
+        pendingWrite.promise?.fail(error)
+        throw error
+      }
     }
   }
 
   final override func hasFlushedPendingWrites() -> Bool {
-    self.pendingWrites.isFlushPending
+    self.pendingWrites.hasMark
   }
 
   final override func markFlushPoint() {
-    self.pendingWrites.markFlushCheckpoint()
+    self.pendingWrites.mark()
   }
 
   final override func bufferPendingWrite(data: NIOAny, promise: EventLoopPromise<Void>?) {
@@ -309,8 +307,5 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
     let data = self.unwrapData(data, as: ByteBuffer.self)
 
     self.pendingWrites.append(.init(data: data, promise: promise))
-    if self.pendingWrites.bytes >= self.socket.descriptor.pointee.snd_buf {
-      self.pipeline.syncOperations.fireChannelWritabilityChanged()
-    }
   }
 }

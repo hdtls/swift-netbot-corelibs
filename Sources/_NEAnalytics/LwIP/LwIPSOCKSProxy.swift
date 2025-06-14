@@ -134,32 +134,26 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
               .get()
 
             @Sendable func read() {
-              connection.receive(maximumLength: 8192) {
-                content, contentContext, isComplete, error in
-                // If current read contains valid data then write to connected SOCKS5 server.
-                if let content {
-                  Task {
-                    try await channel.writeAndFlush(content)
-                  }
-                }
-
-                guard contentContext !== LwIPConnection.ContentContext.finalMessage else {
-                  // EOF
-                  Task {
-                    try await channel.close(mode: .output)
-                  }
+              connection.receive(maximumLength: 8192) { content, contentContext, _, error in
+                guard error == nil else {
+                  channel.close(promise: nil)
                   return
                 }
 
-                // If current read contains data then perform a new read immediately.
-                // otherwise wait for a short time then read.
-                if let content, !content.isEmpty {
-                  read()
-                } else {
-                  Task {
-                    try await Task.sleep(for: .seconds(0.1))
-                    read()
+                Task {
+                  // If current read contains valid data then write to connected SOCKS5 server.
+                  if let content {
+                    try await channel.writeAndFlush(content)
                   }
+
+                  if contentContext === LwIPConnection.ContentContext.finalMessage {
+                    // EOF
+                    try await channel.close(mode: .output)
+                    return
+                  }
+
+                  try await Task.sleep(for: .seconds(0.1))
+                  read()
                 }
               }
             }
@@ -168,7 +162,7 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
 
             try await channel.closeFuture.get()
             self.logger.trace("LwIP SOCKS5 connection closed")
-            connection.close(mode: .output, promise: nil)
+            connection.close(promise: nil)
           } catch {
             self.logger.error("\(error)")
             connection.close(promise: nil)

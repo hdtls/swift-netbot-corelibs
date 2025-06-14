@@ -41,11 +41,13 @@ class LwIP {
         guard let contextPtr = contextPtr else { return ERR_IF }
         contextPtr.pointee.mtu = 1500
         contextPtr.pointee.output = { contextPtr, bufferPtr, addressPtr in
-          guard let opaquePtr = contextPtr?.pointee.state else {
-            return ERR_IF
-          }
           guard let data = bufferPtr else {
             return ERR_OK
+          }
+
+          guard let opaquePtr = contextPtr?.pointee.state else {
+            pbuf_free(data)
+            return ERR_IF
           }
 
           let device = Unmanaged<LwIP>.fromOpaque(opaquePtr).takeUnretainedValue()
@@ -54,7 +56,9 @@ class LwIP {
           byteBuffer.writeWithUnsafeMutableBytes(minimumWritableBytes: Int(data.pointee.tot_len)) {
             Int(pbuf_copy_partial(data, $0.baseAddress, data.pointee.tot_len, 0))
           }
+
           guard let packetObject = NEPacket(data: byteBuffer, protocolFamily: .inet) else {
+            pbuf_free(data)
             return ERR_BUF
           }
           _ = device.packetFlow.writePacketObjects([packetObject])
@@ -95,8 +99,8 @@ class LwIP {
 
   func handleInput(_ packetObject: NEPacket) throws {
     try packetObject.data.withUnsafeReadableBytes {
-      let p = pbuf_alloc(PBUF_IP, u16_t($0.count), PBUF_RAM)
-      pbuf_take(p, $0.baseAddress, u16_t($0.count))
+      let p = pbuf_alloc(PBUF_RAW, UInt16($0.count), PBUF_RAM)
+      pbuf_take(p, $0.baseAddress, UInt16($0.count))
       let errno = err_to_errno(self.device.pointee.input(p, self.device))
       guard errno != 0 else {
         return

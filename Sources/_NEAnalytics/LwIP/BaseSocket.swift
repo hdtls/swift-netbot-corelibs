@@ -21,16 +21,7 @@ class BaseSocket: BaseSocketProtocol {
 
   var descriptor: UnsafeMutablePointer<tcp_pcb>
 
-  var isOpen: Bool {
-    switch descriptor.pointee.state {
-    case CLOSED, FIN_WAIT_1, FIN_WAIT_2, CLOSE_WAIT, CLOSING, LAST_ACK, TIME_WAIT:
-      return false
-    case LISTEN, SYN_SENT, SYN_RCVD, ESTABLISHED:
-      return true
-    default:
-      return true
-    }
-  }
+  var isOpen = true
 
   init(socket descriptor: UnsafeMutablePointer<tcp_pcb>) {
     self.descriptor = descriptor
@@ -74,19 +65,15 @@ class BaseSocket: BaseSocketProtocol {
   }
 
   func close() throws {
+    guard self.isOpen else {
+      return
+    }
+
     let errno = err_to_errno(tcp_close(descriptor))
     if errno != 0 {
       throw IOError(errnoCode: errno, reason: "close")
     }
-  }
-
-  final func takeDescriptorOwnership() throws {
-    guard let descriptor = tcp_new() else {
-      throw IOError(errnoCode: ENOBUFS, reason: "takeDescriptorOwnership")
-    }
-    descriptor.pointee.state = CLOSED
-    descriptor.pointee.local_port = 0
-    self.descriptor = descriptor
+    self.isOpen = false
   }
 }
 
