@@ -91,7 +91,7 @@
   }
 
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-  @MainActor @Observable public class RecentConnectionsControler {
+  @MainActor @Observable public class RecentConnectionsStore {
 
     public enum LocalizedError: Foundation.LocalizedError, Equatable {
       case nw(NWError)
@@ -141,7 +141,7 @@
     private nonisolated let logger = Logger(
       subsystem: "com.tenbits.netbot.dashboard", category: "connections")
 
-    private var connection: NWConnection!
+    @ObservationIgnored private var connection: NWConnection!
 
     @ObservationIgnored private var earliestBeginDate = Date.distantPast
 
