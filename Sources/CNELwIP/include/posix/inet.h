@@ -30,7 +30,11 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#if __has_include(<linux/udp.h>)
+#include <linux/udp.h>
+#else
 #include <netinet/udp.h>
+#endif
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <net/if.h>

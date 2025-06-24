@@ -268,7 +268,7 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
         }
 
         guard pendingWrite.data.readableBytes > writableBytes else {
-          self.pendingWrites.removeFirst()
+          _ = self.pendingWrites.removeFirst()
           pendingWrite.promise?.succeed()
           continue
         }
