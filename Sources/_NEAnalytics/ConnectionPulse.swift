@@ -41,8 +41,6 @@ import NIOCore
 
   private var connections: [Connection]
 
-  private var framer: RepeatedTask?
-
   init(group: any EventLoopGroup, address: Address) {
     self.group = group
     self.address = address
@@ -53,19 +51,9 @@ import NIOCore
       self.quiescing = ServerQuiescingHelper(group: group)
     #endif
     self._connections = .init([])
-    self._framer = .init(nil)
   }
 
   func run() async throws {
-    self._framer.withLock {
-      $0 =
-        group
-        .any()
-        .scheduleRepeatedTask(initialDelay: .seconds(1), delay: .seconds(1)) { [weak self] _ in
-          self?.flush()
-        }
-    }
-
     #if canImport(Network)
       let parameters = NWParameters.tcp
       parameters.requiredLocalEndpoint = try address.asEndpoint()
@@ -230,38 +218,32 @@ import NIOCore
       } else {
         $0.append(conn)
       }
-    }
-  }
 
-  private func flush() {
-    let connections = self._connections.withLock {
-      let connections = $0
+      guard !outboundStreams.isEmpty, !$0.isEmpty else {
+        return
+      }
+
+      guard let data = try? jsonEncoder.encode($0) else {
+        return
+      }
+
+      for outboundStream in outboundStreams {
+        #if canImport(Network)
+          outboundStream.value
+            .send(
+              content: data,
+              contentContext: .init(
+                identifier: "connections",
+                metadata: [NWProtocolWebSocket.Metadata(opcode: .binary)]
+              ),
+              completion: .contentProcessed { _ in }
+            )
+        #else
+          outboundStream.value.yield(ByteBuffer(bytes: data))
+        #endif
+      }
+
       $0.removeAll()
-      return connections
-    }
-
-    guard !outboundStreams.isEmpty, !connections.isEmpty else {
-      return
-    }
-
-    guard let data = try? jsonEncoder.encode(connections) else {
-      return
-    }
-
-    for outboundStream in outboundStreams {
-      #if canImport(Network)
-        outboundStream.value
-          .send(
-            content: data,
-            contentContext: .init(
-              identifier: "connections",
-              metadata: [NWProtocolWebSocket.Metadata(opcode: .binary)]
-            ),
-            completion: .contentProcessed { _ in }
-          )
-      #else
-        outboundStream.value.yield(ByteBuffer(bytes: data))
-      #endif
     }
   }
 }
