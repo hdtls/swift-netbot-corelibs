@@ -16,7 +16,7 @@
       }
       let processInfo = try await processInfo(address: UInt16(port))
       return ProcessReport(
-        processName: processInfo?.processName,
+        processName: processInfo?.processName ?? "Unknown",
         processBundleURL: processInfo?.processBundleURL,
         processExecutableURL: processInfo?.processExecutableURL,
         processIdentifier: processInfo?.processIdentifier,

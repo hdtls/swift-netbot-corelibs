@@ -103,6 +103,7 @@ let package = Package(
         "NetbotMacros",
         "_PreferenceSupport",
         "_ProfileSupport",
+        .product(name: "AnlzrReports", package: "swift-netbot-essentials"),
         .product(name: "_CryptoExtras", package: "swift-crypto"),
         .product(name: "Crypto", package: "swift-crypto"),
         .product(name: "NIOSSL", package: "swift-nio-ssl"),

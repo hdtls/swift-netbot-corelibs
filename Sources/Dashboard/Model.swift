@@ -61,6 +61,14 @@
     private func query0(filter: Predicate<Element>) -> [Element] {
       do {
         var fd = FetchDescriptor<Element>()
+        fd.relationshipKeyPathsForPrefetching = [
+          \._originalRequest,
+          \._currentRequest,
+          \._response,
+          \._establishmentReport,
+          \._dataTransferReport,
+          \._processReport,
+        ]
         fd.predicate = filter
         return try modelContext.fetch(fd)
       } catch {
@@ -76,13 +84,40 @@
 
       try? modelContext.transaction {
         for connection in connections {
-          let index = models.firstIndex(where: { $0.taskIdentifier == connection.taskIdentifier })
-          if let index {
-            models[index].mergeValues(connection)
+          let existing = models.first(where: { $0.taskIdentifier == connection.taskIdentifier })
+
+          guard existing == nil else {
+            existing?.mergeValues(connection)
+            existing?._originalRequest?.mergeValues(connection.originalRequest)
+            existing?._currentRequest?.mergeValues(connection.currentRequest)
+            existing?._establishmentReport?.mergeValues(connection.establishmentReport)
+            existing?._processReport?.mergeValues(connection.processReport)
+            continue
+          }
+
+          let persistentModel = Element()
+          persistentModel.mergeValues(connection)
+
+          persistentModel._originalRequest = .init()
+          persistentModel._originalRequest?.mergeValues(connection.originalRequest)
+
+          persistentModel._currentRequest = .init()
+          persistentModel._currentRequest?.mergeValues(connection.currentRequest)
+
+          persistentModel._establishmentReport = .init()
+          persistentModel._establishmentReport?.mergeValues(connection.establishmentReport)
+
+          var fd = FetchDescriptor<ProcessReport.PersistentModel>()
+          fd.predicate = #Predicate { $0.processName == connection.processReport.processName }
+
+          if let processReport = try modelContext.fetch(fd).first {
+            processReport.connections.append(persistentModel)
           } else {
-            let persistentModel = Element()
-            persistentModel.mergeValues(connection)
-            modelContext.insert(persistentModel)
+            let processReport = ProcessReport.PersistentModel()
+            processReport.mergeValues(connection.processReport)
+            modelContext.insert(processReport)
+
+            processReport.connections.append(persistentModel)
           }
         }
       }
