@@ -24,7 +24,7 @@ import _ProfileSupport
 #if canImport(SwiftData)
   @ModelActor
 #endif
-@globalActor public actor ProfileAssistant {
+public actor ProfileAssistant {
 
   #if canImport(SwiftData)
     public static let shared = ProfileAssistant(modelContainer: modelContainer)
@@ -138,13 +138,13 @@ import _ProfileSupport
         numberOfProxies: $0.lazyProxies.count)
     }
     profiles.sort(using: KeyPathComparator(\.name))
-    await Task { @MainActor in
+    await MainActor.run {
       profileResource.profiles = profiles
-    }.value
+    }
   }
 
   /// Remove all loaded data from container.
-  public func erase() async throws {
+  public func erase() throws {
     #if canImport(SwiftData)
       // Remove expired data.
       var fd = FetchDescriptor<Profile.PersistentModel>()
@@ -193,8 +193,8 @@ import _ProfileSupport
   ///
   /// - Parameter url: URL for the profile file.
   /// - Returns: Loaded profile if success.
-  nonisolated public func profile(identified url: URL) async throws -> Profile {
-    guard await url != virtualProfileURL else {
+  public func profile(identified url: URL) async throws -> Profile {
+    guard url != virtualProfileURL else {
       return Profile()
     }
     return try await withCheckedThrowingContinuation { continuation in
@@ -248,7 +248,7 @@ import _ProfileSupport
           try Task.checkCancellation()
 
           // Ignore SwiftData errors.
-          try? await loadProfile(profile)
+          try loadProfile(profile)
           lastLoadError = nil
           profileLoadingTask = nil
           logger.trace("Completed loading profile \(profileName)")
@@ -267,14 +267,13 @@ import _ProfileSupport
 
   /// Load specific profile into database.
   /// - Parameter profile: Profile to load.
-  func loadProfile(_ profile: Profile) async throws {
+  private func loadProfile(_ profile: Profile) throws {
     #if canImport(SwiftData)
-      try await erase()
-
-      let persistentModel = Profile.PersistentModel()
-
       // Load all data into model container.
       try modelContext.transaction {
+        try erase()
+
+        let persistentModel = Profile.PersistentModel()
         persistentModel.mergeValues(profile)
         modelContext.insert(persistentModel)
 
@@ -352,8 +351,6 @@ import _ProfileSupport
           persistentModel.lazyStubbedHTTPResponses.append(model)
         }
       }
-
-      try modelContext.save()
     #endif
   }
 
