@@ -12,159 +12,112 @@
   import Network
   import Observation
   import SwiftData
+  import NIOConcurrencyHelpers
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-  @ModelActor private actor RecentConnectionsModelActor {
-    typealias Element = Connection.PersistentModel
+  public enum LocalizedError: Foundation.LocalizedError, Equatable {
+    case nw(NWError)
+    case operationUnsupported
 
-    /// An error encountered during the most recent attempt to fetch data.
-    var fetchError: (any Error)?
-
-    private func query0(filter: Predicate<Element>) -> [Element] {
-      do {
-        var fd = FetchDescriptor<Element>()
-        fd.relationshipKeyPathsForPrefetching = [
-          \._originalRequest,
-          \._currentRequest,
-          \._response,
-          \._establishmentReport,
-          \._dataTransferReport,
-          \._processReport,
-        ]
-        fd.predicate = filter
-        return try modelContext.fetch(fd)
-      } catch {
-        fetchError = error
-        return []
-      }
-    }
-
-    fileprivate func insert(_ connections: [Connection]) {
-      let term = connections.map { $0.taskIdentifier }
-
-      let models = query0(filter: #Predicate { term.contains($0.taskIdentifier) })
-
-      try? modelContext.transaction {
-        for connection in connections {
-          let existing = models.first(where: { $0.taskIdentifier == connection.taskIdentifier })
-
-          guard existing == nil else {
-            existing?.mergeValues(connection)
-            existing?._originalRequest?.mergeValues(connection.originalRequest)
-            existing?._currentRequest?.mergeValues(connection.currentRequest)
-            existing?._establishmentReport?.mergeValues(connection.establishmentReport)
-            existing?._processReport?.mergeValues(connection.processReport)
-            continue
-          }
-
-          let persistentModel = Element()
-          persistentModel.mergeValues(connection)
-
-          persistentModel._originalRequest = .init()
-          persistentModel._originalRequest?.mergeValues(connection.originalRequest)
-
-          persistentModel._currentRequest = .init()
-          persistentModel._currentRequest?.mergeValues(connection.currentRequest)
-
-          persistentModel._establishmentReport = .init()
-          persistentModel._establishmentReport?.mergeValues(connection.establishmentReport)
-
-          var fd = FetchDescriptor<AnlzrReports.ProcessReport.PersistentModel>()
-          fd.predicate = #Predicate { $0.processName == connection.processReport.processName }
-
-          if let processReport = try modelContext.fetch(fd).first {
-            processReport.connections.append(persistentModel)
-          } else {
-            let processReport = AnlzrReports.ProcessReport.PersistentModel()
-            processReport.mergeValues(connection.processReport)
-            modelContext.insert(processReport)
-
-            processReport.connections.append(persistentModel)
-          }
+    public var errorDescription: String? {
+      switch self {
+      case .nw(let error):
+        switch error {
+        case .posix(let code):
+          return error.localizedDescription
+        case .dns, .tls:
+          return error.localizedDescription
+        @unknown default:
+          return error.localizedDescription
         }
+      case .operationUnsupported:
+        return "Operation Unsupported"
       }
-      try? modelContext.save()
+    }
+  }
+
+  public protocol ConnectionsDependency: Sendable {
+
+    var messages: AsyncStream<Result<[Connection], LocalizedError>> { get }
+
+    func run()
+
+    func shutdownGracefully()
+  }
+
+  final public class DefaultConnectionsDependency: ConnectionsDependency {
+    public let messages: AsyncStream<Result<[Connection], LocalizedError>>
+    private let continuation: AsyncStream<Result<[Connection], LocalizedError>>.Continuation
+
+    private let connection = NIOLockedValueBox<NWConnection?>(nil)
+
+    private nonisolated let logger = Logger(label: "com.tenbits.netbot.dashboard")
+
+    public init() {
+      (messages, continuation) = AsyncStream<Result<[Connection], LocalizedError>>.makeStream()
     }
 
-    fileprivate func queryProcessReports() -> [ProcessReport] {
-      do {
-        var fd = FetchDescriptor<AnlzrReports.ProcessReport.PersistentModel>()
-        fd.relationshipKeyPathsForPrefetching = [\.connections]
-        let models = try modelContext.fetch(fd)
-        return models.map {
-          var countOfReceivedBytes = Int64.zero
-          var countOfSentBytes = Int64.zero
-          var countOfReceivedBytesPerSecond = Int64.zero
-          var countOfSentBytesPerSecond = Int64.zero
+    public func run() {
+      let parameters = NWParameters.tcp
+      let options = NWProtocolWebSocket.Options()
+      parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
+      let connection = self.connection.withLockedValue {
+        $0 = NWConnection(to: .url(URL(string: "ws://127.0.0.1:6170")!), using: parameters)
+        return $0!
+      }
+      connection.stateUpdateHandler = { [weak self] state in
+        guard let self else { return }
 
-          for connection in $0.connections {
-            guard let dataTransferReport = connection._dataTransferReport else {
-              continue
+        switch state {
+        case .setup:
+          break
+        case .waiting(let error):
+          logger.error("Fetch connections failure with error: \(error.localizedDescription)")
+          continuation.yield(.failure(.nw(error)))
+        case .preparing:
+          break
+        case .ready:
+          func runReadLoop() {
+            guard connection.state == .ready else {
+              return
             }
-            countOfSentBytes &+= Int64(
-              clamping: dataTransferReport.aggregatePathReport.sentApplicationByteCount
-            )
-            countOfReceivedBytes &+= Int64(
-              clamping: dataTransferReport.aggregatePathReport.receivedApplicationByteCount
-            )
-            countOfSentBytesPerSecond &+= Int64(
-              clamping: dataTransferReport.pathReports.first?.sentApplicationByteCount ?? 0
-            )
-            countOfReceivedBytesPerSecond &+= Int64(
-              clamping: dataTransferReport.pathReports.first?.receivedApplicationByteCount ?? 0
-            )
+
+            connection.receiveMessage { [weak self] content, contentContext, isComplete, error in
+              guard let data = content, let self else {
+                return
+              }
+
+              do {
+                let models = try JSONDecoder().decode([Connection].self, from: data)
+                continuation.yield(.success(models))
+              } catch {
+                assertionFailure("BUG IN NETBOT CORE, please report: illegal data format \(error)")
+                logger.critical("decoding connection failure with error: \(error)")
+              }
+
+              runReadLoop()
+            }
           }
 
-          return ProcessReport(
-            processName: $0.processName,
-            processBundleURL: $0.processBundleURL,
-            processExecutableURL: $0.processExecutableURL,
-            processIdentifier: $0.processIdentifier,
-            processIconTIFFRepresentation: $0.processIconTIFFRepresentation,
-            countOfReceivedBytes: countOfReceivedBytes,
-            countOfSentBytes: countOfSentBytes,
-            countOfReceivedBytesPerSecond: countOfReceivedBytesPerSecond,
-            countOfSentBytesPerSecond: countOfSentBytesPerSecond
-          )
+          runReadLoop()
+        case .failed(let error):
+          logger.error("Fetch connections failure with error: \(error.localizedDescription)")
+          continuation.yield(.failure(.nw(error)))
+        case .cancelled:
+          break
+        @unknown default:
+          continuation.yield(.failure(.operationUnsupported))
         }
-      } catch {
-        fetchError = error
-        return []
       }
+      connection.start(queue: .global())
     }
+
+    public func shutdownGracefully() {}
   }
 
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
   @MainActor @Observable public class Connections {
 
     nonisolated public static let shared = Connections()
-
-    public enum LocalizedError: Foundation.LocalizedError, Equatable {
-      case nw(NWError)
-      case operationUnsupported
-
-      public var errorDescription: String? {
-        switch self {
-        case .nw(let error):
-          switch error {
-          case .posix(let code):
-            return error.localizedDescription
-          case .dns, .tls:
-            return error.localizedDescription
-          @unknown default:
-            return error.localizedDescription
-          }
-        case .operationUnsupported:
-          return "Operation Unsupported"
-        }
-      }
-    }
-
-    /// The ModelContainer for the ModelActor.
-    /// The container that manages the app’s schema and model storage configuration.
-    public var modelContainer: ModelContainer {
-      store.modelContainer
-    }
 
     /// An error encountered during the most recent attempt to fetch data.
     ///
@@ -187,7 +140,15 @@
     }
     private var _processReports: [ProcessReport] = []
 
-    private nonisolated let store: RecentConnectionsModelActor
+    public var formattedDownloadSpeed: String {
+      "\(self._bytesReceived.formatted(.byteCount(style: .binary)))/s"
+    }
+    private var _bytesReceived = Measurement<UnitInformationStorage>(value: 0, unit: .bytes)
+
+    public var formattedUploadSpeed: String {
+      "\(self._bytesSent.formatted(.byteCount(style: .binary)))/s"
+    }
+    private var _bytesSent = Measurement<UnitInformationStorage>(value: 0, unit: .bytes)
 
     private nonisolated let logger = Logger(label: "com.tenbits.netbot.dashboard")
 
@@ -195,195 +156,137 @@
 
     @ObservationIgnored private var earliestBeginDate = Date.distantPast
 
-    nonisolated public convenience init() {
-      let schema = Schema(versionedSchema: AnlzrReports.V1.self)
-      let configuration: ModelConfiguration = .init(isStoredInMemoryOnly: true)
-      let modelContainer = try! ModelContainer(for: schema, configurations: [configuration])
-      self.init(modelContainer: modelContainer)
+    nonisolated private let dependency: any ConnectionsDependency
+
+    nonisolated public init(dependency: any ConnectionsDependency = DefaultConnectionsDependency())
+    {
+      self.dependency = dependency
     }
 
-    nonisolated public init(modelContainer: ModelContainer) {
-      store = RecentConnectionsModelActor(modelContainer: modelContainer)
-    }
+    @ObservationIgnored private var timerSource: DispatchSourceTimer!
 
     public func resume() {
       self._fetchError = nil
-      let parameters = NWParameters.tcp
-      let options = NWProtocolWebSocket.Options()
-      parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
-      connection = NWConnection(to: .url(URL(string: "ws://127.0.0.1:6170")!), using: parameters)
-      connection.stateUpdateHandler = { [weak self] state in
-        Task { @MainActor in
-          guard let self else { return }
+      self.dependency.run()
 
-          switch state {
-          case .setup:
-            break
-          case .waiting(let error):
-            self.logger.error("Fetch connections failure with error: \(error.localizedDescription)")
-            self._fetchError = LocalizedError.nw(error)
-          case .preparing:
-            break
-          case .ready:
-            self.runReadLoop()
-          case .failed(let error):
-            self.logger.error("Fetch connections failure with error: \(error.localizedDescription)")
-            self._fetchError = LocalizedError.nw(error)
-          case .cancelled:
-            break
-          @unknown default:
-            self._fetchError = LocalizedError.operationUnsupported
+      Task.detached {
+        for await message in self.dependency.messages {
+          do {
+            try await self.insert(message.get())
+          } catch {
+            self.logger.error("\(error)")
           }
         }
       }
-      connection.start(queue: .global())
+
+      timerSource?.cancel()
+      timerSource = DispatchSource.makeTimerSource(queue: .main)
+      timerSource.scheduleRepeating(deadline: .now(), interval: .seconds(1))
+      timerSource.setEventHandler {
+        var bytesReceived = self._bytesReceived
+        bytesReceived.value = 0
+
+        var bytesSent = self._bytesSent
+        bytesSent.value = 0
+
+        for processReport in self._processReports {
+          let metrics = self._result.filter {
+            processReport.transactionMetrics.connections.contains($0.id)
+          }
+          .reduce(into: (Double.zero, Double.zero, Double.zero, Double.zero, 0)) {
+            partialResult, data in
+            partialResult.0 += Double(
+              data.dataTransferReport.aggregatePathReport.receivedApplicationByteCount)
+            partialResult.1 += Double(
+              data.dataTransferReport.aggregatePathReport.sentApplicationByteCount)
+            partialResult.2 += Double(
+              data.dataTransferReport.pathReports.first?.receivedApplicationByteCount ?? 0)
+            partialResult.3 += Double(
+              data.dataTransferReport.pathReports.first?.sentApplicationByteCount ?? 0)
+            partialResult.4 += data.state == .active ? 1 : 0
+          }
+
+          processReport.transactionMetrics.totalBytesReceived.value = metrics.0
+          processReport.transactionMetrics.totalBytesSent.value = metrics.1
+          processReport.transactionMetrics.bytesReceived.value = metrics.2
+          processReport.transactionMetrics.bytesSent.value = metrics.3
+          processReport.transactionMetrics.countOfActiveConnections = metrics.4
+
+          bytesReceived.value += metrics.2
+          bytesSent.value += metrics.3
+        }
+
+        self._bytesReceived = bytesReceived
+        self._bytesSent = bytesSent
+      }
+      timerSource.resume()
     }
 
     public func cancel() {
       self._fetchError = nil
-      if connection != nil {
-        connection.cancel()
-        self.connection = nil
-      }
+      self.dependency.shutdownGracefully()
+      self.timerSource?.cancel()
     }
 
-    private func runReadLoop() {
-      guard connection?.state == .ready else {
-        return
-      }
-
-      connection.receiveMessage { [weak self] content, contentContext, isComplete, error in
-        Task.detached {
-          guard let data = content, let self else {
-            return
-          }
-
-          do {
-            let models = try JSONDecoder().decode([Connection].self, from: data)
-            await self.insert(models)
-          } catch {
-            assertionFailure("BUG IN NETBOT CORE, please report: illegal data format \(error)")
-            self.logger.critical("decoding connection failure with error: \(error)")
-          }
-
-          Task { @MainActor in
-            self.runReadLoop()
-          }
-        }
-      }
-    }
-
-    nonisolated private func insert(_ models: [Connection]) async {
-      //      await self.store.insert(models)
-      //      Task { @MainActor in
-      //        self._processReports = await self.store.queryProcessReports()
-      //      }
-
+    private func insert(_ models: [Connection]) {
       for model in models {
-        if let data = await self._result.first(
-          where: {
-            $0.taskIdentifier == model.taskIdentifier
-          })
-        {
-          let dataTransferReport = data.dataTransferReport
+        let processReport = self._processReports.first {
+          $0.processName == model.processReport.processName
+        }
 
-          Task { @MainActor in
-            data.originalRequest = model.originalRequest
-            data.currentRequest = model.currentRequest
-            data.response = model.response
-            data.earliestBeginDate = model.earliestBeginDate
-            data.taskDescription = model.taskDescription
-            data.tls = model.tls
-            data.state = model.state
-            data.establishmentReport = model.establishmentReport
-            data.forwardingReport = model.forwardingReport
-            data.dataTransferReport = model.dataTransferReport
-            data.processReport = model.processReport
-          }
-
-          let index = await self._processReports.firstIndex {
-            $0.processName == model.processReport.processName
-          }
-
-          guard let index else { continue }
-
-          var processReport = await self._processReports[index]
-          processReport.countOfReceivedBytes -= Int64(
-            clamping: dataTransferReport.aggregatePathReport.receivedApplicationByteCount)
-          processReport.countOfReceivedBytes &+= Int64(
-            clamping: model.dataTransferReport.aggregatePathReport.receivedApplicationByteCount)
-
-          processReport.countOfSentBytes -= Int64(
-            clamping: dataTransferReport.aggregatePathReport.sentApplicationByteCount)
-          processReport.countOfSentBytes &+= Int64(
-            clamping: model.dataTransferReport.aggregatePathReport.sentApplicationByteCount)
-
-          processReport.countOfReceivedBytesPerSecond -= Int64(
-            clamping: dataTransferReport.pathReports.first?.receivedApplicationByteCount ?? 0)
-          processReport.countOfReceivedBytesPerSecond &+= Int64(
-            clamping: model.dataTransferReport.pathReports.first?.receivedApplicationByteCount ?? 0)
-
-          processReport.countOfSentBytesPerSecond -= Int64(
-            clamping: dataTransferReport.pathReports.first?.sentApplicationByteCount ?? 0)
-          processReport.countOfSentBytesPerSecond &+= Int64(
-            clamping: model.dataTransferReport.pathReports.first?.sentApplicationByteCount ?? 0)
-
-          Task { @MainActor in
-            self._processReports[index] = processReport
-          }
+        if let data = self._result.first(where: { $0.taskIdentifier == model.taskIdentifier }) {
+          data.originalRequest = model.originalRequest
+          data.currentRequest = model.currentRequest
+          data.response = model.response
+          data.earliestBeginDate = model.earliestBeginDate
+          data.taskDescription = model.taskDescription
+          data.tls = model.tls
+          data.state = model.state
+          data.establishmentReport = model.establishmentReport
+          data.forwardingReport = model.forwardingReport
+          data.dataTransferReport = model.dataTransferReport
+          data.processReport = model.processReport
         } else {
-          let index = await self._processReports.firstIndex {
-            $0.processName == model.processReport.processName
-          }
+          if let processReport {
+            self._result.append(model)
 
-          if let index {
-            var processReport = await self._processReports[index]
-            processReport.countOfReceivedBytes &+= Int64(
-              clamping: model.dataTransferReport.aggregatePathReport.receivedApplicationByteCount)
-            processReport.countOfSentBytes &+= Int64(
-              clamping: model.dataTransferReport.aggregatePathReport.sentApplicationByteCount
-            )
-            processReport.countOfReceivedBytesPerSecond &+= Int64(
-              clamping: model.dataTransferReport.pathReports.first?.receivedApplicationByteCount
-                ?? 0
-            )
-            processReport.countOfSentBytesPerSecond &+= Int64(
-              clamping: model.dataTransferReport.pathReports.first?.sentApplicationByteCount ?? 0
-            )
-
-            Task { @MainActor in
-              self._result.append(model)
-              self._processReports[index] = processReport
-            }
+            processReport.transactionMetrics.connections.append(model.id)
           } else {
-            Task { @MainActor in
-              self._result.append(model)
-              self._processReports
-                .append(
-                  ProcessReport(
-                    processName: model.processReport.processName,
-                    processBundleURL: model.processReport.processBundleURL,
-                    processExecutableURL: model.processReport.processExecutableURL,
-                    processIdentifier: model.processReport.processIdentifier,
-                    countOfReceivedBytes: Int64(
-                      clamping: model.dataTransferReport.aggregatePathReport
-                        .receivedApplicationByteCount
-                    ),
-                    countOfSentBytes: Int64(
-                      clamping: model.dataTransferReport.aggregatePathReport
-                        .sentApplicationByteCount
-                    ),
-                    countOfReceivedBytesPerSecond: Int64(
-                      clamping: model.dataTransferReport.pathReports.first?
-                        .receivedApplicationByteCount ?? 0
-                    ),
-                    countOfSentBytesPerSecond: Int64(
-                      clamping: model.dataTransferReport.pathReports.first?.sentApplicationByteCount
-                        ?? 0
-                    )
-                  )
-                )
-            }
+            self._result.append(model)
+
+            let processReport = ProcessReport(
+              processName: model.processReport.processName,
+              processBundleURL: model.processReport.processBundleURL,
+              processExecutableURL: model.processReport.processExecutableURL,
+              processIconTIFFRepresentation: model.processReport.processIconTIFFRepresentation,
+              transactionMetrics: .init(
+                totalBytesReceived: Measurement(
+                  value: Double(
+                    model.dataTransferReport.aggregatePathReport.receivedApplicationByteCount),
+                  unit: .bytes
+                ),
+                totalBytesSent: Measurement(
+                  value: Double(
+                    model.dataTransferReport.aggregatePathReport.sentApplicationByteCount),
+                  unit: .bytes
+                ),
+                bytesReceived: Measurement(
+                  value: Double(
+                    model.dataTransferReport.pathReports.first?.receivedApplicationByteCount ?? 0),
+                  unit: .bytes
+                ),
+                bytesSent: Measurement(
+                  value: Double(
+                    model.dataTransferReport.pathReports.first?.sentApplicationByteCount ?? 0),
+                  unit: .bytes
+                ),
+                countOfActiveConnections: model.state == .active ? 1 : 0,
+                connections: [model.id],
+                processIdentifiers: model.processReport.processIdentifier != nil
+                  ? [model.processReport.processIdentifier!] : []
+              )
+            )
+            self._processReports.append(processReport)
           }
         }
       }
@@ -392,11 +295,6 @@
     public func erase() {
       self.earliestBeginDate = Date.now
       self._result = []
-    }
-
-    public func sortedProcessReports(using options: ProcessReport.CompareOptions) -> [ProcessReport]
-    {
-      self._processReports.sorted(using: options.sortDescriptor)
     }
   }
 #endif
