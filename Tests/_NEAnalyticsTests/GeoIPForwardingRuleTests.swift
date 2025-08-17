@@ -14,7 +14,7 @@ struct GeoIPForwardingRuleTests {
     let forwardingRule = GeoIPForwardingRule(
       db: nil, countryCode: "CN", forwardProtocol: .direct)
     #expect(forwardingRule.countryCode == "CN")
-    #expect(forwardingRule.description == "GEOIP,CN,DIRECT")
+    #expect(forwardingRule.description == "GEOIP CN")
   }
 
   @Test func copyOnWrite() {

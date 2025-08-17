@@ -90,7 +90,7 @@ struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hasha
   }
 
   @inlinable var description: String {
-    "DOMAIN-SET,\(originalURLString),\(forwardProtocol.asForwardProtocol().name)"
+    "DOMAIN-SET \(originalURLString.split(separator: "/").last.unsafelyUnwrapped)"
   }
 
   /// Create instance of `DomainsetForwardingRule` with specific url and forwardProtocol.

@@ -15,7 +15,7 @@ struct DomainSuffixForwardingRuleTests {
   @Test func propertyInitialValue() {
     let data = DomainSuffixForwardingRule(domainSuffix: "test.com", forwardProtocol: .direct)
     #expect(data.domainSuffix == "test.com")
-    #expect(data.description == "DOMAIN-SUFFIX,test.com,DIRECT")
+    #expect(data.description == "DOMAIN-SUFFIX test.com")
   }
 
   @Test func copyOnWrite() {

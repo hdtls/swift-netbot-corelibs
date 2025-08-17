@@ -15,7 +15,7 @@ struct DomainKeywordForwardingRuleTest {
   @Test func propertyInitialValue() {
     let data = DomainKeywordForwardingRule(domainKeyword: "test", forwardProtocol: .direct)
     #expect(data.domainKeyword == "test")
-    #expect(data.description == "DOMAIN-KEYWORD,test,DIRECT")
+    #expect(data.description == "DOMAIN-KEYWORD test")
   }
 
   @Test func copyOnWrite() {

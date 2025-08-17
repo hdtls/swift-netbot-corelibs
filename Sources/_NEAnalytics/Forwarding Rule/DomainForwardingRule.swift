@@ -14,7 +14,7 @@ struct DomainForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
   var forwardProtocol: any ForwardProtocolConvertible
 
   var description: String {
-    "DOMAIN,\(domain),\(forwardProtocol.asForwardProtocol().name)"
+    "DOMAIN \(domain)"
   }
 
   init(domain: String, forwardProtocol: any ForwardProtocolConvertible) {

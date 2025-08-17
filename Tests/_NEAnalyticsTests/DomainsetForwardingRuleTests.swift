@@ -26,7 +26,7 @@ struct DomainsetForwardingRuleTests {
       originalURLString: #filePath, forwardProtocol: .direct)
     #expect(data.originalURLString == #filePath)
     #expect(data.externalDomains.isEmpty)
-    #expect(data.description == "DOMAIN-SET,\(#filePath),DIRECT")
+    #expect(data.description == "DOMAIN-SET DomainsetForwardingRuleTests.swift")
   }
 
   @Test func externalResourceDoesNotExists() async throws {
@@ -34,7 +34,7 @@ struct DomainsetForwardingRuleTests {
       originalURLString: #filePath, forwardProtocol: .direct)
     #expect(data.originalURLString == #filePath)
     #expect(data.externalDomains.isEmpty)
-    #expect(data.description == "DOMAIN-SET,\(#filePath),DIRECT")
+    #expect(data.description == "DOMAIN-SET DomainsetForwardingRuleTests.swift")
   }
 
   @Test func externalDomainsProcessing() async throws {
@@ -44,7 +44,7 @@ struct DomainsetForwardingRuleTests {
     #expect(forwardingRule.originalURLString == "https://example.com/domains")
     #expect(!forwardingRule.externalDomains.isEmpty)
     #expect(forwardingRule.externalDomains == ["test1.com", ".test2.com"])
-    #expect(forwardingRule.description == "DOMAIN-SET,https://example.com/domains,DIRECT")
+    #expect(forwardingRule.description == "DOMAIN-SET domains")
   }
 
   @Test func setOriginalURLString() async throws {
@@ -53,13 +53,13 @@ struct DomainsetForwardingRuleTests {
       forwardProtocol: .direct)
     #expect(forwardingRule.originalURLString == #filePath)
     #expect(forwardingRule.externalDomains.isEmpty)
-    #expect(forwardingRule.description == "DOMAIN-SET,\(#filePath),DIRECT")
+    #expect(forwardingRule.description == "DOMAIN-SET DomainsetForwardingRuleTests.swift")
 
     forwardingRule.originalURLString = "https://example.com/domains"
     #expect(forwardingRule.originalURLString == "https://example.com/domains")
     #expect(!forwardingRule.externalDomains.isEmpty)
     #expect(forwardingRule.externalDomains == ["test1.com", ".test2.com"])
-    #expect(forwardingRule.description == "DOMAIN-SET,https://example.com/domains,DIRECT")
+    #expect(forwardingRule.description == "DOMAIN-SET domains")
   }
 
   @Test func copyOnWrite() {

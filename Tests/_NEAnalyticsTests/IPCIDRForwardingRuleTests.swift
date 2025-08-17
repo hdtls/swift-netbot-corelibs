@@ -165,11 +165,11 @@ struct IPCIDRForwardingRuleTests {
   @Test func propertyInitialValue() async throws {
     let forwardingRule = FinalForwardingRule("test", forwardProtocol: .direct)
     #expect(forwardingRule.condition == "test")
-    #expect(forwardingRule.description == "FINAL,test,DIRECT")
+    #expect(forwardingRule.description == "FINAL")
 
     let forwardingRule1 = FinalForwardingRule("", forwardProtocol: .direct)
     #expect(forwardingRule1.condition == "")
-    #expect(forwardingRule1.description == "FINAL,DIRECT")
+    #expect(forwardingRule1.description == "FINAL")
   }
 
   @Test func copyOnWrite() async throws {

@@ -26,7 +26,7 @@ struct RulesetForwardingRuleTests {
       originalURLString: #filePath, forwardProtocol: .direct)
     #expect(data.originalURLString == #filePath)
     #expect(data.externalRules.isEmpty)
-    #expect(data.description == "RULE-SET,\(#filePath),DIRECT")
+    #expect(data.description == "RULE-SET RulesetForwardingRuleTests.swift")
   }
 
   @Test func externalResourceDoesNotExists() async throws {
@@ -34,7 +34,7 @@ struct RulesetForwardingRuleTests {
       originalURLString: #filePath, forwardProtocol: .direct)
     #expect(data.originalURLString == #filePath)
     #expect(data.externalRules.isEmpty)
-    #expect(data.description == "RULE-SET,\(#filePath),DIRECT")
+    #expect(data.description == "RULE-SET RulesetForwardingRuleTests.swift")
   }
 
   @Test func externalRulesProcessing() async throws {
@@ -44,7 +44,7 @@ struct RulesetForwardingRuleTests {
     #expect(forwardingRule.originalURLString == "https://example.com/forwarding_rules")
     #expect(!forwardingRule.externalRules.isEmpty)
     #expect(forwardingRule.externalRules.count == 5)
-    #expect(forwardingRule.description == "RULE-SET,https://example.com/forwarding_rules,DIRECT")
+    #expect(forwardingRule.description == "RULE-SET forwarding_rules")
   }
 
   @Test func setOriginalURLString() async throws {
@@ -53,13 +53,13 @@ struct RulesetForwardingRuleTests {
       forwardProtocol: .direct)
     #expect(forwardingRule.originalURLString == #filePath)
     #expect(forwardingRule.externalRules.isEmpty)
-    #expect(forwardingRule.description == "RULE-SET,\(#filePath),DIRECT")
+    #expect(forwardingRule.description == "RULE-SET RulesetForwardingRuleTests.swift")
 
     forwardingRule.originalURLString = "https://example.com/forwarding_rules"
     #expect(forwardingRule.originalURLString == "https://example.com/forwarding_rules")
     #expect(!forwardingRule.externalRules.isEmpty)
     #expect(forwardingRule.externalRules.count == 5)
-    #expect(forwardingRule.description == "RULE-SET,https://example.com/forwarding_rules,DIRECT")
+    #expect(forwardingRule.description == "RULE-SET forwarding_rules")
   }
 
   @Test func copyOnWrite() async throws {

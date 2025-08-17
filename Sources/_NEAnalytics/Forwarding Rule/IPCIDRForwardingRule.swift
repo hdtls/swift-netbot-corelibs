@@ -91,7 +91,7 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
   }
 
   @inlinable var description: String {
-    "IP-CIDR,\(classlessInterDomainRouting),\(forwardProtocol.asForwardProtocol().name)"
+    "IP-CIDR \(classlessInterDomainRouting)"
   }
 
   /// IP CIDR string.

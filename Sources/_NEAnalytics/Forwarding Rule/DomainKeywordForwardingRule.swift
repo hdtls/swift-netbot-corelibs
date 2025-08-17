@@ -20,7 +20,7 @@ struct DomainKeywordForwardingRule: ForwardingRule, ForwardingRuleConvertible, H
   var forwardProtocol: any ForwardProtocolConvertible
 
   var description: String {
-    "DOMAIN-KEYWORD,\(domainKeyword),\(forwardProtocol.asForwardProtocol().name)"
+    "DOMAIN-KEYWORD \(domainKeyword)"
   }
 
   init(domainKeyword: String, forwardProtocol: any ForwardProtocolConvertible) {

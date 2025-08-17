@@ -15,10 +15,7 @@ struct FinalForwardingRule: Anlzr.FinalForwardingRule, ForwardingRuleConvertible
   var forwardProtocol: any ForwardProtocolConvertible
 
   @inlinable var description: String {
-    guard condition.isEmpty else {
-      return "FINAL,\(condition),\(forwardProtocol.asForwardProtocol().name)"
-    }
-    return "FINAL,\(forwardProtocol.asForwardProtocol().name)"
+    "FINAL"
   }
 
   init(_ condition: String, forwardProtocol: any ForwardProtocolConvertible) {

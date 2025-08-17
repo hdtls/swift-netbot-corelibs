@@ -129,7 +129,7 @@ struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashabl
   }
 
   @inlinable var description: String {
-    "RULE-SET,\(originalURLString),\(forwardProtocol.asForwardProtocol().name)"
+    "RULE-SET \(originalURLString.split(separator: "/").last.unsafelyUnwrapped)"
   }
 
   init(

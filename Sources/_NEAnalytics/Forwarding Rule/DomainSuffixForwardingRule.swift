@@ -14,7 +14,7 @@ struct DomainSuffixForwardingRule: ForwardingRule, ForwardingRuleConvertible, Ha
   var forwardProtocol: any ForwardProtocolConvertible
 
   var description: String {
-    "DOMAIN-SUFFIX,\(domainSuffix),\(forwardProtocol.asForwardProtocol().name)"
+    "DOMAIN-SUFFIX \(domainSuffix)"
   }
 
   init(domainSuffix: String, forwardProtocol: any ForwardProtocolConvertible) {
