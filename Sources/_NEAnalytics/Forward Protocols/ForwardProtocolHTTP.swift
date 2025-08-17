@@ -78,7 +78,7 @@ extension ForwardProtocolHTTP: ProxiableForwardProtocol {
   func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
     async throws -> any Channel
   {
-    guard let destinationAddress = connection.originalRequest.address else {
+    guard let destinationAddress = connection.originalRequest?.address else {
       throw SocketAddressError.unsupported
     }
 

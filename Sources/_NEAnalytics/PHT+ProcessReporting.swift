@@ -16,11 +16,13 @@
       }
       let processInfo = try await processInfo(address: UInt16(port))
       return ProcessReport(
-        processName: processInfo?.processName ?? "Unknown",
-        processBundleURL: processInfo?.processBundleURL,
-        processExecutableURL: processInfo?.processExecutableURL,
         processIdentifier: processInfo?.processIdentifier,
-        processIconTIFFRepresentation: processInfo?.processIconTIFFRepresentation
+        program: Program(
+          localizedName: processInfo?.processName ?? "Unknown",
+          bundleURL: processInfo?.processBundleURL,
+          executableURL: processInfo?.processExecutableURL,
+          iconTIFFRepresentation: processInfo?.processIconTIFFRepresentation
+        )
       )
     }
   }

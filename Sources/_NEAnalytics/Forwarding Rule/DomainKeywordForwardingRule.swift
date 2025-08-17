@@ -28,13 +28,7 @@ struct DomainKeywordForwardingRule: ForwardingRule, ForwardingRuleConvertible, H
   }
 
   func predicate(_ connection: Connection) throws -> Bool {
-    connection.originalRequest.host(percentEncoded: false)?.contains(domainKeyword) ?? false
-  }
-
-  static func == (lhs: DomainKeywordForwardingRule, rhs: DomainKeywordForwardingRule)
-    -> Bool
-  {
-    lhs.domainKeyword == rhs.domainKeyword && lhs.description == rhs.description
+    connection.originalRequest?.host(percentEncoded: false)?.contains(domainKeyword) ?? false
   }
 }
 

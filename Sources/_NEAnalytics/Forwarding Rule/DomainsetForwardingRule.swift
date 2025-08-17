@@ -16,7 +16,7 @@ import _ProfileSupport
 
 struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
-  @usableFromInline final class _Storage: Hashable {
+  @usableFromInline final class _Storage {
 
     @usableFromInline var originalURLString: String
     @usableFromInline var externalDomains: [String]
@@ -58,21 +58,6 @@ struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hasha
         }
       } catch {}
       externalDomains = processResult
-    }
-
-    @inlinable static func == (lhs: _Storage, rhs: _Storage) -> Bool {
-      lhs.originalURLString == rhs.originalURLString
-        && lhs.externalResourceDirectory == rhs.externalResourceDirectory
-        && lhs.externalDomains == rhs.externalDomains
-        && lhs.forwardProtocol.asForwardProtocol().name
-          == rhs.forwardProtocol.asForwardProtocol().name
-    }
-
-    @inlinable func hash(into hasher: inout Hasher) {
-      hasher.combine(originalURLString)
-      hasher.combine(externalResourceDirectory)
-      hasher.combine(externalDomains)
-      hasher.combine(forwardProtocol.asForwardProtocol().name)
     }
   }
 
@@ -129,7 +114,7 @@ struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hasha
   }
 
   @inlinable func predicate(_ connection: Connection) throws -> Bool {
-    guard let host = connection.originalRequest.host(percentEncoded: false) else {
+    guard let host = connection.originalRequest?.host(percentEncoded: false) else {
       return false
     }
 
@@ -143,6 +128,25 @@ struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hasha
       }
       return result
     }
+  }
+}
+
+extension DomainsetForwardingRule._Storage: Hashable {
+  static func == (lhs: DomainsetForwardingRule._Storage, rhs: DomainsetForwardingRule._Storage)
+    -> Bool
+  {
+    lhs.originalURLString == rhs.originalURLString
+      && lhs.externalResourceDirectory == rhs.externalResourceDirectory
+      && lhs.externalDomains == rhs.externalDomains
+      && lhs.forwardProtocol.asForwardProtocol().name
+        == rhs.forwardProtocol.asForwardProtocol().name
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(originalURLString)
+    hasher.combine(externalResourceDirectory)
+    hasher.combine(externalDomains)
+    hasher.combine(forwardProtocol.asForwardProtocol().name)
   }
 }
 

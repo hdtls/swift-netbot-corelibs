@@ -16,7 +16,7 @@ import _ProfileSupport
 
 struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
-  @usableFromInline final class _Storage: Hashable {
+  @usableFromInline final class _Storage {
     @usableFromInline var originalURLString: String
     @usableFromInline var externalResourceDirectory: URL
     @usableFromInline var externalRules: [any ForwardingRule]
@@ -94,19 +94,6 @@ struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashabl
 
       self.externalRules = processResult
     }
-
-    @inlinable static func == (lhs: _Storage, rhs: _Storage) -> Bool {
-      lhs.originalURLString == rhs.originalURLString
-        && lhs.externalResourceURL == rhs.externalResourceURL
-        && lhs.forwardProtocol.asForwardProtocol().name
-          == rhs.forwardProtocol.asForwardProtocol().name
-    }
-
-    @inlinable func hash(into hasher: inout Hasher) {
-      hasher.combine(originalURLString)
-      hasher.combine(externalResourceDirectory)
-      hasher.combine(forwardProtocol.asForwardProtocol().name)
-    }
   }
 
   @usableFromInline var _storage: _Storage
@@ -163,6 +150,22 @@ struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashabl
 
   @inlinable func predicate(_ connection: Connection) throws -> Bool {
     try externalRules.contains { try $0.predicate(connection) }
+  }
+}
+
+extension RulesetForwardingRule._Storage: Hashable {
+  static func == (lhs: RulesetForwardingRule._Storage, rhs: RulesetForwardingRule._Storage) -> Bool
+  {
+    lhs.originalURLString == rhs.originalURLString
+      && lhs.externalResourceURL == rhs.externalResourceURL
+      && lhs.forwardProtocol.asForwardProtocol().name
+        == rhs.forwardProtocol.asForwardProtocol().name
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(originalURLString)
+    hasher.combine(externalResourceDirectory)
+    hasher.combine(forwardProtocol.asForwardProtocol().name)
   }
 }
 

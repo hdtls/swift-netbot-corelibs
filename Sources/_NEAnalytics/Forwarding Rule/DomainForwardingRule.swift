@@ -22,7 +22,7 @@ struct DomainForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
   }
 
   func predicate(_ connection: Connection) throws -> Bool {
-    connection.originalRequest.host(percentEncoded: false) == domain
+    connection.originalRequest?.host(percentEncoded: false) == domain
   }
 }
 

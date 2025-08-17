@@ -58,7 +58,7 @@ import Foundation
 
 struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
-  @usableFromInline final class _Storage: Hashable {
+  @usableFromInline final class _Storage {
     @usableFromInline var classlessInterDomainRouting: String
     @usableFromInline var addresses: Addresses?
     @usableFromInline var forwardProtocol: any ForwardProtocolConvertible
@@ -75,18 +75,6 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
         addresses: addresses,
         forwardProtocol: forwardProtocol
       )
-    }
-
-    @inlinable static func == (lhs: _Storage, rhs: _Storage) -> Bool {
-      lhs.classlessInterDomainRouting == rhs.classlessInterDomainRouting
-      && lhs.addresses == rhs.addresses
-      && lhs.forwardProtocol.asForwardProtocol().name == rhs.forwardProtocol.asForwardProtocol().name
-    }
-
-    func hash(into hasher: inout Hasher) {
-      hasher.combine(classlessInterDomainRouting)
-      hasher.combine(addresses)
-      hasher.combine(forwardProtocol.asForwardProtocol().name)
     }
   }
 
@@ -136,7 +124,7 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
   }
 
   @inlinable func predicate(_ connection: Connection) throws -> Bool {
-    guard let host = connection.originalRequest.host(percentEncoded: false) else {
+    guard let host = connection.originalRequest?.host(percentEncoded: false) else {
       return false
     }
 
@@ -145,6 +133,20 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
     }
 
     return addresses?.contains(address) == true
+  }
+}
+
+extension IPCIDRForwardingRule._Storage: Hashable {
+  static func == (lhs: IPCIDRForwardingRule._Storage, rhs: IPCIDRForwardingRule._Storage) -> Bool {
+    lhs.classlessInterDomainRouting == rhs.classlessInterDomainRouting
+    && lhs.addresses == rhs.addresses
+    && lhs.forwardProtocol.asForwardProtocol().name == rhs.forwardProtocol.asForwardProtocol().name
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(classlessInterDomainRouting)
+    hasher.combine(addresses)
+    hasher.combine(forwardProtocol.asForwardProtocol().name)
   }
 }
 

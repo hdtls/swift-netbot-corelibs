@@ -35,8 +35,13 @@ struct GeoIPForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable,
   func predicate(_ connection: Connection) throws -> Bool {
     guard let db else { return false }
 
+    guard let resolutions = connection.establishmentReport?.resolutions else {
+      return false
+    }
+
     var hasMatched = false
-    for resolution in connection.establishmentReport.resolutions {
+
+    for resolution in resolutions {
       var address = ""
       switch resolution.preferredEndpoint {
       case .hostPort(let host, port: _):

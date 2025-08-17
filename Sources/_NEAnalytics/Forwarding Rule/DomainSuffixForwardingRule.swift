@@ -22,7 +22,7 @@ struct DomainSuffixForwardingRule: ForwardingRule, ForwardingRuleConvertible, Ha
   }
 
   func predicate(_ connection: Connection) throws -> Bool {
-    guard let host = connection.originalRequest.host(percentEncoded: false) else {
+    guard let host = connection.originalRequest?.host(percentEncoded: false) else {
       return false
     }
     return host.hasSuffix(domainSuffix)
