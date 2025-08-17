@@ -82,12 +82,13 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
   func receive(
     minimumIncompleteLength: Int = 1,
     maximumLength: Int,
-    completion: @escaping @Sendable (
-      _ content: ByteBuffer?,
-      _ contentContext: ContentContext?,
-      _ isComplete: Bool,
-      _ error: (any Error)?
-    ) -> Void
+    completion:
+      @escaping @Sendable (
+        _ content: ByteBuffer?,
+        _ contentContext: ContentContext?,
+        _ isComplete: Bool,
+        _ error: (any Error)?
+      ) -> Void
   ) {
     let execute: @Sendable () -> (ByteBuffer?, ContentContext) = {
       var contentContext = ContentContext.defaultStream

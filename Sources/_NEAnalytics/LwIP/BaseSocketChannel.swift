@@ -204,7 +204,7 @@ class BaseSocketChannel<SocketType: BaseSocketProtocol>: Channel, ChannelCore, @
 
     self._isOpen.store(false, ordering: .relaxed)
 
-    eventLoop.execute {
+    eventLoop.assumeIsolated().execute {
       self.removeHandlers(pipeline: self.pipeline)
 
       self.closePromise.succeed()
@@ -231,9 +231,12 @@ class BaseSocketChannel<SocketType: BaseSocketProtocol>: Channel, ChannelCore, @
     assert(!self.isActive)
     let registerPromise = self.eventLoop.makePromise(of: Void.self)
     self.register0(promise: registerPromise)
-    registerPromise.futureResult.whenFailure { (_: Error) in
-      self.close(promise: nil)
-    }
+    registerPromise.futureResult
+      .hop(to: self.eventLoop)
+      .assumeIsolated()
+      .whenFailure { (_: Error) in
+        self.close(promise: nil)
+      }
     registerPromise.futureResult.cascadeFailure(to: promise)
     self.becomeActive0(promise: promise)
   }
