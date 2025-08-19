@@ -80,11 +80,6 @@ public actor AnalyzerBot: Actor {
 
   /// Start analyzer tunnel.
   public func run() async throws {
-    #if os(macOS) && DEBUG
-      // TODO: REMOVE AFTER DAEMON DEVELOPMENT FINISHED
-      try? await PHT.invalidate()
-    #endif
-
     try await self.core.run()
   }
 

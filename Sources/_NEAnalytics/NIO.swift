@@ -15,9 +15,7 @@ import NIOCore
 
     func connect<Output>(
       to address: SocketAddress,
-      channelInitializer: @escaping @Sendable (
-        any Channel
-      ) -> EventLoopFuture<Output>
+      channelInitializer: @escaping @Sendable (any Channel) -> EventLoopFuture<Output>
     ) async throws -> Output where Output: Sendable {
       try await connect(to: address).flatMap(channelInitializer).get()
     }
