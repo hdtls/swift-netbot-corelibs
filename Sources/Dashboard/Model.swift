@@ -7,153 +7,123 @@
   import CoreData
   import Dispatch
   import Foundation
+  import Logging
   import NEAddressProcessing
   import Network
   import Observation
   import SwiftData
-  import os
+  import NIOConcurrencyHelpers
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-  @ModelActor private actor RecentConnectionsModelActor {
-    typealias Element = Connection.PersistentModel
+  public enum LocalizedError: Foundation.LocalizedError, Equatable {
+    case nw(NWError)
+    case operationUnsupported
 
-    /// An error encountered during the most recent attempt to fetch data.
-    var fetchError: (any Error)?
-
-    func query<Value>(
-      filter: Predicate<Element>? = nil, sort keyPath: KeyPath<Element, Value> & Sendable,
-      order: SortOrder = .forward
-    ) -> [Connection] where Value: Comparable {
-      var fd = FetchDescriptor<Element>()
-      fd.predicate = filter
-      fd.sortBy = [SortDescriptor(keyPath, order: order)]
-      return query(fd)
-    }
-
-    func query<Value>(
-      filter: Predicate<Element>? = nil, sort keyPath: KeyPath<Element, Value?> & Sendable,
-      order: SortOrder = .forward
-    ) -> [Connection] where Value: Comparable {
-      var fd = FetchDescriptor<Element>()
-      fd.predicate = filter
-      fd.sortBy = [SortDescriptor(keyPath, order: order)]
-      return query(fd)
-    }
-
-    func query(filter: Predicate<Element>? = nil, sort descriptors: [SortDescriptor<Element>] = [])
-      -> [Connection]
-    {
-      var fd = FetchDescriptor<Element>()
-      fd.predicate = filter
-      fd.sortBy = descriptors
-      return query(fd)
-    }
-
-    func query(_ descriptor: FetchDescriptor<Element>) -> [Connection] {
-      do {
-        return try modelContext.fetch(descriptor).map(Connection.init)
-      } catch {
-        fetchError = error
-        return []
+    public var errorDescription: String? {
+      switch self {
+      case .nw(let error):
+        switch error {
+        case .posix:
+          return error.localizedDescription
+        case .dns, .tls:
+          return error.localizedDescription
+        case .wifiAware:
+          return error.localizedDescription
+        @unknown default:
+          return error.localizedDescription
+        }
+      case .operationUnsupported:
+        return "Operation Unsupported"
       }
     }
+  }
 
-    private func query0(filter: Predicate<Element>) -> [Element] {
-      do {
-        var fd = FetchDescriptor<Element>()
-        fd.relationshipKeyPathsForPrefetching = [
-          \._originalRequest,
-          \._currentRequest,
-          \._response,
-          \._establishmentReport,
-          \._dataTransferReport,
-          \._processReport,
-        ]
-        fd.predicate = filter
-        return try modelContext.fetch(fd)
-      } catch {
-        fetchError = error
-        return []
-      }
+  public protocol ConnectionsDependency: Sendable {
+
+    var messages: AsyncStream<Result<[Connection], LocalizedError>> { get }
+
+    func run()
+
+    func shutdownGracefully()
+  }
+
+  final private class DefaultConnectionsDependency: ConnectionsDependency {
+    public let messages: AsyncStream<Result<[Connection], LocalizedError>>
+    private let continuation: AsyncStream<Result<[Connection], LocalizedError>>.Continuation
+
+    private let connection = NIOLockedValueBox<NWConnection?>(nil)
+
+    private nonisolated let logger = Logger(label: "com.tenbits.netbot.dashboard")
+
+    public init() {
+      (messages, continuation) = AsyncStream<Result<[Connection], LocalizedError>>.makeStream()
     }
 
-    fileprivate func insert(_ connections: [Connection]) {
-      let term = connections.map { $0.taskIdentifier }
+    public func run() {
+      let parameters = NWParameters.tcp
+      let options = NWProtocolWebSocket.Options()
+      parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
+      let connection = self.connection.withLockedValue {
+        $0 = NWConnection(to: .url(URL(string: "ws://127.0.0.1:6170")!), using: parameters)
+        return $0!
+      }
+      connection.stateUpdateHandler = { [weak self] state in
+        guard let self else { return }
 
-      let models = query0(filter: #Predicate { term.contains($0.taskIdentifier) })
+        switch state {
+        case .setup:
+          break
+        case .waiting(let error):
+          logger.error("Fetch connections failure with error: \(error.localizedDescription)")
+          continuation.yield(.failure(.nw(error)))
+        case .preparing:
+          break
+        case .ready:
+          @Sendable func runReadLoop() {
+            guard connection.state == .ready else {
+              return
+            }
 
-      try? modelContext.transaction {
-        for connection in connections {
-          let existing = models.first(where: { $0.taskIdentifier == connection.taskIdentifier })
+            connection.receiveMessage { [weak self] content, contentContext, isComplete, error in
+              guard let data = content, let self else {
+                return
+              }
 
-          guard existing == nil else {
-            existing?.mergeValues(connection)
-            existing?._originalRequest?.mergeValues(connection.originalRequest)
-            existing?._currentRequest?.mergeValues(connection.currentRequest)
-            existing?._establishmentReport?.mergeValues(connection.establishmentReport)
-            existing?._processReport?.mergeValues(connection.processReport)
-            continue
+              do {
+                let models = try JSONDecoder().decode([Connection].self, from: data)
+                continuation.yield(.success(models))
+              } catch {
+                assertionFailure("BUG IN NETBOT CORE, please report: illegal data format \(error)")
+                logger.critical("decoding connection failure with error: \(error)")
+              }
+
+              runReadLoop()
+            }
           }
 
-          let persistentModel = Element()
-          persistentModel.mergeValues(connection)
-
-          persistentModel._originalRequest = .init()
-          persistentModel._originalRequest?.mergeValues(connection.originalRequest)
-
-          persistentModel._currentRequest = .init()
-          persistentModel._currentRequest?.mergeValues(connection.currentRequest)
-
-          persistentModel._establishmentReport = .init()
-          persistentModel._establishmentReport?.mergeValues(connection.establishmentReport)
-
-          var fd = FetchDescriptor<ProcessReport.PersistentModel>()
-          fd.predicate = #Predicate { $0.processName == connection.processReport.processName }
-
-          if let processReport = try modelContext.fetch(fd).first {
-            processReport.connections.append(persistentModel)
-          } else {
-            let processReport = ProcessReport.PersistentModel()
-            processReport.mergeValues(connection.processReport)
-            modelContext.insert(processReport)
-
-            processReport.connections.append(persistentModel)
-          }
+          runReadLoop()
+        case .failed(let error):
+          logger.error("Fetch connections failure with error: \(error.localizedDescription)")
+          continuation.yield(.failure(.nw(error)))
+        case .cancelled:
+          break
+        @unknown default:
+          continuation.yield(.failure(.operationUnsupported))
         }
       }
-      try? modelContext.save()
+      connection.start(queue: .global())
     }
+
+    public func shutdownGracefully() {}
   }
 
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
   @MainActor @Observable public class RecentConnectionsStore {
 
-    public enum LocalizedError: Foundation.LocalizedError, Equatable {
-      case nw(NWError)
-      case operationUnsupported
-
-      public var errorDescription: String? {
-        switch self {
-        case .nw(let error):
-          switch error {
-          case .posix(let code):
-            return error.localizedDescription
-          case .dns, .tls:
-            return error.localizedDescription
-          @unknown default:
-            return error.localizedDescription
-          }
-        case .operationUnsupported:
-          return "Operation Unsupported"
-        }
-      }
-    }
+    public typealias Data = Connection.PersistentModel
 
     /// The ModelContainer for the ModelActor.
     /// The container that manages the app’s schema and model storage configuration.
-    public var modelContainer: ModelContainer {
-      store.modelContainer
-    }
+    nonisolated public let modelContainer: ModelContainer
 
     /// An error encountered during the most recent attempt to fetch data.
     ///
@@ -164,173 +134,224 @@
     }
     private var _fetchError: LocalizedError?
 
-    public typealias Result = [Connection]
-
-    public var result: Result {
-      _result
+    public var totalBytesTransferred: DataTransferReport.PathReport {
+      _totalBytesTransferred
     }
-    private var _result: Result = []
+    private var _totalBytesTransferred = DataTransferReport.PathReport()
 
-    private nonisolated let store: RecentConnectionsModelActor
+    public var bytesTransferred: DataTransferReport.PathReport {
+      _bytesTransferred
+    }
+    private var _bytesTransferred = DataTransferReport.PathReport()
 
-    private nonisolated let logger = Logger(
-      subsystem: "com.tenbits.netbot.dashboard", category: "connections")
-
-    @ObservationIgnored private var connection: NWConnection!
-
-    @ObservationIgnored private var earliestBeginDate = Date.distantPast
+    nonisolated private let logger = Logger(label: "com.tenbits.netbot.dashboard")
+    nonisolated private let dependency: any ConnectionsDependency
+    private var earliestBeginDate = Date.distantPast
 
     nonisolated public convenience init() {
       let schema = Schema(versionedSchema: V1.self)
       let configuration: ModelConfiguration = .init(isStoredInMemoryOnly: true)
       let modelContainer = try! ModelContainer(for: schema, configurations: [configuration])
-      self.init(modelContainer: modelContainer)
+      self.init(modelContainer: modelContainer, dependency: DefaultConnectionsDependency())
     }
 
-    nonisolated public init(modelContainer: ModelContainer) {
-      store = RecentConnectionsModelActor(modelContainer: modelContainer)
+    nonisolated public init(modelContainer: ModelContainer, dependency: any ConnectionsDependency) {
+      self.modelContainer = modelContainer
+      self.dependency = dependency
     }
 
     public func resume() {
       self._fetchError = nil
-      let parameters = NWParameters.tcp
-      let options = NWProtocolWebSocket.Options()
-      parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
-      connection = NWConnection(to: .url(URL(string: "ws://127.0.0.1:6170")!), using: parameters)
-      connection.stateUpdateHandler = { [weak self] state in
+      self.dependency.run()
+
+      Task { [weak self] in
         guard let self else { return }
 
-        switch state {
-        case .setup:
-          break
-        case .waiting(let error):
-          Task { @MainActor in
-            self.logger.error("Fetch connections failure with error: \(error.localizedDescription)")
-            self._fetchError = LocalizedError.nw(error)
-          }
-        case .preparing:
-          break
-        case .ready:
-          Task { @MainActor in
-            self.runReadLoop()
-          }
-        case .failed(let error):
-          Task { @MainActor in
-            self.logger.error("Fetch connections failure with error: \(error.localizedDescription)")
-            self._fetchError = LocalizedError.nw(error)
-          }
-        case .cancelled:
-          break
-        @unknown default:
-          Task { @MainActor in
-            self._fetchError = LocalizedError.operationUnsupported
+        for await message in dependency.messages {
+          do {
+            try await performBatchUpdates(message.get())
+          } catch {
+            logger.error("\(error)")
           }
         }
       }
-      connection.start(queue: .global())
     }
 
     public func cancel() {
       self._fetchError = nil
-      connection.cancel()
-      connection = nil
+      self.dependency.shutdownGracefully()
     }
 
-    private func runReadLoop() {
-      guard connection?.state == .ready else {
-        return
-      }
-
-      connection.receiveMessage { [weak self] content, contentContext, isComplete, error in
-        guard let data = content, let self else {
-          return
-        }
-
-        do {
-          let models = try JSONDecoder().decode([Connection].self, from: data)
-          Task.detached {
-            await self.insert(models)
+    public func search(tokens: [ConnectionFilter]) -> Predicate<Data> {
+      let options = tokens.first
+      switch options {
+      case .none: break
+      case .some(.client(let processName)):
+        if let processName {
+          return #Predicate {
+            if $0.earliestBeginDate < earliestBeginDate {
+              return false
+            } else {
+              if let processReport = $0.processReport, let program = processReport.program {
+                return program.localizedName == processName
+              } else {
+                return false
+              }
+            }
           }
-        } catch {
-          assertionFailure("BUG IN NETBOT CORE, please report: illegal data format \(error)")
-          logger.critical("decoding connection failure with error: \(error)")
         }
-
-        Task { @MainActor in
-          runReadLoop()
-        }
-      }
-    }
-
-    public func search(tokens: [ConnectionFilter]) -> Result {
-      var predicate: ((Result.Element) -> Bool)?
-      if let token = tokens.first {
-        switch token {
-        case .client(let processName):
-          if let processName {
-            predicate = { $0.processReport.processName == processName }
-          }
-        case .hostname(let hostname):
-          if let hostname {
-            predicate = { $0.originalRequest.host(percentEncoded: false) == hostname }
+      case .some(.hostname(let hostname)):
+        if let hostname {
+          return #Predicate {
+            $0.earliestBeginDate >= earliestBeginDate && $0.currentRequest?.hostname == hostname
           }
         }
       }
 
-      if let predicate {
-        return result.filter(predicate)
-      }
-      return result
+      return #Predicate { $0.earliestBeginDate >= earliestBeginDate }
     }
 
     /// Updates the underlying value of the stored value.
-    nonisolated public func update() async {
-      var fd = FetchDescriptor<Connection.PersistentModel>()
-      fd.propertiesToFetch = [
-        \.taskIdentifier, \.earliestBeginDate, \.state, \._forwardingReport, \._dataTransferReport,
-      ]
-      fd.relationshipKeyPathsForPrefetching = [
-        \._originalRequest, \._currentRequest, \._establishmentReport, \._processReport,
-      ]
-      fd.sortBy = [SortDescriptor(\.taskIdentifier)]
-
-      let result = await store.query(fd)
-      if let fetchError = await store.fetchError {
-        self.logger
-          .error("Fetch recent connections failure with error: \(fetchError.localizedDescription)")
-      }
-
-      Task { @MainActor in
-        self.earliestBeginDate = .distantPast
-        self._result = result
-      }
-    }
-
-    private func insert(_ models: [Connection]) async {
-      await self.store.insert(models)
-
-      for model in models where model.earliestBeginDate > earliestBeginDate {
-        if let index = result.firstIndex(where: { $0.id == model.id }) {
-          self._result[index].originalRequest = model.originalRequest
-          self._result[index].currentRequest = model.currentRequest
-          self._result[index].response = model.response
-          self._result[index].earliestBeginDate = model.earliestBeginDate
-          self._result[index].taskDescription = model.taskDescription
-          self._result[index].tls = model.tls
-          self._result[index].state = model.state
-          self._result[index].establishmentReport = model.establishmentReport
-          self._result[index].forwardingReport = model.forwardingReport
-          self._result[index].dataTransferReport = model.dataTransferReport
-          self._result[index].processReport = model.processReport
-        } else {
-          self._result.append(model)
-        }
-      }
+    public func update() {
+      self.earliestBeginDate = .distantPast
     }
 
     public func erase() {
       self.earliestBeginDate = Date.now
-      self._result = []
+    }
+
+    private func performBatchUpdates(_ models: [Connection]) {
+      let modelContext = modelContainer.mainContext
+
+      for model in models {
+        var fd = FetchDescriptor<Data>()
+        fd.relationshipKeyPathsForPrefetching = [\.dataTransferReport]
+        fd.predicate = #Predicate { $0.taskIdentifier == model.taskIdentifier }
+        if let persistentModel = try? modelContext.fetch(fd).first {
+          switch (
+            persistentModel.dataTransferReport?.aggregatePathReport,
+            model.dataTransferReport?.aggregatePathReport
+          ) {
+          case (.some(let lhs), .some(let rhs)):
+            self._totalBytesTransferred &+= rhs &- lhs
+          case (.none, .some(let rhs)):
+            self._totalBytesTransferred &+= rhs
+          case (.some(let lhs), .none): break
+          case (.none, .none): break
+          }
+
+          switch (
+            persistentModel.dataTransferReport?.pathReports.first,
+            model.dataTransferReport?.pathReports.first
+          ) {
+          case (.some(let lhs), .some(let rhs)):
+            self._bytesTransferred &+= rhs &- lhs
+          case (.none, .some(let rhs)):
+            self._bytesTransferred &+= rhs
+          case (.some(let lhs), .none): break
+          case (.none, .none): break
+          }
+        } else {
+          if let aggregatePathReport = model.dataTransferReport?.aggregatePathReport {
+            self._totalBytesTransferred &+= aggregatePathReport
+          }
+          if let pathReport = model.dataTransferReport?.pathReports.first {
+            self._bytesTransferred &+= pathReport
+          }
+        }
+      }
+
+      try? modelContext.transaction {
+        try Dashboard._insertREQs(models, modelContext: modelContext)
+      }
+    }
+  }
+
+  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @inlinable public func _insertREQs(
+    _ models: [Connection], modelContext: ModelContext
+  ) throws {
+    func doInsert(_ model: Connection) throws {
+      let term = model.taskIdentifier
+      var fd = FetchDescriptor<V1._Connection>(predicate: #Predicate { $0.taskIdentifier == term })
+      fd.relationshipKeyPathsForPrefetching = [
+        \.currentRequest,
+        \.establishmentReport,
+        \.response,
+        \.processReport,
+      ]
+
+      var persistentModel = try modelContext.fetch(fd).first
+      if persistentModel == nil {
+        persistentModel = V1._Connection()
+        modelContext.insert(persistentModel.unsafelyUnwrapped)
+      }
+      persistentModel?.mergeValues(model)
+
+      if let backingData = model.originalRequest {
+        if persistentModel?.originalRequest == nil {
+          persistentModel?.originalRequest = Request.PersistentModel()
+        }
+        persistentModel?.originalRequest?.mergeValues(backingData)
+      }
+
+      if let backingData = model.currentRequest {
+        if persistentModel?.currentRequest == nil {
+          persistentModel?.currentRequest = Request.PersistentModel()
+        }
+        persistentModel?.currentRequest?.mergeValues(backingData)
+      }
+
+      if let backingData = model.response {
+        if persistentModel?.response == nil {
+          persistentModel?.response = Response.PersistentModel()
+        }
+        persistentModel?.response?.mergeValues(backingData)
+      }
+
+      if let backingData = model.establishmentReport {
+        if persistentModel?.establishmentReport == nil {
+          persistentModel?.establishmentReport = EstablishmentReport.PersistentModel()
+        }
+        persistentModel?.establishmentReport?.mergeValues(backingData)
+      }
+
+      if let backingData = model.processReport {
+        if persistentModel?.processReport == nil {
+          persistentModel?.processReport = ProcessReport.PersistentModel()
+        }
+        persistentModel?.processReport?.mergeValues(backingData)
+
+        // Prevents duplicate Process objects from being created for the same underlying process.
+        var process = try modelContext.fetch(
+          FetchDescriptor<V1._Program>(
+            predicate: #Predicate {
+              $0.localizedName == backingData.program?.localizedName ?? "Unkown"
+            })
+        ).first
+
+        // Ensures that every referenced process actually exists in the database, even if it’s new.
+        if process == nil {
+          process = .init()
+          process?.localizedName = backingData.program?.localizedName ?? "Unkown"
+          modelContext.insert(process.unsafelyUnwrapped)
+        }
+
+        // Guarantees that the Connection → ProcessReport → Process relationship chain is
+        // established.
+        if persistentModel?.processReport?.program == nil {
+          persistentModel?.processReport?.program = process
+        }
+
+        // Ensures the stored process object remains up-to-date.
+        if let backingData = backingData.program {
+          process?.mergeValues(backingData)
+        }
+      }
+    }
+
+    for model in models {
+      try doInsert(model)
     }
   }
 #endif

@@ -22,9 +22,11 @@
       switch self {
       case .nw(let error):
         switch error {
-        case .posix(let code):
+        case .posix:
           return error.localizedDescription
         case .dns, .tls:
+          return error.localizedDescription
+        case .wifiAware:
           return error.localizedDescription
         @unknown default:
           return error.localizedDescription
@@ -44,7 +46,7 @@
     func shutdownGracefully()
   }
 
-  final public class DefaultConnectionsDependency: ConnectionsDependency {
+  final class DefaultConnectionsDependency: ConnectionsDependency {
     public let messages: AsyncStream<Result<[Connection], LocalizedError>>
     private let continuation: AsyncStream<Result<[Connection], LocalizedError>>.Continuation
 
@@ -76,7 +78,7 @@
         case .preparing:
           break
         case .ready:
-          func runReadLoop() {
+          @Sendable func runReadLoop() {
             guard connection.state == .ready else {
               return
             }
@@ -158,8 +160,11 @@
 
     nonisolated private let dependency: any ConnectionsDependency
 
-    nonisolated public init(dependency: any ConnectionsDependency = DefaultConnectionsDependency())
-    {
+    nonisolated convenience init() {
+      self.init(dependency: DefaultConnectionsDependency())
+    }
+
+    nonisolated public init(dependency: some ConnectionsDependency) {
       self.dependency = dependency
     }
 
@@ -179,47 +184,69 @@
         }
       }
 
-      timerSource?.cancel()
-      timerSource = DispatchSource.makeTimerSource(queue: .main)
-      timerSource.scheduleRepeating(deadline: .now(), interval: .seconds(1))
-      timerSource.setEventHandler {
-        var bytesReceived = self._bytesReceived
-        bytesReceived.value = 0
-
-        var bytesSent = self._bytesSent
-        bytesSent.value = 0
-
-        for processReport in self._processReports {
-          let metrics = self._result.filter {
-            processReport.transactionMetrics.connections.contains($0.id)
-          }
-          .reduce(into: (Double.zero, Double.zero, Double.zero, Double.zero, 0)) {
-            partialResult, data in
-            partialResult.0 += Double(
-              data.dataTransferReport.aggregatePathReport.receivedApplicationByteCount)
-            partialResult.1 += Double(
-              data.dataTransferReport.aggregatePathReport.sentApplicationByteCount)
-            partialResult.2 += Double(
-              data.dataTransferReport.pathReports.first?.receivedApplicationByteCount ?? 0)
-            partialResult.3 += Double(
-              data.dataTransferReport.pathReports.first?.sentApplicationByteCount ?? 0)
-            partialResult.4 += data.state == .active ? 1 : 0
-          }
-
-          processReport.transactionMetrics.totalBytesReceived.value = metrics.0
-          processReport.transactionMetrics.totalBytesSent.value = metrics.1
-          processReport.transactionMetrics.bytesReceived.value = metrics.2
-          processReport.transactionMetrics.bytesSent.value = metrics.3
-          processReport.transactionMetrics.countOfActiveConnections = metrics.4
-
-          bytesReceived.value += metrics.2
-          bytesSent.value += metrics.3
-        }
-
-        self._bytesReceived = bytesReceived
-        self._bytesSent = bytesSent
-      }
-      timerSource.resume()
+      //      timerSource?.cancel()
+      //      timerSource = DispatchSource.makeTimerSource(queue: .main)
+      //      timerSource.schedule(deadline: .now(), repeating: .seconds(1))
+      //      timerSource.setEventHandler {
+      //        var bytesReceived = self._bytesReceived
+      //        bytesReceived.value = 0
+      //
+      //        var bytesSent = self._bytesSent
+      //        bytesSent.value = 0
+      //
+      //        for data in self.result {
+      //          for processReport in self.processReports {
+      //            if processReport.transactionMetrics.connections.contains(data.taskIdentifier) {
+      //              processReport.transactionMetrics.totalBytesReceived.value += Double(
+      //                data.dataTransferReport.aggregatePathReport.receivedApplicationByteCount)
+      //              processReport.transactionMetrics.totalBytesSent.value += Double(
+      //                data.dataTransferReport.aggregatePathReport.sentApplicationByteCount)
+      //              processReport.transactionMetrics.bytesReceived.value = Double(
+      //                data.dataTransferReport.pathReports.first?.receivedApplicationByteCount ?? 0)
+      //              processReport.transactionMetrics.bytesSent.value = Double(
+      //                data.dataTransferReport.pathReports.first?.sentApplicationByteCount ?? 0)
+      //              processReport.transactionMetrics.countOfActiveConnections +=
+      //                data.state == .active ? 1 : 0
+      //            }
+      //          }
+      //
+      //          bytesReceived.value += Double(
+      //            data.dataTransferReport.aggregatePathReport.receivedApplicationByteCount)
+      //          bytesSent.value += Double(
+      //            data.dataTransferReport.aggregatePathReport.sentApplicationByteCount)
+      //        }
+      //
+      //        //        for processReport in self._processReports {
+      //        //          let metrics = self._result.filter {
+      //        //            processReport.transactionMetrics.connections.contains($0.id)
+      //        //          }
+      //        //          .reduce(into: (Double.zero, Double.zero, Double.zero, Double.zero, 0)) {
+      //        //            partialResult, data in
+      //        //            partialResult.0 += Double(
+      //        //              data.dataTransferReport.aggregatePathReport.receivedApplicationByteCount)
+      //        //            partialResult.1 += Double(
+      //        //              data.dataTransferReport.aggregatePathReport.sentApplicationByteCount)
+      //        //            partialResult.2 += Double(
+      //        //              data.dataTransferReport.pathReports.first?.receivedApplicationByteCount ?? 0)
+      //        //            partialResult.3 += Double(
+      //        //              data.dataTransferReport.pathReports.first?.sentApplicationByteCount ?? 0)
+      //        //            partialResult.4 += data.state == .active ? 1 : 0
+      //        //          }
+      //        //
+      //        //          processReport.transactionMetrics.totalBytesReceived.value = metrics.0
+      //        //          processReport.transactionMetrics.totalBytesSent.value = metrics.1
+      //        //          processReport.transactionMetrics.bytesReceived.value = metrics.2
+      //        //          processReport.transactionMetrics.bytesSent.value = metrics.3
+      //        //          processReport.transactionMetrics.countOfActiveConnections = metrics.4
+      //        //
+      //        //          bytesReceived.value += metrics.2
+      //        //          bytesSent.value += metrics.3
+      //        //        }
+      //        //
+      //        self._bytesReceived = bytesReceived
+      //        self._bytesSent = bytesSent
+      //      }
+      //      timerSource.resume()
     }
 
     public func cancel() {
@@ -229,67 +256,67 @@
     }
 
     private func insert(_ models: [Connection]) {
-      for model in models {
-        let processReport = self._processReports.first {
-          $0.processName == model.processReport.processName
-        }
-
-        if let data = self._result.first(where: { $0.taskIdentifier == model.taskIdentifier }) {
-          data.originalRequest = model.originalRequest
-          data.currentRequest = model.currentRequest
-          data.response = model.response
-          data.earliestBeginDate = model.earliestBeginDate
-          data.taskDescription = model.taskDescription
-          data.tls = model.tls
-          data.state = model.state
-          data.establishmentReport = model.establishmentReport
-          data.forwardingReport = model.forwardingReport
-          data.dataTransferReport = model.dataTransferReport
-          data.processReport = model.processReport
-        } else {
-          if let processReport {
-            self._result.append(model)
-
-            processReport.transactionMetrics.connections.append(model.id)
-          } else {
-            self._result.append(model)
-
-            let processReport = ProcessReport(
-              processName: model.processReport.processName,
-              processBundleURL: model.processReport.processBundleURL,
-              processExecutableURL: model.processReport.processExecutableURL,
-              processIconTIFFRepresentation: model.processReport.processIconTIFFRepresentation,
-              transactionMetrics: .init(
-                totalBytesReceived: Measurement(
-                  value: Double(
-                    model.dataTransferReport.aggregatePathReport.receivedApplicationByteCount),
-                  unit: .bytes
-                ),
-                totalBytesSent: Measurement(
-                  value: Double(
-                    model.dataTransferReport.aggregatePathReport.sentApplicationByteCount),
-                  unit: .bytes
-                ),
-                bytesReceived: Measurement(
-                  value: Double(
-                    model.dataTransferReport.pathReports.first?.receivedApplicationByteCount ?? 0),
-                  unit: .bytes
-                ),
-                bytesSent: Measurement(
-                  value: Double(
-                    model.dataTransferReport.pathReports.first?.sentApplicationByteCount ?? 0),
-                  unit: .bytes
-                ),
-                countOfActiveConnections: model.state == .active ? 1 : 0,
-                connections: [model.id],
-                processIdentifiers: model.processReport.processIdentifier != nil
-                  ? [model.processReport.processIdentifier!] : []
-              )
-            )
-            self._processReports.append(processReport)
-          }
-        }
-      }
+      //      for model in models {
+      //        let processReport = self._processReports.first {
+      //          $0.processName == model.processReport.processName
+      //        }
+      //
+      //        if let data = self._result.first(where: { $0.taskIdentifier == model.taskIdentifier }) {
+      //          data.originalRequest = model.originalRequest
+      //          data.currentRequest = model.currentRequest
+      //          data.response = model.response
+      //          data.earliestBeginDate = model.earliestBeginDate
+      //          data.taskDescription = model.taskDescription
+      //          data.tls = model.tls
+      //          data.state = model.state
+      //          data.establishmentReport = model.establishmentReport
+      //          data.forwardingReport = model.forwardingReport
+      //          data.dataTransferReport = model.dataTransferReport
+      //          data.processReport = model.processReport
+      //        } else {
+      //          if let processReport {
+      //            self._result.append(model)
+      //
+      //            processReport.transactionMetrics.connections.append(model.id)
+      //          } else {
+      //            self._result.append(model)
+      //
+      //            let processReport = ProcessReport(
+      //              processName: model.processReport.processName,
+      //              processBundleURL: model.processReport.processBundleURL,
+      //              processExecutableURL: model.processReport.processExecutableURL,
+      //              processIconTIFFRepresentation: model.processReport.processIconTIFFRepresentation,
+      //              transactionMetrics: .init(
+      //                totalBytesReceived: Measurement(
+      //                  value: Double(
+      //                    model.dataTransferReport.aggregatePathReport.receivedApplicationByteCount),
+      //                  unit: .bytes
+      //                ),
+      //                totalBytesSent: Measurement(
+      //                  value: Double(
+      //                    model.dataTransferReport.aggregatePathReport.sentApplicationByteCount),
+      //                  unit: .bytes
+      //                ),
+      //                bytesReceived: Measurement(
+      //                  value: Double(
+      //                    model.dataTransferReport.pathReports.first?.receivedApplicationByteCount ?? 0),
+      //                  unit: .bytes
+      //                ),
+      //                bytesSent: Measurement(
+      //                  value: Double(
+      //                    model.dataTransferReport.pathReports.first?.sentApplicationByteCount ?? 0),
+      //                  unit: .bytes
+      //                ),
+      //                countOfActiveConnections: model.state == .active ? 1 : 0,
+      //                connections: [model.id],
+      //                processIdentifiers: model.processReport.processIdentifier != nil
+      //                  ? [model.processReport.processIdentifier!] : []
+      //              )
+      //            )
+      //            self._processReports.append(processReport)
+      //          }
+      //        }
+      //      }
     }
 
     public func erase() {

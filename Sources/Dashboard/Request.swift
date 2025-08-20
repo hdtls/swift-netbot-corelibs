@@ -34,31 +34,6 @@ extension Request {
     path = path.last == "/" ? String(path.dropLast(1)) : path
     return "\(host)\(portString)\(path)"
   }
-
-  public enum FormatStrategy {
-    case head
-    case body
-  }
-
-  public func formatted(strategy: FormatStrategy = .head) -> String {
-    guard let httpRequest else {
-      return ""
-    }
-
-    switch strategy {
-    case .head:
-      return """
-        \(httpRequest.method) \(httpRequest.host(percentEncoded: false) ?? ""):\(httpRequest.port ?? 443) HTTP/1.1
-        Host: \(httpRequest.host(percentEncoded: false) ?? "")
-        \(httpRequest.headerFields.map  { "\($0.name): \($0.value)" }.joined(separator: "\n"))
-        """
-    case .body:
-      guard let body else {
-        return "No Data".localizedCapitalized
-      }
-      return String(data: body, encoding: .utf8) ?? "No Data".localizedCapitalized
-    }
-  }
 }
 
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
