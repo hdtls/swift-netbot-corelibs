@@ -33,9 +33,9 @@ struct DomainKeywordForwardingRuleTest {
       ["test1.com:443", "sub.test2.com", "test2.com:443", "notmatch.com:443"],
       [true, true, true, false]))
   func predicateWorks(_ authority: String, expected: Bool) {
-    let connection = Connection(
-      originalRequest: .init(
-        httpRequest: .init(method: .connect, scheme: "https", authority: authority, path: nil)))
+    let connection = Connection()
+    connection.originalRequest = .init(
+      httpRequest: .init(method: .connect, scheme: "https", authority: authority, path: nil))
 
     let forwardingRule = DomainKeywordForwardingRule(
       domainKeyword: "test", forwardProtocol: .direct)

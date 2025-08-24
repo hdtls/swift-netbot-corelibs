@@ -78,9 +78,9 @@ struct RulesetForwardingRuleTests {
     "www.test.com", "test1.com:443", "sub.test2.com", "test2.com:443", "test2.a.com",
   ])
   func predicateWorks(_ authority: String) async throws {
-    let connection = Connection(
-      originalRequest: .init(
-        httpRequest: .init(method: .connect, scheme: "https", authority: authority, path: nil)))
+    let connection = Connection()
+    connection.originalRequest = .init(
+      httpRequest: .init(method: .connect, scheme: "https", authority: authority, path: nil))
 
     let forwardingRule = RulesetForwardingRule(
       externalResourceDirectory: externalResourceDirectory,

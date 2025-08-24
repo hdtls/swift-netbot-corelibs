@@ -192,8 +192,8 @@ struct IPCIDRForwardingRuleTests {
     let forwardingRule = IPCIDRForwardingRule(
       classlessInterDomainRouting: "192.168.0.1/20", forwardProtocol: .direct)
     #expect(throws: Never.self) {
-      let connection = Connection(
-        originalRequest: .init(address: .hostPort(host: .init(pattern), port: 0)))
+      let connection = Connection()
+      connection.originalRequest = .init(address: .hostPort(host: .init(pattern), port: 0))
       let result = try forwardingRule.predicate(connection)
       #expect(result == expected)
     }
@@ -210,8 +210,8 @@ struct IPCIDRForwardingRuleTests {
       classlessInterDomainRouting: "2001:4860:4860::8888/32", forwardProtocol: .direct)
 
     #expect(throws: Never.self) {
-      let connection = Connection(
-        originalRequest: .init(address: .hostPort(host: .init(pattern), port: 0)))
+      let connection = Connection()
+      connection.originalRequest = .init(address: .hostPort(host: .init(pattern), port: 0))
       let result = try forwardingRule.predicate(connection)
       #expect(result == expected)
     }

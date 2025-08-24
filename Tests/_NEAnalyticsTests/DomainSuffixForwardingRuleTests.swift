@@ -33,9 +33,9 @@ struct DomainSuffixForwardingRuleTests {
       ["test1.com:443", "sub.test2.com", "test2.com:443", "test.com:443"],
       [false, false, false, true]))
   func predicateWorks(_ authority: String, expected: Bool) {
-    let connection = Connection(
-      originalRequest: .init(
-        httpRequest: .init(method: .connect, scheme: "https", authority: authority, path: nil)))
+    let connection = Connection()
+    connection.originalRequest = .init(
+      httpRequest: .init(method: .connect, scheme: "https", authority: authority, path: nil))
 
     let forwardingRule = DomainSuffixForwardingRule(
       domainSuffix: "test.com", forwardProtocol: .direct)

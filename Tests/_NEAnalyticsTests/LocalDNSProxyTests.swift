@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-import Anlzr
+import AnlzrReports
 import Atomics
 import NEAddressProcessing
 import NIOConcurrencyHelpers

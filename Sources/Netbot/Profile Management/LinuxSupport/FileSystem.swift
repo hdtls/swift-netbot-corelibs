@@ -197,7 +197,7 @@
     }
 
     var url: URL { _url.withLock { $0 } }
-    private let _url: Mutex<URL>
+    private let _url: Synchronization.Mutex<URL>
     init(url: URL) {
       self._url = .init(url)
     }

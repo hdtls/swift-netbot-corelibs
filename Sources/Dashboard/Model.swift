@@ -2,17 +2,28 @@
 // See LICENSE.txt for license information
 //
 
-#if canImport(SwiftData)
+#if swift(>=6.2) || canImport(Darwin)
   import AnlzrReports
-  import CoreData
   import Dispatch
   import Foundation
   import Logging
   import NEAddressProcessing
-  import Network
-  import Observation
-  import SwiftData
   import NIOConcurrencyHelpers
+  import Observation
+
+  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+    import CoreData
+    import SwiftData
+  #endif
+
+  #if canImport(Network)
+    import Network
+  #endif
+
+  public enum TrafficDirection: Hashable, Sendable {
+    case inbound
+    case outbound
+  }
 
   public enum LocalizedError: Foundation.LocalizedError, Equatable {
     case nw(NWError)
@@ -50,7 +61,9 @@
     public let messages: AsyncStream<Result<[Connection], LocalizedError>>
     private let continuation: AsyncStream<Result<[Connection], LocalizedError>>.Continuation
 
-    private let connection = NIOLockedValueBox<NWConnection?>(nil)
+    #if canImport(Network)
+      private let connection = NIOLockedValueBox<NWConnection?>(nil)
+    #endif
 
     private nonisolated let logger = Logger(label: "com.tenbits.netbot.dashboard")
 
@@ -58,60 +71,67 @@
       (messages, continuation) = AsyncStream<Result<[Connection], LocalizedError>>.makeStream()
     }
 
-    public func run() {
-      let parameters = NWParameters.tcp
-      let options = NWProtocolWebSocket.Options()
-      parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
-      let connection = self.connection.withLockedValue {
-        $0 = NWConnection(to: .url(URL(string: "ws://127.0.0.1:6170")!), using: parameters)
-        return $0!
-      }
-      connection.stateUpdateHandler = { [weak self] state in
-        guard let self else { return }
+    #if canImport(Network)
+      public func run() {
+        let parameters = NWParameters.tcp
+        let options = NWProtocolWebSocket.Options()
+        parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
+        let connection = self.connection.withLockedValue {
+          $0 = NWConnection(to: .url(URL(string: "ws://127.0.0.1:6170")!), using: parameters)
+          return $0!
+        }
+        connection.stateUpdateHandler = { [weak self] state in
+          guard let self else { return }
 
-        switch state {
-        case .setup:
-          break
-        case .waiting(let error):
-          logger.error("Fetch connections failure with error: \(error.localizedDescription)")
-          continuation.yield(.failure(.nw(error)))
-        case .preparing:
-          break
-        case .ready:
-          @Sendable func runReadLoop() {
-            guard connection.state == .ready else {
-              return
-            }
-
-            connection.receiveMessage { [weak self] content, contentContext, isComplete, error in
-              guard let data = content, let self else {
+          switch state {
+          case .setup:
+            break
+          case .waiting(let error):
+            logger.error("Fetch connections failure with error: \(error.localizedDescription)")
+            continuation.yield(.failure(.nw(error)))
+          case .preparing:
+            break
+          case .ready:
+            @Sendable func runReadLoop() {
+              guard connection.state == .ready else {
                 return
               }
 
-              do {
-                let models = try JSONDecoder().decode([Connection].self, from: data)
-                continuation.yield(.success(models))
-              } catch {
-                assertionFailure("BUG IN NETBOT CORE, please report: illegal data format \(error)")
-                logger.critical("decoding connection failure with error: \(error)")
+              connection.receiveMessage { [weak self] content, contentContext, isComplete, error in
+                guard let data = content, let self else {
+                  return
+                }
+
+                do {
+                  let models = try JSONDecoder().decode([Connection].self, from: data)
+                  continuation.yield(.success(models))
+                } catch {
+                  assertionFailure(
+                    "BUG IN NETBOT CORE, please report: illegal data format \(error)")
+                  logger.critical("decoding connection failure with error: \(error)")
+                }
+
+                runReadLoop()
               }
-
-              runReadLoop()
             }
-          }
 
-          runReadLoop()
-        case .failed(let error):
-          logger.error("Fetch connections failure with error: \(error.localizedDescription)")
-          continuation.yield(.failure(.nw(error)))
-        case .cancelled:
-          break
-        @unknown default:
-          continuation.yield(.failure(.operationUnsupported))
+            runReadLoop()
+          case .failed(let error):
+            logger.error("Fetch connections failure with error: \(error.localizedDescription)")
+            continuation.yield(.failure(.nw(error)))
+          case .cancelled:
+            break
+          @unknown default:
+            continuation.yield(.failure(.operationUnsupported))
+          }
         }
+        connection.start(queue: .global())
       }
-      connection.start(queue: .global())
-    }
+    #else
+      public func run() {
+        // TODO: WebSocket implementation for non-Darwin platform
+      }
+    #endif
 
     public func shutdownGracefully() {}
   }
@@ -121,9 +141,43 @@
 
     public typealias Data = Connection.PersistentModel
 
-    /// The ModelContainer for the ModelActor.
-    /// The container that manages the app’s schema and model storage configuration.
-    nonisolated public let modelContainer: ModelContainer
+    nonisolated public static let shared = RecentConnectionsStore()
+
+    #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+      /// The ModelContainer for the ModelActor.
+      /// The container that manages the app’s schema and model storage configuration.
+      nonisolated public let modelContainer: ModelContainer
+    #else
+      public var searchResult: [Data] {
+        _searchResult
+      }
+      private var _searchResult: [Data] = []
+      @ObservationIgnored private var _indexes: [Data.ID: Data] = [:]
+      @ObservationIgnored private var _activeIndexes: [Data.ID: Data] = [:]
+
+      public var programs: [Program.PersistentModel] {
+        _programs
+      }
+      public var _programs: [Program.PersistentModel] = []
+      @ObservationIgnored private var _indexesForPrograms:
+        [Program.PersistentModel.ID: Program.PersistentModel] = [:]
+
+      public func fetch(_ persistentModelID: Data.ID) -> [Data] {
+        guard let persistentModel = self._indexes[persistentModelID] else {
+          return []
+        }
+        return [persistentModel]
+      }
+
+      public func fetch(_ persistentModelID: Program.PersistentModel.ID) -> [Program
+        .PersistentModel]
+      {
+        guard let persistentModel = self._indexesForPrograms[persistentModelID] else {
+          return []
+        }
+        return [persistentModel]
+      }
+    #endif
 
     /// An error encountered during the most recent attempt to fetch data.
     ///
@@ -134,31 +188,35 @@
     }
     private var _fetchError: LocalizedError?
 
-    public var totalBytesTransferred: DataTransferReport.PathReport {
-      _totalBytesTransferred
-    }
-    private var _totalBytesTransferred = DataTransferReport.PathReport()
-
-    public var bytesTransferred: DataTransferReport.PathReport {
-      _bytesTransferred
-    }
-    private var _bytesTransferred = DataTransferReport.PathReport()
-
     nonisolated private let logger = Logger(label: "com.tenbits.netbot.dashboard")
     nonisolated private let dependency: any ConnectionsDependency
     private var earliestBeginDate = Date.distantPast
+    private var _transmissionRate = DataTransferReport.PathReport()
+    private var _dataTransferReport = DataTransferReport.PathReport()
+    private var timerSource: DispatchSourceTimer?
 
     nonisolated public convenience init() {
-      let schema = Schema(versionedSchema: V1.self)
-      let configuration: ModelConfiguration = .init(isStoredInMemoryOnly: true)
-      let modelContainer = try! ModelContainer(for: schema, configurations: [configuration])
-      self.init(modelContainer: modelContainer, dependency: DefaultConnectionsDependency())
+      #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+        let schema = Schema(versionedSchema: V1.self)
+        let configuration: ModelConfiguration = .init(isStoredInMemoryOnly: true)
+        let modelContainer = try! ModelContainer(for: schema, configurations: [configuration])
+        self.init(modelContainer: modelContainer, dependency: DefaultConnectionsDependency())
+      #else
+        self.init(dependency: DefaultConnectionsDependency())
+      #endif
     }
 
-    nonisolated public init(modelContainer: ModelContainer, dependency: any ConnectionsDependency) {
-      self.modelContainer = modelContainer
-      self.dependency = dependency
-    }
+    #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+      nonisolated public init(modelContainer: ModelContainer, dependency: any ConnectionsDependency)
+      {
+        self.modelContainer = modelContainer
+        self.dependency = dependency
+      }
+    #else
+      nonisolated public init(dependency: any ConnectionsDependency) {
+        self.dependency = dependency
+      }
+    #endif
 
     public func resume() {
       self._fetchError = nil
@@ -169,12 +227,33 @@
 
         for await message in dependency.messages {
           do {
-            try await performBatchUpdates(message.get())
+            try performBatchUpdates(message.get())
           } catch {
             logger.error("\(error)")
           }
         }
       }
+
+      timerSource?.cancel()
+      timerSource = DispatchSource.makeTimerSource(queue: .main)
+      timerSource?.schedule(deadline: .now(), repeating: .seconds(1))
+      timerSource?.setEventHandler {
+        #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+          let modelContext = self.modelContainer.mainContext
+
+          let term = Connection.State.active.rawValue
+          var fd = FetchDescriptor<Data>(predicate: #Predicate { $0._state == term })
+          let models = (try? modelContext.fetch(fd)) ?? []
+        #else
+          let models = self._activeIndexes.map(\.value) as [Data]
+        #endif
+        self._transmissionRate =
+          models
+          .reduce(DataTransferReport.PathReport()) { nextPartialResult, nextElement in
+            nextPartialResult &+ (nextElement.dataTransferReport?.pathReports.first ?? .init())
+          }
+      }
+      timerSource?.resume()
     }
 
     public func cancel() {
@@ -182,33 +261,38 @@
       self.dependency.shutdownGracefully()
     }
 
-    public func search(tokens: [ConnectionFilter]) -> Predicate<Data> {
-      let options = tokens.first
-      switch options {
-      case .none: break
-      case .some(.client(let processName)):
-        if let processName {
-          return #Predicate {
-            if $0.earliestBeginDate < earliestBeginDate {
-              return false
-            } else {
-              if let processReport = $0.processReport, let program = processReport.program {
-                return program.localizedName == processName
-              } else {
-                return false
-              }
-            }
-          }
-        }
-      case .some(.hostname(let hostname)):
-        if let hostname {
-          return #Predicate {
-            $0.earliestBeginDate >= earliestBeginDate && $0.currentRequest?.hostname == hostname
-          }
-        }
+    public func transferredBytes(_ direction: TrafficDirection) -> Measurement<
+      UnitInformationStorage
+    > {
+      switch direction {
+      case .outbound:
+        return Measurement(
+          value: Double(self._dataTransferReport.sentApplicationByteCount),
+          unit: .bytes
+        )
+      case .inbound:
+        return Measurement(
+          value: Double(self._dataTransferReport.receivedApplicationByteCount),
+          unit: .bytes
+        )
       }
+    }
 
-      return #Predicate { $0.earliestBeginDate >= earliestBeginDate }
+    public func transmissionRate(_ direction: TrafficDirection) -> Measurement<
+      UnitInformationStorage
+    > {
+      switch direction {
+      case .outbound:
+        return Measurement(
+          value: Double(self._transmissionRate.sentApplicationByteCount),
+          unit: .bytes
+        )
+      case .inbound:
+        return Measurement(
+          value: Double(self._transmissionRate.receivedApplicationByteCount),
+          unit: .bytes
+        )
+      }
     }
 
     /// Updates the underlying value of the stored value.
@@ -221,137 +305,205 @@
     }
 
     private func performBatchUpdates(_ models: [Connection]) {
-      let modelContext = modelContainer.mainContext
+      func doInsert(_ model: Connection) throws {
+        var persistentModel: V1._Connection
+        #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+          let term = model.taskIdentifier
+          var fd = FetchDescriptor<V1._Connection>(
+            predicate: #Predicate { $0.taskIdentifier == term })
+          fd.relationshipKeyPathsForPrefetching = [
+            \.currentRequest,
+            \.establishmentReport,
+            \.response,
+            \.processReport,
+            \.dataTransferReport,
+          ]
+          let _persistentModel = try modelContext.fetch(fd).first
+        #else
+          let _persistentModel = self._indexes[model.taskIdentifier]
+        #endif
 
-      for model in models {
-        var fd = FetchDescriptor<Data>()
-        fd.relationshipKeyPathsForPrefetching = [\.dataTransferReport]
-        fd.predicate = #Predicate { $0.taskIdentifier == model.taskIdentifier }
-        if let persistentModel = try? modelContext.fetch(fd).first {
-          switch (
-            persistentModel.dataTransferReport?.aggregatePathReport,
-            model.dataTransferReport?.aggregatePathReport
-          ) {
-          case (.some(let lhs), .some(let rhs)):
-            self._totalBytesTransferred &+= rhs &- lhs
-          case (.none, .some(let rhs)):
-            self._totalBytesTransferred &+= rhs
-          case (.some(let lhs), .none): break
-          case (.none, .none): break
-          }
-
-          switch (
-            persistentModel.dataTransferReport?.pathReports.first,
-            model.dataTransferReport?.pathReports.first
-          ) {
-          case (.some(let lhs), .some(let rhs)):
-            self._bytesTransferred &+= rhs &- lhs
-          case (.none, .some(let rhs)):
-            self._bytesTransferred &+= rhs
-          case (.some(let lhs), .none): break
-          case (.none, .none): break
-          }
+        if let _persistentModel {
+          persistentModel = _persistentModel
+          persistentModel.mergeValues(model)
         } else {
-          if let aggregatePathReport = model.dataTransferReport?.aggregatePathReport {
-            self._totalBytesTransferred &+= aggregatePathReport
+          persistentModel = V1._Connection()
+          persistentModel.mergeValues(model)
+          #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+            modelContext.insert(persistentModel)
+          #else
+            self._searchResult.append(persistentModel)
+            self._indexes[model.taskIdentifier] = persistentModel
+          #endif
+        }
+
+        #if !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+          // Track active status
+          if model.state == .active {
+            self._activeIndexes[persistentModel.persistentModelID] = persistentModel
+          } else {
+            self._activeIndexes[persistentModel.persistentModelID] = nil
           }
-          if let pathReport = model.dataTransferReport?.pathReports.first {
-            self._bytesTransferred &+= pathReport
+        #endif
+
+        if let backingData = model.originalRequest {
+          if persistentModel.originalRequest == nil {
+            let originalRequest = Request.PersistentModel()
+            originalRequest.mergeValues(backingData)
+            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+              modelContext.insert(originalRequest)
+            #endif
+            persistentModel.originalRequest = originalRequest
+          } else {
+            persistentModel.originalRequest?.mergeValues(backingData)
+          }
+        }
+
+        if let backingData = model.currentRequest {
+          if persistentModel.currentRequest == nil {
+            let currentRequest = Request.PersistentModel()
+            currentRequest.mergeValues(backingData)
+            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+              modelContext.insert(currentRequest)
+            #endif
+            persistentModel.currentRequest = currentRequest
+          } else {
+            persistentModel.currentRequest?.mergeValues(backingData)
+          }
+        }
+
+        if let backingData = model.response {
+          if persistentModel.response == nil {
+            let response = Response.PersistentModel()
+            response.mergeValues(backingData)
+            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+              modelContext.insert(response)
+            #endif
+            persistentModel.response = response
+          } else {
+            persistentModel.response?.mergeValues(backingData)
+          }
+        }
+
+        if let backingData = model.establishmentReport {
+          if persistentModel.establishmentReport == nil {
+            let establishmentReport = EstablishmentReport.PersistentModel()
+            establishmentReport.mergeValues(backingData)
+            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+              modelContext.insert(establishmentReport)
+            #endif
+            persistentModel.establishmentReport = establishmentReport
+          } else {
+            persistentModel.establishmentReport?.mergeValues(backingData)
+          }
+        }
+
+        if let backingData = model.dataTransferReport {
+          if persistentModel.dataTransferReport == nil {
+            let dataTransferReport = DataTransferReport.PersistentModel()
+            dataTransferReport.mergeValues(backingData)
+            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+              modelContext.insert(dataTransferReport)
+            #endif
+            persistentModel.dataTransferReport = dataTransferReport
+          } else {
+            persistentModel.dataTransferReport?.mergeValues(backingData)
+          }
+        }
+
+        if let backingData = model.processReport {
+          if persistentModel.processReport == nil {
+            let processReport = ProcessReport.PersistentModel()
+            processReport.mergeValues(backingData)
+            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+              modelContext.insert(processReport)
+            #else
+              // FIXME: Retain Cycle
+              processReport.connection = persistentModel
+            #endif
+            persistentModel.processReport = processReport
+          } else {
+            persistentModel.processReport?.mergeValues(backingData)
+          }
+
+          if let backingData = backingData.program {
+            // Prevents duplicate Process objects from being created for the same underlying process.
+            var program: Program.PersistentModel
+            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+              let _program = try modelContext.fetch(
+                FetchDescriptor<V1._Program>(
+                  predicate: #Predicate {
+                    $0.localizedName == backingData.localizedName
+                  })
+              ).first
+            #else
+              let _program = self._indexesForPrograms[backingData.persistentModelID]
+            #endif
+
+            // Ensures that every referenced process actually exists in the database, even if it’s new.
+            if let _program {
+              program = _program
+              program.mergeValues(backingData)
+              if persistentModel.processReport?.program == nil {
+                persistentModel.processReport?.program = program
+                #if !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+                  // FIXME: Retain Cycle
+                  let inserted = program.processReports.contains {
+                    $0.connection?.persistentModelID == persistentModel.persistentModelID
+                  }
+                  if !inserted {
+                    program.processReports.append(persistentModel.processReport.unsafelyUnwrapped)
+                  }
+                #endif
+              }
+            } else {
+              program = Program.PersistentModel()
+              program.mergeValues(backingData)
+              program.dataTransferReport = .init()
+              program.dataTransferReport?.aggregatePathReport =
+                persistentModel.dataTransferReport?.aggregatePathReport ?? .init()
+              program.dataTransferReport?.pathReports =
+                persistentModel.dataTransferReport?.pathReports ?? []
+              #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+                modelContext.insert(program)
+                persistentModel.processReport?.program = program
+              #else
+                assert(persistentModel.processReport != nil)
+                // FIXME: Retain Cycle
+                program.processReports.append(persistentModel.processReport.unsafelyUnwrapped)
+                self._programs.append(program)
+                self._indexesForPrograms[backingData.persistentModelID] = program
+              #endif
+            }
+
+            // Update data transfer report for program.
+            var aggregatePathReport = DataTransferReport.PathReport()
+            var pathReport = DataTransferReport.PathReport()
+            for dataTransferReport in program.processReports.compactMap(
+              \.connection?.dataTransferReport)
+            {
+              aggregatePathReport &+= dataTransferReport.aggregatePathReport
+              pathReport &+= dataTransferReport.pathReports.first ?? .init()
+            }
+            program.dataTransferReport?.aggregatePathReport = aggregatePathReport
+            program.dataTransferReport?.pathReports = [pathReport]
           }
         }
       }
 
-      try? modelContext.transaction {
-        try Dashboard._insertREQs(models, modelContext: modelContext)
-      }
-    }
-  }
+      #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+        let modelContext = modelContainer.mainContext
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-  @inlinable public func _insertREQs(
-    _ models: [Connection], modelContext: ModelContext
-  ) throws {
-    func doInsert(_ model: Connection) throws {
-      let term = model.taskIdentifier
-      var fd = FetchDescriptor<V1._Connection>(predicate: #Predicate { $0.taskIdentifier == term })
-      fd.relationshipKeyPathsForPrefetching = [
-        \.currentRequest,
-        \.establishmentReport,
-        \.response,
-        \.processReport,
-      ]
-
-      var persistentModel = try modelContext.fetch(fd).first
-      if persistentModel == nil {
-        persistentModel = V1._Connection()
-        modelContext.insert(persistentModel.unsafelyUnwrapped)
-      }
-      persistentModel?.mergeValues(model)
-
-      if let backingData = model.originalRequest {
-        if persistentModel?.originalRequest == nil {
-          persistentModel?.originalRequest = Request.PersistentModel()
+        try? modelContext.transaction {
+          for model in models {
+            try doInsert(model)
+          }
         }
-        persistentModel?.originalRequest?.mergeValues(backingData)
-      }
-
-      if let backingData = model.currentRequest {
-        if persistentModel?.currentRequest == nil {
-          persistentModel?.currentRequest = Request.PersistentModel()
+      #else
+        for model in models {
+          try? doInsert(model)
         }
-        persistentModel?.currentRequest?.mergeValues(backingData)
-      }
-
-      if let backingData = model.response {
-        if persistentModel?.response == nil {
-          persistentModel?.response = Response.PersistentModel()
-        }
-        persistentModel?.response?.mergeValues(backingData)
-      }
-
-      if let backingData = model.establishmentReport {
-        if persistentModel?.establishmentReport == nil {
-          persistentModel?.establishmentReport = EstablishmentReport.PersistentModel()
-        }
-        persistentModel?.establishmentReport?.mergeValues(backingData)
-      }
-
-      if let backingData = model.processReport {
-        if persistentModel?.processReport == nil {
-          persistentModel?.processReport = ProcessReport.PersistentModel()
-        }
-        persistentModel?.processReport?.mergeValues(backingData)
-
-        // Prevents duplicate Process objects from being created for the same underlying process.
-        var process = try modelContext.fetch(
-          FetchDescriptor<V1._Program>(
-            predicate: #Predicate {
-              $0.localizedName == backingData.program?.localizedName ?? "Unkown"
-            })
-        ).first
-
-        // Ensures that every referenced process actually exists in the database, even if it’s new.
-        if process == nil {
-          process = .init()
-          process?.localizedName = backingData.program?.localizedName ?? "Unkown"
-          modelContext.insert(process.unsafelyUnwrapped)
-        }
-
-        // Guarantees that the Connection → ProcessReport → Process relationship chain is
-        // established.
-        if persistentModel?.processReport?.program == nil {
-          persistentModel?.processReport?.program = process
-        }
-
-        // Ensures the stored process object remains up-to-date.
-        if let backingData = backingData.program {
-          process?.mergeValues(backingData)
-        }
-      }
-    }
-
-    for model in models {
-      try doInsert(model)
+      #endif
     }
   }
 #endif
