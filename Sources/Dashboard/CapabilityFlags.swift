@@ -6,7 +6,7 @@
   import Foundation
 #endif
 
-public struct CapabilityFlags: OptionSet, RawRepresentable, Sendable {
+public struct CapabilityFlags: OptionSet, Hashable, RawRepresentable, Sendable {
 
   public var rawValue: Int
 

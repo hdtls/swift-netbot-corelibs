@@ -97,12 +97,13 @@ let package = Package(
       dependencies: [
         "_PreferenceSupport",
         .product(name: "AnlzrReports", package: "swift-netbot-essentials"),
-      ]
+      ],
     ),
     .target(
       name: "Netbot",
       dependencies: [
         "NetbotMacros",
+        "Dashboard",
         "_PreferenceSupport",
         "_ProfileSupport",
         .product(name: "AnlzrReports", package: "swift-netbot-essentials"),
