@@ -3,7 +3,7 @@
 //
 
 #if canImport(Network)
-  import Anlzr
+  import AnlzrReports
   import Darwin
   import Logging
   import Network

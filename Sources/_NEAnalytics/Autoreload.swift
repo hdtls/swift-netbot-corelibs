@@ -3,7 +3,7 @@
 //
 
 #if canImport(Darwin)
-  import Anlzr
+  import AnlzrReports
   import Combine
   import Logging
   import NIOConcurrencyHelpers
