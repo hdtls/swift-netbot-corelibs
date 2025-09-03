@@ -39,7 +39,7 @@ import NIOCore
   #endif
   private let jsonEncoder = JSONEncoder()
 
-  private var connections: [Connection]
+  private var connections: [UInt64: Connection]
 
   init(group: any EventLoopGroup, address: Address) {
     self.group = group
@@ -50,7 +50,7 @@ import NIOCore
     #else
       self.quiescing = ServerQuiescingHelper(group: group)
     #endif
-    self._connections = .init([])
+    self._connections = .init([:])
   }
 
   func run() async throws {
@@ -213,19 +213,16 @@ import NIOCore
 
   func push(_ conn: Connection) async {
     self._connections.withLock {
-      if let firstIndex = $0.firstIndex(where: { $0.taskIdentifier == conn.taskIdentifier }) {
-        $0[firstIndex] = conn
-      } else {
-        $0.append(conn)
-      }
+      $0[conn.taskIdentifier] = conn
 
-      guard !outboundStreams.isEmpty, !$0.isEmpty else {
+      guard !outboundStreams.isEmpty else {
         return
       }
 
-      guard let data = try? jsonEncoder.encode($0) else {
+      guard let data = try? jsonEncoder.encode(Array($0.values)) else {
         return
       }
+      $0.removeAll()
 
       for outboundStream in outboundStreams {
         #if canImport(Network)
@@ -242,8 +239,6 @@ import NIOCore
           outboundStream.value.yield(ByteBuffer(bytes: data))
         #endif
       }
-
-      $0.removeAll()
     }
   }
 }
