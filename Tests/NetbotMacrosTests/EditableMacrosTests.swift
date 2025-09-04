@@ -12,7 +12,7 @@ import XCTest
 #if canImport(NetbotMacros)
   import NetbotMacros
 
-  let testMacros: [String: Macro.Type] = [
+  let testMacros: [String: (Macro & Sendable).Type] = [
     "Editable": EditableMacro.self
   ]
 #endif

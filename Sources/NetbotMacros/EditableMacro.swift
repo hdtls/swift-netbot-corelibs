@@ -7,7 +7,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-public struct EditableMacro: MemberMacro {
+public struct EditableMacro: MemberMacro, Sendable {
 
   public static func expansion(
     of node: AttributeSyntax, providingMembersOf declaration: some DeclGroupSyntax,

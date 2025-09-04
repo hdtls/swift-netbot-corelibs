@@ -12,7 +12,7 @@ import XCTest
 #if canImport(CoWOptimizationMacros)
   import CoWOptimizationMacros
 
-  let testMacros: [String: Macro.Type] = [
+  let testMacros: [String: (Macro & Sendable).Type] = [
     "_cowOptimization": CoWOptimizationMacro.self,
     "_cowOptimizationIgnored": CoWOptimizationIgnoredMacro.self,
     "_cowOptimizationTracked": CoWOptimizationTrackedMacro.self,

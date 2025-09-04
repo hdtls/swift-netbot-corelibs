@@ -7,7 +7,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-public struct CoWOptimizationMacro {
+public struct CoWOptimizationMacro: Sendable {
   static let optimizationIgnored = "_cowOptimizationIgnored"
   static let optimizationTracked = "_cowOptimizationTracked"
 }
@@ -113,7 +113,7 @@ extension CoWOptimizationMacro: MemberAttributeMacro {
   }
 }
 
-public struct CoWOptimizationTrackedMacro: AccessorMacro {
+public struct CoWOptimizationTrackedMacro: AccessorMacro, Sendable {
   public static func expansion<
     Context: MacroExpansionContext,
     Declaration: DeclSyntaxProtocol
@@ -152,7 +152,7 @@ public struct CoWOptimizationTrackedMacro: AccessorMacro {
   }
 }
 
-public struct CoWOptimizationIgnoredMacro: PeerMacro {
+public struct CoWOptimizationIgnoredMacro: PeerMacro, Sendable {
   public static func expansion(
     of node: AttributeSyntax,
     providingPeersOf declaration: some DeclSyntaxProtocol,

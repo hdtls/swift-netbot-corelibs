@@ -157,11 +157,14 @@ struct NEClientTLSProvider<Bootstrap: NIOClientTCPBootstrapProtocol>: NIOClientT
     #else
       // NIOSSLClientHandler.init only throws because of `malloc` error and invalid SNI hostnames. We want to crash
       // on malloc error and we pre-checked the SNI hostname in `init` so that should be impossible here.
-      bootstrap.protocolHandlers {
+      let context = self.context
+      let serverHostname = self.serverHostname
+      let customVerificationCallback = self.customVerificationCallback
+      return bootstrap.protocolHandlers {
         [
           try! NIOSSLClientHandler(
-            context: self.context,
-            serverHostname: self.serverHostname,
+            context: context,
+            serverHostname: serverHostname,
             customVerificationCallback: customVerificationCallback,
             configuration: .init()
           )
