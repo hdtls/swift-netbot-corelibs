@@ -17,6 +17,7 @@ import _ProfileSupport
   import NIOTransportServices
 #else
   import NIOPosix
+  import NIOSSL
 #endif
 
 @available(SwiftStdlib 5.3, *)
