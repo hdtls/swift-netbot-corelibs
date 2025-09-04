@@ -8,8 +8,7 @@
   import SwiftData
   import _ProfileSupport
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension V1 {
 
     @Model public class _StubbedHTTPResponse {
@@ -43,8 +42,7 @@
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension StubbedHTTPResponse {
 
     public typealias PersistentModel = V1._StubbedHTTPResponse
@@ -63,8 +61,7 @@
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension V1._StubbedHTTPResponse {
     public func mergeValues(_ data: StubbedHTTPResponse) {
       isEnabled = data.isEnabled

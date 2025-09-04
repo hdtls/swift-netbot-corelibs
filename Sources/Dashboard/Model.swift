@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-#if swift(>=6.2) || canImport(Darwin)
+#if swift(>=6.3) || canImport(Darwin)
   import AnlzrReports
   import Dispatch
   import Foundation
@@ -20,11 +20,13 @@
     import Network
   #endif
 
+  @available(SwiftStdlib 5.3, *)
   public enum TrafficDirection: Hashable, Sendable {
     case inbound
     case outbound
   }
 
+  @available(SwiftStdlib 5.3, *)
   public enum LocalizedError: Foundation.LocalizedError, Equatable {
     case nw(NWError)
     case operationUnsupported
@@ -48,6 +50,7 @@
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   public protocol ConnectionsDependency: Sendable {
 
     var messages: AsyncStream<Result<[Connection], LocalizedError>> { get }
@@ -57,6 +60,7 @@
     func shutdownGracefully()
   }
 
+  @available(SwiftStdlib 5.3, *)
   final private class DefaultConnectionsDependency: ConnectionsDependency {
     public let messages: AsyncStream<Result<[Connection], LocalizedError>>
     private let continuation: AsyncStream<Result<[Connection], LocalizedError>>.Continuation
@@ -136,7 +140,7 @@
     public func shutdownGracefully() {}
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @MainActor @Observable public class RecentConnectionsStore {
 
     public typealias Data = Connection.PersistentModel

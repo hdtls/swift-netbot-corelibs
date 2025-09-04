@@ -9,6 +9,7 @@ import Preference
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension OutboundMode: @retroactive RawRepresentable {
 
   public var rawValue: String {
@@ -36,26 +37,35 @@ extension OutboundMode: @retroactive RawRepresentable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension OutboundMode: @retroactive PreferenceRepresentable {}
 
+@available(SwiftStdlib 5.3, *)
 extension OutboundMode {
   var localizedName: String {
-    switch self {
     #if canImport(Darwin)
-      case .direct:
-        return String(localized: "Direct Outbound", comment: "")
-      case .globalProxy:
-        return String(localized: "Global Proxy", comment: "")
-      case .ruleBased:
-        return String(localized: "Rule-based Proxy", comment: "")
+      if #available(SwiftStdlib 5.5, *) {
+        switch self {
+        case .direct: return String(localized: "Direct Outbound", comment: "")
+        case .globalProxy: return String(localized: "Global Proxy", comment: "")
+        case .ruleBased: return String(localized: "Rule-based Proxy", comment: "")
+        }
+      } else {
+        switch self {
+        case .direct: return NSLocalizedString("Direct Outbound", comment: "")
+        case .globalProxy: return NSLocalizedString("Global Proxy", comment: "")
+        case .ruleBased: return NSLocalizedString("Rule-based Proxy", comment: "")
+        }
+      }
     #else
+      switch self {
       case .direct:
         return "Direct Outbound"
       case .globalProxy:
         return "Global Proxy"
       case .ruleBased:
         return "Rule-based Proxy"
+      }
     #endif
-    }
   }
 }

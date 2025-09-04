@@ -8,6 +8,7 @@
   import NEAddressProcessing
   import _PrivilegeSupport
 
+  @available(SwiftStdlib 5.3, *)
   extension PrivilegeScope: ProcessReporting {
 
     public func processInfo(address: Address) async throws -> ProcessReport {

@@ -15,7 +15,7 @@ import Testing
 @Suite(.tags(.formatting, .forwardingRule))
 struct AnyForwardingRuleFormatStyleTests {
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -31,7 +31,7 @@ struct AnyForwardingRuleFormatStyleTests {
     #expect(parseOutput.comment == "")
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -47,7 +47,7 @@ struct AnyForwardingRuleFormatStyleTests {
     #expect(parseOutput.comment == "note...")
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -63,7 +63,7 @@ struct AnyForwardingRuleFormatStyleTests {
     #expect(parseOutput.comment == "")
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -79,7 +79,7 @@ struct AnyForwardingRuleFormatStyleTests {
     #expect(parseOutput.comment == "note...")
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -100,7 +100,7 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -121,7 +121,7 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -142,7 +142,7 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -163,7 +163,7 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -193,7 +193,7 @@ struct AnyForwardingRuleFormatStyleTests {
     #expect(parseOutput.comment == "test note")
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -208,7 +208,7 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test func parseStrategyConformance() {
     #expect(throws: Never.self) {
       try AnyForwardingRule("GEOIP, CN, direct", strategy: .forwardingRule)

@@ -8,14 +8,12 @@
   import SwiftData
   import _ProfileSupport
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension V1 {
 
     @Model public class _Profile {
 
-      //      @available(swift 5.9)
-      //      @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, *)
+      //            //      @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, *)
       //      @Unique<_Profile>([\.url])
 
       /// The url the resource was storaged..
@@ -120,8 +118,7 @@
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension Profile {
 
     public typealias PersistentModel = V1._Profile
@@ -180,8 +177,7 @@
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension V1._Profile {
 
     public func mergeValues(_ data: Profile) {

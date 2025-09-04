@@ -25,8 +25,10 @@ import _ProfileSupport
   import NIOTransportServices
 #else
   import NIOPosix
+  import NIOSSL
 #endif
 
+@available(SwiftStdlib 5.7, *)
 @_cowOptimization struct ForwardProtocolVMESS: Hashable, Sendable {
 
   var name: String
@@ -54,6 +56,7 @@ import _ProfileSupport
   }
 }
 
+@available(SwiftStdlib 5.7, *)
 extension ForwardProtocolVMESS._Storage: Hashable {
   static func == (lhs: ForwardProtocolVMESS._Storage, rhs: ForwardProtocolVMESS._Storage) -> Bool {
     return lhs.name == rhs.name
@@ -74,8 +77,10 @@ extension ForwardProtocolVMESS._Storage: Hashable {
   }
 }
 
+@available(SwiftStdlib 5.7, *)
 extension ForwardProtocolVMESS._Storage: @unchecked Sendable {}
 
+@available(SwiftStdlib 5.7, *)
 extension ForwardProtocolVMESS: ProxiableForwardProtocol {
 
   func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
@@ -188,4 +193,5 @@ extension ForwardProtocolVMESS: ProxiableForwardProtocol {
   }
 }
 
+@available(SwiftStdlib 5.7, *)
 extension ForwardProtocolVMESS: ForwardProtocolConvertible {}

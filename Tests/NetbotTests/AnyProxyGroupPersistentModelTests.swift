@@ -15,23 +15,21 @@
     var modelContainer: Any = 0
 
     init() throws {
-      if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+      if #available(SwiftStdlib 5.9, *) {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
         let schema: Schema = Schema(versionedSchema: _VersionedSchema.self)
         modelContainer = try ModelContainer(for: schema, configurations: configuration)
       }
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func propertyInitialValue() {
       let persistentModel = V1._AnyProxyGroup()
       #expect(persistentModel.kind == .select)
       #expect(persistentModel.resource == .init())
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test("AnyProxyGroup.init(persistentModel:)")
     func initWithPersistentModel() {
       let persistentModel = V1._AnyProxyGroup()
@@ -44,8 +42,7 @@
       #expect(group.creationDate == persistentModel.creationDate)
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func mergeValues() {
       let persistentModel = V1._AnyProxyGroup()
       let group = AnyProxyGroup()
@@ -62,8 +59,7 @@
   @Suite("V1._AnyProxyGroup.KindTests", .tags(.swiftData, .schema, .proxyGroup))
   struct V1_AnyProxyGroupKindTests {
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test(
       arguments: zip(
         V1._AnyProxyGroup.Kind.allCases,
@@ -77,8 +73,7 @@
       #expect(kind.localizedName == localizedName)
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test(
       arguments: zip(
         V1._AnyProxyGroup.Kind.allCases,
@@ -95,15 +90,13 @@
       #expect(kind.localizedDescription == description)
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func caseIterableConformance() {
       #expect(
         V1._AnyProxyGroup.Kind.allCases == [.select, .urlTest, .fallback, .ssid, .loadBalance])
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test(
       arguments: zip(
         V1._AnyProxyGroup.Kind.allCases,
@@ -120,8 +113,7 @@
   @Suite("V1_AnyProxyGroup.MeasurementTests", .tags(.swiftData, .schema, .proxyGroup))
   struct V1_AnyProxyGroupMeasurementTests {
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func propertyInitialValue() {
       let transactionMetrics = TransactionMetrics()
       let measurement = V1._AnyProxyGroup.Measurement(transactionMetrics: transactionMetrics)
@@ -136,8 +128,7 @@
   @Suite("V1._AnyProxyGroup.ResourceTests", .tags(.swiftData, .schema, .proxyGroup))
   struct V1_AnyProxyGroupResourceTests {
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func propertyInitialValue() {
       let resource = V1._AnyProxyGroup.Resource()
       #expect(resource.source == .cache)
@@ -149,8 +140,7 @@
   @Suite("V1._AnyProxyGroup.Resource.SourceTests", .tags(.swiftData, .schema, .proxyGroup))
   struct V1_AnyProxyGroupResourceSourceTests {
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func caseIterableConformance() {
       #expect(V1._AnyProxyGroup.Resource.Source.allCases == [.cache, .query])
     }

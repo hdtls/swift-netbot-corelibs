@@ -23,6 +23,7 @@ import NIOCore
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 @Lockable final class ConnectionPulse: ConnectionTransmissionService, Sendable {
 
   private let group: any EventLoopGroup
@@ -244,6 +245,7 @@ import NIOCore
 }
 
 #if !canImport(Network)
+  @available(SwiftStdlib 5.3, *)
   final class WebSocketAutomator: ChannelInboundHandler, ChannelOutboundHandler {
     typealias InboundIn = WebSocketFrame
     typealias InboundOut = ByteBuffer
@@ -338,5 +340,6 @@ import NIOCore
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   extension WebSocketAutomator: @unchecked Sendable {}
 #endif

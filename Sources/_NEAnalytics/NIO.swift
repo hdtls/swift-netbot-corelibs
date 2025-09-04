@@ -8,9 +8,12 @@ import NIOCore
   import Network
   import NIOTransportServices
 
+  @available(SwiftStdlib 5.3, *)
   public typealias MultiThreadedEventLoopGroup = NIOTSEventLoopGroup
+  @available(SwiftStdlib 5.3, *)
   typealias DatagramClientBootstrap = NIOTSDatagramBootstrap
 
+  @available(SwiftStdlib 5.3, *)
   extension DatagramClientBootstrap {
 
     func connect<Output>(
@@ -27,6 +30,7 @@ import NIOCore
   typealias DatagramClientBootstrap = DatagramBootstrap
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension EventLoopGroup where Self == MultiThreadedEventLoopGroup {
 
   public static var shared: any EventLoopGroup {

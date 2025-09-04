@@ -7,8 +7,7 @@
   import SwiftData
   import _ProfileSupport
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension V1 {
     @Model public class _URLRewrite {
 
@@ -38,8 +37,7 @@
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension URLRewrite {
 
     public typealias PersistentModel = V1._URLRewrite
@@ -54,8 +52,7 @@
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension V1._URLRewrite {
 
     public func mergeValues(_ data: URLRewrite) {

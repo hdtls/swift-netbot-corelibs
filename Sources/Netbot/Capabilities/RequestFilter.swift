@@ -4,6 +4,7 @@
 
 import Preference
 
+@available(SwiftStdlib 5.3, *)
 public enum RequestFilterStrategy: Int, CaseIterable, Hashable, Sendable {
   case noFilter
   case withKeywords
@@ -11,6 +12,7 @@ public enum RequestFilterStrategy: Int, CaseIterable, Hashable, Sendable {
   case matchPatterns
 }
 
+@available(SwiftStdlib 5.3, *)
 extension RequestFilterStrategy {
 
   public var abstract: String {
@@ -27,8 +29,10 @@ extension RequestFilterStrategy {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension RequestFilterStrategy: PreferenceRepresentable {}
 
+@available(SwiftStdlib 5.3, *)
 public struct RequestFilter: Hashable, Sendable {
 
   public var strategy: RequestFilterStrategy
@@ -41,6 +45,7 @@ public struct RequestFilter: Hashable, Sendable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension RequestFilter: PreferenceRepresentable {
 
   public init?(preferenceValue: Any) {

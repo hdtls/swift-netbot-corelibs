@@ -10,6 +10,7 @@
 
 /// An URL rewrite representation object, define how to navigates the user from a source URL to a target URL with
 /// a specific HTTP status code.
+@available(SwiftStdlib 5.3, *)
 public struct URLRewrite: Equatable, Hashable, Sendable {
 
   /// A boolean value determinse whether this rule is enabled or disabled.
@@ -67,7 +68,7 @@ public struct URLRewrite: Equatable, Hashable, Sendable {
     self.type = type
     self.pattern = pattern
     self.destination = destination
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+    if #available(SwiftStdlib 5.5, *) {
       self.creationDate = .now
     } else {
       self.creationDate = .init()

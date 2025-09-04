@@ -10,9 +10,9 @@ import PackageDescription
 let package = Package(
   name: "swift-netbot-corelibs",
   platforms: [
-    .iOS(.v16),
-    .macOS(.v13),
-    .tvOS(.v16),
+    .iOS(.v13),
+    .macOS(.v10_15),
+    .tvOS(.v13),
   ],
   products: [
     .library(name: "Netbot", targets: ["Netbot"]),
@@ -97,7 +97,7 @@ let package = Package(
       dependencies: [
         "_PreferenceSupport",
         .product(name: "AnlzrReports", package: "swift-netbot-essentials"),
-      ],
+      ]
     ),
     .target(
       name: "Netbot",
@@ -144,6 +144,21 @@ let package = Package(
 for target in package.targets {
   var settings = target.swiftSettings ?? []
   settings.append(.define("EXTENDED_ALL"))
+  settings.append(
+    .enableExperimentalFeature(
+      "AvailabilityMacro=SwiftStdlib 5.3:iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0"))
+  settings.append(
+    .enableExperimentalFeature(
+      "AvailabilityMacro=SwiftStdlib 5.5:iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0"))
+  settings.append(
+    .enableExperimentalFeature(
+      "AvailabilityMacro=SwiftStdlib 5.7:iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0"))
+  settings.append(
+    .enableExperimentalFeature(
+      "AvailabilityMacro=SwiftStdlib 5.9:iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0"))
+  settings.append(
+    .enableExperimentalFeature(
+      "AvailabilityMacro=SwiftStdlib 6.0:iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0"))
   target.swiftSettings = settings
 }
 

@@ -19,6 +19,7 @@
 import CNIOBoringSSL
 
 /// Wraps a single error from BoringSSL.
+@available(SwiftStdlib 5.3, *)
 public struct BoringSSLInternalError: Equatable, CustomStringConvertible, Sendable {
   private enum Backing: Hashable {
     case boringSSLErrorInfo(UInt32, String, UInt)
@@ -56,15 +57,19 @@ public struct BoringSSLInternalError: Equatable, CustomStringConvertible, Sendab
 }
 
 /// A representation of BoringSSL's internal error stack: a list of BoringSSL errors.
+@available(SwiftStdlib 5.3, *)
 public typealias NIOBoringSSLErrorStack = [BoringSSLInternalError]
 
 /// An enum that wraps individual BoringSSL errors directly.
+@available(SwiftStdlib 5.3, *)
 public enum BoringSSLError: Error {
   case unknownError(NIOBoringSSLErrorStack)
 }
 
+@available(SwiftStdlib 5.3, *)
 extension BoringSSLError: Equatable {}
 
+@available(SwiftStdlib 5.3, *)
 extension BoringSSLError {
   static func buildErrorStack() -> NIOBoringSSLErrorStack {
     var errorStack = NIOBoringSSLErrorStack()

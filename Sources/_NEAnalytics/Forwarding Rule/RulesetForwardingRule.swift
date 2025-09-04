@@ -14,6 +14,7 @@ import _ProfileSupport
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
   @usableFromInline final class _Storage {
@@ -25,7 +26,8 @@ struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashabl
       let fileURL = externalResourceDirectory
       let digest = Insecure.MD5.hash(data: Array(originalURLString.utf8))
       let filename = ByteBuffer(bytes: digest).hexDump(format: .compact)
-      if #available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *) {
+
+      if #available(SwiftStdlib 5.7, *) {
         return fileURL.appending(path: filename)
       } else {
         return fileURL.appendingPathComponent(filename)
@@ -153,6 +155,7 @@ struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashabl
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension RulesetForwardingRule._Storage: Hashable {
   static func == (lhs: RulesetForwardingRule._Storage, rhs: RulesetForwardingRule._Storage) -> Bool
   {
@@ -169,4 +172,5 @@ extension RulesetForwardingRule._Storage: Hashable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension RulesetForwardingRule._Storage: @unchecked Sendable {}

@@ -16,8 +16,7 @@ import _ProfileSupport
 
 @Suite(.tags(.profileAssistant)) struct AnyProxyGroupManagementTests {
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertAnyProxyGroup() async throws {
     try await withManagedProfile { profileAssistant in
       var proxyGroup = AnyProxyGroup(name: "PROXY")
@@ -37,8 +36,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertAnyProxyGroupIntoProfileWhereAnyProxyGroupsSectionExists() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -63,8 +61,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertAnyProxyGroupIntoProfileWhereAnyProxyGroupsSectionExistsAndItemsNotEmpty()
     async throws
   {
@@ -93,8 +90,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertAnyProxyGroupIntoProfileWhereAnyProxyGroupsSectionAtMiddleOfProfile()
     async throws
   {
@@ -131,8 +127,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceAnyProxyGroup() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -160,8 +155,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func policyGroupReferencedByTheRule() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -194,8 +188,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func moveAnyProxyGroups() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -220,8 +213,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func removeAnyProxyGroups() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -245,8 +237,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func removeSpecifiedAnyProxyGroup() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL

@@ -17,8 +17,7 @@ import _ProfileSupport
 @Suite(.tags(.urlRewrite))
 struct URLRewriteManagementTests {
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertURLRewrite() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -42,8 +41,7 @@ struct URLRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertURLRewriteIntoProfileWhereURLRewritesSectionExists() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -70,8 +68,7 @@ struct URLRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertURLRewriteIntoProfileWhereURLRewritesSectionExistsAndItemsNotEmpty() async throws
   {
     try await withManagedProfile { profileAssistant in
@@ -101,8 +98,7 @@ struct URLRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertURLRewriteIntoProfileWhereURLRewritesSectionAtMiddleOfProfile() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -143,8 +139,7 @@ struct URLRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceURLRewrite() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -174,8 +169,7 @@ struct URLRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func moveURLRewrites() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -200,8 +194,7 @@ struct URLRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func removeURLRewrites() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -226,8 +219,7 @@ struct URLRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func removeSpecifiedURLRewrite() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL

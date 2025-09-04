@@ -12,6 +12,7 @@
 
   /// This object implements the protocol which we have defined. It provides the actual behavior for the service. It is 'exported' by the
   /// service to make it available to the process hosting the service over an NSXPCConnection.
+  @available(SwiftStdlib 5.3, *)
   public class PHTHandle {
 
     private let listener: NSXPCListener
@@ -24,29 +25,34 @@
 
     /// Connection code signing requirement.
     public func codeSigningRequirement() -> String {
-      var codeSigningRequirementParts: [Substring] = []
+      if #available(SwiftStdlib 5.7, *) {
+        var codeSigningRequirementParts: [Substring] = []
 
-      let propertyList =
-        Bundle.main.object(forInfoDictionaryKey: "SMAuthorizedClients") as! [String]
-      let authorizedClients =
-        propertyList
-        .map {
+        let propertyList =
+          Bundle.main.object(forInfoDictionaryKey: "SMAuthorizedClients") as! [String]
+        let authorizedClients =
+          propertyList
+          .map {
+            $0.split(separator: /\ and\ /)
+              .filter { $0.starts(with: /^identifier\ /) }
+          }
+          .joined()
+        codeSigningRequirementParts.append(contentsOf: authorizedClients)
+
+        codeSigningRequirementParts.append("anchor apple generic")
+
+        let team = propertyList.first.map {
           $0.split(separator: /\ and\ /)
-            .filter { $0.starts(with: /^identifier\ /) }
-        }
-        .joined()
-      codeSigningRequirementParts.append(contentsOf: authorizedClients)
+            .filter { $0.starts(with: /^certificate leaf\[subject\./) }
+            .first!
+        }!
+        codeSigningRequirementParts.append(team)
 
-      codeSigningRequirementParts.append("anchor apple generic")
-
-      let team = propertyList.first.map {
-        $0.split(separator: /\ and\ /)
-          .filter { $0.starts(with: /^certificate leaf\[subject\./) }
-          .first!
-      }!
-      codeSigningRequirementParts.append(team)
-
-      return codeSigningRequirementParts.joined(separator: " and ")
+        return codeSigningRequirementParts.joined(separator: " and ")
+      } else {
+        // TODO: Fallback to SwiftStdlib 5.3
+        return ""
+      }
     }
 
     /// Check that the client denoted by authorization is allowed to run the specified command.
@@ -102,8 +108,10 @@
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   extension PHTHandle: @unchecked Sendable {}
 
+  @available(SwiftStdlib 5.3, *)
   extension PHTHandle: PHTHandleProtocol {
 
     public func listenerEndpoint() async -> NSXPCListenerEndpoint {
@@ -189,7 +197,16 @@
           var buffer = [CChar](repeating: 0, count: Int(PROC_PIDPATHINFO_MAXSIZE))
           if proc_pidpath(processIdentifier, &buffer, PROC_PIDPATHINFO_MAXSIZE) > 0 {
             let filePath = String(cString: buffer, encoding: .utf8) ?? ""
-            processInfo.processExecutableURL = filePath.isEmpty ? nil : URL(filePath: filePath)
+            if #available(SwiftStdlib 5.7, *) {
+              processInfo.processExecutableURL = filePath.isEmpty ? nil : URL(filePath: filePath)
+            } else {
+              processInfo.processExecutableURL =
+                filePath.isEmpty
+                ? nil
+                : URL(
+                  fileURLWithPath: filePath
+                )
+            }
             if processInfo.processName == nil || (processInfo.processName?.count ?? 0) >= 31 {
               processInfo.processName = processInfo.processExecutableURL?.lastPathComponent
             }

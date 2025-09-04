@@ -17,8 +17,7 @@ import _ProfileSupport
 @Suite(.tags(.httpFieldsRewrite))
 struct HTTPFieldsRewriteManagementTests {
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertHTTPFieldsRewrite() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -45,8 +44,7 @@ struct HTTPFieldsRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertHTTPFieldsRewriteIntoProfileWhereHTTPFieldsRewritesSectionExists() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -76,8 +74,7 @@ struct HTTPFieldsRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test
   func insertHTTPFieldsRewriteIntoProfileWhereHTTPFieldsRewritesSectionExistsAndItemsNotEmpty()
     async throws
@@ -112,8 +109,7 @@ struct HTTPFieldsRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertHTTPFieldsRewriteIntoProfileWhereHTTPFieldsRewritesSectionAtMiddleOfProfile()
     async throws
   {
@@ -159,8 +155,7 @@ struct HTTPFieldsRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceHTTPFieldsRewrite() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -199,8 +194,7 @@ struct HTTPFieldsRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func moveHTTPFieldsRewrites() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -225,8 +219,7 @@ struct HTTPFieldsRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func removeHTTPFieldsRewrites() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -250,8 +243,7 @@ struct HTTPFieldsRewriteManagementTests {
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func removeSpecifiedHTTPFieldsRewrite() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL

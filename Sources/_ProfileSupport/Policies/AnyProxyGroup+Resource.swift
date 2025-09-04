@@ -8,6 +8,7 @@
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxyGroup {
 
   /// An object representing external proxies resource.

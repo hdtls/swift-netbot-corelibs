@@ -6,6 +6,7 @@
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxy {
 
   /// Data obfuscation settings.
@@ -29,6 +30,7 @@ extension AnyProxy {
         [.http, .tls]
       }
 
+      @available(SwiftStdlib 5.5, *)
       public var localizedName: String {
         switch self {
         #if canImport(Darwin)

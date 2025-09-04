@@ -226,11 +226,11 @@ extension AnyProxy.FormatStyle {
   }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(SwiftStdlib 5.5, *)
 extension AnyProxy.FormatStyle: FormatStyle {
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(SwiftStdlib 5.7, *)
 extension AnyProxy.FormatStyle {
   public func parse(_ value: String) throws -> AnyProxy {
     var parseOutput = ParseOutput()
@@ -447,7 +447,7 @@ extension AnyProxy.FormatStyle {
   }
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(SwiftStdlib 5.7, *)
 extension AnyProxy.FormatStyle: ParseStrategy {
 }
 
@@ -457,23 +457,23 @@ extension AnyProxy.FormatStyle {
   }
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(SwiftStdlib 5.7, *)
 extension AnyProxy.FormatStyle: ParseableFormatStyle {
 }
 
 extension AnyProxy.FormatStyle: Codable, Hashable {}
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(SwiftStdlib 5.5, *)
 extension FormatStyle where Self == AnyProxy.FormatStyle {
   public static var proxy: Self { .init() }
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(SwiftStdlib 5.7, *)
 extension ParseableFormatStyle where Self == AnyProxy.FormatStyle {
   public static var proxy: Self { .init() }
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(SwiftStdlib 5.7, *)
 extension ParseStrategy where Self == AnyProxy.FormatStyle {
   @_disfavoredOverload
   public static var proxy: Self { .init() }
@@ -487,7 +487,7 @@ extension AnyProxy {
       return v.format(self)
     }
   #else
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @available(SwiftStdlib 5.5, *)
     public func formatted<S>(_ v: S) -> S.FormatOutput
     where S: Foundation.FormatStyle, S.FormatInput == AnyProxy {
       v.format(self)
@@ -500,7 +500,7 @@ extension AnyProxy {
     FormatStyle().format(self)
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
   where T.ParseOutput == Self {
     self = try strategy.parse(value)

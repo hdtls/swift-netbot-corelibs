@@ -14,6 +14,7 @@
   import _CryptoExtras
 
   /// Wraps a single error from BoringSSL.
+  @available(SwiftStdlib 5.3, *)
   private struct BoringSSLInternalError: Equatable, CustomStringConvertible {
     let errorCode: UInt32
 
@@ -36,6 +37,7 @@
   }
 
   /// An enum that wraps individual BoringSSL errors directly.
+  @available(SwiftStdlib 5.3, *)
   private enum BoringSSLError: Error {
     case unknownError([BoringSSLInternalError])
 
@@ -52,6 +54,7 @@
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   public enum CertbotError: Error {
 
     case dataCorrupted
@@ -66,8 +69,7 @@
   }
 
   /// Certificate managment object.
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Observable final public class Certbot: @unchecked Sendable {
 
     private struct Backing: Sendable {

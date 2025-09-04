@@ -8,6 +8,7 @@
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxy {
   /// An object representing network measurements.
   public struct Measurement: Codable, Hashable, Sendable {

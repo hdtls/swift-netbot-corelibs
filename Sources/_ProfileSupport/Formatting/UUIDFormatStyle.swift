@@ -66,11 +66,11 @@ extension UUID {
   }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(SwiftStdlib 5.5, *)
 extension UUID.FormatStyle: FormatStyle {
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(SwiftStdlib 5.5, *)
 extension UUID.FormatStyle: ParseStrategy {
 }
 
@@ -80,18 +80,18 @@ extension UUID.FormatStyle {
   }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(SwiftStdlib 5.5, *)
 extension UUID.FormatStyle: ParseableFormatStyle {
 }
 
 extension UUID.FormatStyle: Codable, Hashable {}
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(SwiftStdlib 5.5, *)
 extension FormatStyle where Self == UUID.FormatStyle {
   public static var uuid: Self { .init() }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(SwiftStdlib 5.5, *)
 extension ParseStrategy where Self == UUID.FormatStyle {
   @_disfavoredOverload
   public static var uuid: Self { .init() }
@@ -105,7 +105,7 @@ extension UUID {
       return v.format(self)
     }
   #else
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @available(SwiftStdlib 5.5, *)
     public func formatted<S>(_ v: S) -> S.FormatOutput
     where S: Foundation.FormatStyle, S.FormatInput == UUID {
       return v.format(self)
@@ -116,7 +116,7 @@ extension UUID {
     FormatStyle().format(self)
   }
 
-  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  @available(SwiftStdlib 5.5, *)
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
   where T.ParseOutput == Self {
     self = try strategy.parse(value)

@@ -26,7 +26,7 @@ struct HTTPFieldsFormatStyleTests {
     #expect(httpFields.formatted() == expected)
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     "",
     "⚽️:football",
@@ -46,7 +46,7 @@ struct HTTPFieldsFormatStyleTests {
     }
   }
 
-  //  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test func parse() throws {
     let expected: HTTPFields = [.connection: "keep-alive", .contentLength: "0"]
     let parseInput = "Connection:keep-alive|Content-Length:0"

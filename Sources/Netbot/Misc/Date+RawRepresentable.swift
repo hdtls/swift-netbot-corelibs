@@ -8,6 +8,7 @@
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension Date: @retroactive RawRepresentable {
 
   public var rawValue: String {

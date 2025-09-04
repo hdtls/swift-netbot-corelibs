@@ -10,7 +10,7 @@ extension DNSMapping {
 
   public static let sectionName = "[DNS Mapping]"
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   public static var regex: Regex<(Substring, Bool, Substring, (DNSMapping.Kind, Substring))> {
     Regex {
       TryCapture(Optionally(/\ *# +/)) { $0.isEmpty }

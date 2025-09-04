@@ -5,6 +5,7 @@
 import Logging
 import _DNSSupport
 
+@available(SwiftStdlib 5.3, *)
 extension Message {
 
   enum FormatStyle {

@@ -6,7 +6,7 @@
   import CoreLocation
   import Logging
 
-  @available(iOS 14.0, macOS 11.0, tvOS 14.0, *)
+  @available(SwiftStdlib 5.3, *)
   final public class LocationManager {
     private let locationManager = CLLocationManager()
     private let delegate = __CLLocationManagerDelegate()
@@ -34,7 +34,7 @@
     }
   }
 
-  @available(iOS 14.0, macOS 11.0, tvOS 14.0, *)
+  @available(SwiftStdlib 5.3, *)
   extension LocationManager {
 
     final private class __CLLocationManagerDelegate: NSObject, CLLocationManagerDelegate {

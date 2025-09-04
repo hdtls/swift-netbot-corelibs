@@ -10,6 +10,7 @@ import CoWOptimization
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 @_cowOptimization public struct AnyProxyGroup: Hashable, Sendable {
 
   /// Name of the policy group.
@@ -31,9 +32,9 @@ import CoWOptimization
   public var lazyProxies: [String]
 
   /// Create an instance of `AnyProxyGroup` with specified name.
-  @inlinable public init(name: String = UUID().uuidString) {
+  public init(name: String = UUID().uuidString) {
     let creationDate: Date
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+    if #available(SwiftStdlib 5.5, *) {
       creationDate = .now
     } else {
       creationDate = .init()
@@ -49,6 +50,7 @@ import CoWOptimization
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxyGroup._Storage: Hashable {
   @inlinable static func == (lhs: AnyProxyGroup._Storage, rhs: AnyProxyGroup._Storage) -> Bool {
     return lhs.name == rhs.name
@@ -69,4 +71,5 @@ extension AnyProxyGroup._Storage: Hashable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxyGroup._Storage: @unchecked Sendable {}

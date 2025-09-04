@@ -5,6 +5,7 @@
 import Preference
 
 /// An OptionSet for proxy mode.
+@available(SwiftStdlib 5.3, *)
 public struct ProxyMode: OptionSet, RawRepresentable, Hashable, Sendable {
 
   public var rawValue: Int
@@ -23,4 +24,5 @@ public struct ProxyMode: OptionSet, RawRepresentable, Hashable, Sendable {
   public static let enhanced = ProxyMode(rawValue: 1 << 2)
 }
 
+@available(SwiftStdlib 5.3, *)
 extension ProxyMode: PreferenceRepresentable {}

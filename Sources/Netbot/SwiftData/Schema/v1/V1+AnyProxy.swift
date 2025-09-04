@@ -7,8 +7,7 @@
   import SwiftData
   import _ProfileSupport
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension V1 {
 
     @Model public class _AnyProxy {
@@ -120,8 +119,7 @@
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension AnyProxy {
 
     public typealias PersistentModel = V1._AnyProxy
@@ -151,8 +149,7 @@
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension V1._AnyProxy {
     public func mergeValues(_ data: AnyProxy) {
       name = data.name

@@ -3,7 +3,7 @@
 //
 
 /// A protocol that covers an object that does DNS lookups.
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
+@available(SwiftStdlib 5.3, *)
 public protocol Resolver {
 
   /// Lookup A records associated with `name`.

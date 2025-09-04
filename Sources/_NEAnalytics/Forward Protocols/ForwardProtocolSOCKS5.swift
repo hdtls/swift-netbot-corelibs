@@ -19,6 +19,7 @@ import _ProfileSupport
   import NIOPosix
 #endif
 
+@available(SwiftStdlib 5.3, *)
 @_cowOptimization struct ForwardProtocolSOCKS5: Hashable, Sendable {
 
   var name: String
@@ -60,6 +61,7 @@ import _ProfileSupport
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension ForwardProtocolSOCKS5._Storage: Hashable {
   static func == (lhs: ForwardProtocolSOCKS5._Storage, rhs: ForwardProtocolSOCKS5._Storage) -> Bool
   {
@@ -79,8 +81,10 @@ extension ForwardProtocolSOCKS5._Storage: Hashable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension ForwardProtocolSOCKS5._Storage: @unchecked Sendable {}
 
+@available(SwiftStdlib 5.3, *)
 extension ForwardProtocolSOCKS5: ProxiableForwardProtocol {
 
   func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
@@ -158,4 +162,5 @@ extension ForwardProtocolSOCKS5: ProxiableForwardProtocol {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension ForwardProtocolSOCKS5: ForwardProtocolConvertible {}

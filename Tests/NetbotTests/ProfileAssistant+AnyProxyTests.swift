@@ -16,8 +16,7 @@ import _ProfileSupport
 
 @Suite(.tags(.profileAssistant)) struct AnyProxyManagementTests {
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertProxyIntoProfileFile() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -42,8 +41,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertAnyProxyIntoProfileWhereAnyProxiesSectionExists() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -65,8 +63,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertAnyProxyIntoProfileWhereAnyProxiesSectionExistsAndItemsNotEmpty() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -89,8 +86,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func insertAnyProxyIntoProfileWhereAnyProxiesSectionAtMiddleOfProfile() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -126,8 +122,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceProxyWithNewProxy() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -159,8 +154,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceProxyWithNewProxyWhichNameAlsoChanged() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -202,8 +196,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func moveProxies() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -245,8 +238,7 @@ import _ProfileSupport
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func removeProxies() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL

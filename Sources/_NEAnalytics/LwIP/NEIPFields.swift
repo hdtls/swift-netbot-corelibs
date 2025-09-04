@@ -11,6 +11,7 @@ import NIOCore
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 protocol NEIPFieldsProtocol<Data> {
 
   associatedtype Data
@@ -25,6 +26,7 @@ protocol NEIPFieldsProtocol<Data> {
   var hasModified: Bool { get }
 }
 
+@available(SwiftStdlib 5.3, *)
 public enum NEIPFields: NEIPFieldsProtocol, Hashable, Sendable {
 
   typealias Data = ByteBuffer

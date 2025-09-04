@@ -14,6 +14,7 @@
   import OpenCombine
 #endif
 
+@available(SwiftStdlib 5.3, *)
 public struct ProfileInfo: Equatable, Hashable, Identifiable, Sendable {
 
   public var id: URL { url }
@@ -29,6 +30,7 @@ public struct ProfileInfo: Equatable, Hashable, Identifiable, Sendable {
   public var numberOfProxies: Int
 }
 
+@available(SwiftStdlib 5.3, *)
 @MainActor final public class ProfileResource: ObservableObject {
 
   @Published public var profiles: [ProfileInfo] = []

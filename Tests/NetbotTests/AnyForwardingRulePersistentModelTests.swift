@@ -14,15 +14,14 @@
     var modelContainer: Any = 0
 
     init() throws {
-      if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+      if #available(SwiftStdlib 5.9, *) {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
         let schema: Schema = Schema(versionedSchema: _VersionedSchema.self)
         modelContainer = try ModelContainer(for: schema, configurations: configuration)
       }
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func propertyInitialValue() {
       let data = V1._AnyForwardingRule()
       #expect(data.isEnabled)
@@ -33,8 +32,7 @@
       #expect(data.notification == .init())
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test("AnyForwardingRule.init(persistentModel:)")
     func initWithPersistentModel() {
       let modelContext = ModelContext(modelContainer as! ModelContainer)
@@ -70,8 +68,7 @@
       #expect(AnyForwardingRule(persistentModel: persistentModel) == expected)
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func mergeValues() {
       let persistentModel = V1._AnyForwardingRule()
       let forwardingRule = AnyForwardingRule()
@@ -88,8 +85,7 @@
   @Suite("V1._AnyForwardingRule.KindTests", .tags(.swiftData, .schema, .forwardingRule))
   struct V1_AnyRuleKindTests {
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test(
       arguments: zip(
         V1._AnyForwardingRule.Kind.allCases,
@@ -104,8 +100,7 @@
       #expect(V1._AnyForwardingRule.Kind(rawValue: "unknown") == nil)
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test(
       arguments: zip(
         V1._AnyForwardingRule.Kind.allCases,
@@ -122,8 +117,7 @@
   @Suite("V1._AnyForwardingRule.NotificationTests", .tags(.swiftData, .schema, .forwardingRule))
   struct V1_AnyRuleNotificationTests {
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func propertyInitialValue() {
       let notification = V1._AnyForwardingRule.Notification()
       #expect(notification.message == "")
@@ -131,8 +125,7 @@
       #expect(notification.timeInterval == 300)
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func equatableConformance() async throws {
       let lhs = V1._AnyForwardingRule.Notification()
       let rhs = V1._AnyForwardingRule.Notification()

@@ -7,7 +7,7 @@
   import Dashboard
   import Foundation
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension Program.PersistentModel {
 
     public enum CompareOptions: CaseIterable, Hashable, Sendable {
@@ -78,7 +78,7 @@
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension Array where Element == Program.PersistentModel {
 
     @MainActor public func sorted(using options: Program.PersistentModel.CompareOptions)

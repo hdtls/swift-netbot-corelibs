@@ -14,7 +14,7 @@
   /// 1. Metadata set on the log handler itself is used as the base metadata.
   /// 2. The handler's ``metadataProvider`` is invoked, overriding any existing keys.
   /// 3. The per-log-statement metadata is merged, overriding any previously set keys.
-  @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+  @available(SwiftStdlib 5.3, *)
   public struct LogHandler: Logging.LogHandler {
 
     private let logger: os.Logger

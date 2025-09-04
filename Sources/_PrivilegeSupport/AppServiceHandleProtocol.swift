@@ -9,6 +9,7 @@
   /// AppServiceHandleProtocol is the NSXPCConnection-based protocol implemented by the XPC service and called by the app.
   ///
   /// The protocol that this service will vend as its API. This protocol will also need to be visible to the process hosting the service.
+  @available(SwiftStdlib 5.3, *)
   @objc public protocol AppServiceHandleProtocol: Sendable {
 
     /// Connection code signing requirement.

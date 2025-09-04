@@ -9,6 +9,7 @@
 
   /// This object implements the protocol which we have defined. It provides the actual behavior for the service. It is 'exported' by the
   /// service to make it available to the process hosting the service over an NSXPCConnection.
+  @available(SwiftStdlib 5.3, *)
   final public class AppServiceHandle {
 
     private let authorizationExternalForm: Data
@@ -43,6 +44,7 @@
       }
     }
 
+    @available(SwiftStdlib 5.7, *)
     private func register(plistName: String, service: SMAppService) async throws {
       do {
         let status = service.status
@@ -94,6 +96,7 @@
       }
     }
 
+    @available(SwiftStdlib 5.7, *)
     private func unregister(plistName: String, service: SMAppService) async throws {
       do {
         try await SMAppService.daemon(plistName: plistName).unregister()
@@ -133,26 +136,33 @@
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   extension AppServiceHandle: @unchecked Sendable {}
 
+  @available(SwiftStdlib 5.3, *)
   extension AppServiceHandle: AppServiceHandleProtocol {
 
     public func codeSigningRequirement() async -> String {
-      var codeSigningRequirementParts: [Substring] = []
+      if #available(SwiftStdlib 5.7, *) {
+        var codeSigningRequirementParts: [Substring] = []
 
-      codeSigningRequirementParts.append("identifier \"com.tenbits.netbot\"")
-      codeSigningRequirementParts.append("anchor apple generic")
+        codeSigningRequirementParts.append("identifier \"com.tenbits.netbot\"")
+        codeSigningRequirementParts.append("anchor apple generic")
 
-      let propertyList =
-        Bundle.main.object(forInfoDictionaryKey: "SMPrivilegedExecutables") as! [String: String]
-      let team = propertyList.values.first.map {
-        $0.split(separator: /\ and\ /)
-          .filter { $0.starts(with: /^certificate leaf\[subject\./) }
-          .first!
-      }!
-      codeSigningRequirementParts.append(team)
+        let propertyList =
+          Bundle.main.object(forInfoDictionaryKey: "SMPrivilegedExecutables") as! [String: String]
+        let team = propertyList.values.first.map {
+          $0.split(separator: /\ and\ /)
+            .filter { $0.starts(with: /^certificate leaf\[subject\./) }
+            .first!
+        }!
+        codeSigningRequirementParts.append(team)
 
-      return codeSigningRequirementParts.joined(separator: " and ")
+        return codeSigningRequirementParts.joined(separator: " and ")
+      } else {
+        // TODO: Fallback to SwiftStdlib 5.3
+        return ""
+      }
     }
 
     public func register(daemon plistName: String) async throws {
@@ -244,6 +254,7 @@
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   extension NSXPCConnection {
 
     /// Convert `remoteObjectProxy` to `any PHTHandleProtocol` if possible.
@@ -270,10 +281,12 @@
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   enum NEXPCServiceError: Error {
     case operationUnsupported
   }
 
+  @available(SwiftStdlib 5.3, *)
   extension Data {
     var authorizationExternalForm: AuthorizationExternalForm {
       get throws {

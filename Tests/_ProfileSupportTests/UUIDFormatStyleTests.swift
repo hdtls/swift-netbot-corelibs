@@ -17,7 +17,7 @@ struct UUIDFormatStyleTests {
 
   let uuid = UUID()
 
-  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  @available(SwiftStdlib 5.5, *)
   @Test func uuidFormatStyle() throws {
     let formatInput = uuid
     var formatOutput = formatInput.formatted()
@@ -40,7 +40,7 @@ struct UUIDFormatStyleTests {
     #expect(parseOutput == uuid)
   }
 
-  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  @available(SwiftStdlib 5.5, *)
   @Test func parseUUIDFromInvalidString() throws {
     let parseInput = "ABC"
     #expect(throws: CocoaError.self) {

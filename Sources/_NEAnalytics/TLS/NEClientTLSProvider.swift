@@ -5,28 +5,25 @@
 import Dispatch
 import Logging
 import NIOCore
-import NIOSSL
-import SwiftASN1
-import X509
 import _ProfileSupport
 
-#if canImport(FoundationEssentials)
-  import FoundationEssentials
-#else
-  import Foundation
-#endif
-
 #if canImport(Network)
+  import Foundation
   import Network
   import NIOTransportServices
   import Security
+  import SwiftASN1
+  import X509
 #else
   import Anlzr
+  import NIOSSL
 #endif
 
+@available(SwiftStdlib 5.3, *)
 private let offlineQueue = DispatchQueue(label: "com.tenbits.AnalyzerBot.tls.offline.queue")
 
 /// A TLS provider to bootstrap TLS-enabled connections with `NIOClientTCPBootstrap`.
+@available(SwiftStdlib 5.3, *)
 struct NEClientTLSProvider<Bootstrap: NIOClientTCPBootstrapProtocol>: NIOClientTLSProvider {
   typealias Bootstrap = Bootstrap
 
@@ -128,55 +125,20 @@ struct NEClientTLSProvider<Bootstrap: NIOClientTCPBootstrapProtocol>: NIOClientT
             if let trustRootCertificates = secTrustRoots {
               SecTrustSetAnchorCertificates(trust, trustRootCertificates as CFArray)
             }
-            if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *) {
-              dispatchPrecondition(condition: .onQueue(offlineQueue))
-              SecTrustEvaluateAsyncWithError(trust, offlineQueue) { _, result, error in
-                if let error = error {
-                  print("Trust failed: \(error.localizedDescription)")
-                }
-                completion(result)
+            dispatchPrecondition(condition: .onQueue(offlineQueue))
+            SecTrustEvaluateAsyncWithError(trust, offlineQueue) { _, result, error in
+              if let error = error {
+                print("Trust failed: \(error.localizedDescription)")
               }
-            } else {
-              SecTrustEvaluateAsync(trust, offlineQueue) { _, result in
-                switch result {
-                case .proceed, .unspecified:
-                  completion(true)
-                default:
-                  completion(false)
-                }
-              }
+              completion(result)
             }
           },
           offlineQueue
         )
       }
     #else
-      var configuration = NIOSSL.TLSConfiguration.clientDefault
-      configuration.minimumTLSVersion = options.minimumTLSVersion
-      configuration.maximumTLSVersion = options.maximumTLSVersion
-      configuration.certificateVerification = options.certificateVerification
-      configuration.trustRoots = options.trustRoots.map {
-        switch $0 {
-        case .file(let file):
-          return .file(file)
-        case .certificates(let certificates):
-          return .certificates(certificates.compactMap { try? $0._base })
-        case .default:
-          return .default
-        }
-      }
-      configuration.additionalTrustRoots = options.additionalTrustRoots.map {
-        switch $0 {
-        case .file(let file):
-          return .file(file)
-        case .certificates(let certificates):
-          return .certificates(certificates.compactMap { try? $0._base })
-        }
-      }
-      configuration.applicationProtocols = options.applicationProtocols
-
       let sslContext = try SSLContextCache.shared.syncSSLContext(
-        configuration: configuration, logger: Logger(label: "")
+        configuration: options, logger: Logger(label: "")
       )
 
       try self.init(context: sslContext, serverHostname: serverNameIndicator)
@@ -209,8 +171,9 @@ struct NEClientTLSProvider<Bootstrap: NIOClientTCPBootstrapProtocol>: NIOClientT
   }
 }
 
-extension Certificate {
-  #if canImport(Network)
+#if canImport(Network)
+  @available(SwiftStdlib 5.3, *)
+  extension Certificate {
     fileprivate var _base: SecCertificate? {
       get throws {
         var serializer = DER.Serializer()
@@ -218,30 +181,23 @@ extension Certificate {
         return SecCertificateCreateWithData(nil, Data(serializer.serializedBytes) as CFData)
       }
     }
-  #else
-    fileprivate var _base: NIOSSLCertificate {
-      get throws {
-        var serializer = DER.Serializer()
-        try serializer.serialize(self)
-        return try NIOSSLCertificate(bytes: serializer.serializedBytes, format: .der)
+  }
+#else
+  @available(SwiftStdlib 5.3, *)
+  extension String {
+    fileprivate func validateSNIServerName() throws {
+      guard !self.isIPAddress() else {
+        throw NIOSSLExtraError.cannotUseIPAddressInSNI
+      }
+
+      // no 0 bytes
+      guard !self.utf8.contains(0) else {
+        throw NIOSSLExtraError.invalidSNIHostname
+      }
+
+      guard (1...255).contains(self.utf8.count) else {
+        throw NIOSSLExtraError.invalidSNIHostname
       }
     }
-  #endif
-}
-
-extension String {
-  fileprivate func validateSNIServerName() throws {
-    guard !self.isIPAddress() else {
-      throw NIOSSLExtraError.cannotUseIPAddressInSNI
-    }
-
-    // no 0 bytes
-    guard !self.utf8.contains(0) else {
-      throw NIOSSLExtraError.invalidSNIHostname
-    }
-
-    guard (1...255).contains(self.utf8.count) else {
-      throw NIOSSLExtraError.invalidSNIHostname
-    }
   }
-}
+#endif

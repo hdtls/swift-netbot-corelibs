@@ -4,6 +4,7 @@
 
 import RegexBuilder
 
+@available(SwiftStdlib 5.3, *)
 extension StubbedHTTPResponse {
 
   static let delimiter: Character = ","

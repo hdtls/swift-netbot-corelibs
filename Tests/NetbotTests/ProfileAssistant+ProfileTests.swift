@@ -15,8 +15,7 @@ import Testing
 
 @Suite(.tags(.profileAssistant)) struct ProfileManagementTests {
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceUnsupportedProperties() async throws {
     try await withManagedProfile { profileAssistant in
       await XCTAssertNoThrow(try await profileAssistant.replace(\.lazyProxies, with: []))
@@ -25,8 +24,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceMatchedPropertyToSameValue() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -42,8 +40,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceMatchedPropertyToNewValue() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -63,8 +60,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceUndefindGeneralProperties() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -94,8 +90,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceUndefinedMitMProperties() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -125,8 +120,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func repaceDNSServers() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -141,8 +135,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceExceptions() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -157,8 +150,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceHTTPListenAddress() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -173,8 +165,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceHTTPListenPort() async throws {
     try await withManagedProfile { profileAssistant in
       var expected = """
@@ -198,8 +189,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceSOCKSListenAddress() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -214,8 +204,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceSOCKSListenPort() async throws {
     try await withManagedProfile { profileAssistant in
       var expected = """
@@ -239,8 +228,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceExcludeSimpleHostnames() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -255,8 +243,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceSkipCertificateVerification() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -271,8 +258,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceHostnames() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -287,8 +273,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceBase64EncodedP12String() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -303,8 +288,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replacePassphrase() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -319,8 +303,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceTestURL() async throws {
     try await withManagedProfile { profileAssistant in
       var expected = """
@@ -344,8 +327,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceProxyTestURL() async throws {
     try await withManagedProfile { profileAssistant in
       var expected = """
@@ -370,8 +352,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceTestTimeout() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -386,8 +367,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceDontAlertRejectErrors() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -402,8 +382,7 @@ import Testing
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func replaceDontAllowRemoteAccess() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """

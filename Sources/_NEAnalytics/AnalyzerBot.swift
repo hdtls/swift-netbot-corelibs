@@ -31,6 +31,7 @@ import _ProfileSupport
 #endif
 
 /// Assistant to manage PacketTunnelProvider and NIO proxy servers backend.
+@available(SwiftStdlib 5.3, *)
 public actor AnalyzerBot: Actor {
 
   nonisolated private let core: Analyzer
@@ -47,7 +48,7 @@ public actor AnalyzerBot: Actor {
     let dbFilename = "GeoLite2-Country.mmdb"
 
     #if canImport(Darwin)
-      if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+      if #available(SwiftStdlib 5.7, *) {
         maxminddb = try? MaxMindDB(
           file: URL.maxmind.appending(path: dbFilename).path(percentEncoded: false),
           mode: .mmap

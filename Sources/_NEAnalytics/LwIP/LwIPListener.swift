@@ -6,6 +6,7 @@ import CNELwIP
 import NIOConcurrencyHelpers
 import NIOCore
 
+@available(SwiftStdlib 5.3, *)
 final class LwIPListener: BaseSocketChannel<ServerSocket>, @unchecked Sendable {
 
   private let group: any EventLoopGroup

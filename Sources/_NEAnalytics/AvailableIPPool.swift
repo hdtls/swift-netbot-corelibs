@@ -18,6 +18,7 @@ import NIOCore
   import CNIOLinux
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension IPv4Address {
 
   fileprivate var _address: UInt32 {
@@ -37,6 +38,7 @@ extension IPv4Address {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 public struct AvailableIPPool: Sendable {
 
   private let _storage: ManagedAtomic<UInt32>

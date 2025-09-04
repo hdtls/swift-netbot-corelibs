@@ -5,6 +5,7 @@
 import CNELwIP
 import NIOCore
 
+@available(SwiftStdlib 5.3, *)
 class ServerSocket: BaseSocket {
 
   convenience init() {

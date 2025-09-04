@@ -3,6 +3,7 @@
 //
 
 /// A connection address report allows a caller to set metadata about connection being sent between endpoints.
+@available(SwiftStdlib 5.3, *)
 public struct ConnectionAddressReport: Codable, Hashable, Sendable {
 
   /// Remote hostname whitch this connection was sent.

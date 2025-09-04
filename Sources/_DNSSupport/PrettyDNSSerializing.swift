@@ -5,6 +5,7 @@
 import NEAddressProcessing
 import NIOCore
 
+@available(SwiftStdlib 5.3, *)
 extension Message {
 
   /// Returns the bytes serialized in DNS message format.
@@ -46,6 +47,7 @@ extension Message {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension Array where Element == UInt8 {
 
   fileprivate mutating func _append(_ newElement: some FixedWidthInteger) {

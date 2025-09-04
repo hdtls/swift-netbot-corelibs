@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information
 //
 
-#if swift(>=6.2) || canImport(Darwin)
+#if swift(>=6.3) || canImport(Darwin)
   import AnlzrReports
   import HTTPTypes
 
@@ -12,7 +12,7 @@
     import Foundation
   #endif
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension Connection.PersistentModel {
 
     /// Formatted earliest begin date.
@@ -79,12 +79,14 @@
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   extension Data {
     public var textLiteral: String {
       String(data: self, encoding: .utf8) ?? "No Data".localizedCapitalized
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   extension HTTPRequest {
     public var textLiteral: String {
       """
@@ -95,6 +97,7 @@
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   extension HTTPResponse {
     public var textLiteral: String {
       """

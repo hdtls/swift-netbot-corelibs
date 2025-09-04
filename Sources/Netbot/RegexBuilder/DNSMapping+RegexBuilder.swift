@@ -5,11 +5,11 @@
 import RegexBuilder
 import _ProfileSupport
 
+@available(SwiftStdlib 5.7, *)
 extension DNSMapping {
 
   static let delimiter = "="
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
   func buildAsRegex() -> some RegexComponent {
     Regex {
       /^ */
@@ -21,7 +21,6 @@ extension DNSMapping {
     }
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
   static var sectionRegex: some RegexComponent {
     Regex {
       ZeroOrMore(.whitespace)

@@ -17,6 +17,7 @@ import NIOCore
   import NIOPosix
 #endif
 
+@available(SwiftStdlib 5.3, *)
 @_cowOptimization struct ForwardProtocolSS: Hashable, Sendable {
 
   var name: String
@@ -46,6 +47,7 @@ import NIOCore
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension ForwardProtocolSS._Storage: Hashable {
   static func == (lhs: ForwardProtocolSS._Storage, rhs: ForwardProtocolSS._Storage) -> Bool {
     return lhs.name == rhs.name && lhs.serverAddress == rhs.serverAddress && lhs.port == rhs.port
@@ -61,8 +63,10 @@ extension ForwardProtocolSS._Storage: Hashable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension ForwardProtocolSS._Storage: @unchecked Sendable {}
 
+@available(SwiftStdlib 5.3, *)
 extension ForwardProtocolSS: ProxiableForwardProtocol {
 
   func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
@@ -100,4 +104,5 @@ extension ForwardProtocolSS: ProxiableForwardProtocol {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension ForwardProtocolSS: ForwardProtocolConvertible {}

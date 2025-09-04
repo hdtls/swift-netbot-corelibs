@@ -4,6 +4,7 @@
 
 import Preference
 
+@available(SwiftStdlib 5.3, *)
 public enum CleartextDnsServerType: String, CaseIterable, Hashable {
 
   case system
@@ -13,4 +14,5 @@ public enum CleartextDnsServerType: String, CaseIterable, Hashable {
   case mixed
 }
 
+@available(SwiftStdlib 5.3, *)
 extension CleartextDnsServerType: PreferenceRepresentable {}

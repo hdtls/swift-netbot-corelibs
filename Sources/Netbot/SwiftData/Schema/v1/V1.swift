@@ -5,8 +5,7 @@
 #if canImport(SwiftData)
   import SwiftData
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   public enum V1: VersionedSchema {
     public static var models: [any PersistentModel.Type] {
       [

@@ -15,15 +15,14 @@
     var modelContainer: Any = 0
 
     init() throws {
-      if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+      if #available(SwiftStdlib 5.9, *) {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
         let schema: Schema = Schema(versionedSchema: _VersionedSchema.self)
         modelContainer = try ModelContainer(for: schema, configurations: configuration)
       }
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func propertyInitialValue() {
       let data = V1._DNSMapping()
       #expect(data.kind == .mapping)
@@ -33,8 +32,7 @@
       #expect(data.note == "")
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test("DNSMapping.init(persistentModel:)")
     func initWithPersistentModel() {
       let persistentModel = V1._DNSMapping()
@@ -46,8 +44,7 @@
       #expect(data.note == persistentModel.note)
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func mergeValues() {
       let persistentModel = V1._DNSMapping()
       let data = DNSMapping()
@@ -63,8 +60,7 @@
   @Suite("V1._DNSMapping.KindTests", .tags(.swiftData, .schema, .dnsMapping))
   struct V1_DNSMappingKindTests {
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test(arguments: zip(V1._DNSMapping.Kind.allCases, [0, 1, 2]))
     func rawRepresentableConformance(_ kind: V1._DNSMapping.Kind, _ rawValue: Int) {
       #expect(V1._DNSMapping.Kind(rawValue: rawValue) == kind)
@@ -72,8 +68,7 @@
       #expect(V1._DNSMapping.Kind(rawValue: 9) == nil)
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func caseIterableConformance() {
       #expect(V1._DNSMapping.Kind.allCases == [.mapping, .cname, .dns])
     }

@@ -4,9 +4,9 @@
 
 import _ProfileSupport
 
+@available(SwiftStdlib 5.7, *)
 extension Array where Element == Substring {
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
   func firstRange(match sectionRegex: some RegexComponent) -> ClosedRange<Int>? {
     guard var start = firstIndex(where: { !$0.matches(of: sectionRegex).isEmpty }) else {
       return nil

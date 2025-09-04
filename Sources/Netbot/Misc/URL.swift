@@ -10,7 +10,7 @@
 #endif
 
 #if !canImport(FoundationEssentials)
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   extension ParseableFormatStyle where Self == URL.FormatStyle {
 
     public static var _url: URL.FormatStyle {
@@ -19,6 +19,7 @@
   }
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension URL {
   public var isDirectory: Bool {
     (try? self.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true

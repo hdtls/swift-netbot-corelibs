@@ -7,6 +7,7 @@ import Logging
 import NEAddressProcessing
 import NIOCore
 
+@available(SwiftStdlib 5.3, *)
 public actor __AnalyzerBot {
 
   private nonisolated let allocator = ByteBufferAllocator()

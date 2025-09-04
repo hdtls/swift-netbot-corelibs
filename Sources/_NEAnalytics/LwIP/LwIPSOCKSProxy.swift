@@ -15,6 +15,7 @@ import _DNSSupport
   import NIOPosix
 #endif
 
+@available(SwiftStdlib 5.3, *)
 final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
 
   private let group: any EventLoopGroup
@@ -152,7 +153,11 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
                     return
                   }
 
-                  try await Task.sleep(for: .seconds(0.1))
+                  if #available(SwiftStdlib 5.7, *) {
+                    try await Task.sleep(for: .seconds(0.1))
+                  } else {
+                    try await Task.sleep(nanoseconds: 100_000_000)
+                  }
                   read()
                 }
               }
@@ -174,6 +179,7 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 final private class ResponseHandler: ChannelInboundHandler, Sendable {
   typealias InboundIn = ByteBuffer
 

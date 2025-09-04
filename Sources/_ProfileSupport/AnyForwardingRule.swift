@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+@available(SwiftStdlib 5.3, *)
 public struct AnyForwardingRule: Equatable, Hashable, Sendable {
 
   /// The kind of the proxy rules.

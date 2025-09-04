@@ -4,18 +4,18 @@
 
 import RegexBuilder
 
+@available(SwiftStdlib 5.3, *)
 extension URLRewrite {
 
   static let delimiter = ","
 
   public static let sectionName = "[URL Rewrite]"
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   public static var regex: Regex<(Substring, Bool, RewriteType, Substring, Substring)> {
     Regex {
       TryCapture(Optionally(/\ *# +/)) { $0.isEmpty }
       TryCapture {
-        // TODO: It is safety or not??
         try! Regex<Substring>(RewriteType.allCases.map({ $0.rawValue }).joined(separator: "|"))
       } transform: {
         RewriteType(rawValue: String($0))

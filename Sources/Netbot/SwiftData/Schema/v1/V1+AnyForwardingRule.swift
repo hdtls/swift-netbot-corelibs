@@ -6,8 +6,7 @@
   import SwiftData
   import _ProfileSupport
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension V1 {
 
     @Model public class _AnyForwardingRule {
@@ -49,8 +48,7 @@
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension AnyForwardingRule {
 
     public typealias PersistentModel = V1._AnyForwardingRule
@@ -68,8 +66,7 @@
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension V1._AnyForwardingRule {
 
     public func mergeValues(_ data: AnyForwardingRule) {

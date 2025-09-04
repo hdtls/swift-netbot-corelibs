@@ -11,12 +11,14 @@ import RegexBuilder
 //#endif
 
 /// Duplicate a new object.
+@available(SwiftStdlib 5.3, *)
 public protocol Duplicable {
 
   /// Make a copy.
   func copy() -> Self
 }
 
+@available(SwiftStdlib 5.3, *)
 extension Sequence where Element: Duplicable {
 
   /// Make a duplicate element.
@@ -61,6 +63,7 @@ extension Sequence where Element: Duplicable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension Sequence where Element == String {
 
   /// Make a duplicate element.

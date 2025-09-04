@@ -245,7 +245,7 @@ struct AnyProxyFormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     AnyProxy.FormatStyle(),
     AnyProxy.FormatStyle().parseStrategy,
@@ -290,7 +290,7 @@ struct AnyProxyFormatStyleTests {
     #expect(parseOutput.dontAlertError == possibleParseOutput.dontAlertError)
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test func parseAnyProxyFromInvalidString() throws {
     let parseInput = "NotAValidProxy = abc"
     #expect(throws: CocoaError.self) {
@@ -298,7 +298,7 @@ struct AnyProxyFormatStyleTests {
     }
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test func parseAlias() throws {
     let parseInput = "DIRECT = direct"
     let parseOutput = try AnyProxy.FormatStyle().parse(parseInput)
@@ -306,7 +306,7 @@ struct AnyProxyFormatStyleTests {
     #expect(parseOutput.name == "DIRECT")
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     "HTTP = http, server-address = , port = 0",
     "HTTP = http, port = 0",
@@ -319,7 +319,7 @@ struct AnyProxyFormatStyleTests {
     }
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(
     arguments: zip(
       [
@@ -347,21 +347,21 @@ struct AnyProxyFormatStyleTests {
     #expect(formatOuput == expected)
   }
 
-  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  @available(SwiftStdlib 5.5, *)
   @Test func formatStyleConformance() {
     var proxy = AnyProxy(name: "DIRECT")
     proxy.kind = .direct
     #expect(proxy.formatted(AnyProxy.FormatStyle()) == "DIRECT = direct")
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test func parseStrategyConformance() throws {
     #expect(throws: Never.self) {
       try AnyProxy("DIRECT = direct", strategy: AnyProxy.FormatStyle())
     }
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test func parseableFormatStyleConformance() {
     #expect(throws: Never.self) {
       try AnyProxy.FormatStyle().parseStrategy.parse("DIRECT = direct")

@@ -8,6 +8,7 @@
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 public struct AnyProxy: Equatable, Hashable, Sendable {
 
   /// The name of this policy.
@@ -116,7 +117,7 @@ public struct AnyProxy: Equatable, Hashable, Sendable {
     self.isTFOEnabled = isTFOEnabled
     self.forceHTTPTunneling = forceHTTPTunneling
     self.dontAlertError = dontAlertError
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+    if #available(SwiftStdlib 5.5, *) {
       self.creationDate = .now
     } else {
       self.creationDate = .init()

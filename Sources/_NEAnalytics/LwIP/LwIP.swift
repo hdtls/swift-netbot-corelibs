@@ -6,6 +6,7 @@ import CNELwIP
 import NEAddressProcessing
 import NIOCore
 
+@available(SwiftStdlib 5.3, *)
 class LwIP {
 
   private let packetFlow: any PacketTunnelFlow

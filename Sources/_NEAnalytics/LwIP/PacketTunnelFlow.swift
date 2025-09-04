@@ -8,6 +8,7 @@ import NIOCore
   import NetworkExtension
 #endif
 
+@available(SwiftStdlib 5.3, *)
 public protocol PacketTunnelFlow: AnyObject, Sendable {
 
   func readPacketObjects() async -> [NEPacket]
@@ -16,6 +17,7 @@ public protocol PacketTunnelFlow: AnyObject, Sendable {
 }
 
 #if canImport(NetworkExtension)
+  @available(SwiftStdlib 5.3, *)
   extension NEPacketTunnelFlow: @unchecked @retroactive Sendable, PacketTunnelFlow {
 
     public func readPacketObjects() async -> [NEPacket] {

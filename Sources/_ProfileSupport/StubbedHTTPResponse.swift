@@ -11,6 +11,7 @@
 #endif
 
 /// A stubbed HTTP response representation object, define how to stub response for request.
+@available(SwiftStdlib 5.3, *)
 public struct StubbedHTTPResponse: Equatable, Hashable, Sendable {
 
   /// A boolean value determinse whether this rule is enabled or disabled.
@@ -44,7 +45,7 @@ public struct StubbedHTTPResponse: Equatable, Hashable, Sendable {
     self.bodyContentsURL = bodyContentsURL
     self.status = status
     self.additionalHTTPFields = additionalHTTPFields
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+    if #available(SwiftStdlib 5.5, *) {
       self.creationDate = .now
     } else {
       self.creationDate = .init()

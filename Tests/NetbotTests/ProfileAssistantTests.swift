@@ -19,7 +19,7 @@ import _ProfileSupport
 @Suite(.tags(.profileAssistant, .swiftData))
 struct ProfileAssistantTests {
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func initialData() throws {
     #if canImport(SwiftData)
       let schema: Schema = Schema(versionedSchema: _VersionedSchema.self)
@@ -42,10 +42,10 @@ struct ProfileAssistantTests {
     #endif
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func setFilePresentor() async throws {}
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func setProfileURL() async throws {
     try await withManagedProfile { profileAssistant in
       var profileURL = await profileAssistant.profileURL
@@ -56,7 +56,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func setProfilesDirectory() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -71,7 +71,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func setProfilesDirectoryIfAutoreloadIsEnabled() async throws {
     try await withManagedProfile { profileAssistant in
       await profileAssistant.setAutoreloadEnabled(true)
@@ -82,7 +82,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func enableAutoreload() async throws {
     try await withManagedProfile { profileAssistant in
       #expect(await profileAssistant.filePresenter == nil)
@@ -91,7 +91,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func disableAutoreload() async throws {
     try await withManagedProfile { profileAssistant in
       #expect(await profileAssistant.filePresenter == nil)
@@ -102,7 +102,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func ignoreEnableAutoreloadIfItAlreadyEnabled() async throws {
     try await withManagedProfile { profileAssistant in
       #expect(await profileAssistant.filePresenter == nil)
@@ -114,7 +114,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func reloadProfile() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -172,7 +172,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func loadProfileFromURLThatCannotBeOpened() async throws {
     try await withManagedProfile { profileAssistant in
       let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
@@ -183,7 +183,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func loadProfileContainsInvalidPolicy() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -200,7 +200,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func loadProfileContainsInvalidPolicyGroup() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -217,7 +217,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func loadProfileContainsInvalidRule() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -234,7 +234,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func profileIdentifiedByURL() async throws {
     try await withManagedProfile { profileAssistant in
       await #expect(throws: Never.self) {
@@ -245,7 +245,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func profileIdentifiedByURLThatProfileWithURLIsNotExist() async throws {
     try await withManagedProfile { profileAssistant in
       await #expect(throws: ProfileLoadError.self) {
@@ -257,7 +257,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func profileIdentifiedByName() async throws {
     try await withManagedProfile { profileAssistant in
       await #expect(throws: Never.self) {
@@ -268,7 +268,7 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @Test func profileIdentifiedByNameThatProfileWithNameIsNotExist() async throws {
     try await withManagedProfile { profileAssistant in
       await #expect(throws: ProfileLoadError.self) {

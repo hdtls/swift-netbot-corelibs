@@ -6,6 +6,7 @@ import Anlzr
 import AnlzrReports
 import CoWOptimization
 
+@available(SwiftStdlib 5.3, *)
 @_cowOptimization
 struct FinalForwardingRule: Anlzr.FinalForwardingRule, ForwardingRuleConvertible, Hashable, Sendable
 {
@@ -27,6 +28,7 @@ struct FinalForwardingRule: Anlzr.FinalForwardingRule, ForwardingRuleConvertible
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension FinalForwardingRule._Storage: Hashable {
   static func == (lhs: FinalForwardingRule._Storage, rhs: FinalForwardingRule._Storage) -> Bool {
     lhs.condition == rhs.condition
@@ -40,4 +42,5 @@ extension FinalForwardingRule._Storage: Hashable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension FinalForwardingRule._Storage: @unchecked Sendable {}

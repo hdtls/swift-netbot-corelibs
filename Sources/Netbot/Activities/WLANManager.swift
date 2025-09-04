@@ -12,8 +12,7 @@
 
   private let notApplicable = "N/A"
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   @MainActor @Observable final public class WLANManager {
     fileprivate struct NetworkDevice: Equatable, Hashable, Sendable {
       var name: String = "-"
@@ -357,8 +356,7 @@
     }
   }
 
-  @available(swift 5.9)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+  @available(SwiftStdlib 5.9, *)
   extension WLANManager: @preconcurrency CWEventDelegate {
 
     public func clientConnectionInterrupted() {

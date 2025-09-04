@@ -13,8 +13,7 @@ import _ProfileSupport
   import Foundation
 #endif
 
-@available(swift 5.9)
-@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+@available(SwiftStdlib 5.9, *)
 extension ProfileAssistant {
 
   #if canImport(FoundationEssentials)
@@ -221,6 +220,7 @@ extension ProfileAssistant {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension URL {
   fileprivate var isProfile: Bool {
     isFileURL && pathExtension == .profilePathExtension

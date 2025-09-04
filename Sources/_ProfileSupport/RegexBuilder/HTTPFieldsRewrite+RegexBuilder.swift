@@ -4,13 +4,14 @@
 
 import RegexBuilder
 
+@available(SwiftStdlib 5.3, *)
 extension HTTPFieldsRewrite {
 
   static let delimiter: Character = " "
 
   public static let sectionName = "[HTTP Fields Rewrite]"
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   public static var regex:
     Regex<(Substring, Bool, Direction, Substring, Action, Substring, Substring?, Substring?)>
   {

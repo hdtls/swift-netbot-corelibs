@@ -6,6 +6,7 @@ import Anlzr
 import AnlzrReports
 import CoWOptimization
 
+@available(SwiftStdlib 5.3, *)
 @_cowOptimization
 struct DomainForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
@@ -26,6 +27,7 @@ struct DomainForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension DomainForwardingRule._Storage: Hashable {
   static func == (lhs: DomainForwardingRule._Storage, rhs: DomainForwardingRule._Storage) -> Bool {
     lhs.domain == rhs.domain
@@ -39,4 +41,5 @@ extension DomainForwardingRule._Storage: Hashable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension DomainForwardingRule._Storage: @unchecked Sendable {}

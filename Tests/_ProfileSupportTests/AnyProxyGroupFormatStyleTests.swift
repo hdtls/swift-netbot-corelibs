@@ -45,7 +45,7 @@ struct AnyProxyGroupFormatStyleTests {
     #expect(formatInput.formatted() == expected)
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     AnyProxyGroup.FormatStyle(),
     AnyProxyGroup.FormatStyle().parseStrategy,
@@ -62,7 +62,7 @@ struct AnyProxyGroupFormatStyleTests {
     #expect(parseOutput.resource.source == .cache)
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test func parseGroupWithExternalPolicies() throws {
     var parseInput = "example = select, proxies-url = https://example.com"
     var parseOutput = try AnyProxyGroup.FormatStyle().parse(parseInput)
@@ -83,7 +83,7 @@ struct AnyProxyGroupFormatStyleTests {
     #expect(parseOutput.resource.source == .query)
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     "example = select",
     "example = select, proxies = ",
@@ -107,14 +107,14 @@ struct AnyProxyGroupFormatStyleTests {
     }
   }
 
-  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  @available(SwiftStdlib 5.5, *)
   @Test func formatStyleConformance() {
     var formatInput = AnyProxyGroup(name: "example")
     formatInput.lazyProxies.append("direct")
     #expect(formatInput.formatted(.proxyGroup) == "example = select, proxies = direct")
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   @Test func parseStrategyConformance() {
     #expect(throws: Never.self) {
       try AnyProxyGroup("example = select, proxies = direct", strategy: .proxyGroup)

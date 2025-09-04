@@ -5,6 +5,7 @@
 #if os(macOS)
   import Foundation
 
+  @available(SwiftStdlib 5.3, *)
   public class NEProxyServer: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
@@ -74,8 +75,10 @@
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   extension NEProxyServer: @unchecked Sendable {}
 
+  @available(SwiftStdlib 5.3, *)
   public class NEProxySettings: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
@@ -186,12 +189,15 @@
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   extension NEProxySettings: @unchecked Sendable {}
 
+  @available(SwiftStdlib 5.3, *)
   public class NEProtocolProxies {
     public typealias Options = NEProxySettings
   }
 
+  @available(SwiftStdlib 5.3, *)
   public class ProcessInfo: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
@@ -268,10 +274,12 @@
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   extension ProcessInfo: @unchecked Sendable {}
 
   /// PHTHandleProtocol is the NSXPCConnection-based protocol implemented by the helper tool
   /// and called by the app.
+  @available(SwiftStdlib 5.3, *)
   @objc public protocol PHTHandleProtocol: Sendable {
 
     /// Not used by the standard app (it's part of the sandboxed XPC service support).

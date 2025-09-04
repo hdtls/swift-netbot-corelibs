@@ -9,6 +9,7 @@
 #endif
 
 /// A HTTP fields modification representation object, define how to modify mached request header fields.
+@available(SwiftStdlib 5.3, *)
 public struct HTTPFieldsRewrite: Equatable, Hashable, Sendable {
 
   /// An enum define HTTP directions.
@@ -23,6 +24,7 @@ public struct HTTPFieldsRewrite: Equatable, Hashable, Sendable {
     case remove
     case replace
 
+    @available(SwiftStdlib 5.5, *)
     public var localizedName: String {
       switch self {
       #if canImport(Darwin)
@@ -79,7 +81,7 @@ public struct HTTPFieldsRewrite: Equatable, Hashable, Sendable {
     self.name = name
     self.replacement = replacement
     self.value = value
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+    if #available(SwiftStdlib 5.5, *) {
       self.creationDate = .now
     } else {
       self.creationDate = .init()

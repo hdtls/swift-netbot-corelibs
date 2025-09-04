@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxy {
 
   /// WebSocket settings for VMESS protocol.

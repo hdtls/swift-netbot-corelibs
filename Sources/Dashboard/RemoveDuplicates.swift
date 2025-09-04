@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+@available(SwiftStdlib 5.3, *)
 extension Sequence where Element: Hashable {
 
   /// Return the sequence with all duplicates removed.

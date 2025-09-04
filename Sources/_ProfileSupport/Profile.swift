@@ -95,7 +95,7 @@ import Logging
   public var lazyStubbedHTTPResponses: [StubbedHTTPResponse]
 
   /// Initialize a `Profile`  using specific url.
-  @inlinable public init(
+  public init(
     url: URL = .profile,
     logLevel: Logger.Level = Logger.Level.info,
     dnsSettings: AnyDNSSettings = AnyDNSSettings(servers: []),
@@ -124,7 +124,7 @@ import Logging
   ) {
     let creationDate: Date
     let contentModificationDate: Date
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+    if #available(SwiftStdlib 5.5, *) {
       creationDate = .now
       contentModificationDate = .now
     } else {
@@ -222,9 +222,10 @@ extension Profile._Storage: @unchecked Sendable {}
 
 extension Profile {
 
+  @available(SwiftStdlib 5.7, *)
   public init(contentsOf url: URL) throws {
     let parseInput: String
-    if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+    if #available(SwiftStdlib 5.7, *) {
       parseInput = try String(contentsOf: url, encoding: .utf8)
     } else {
       parseInput = try String(contentsOfFile: url.path, encoding: .utf8)

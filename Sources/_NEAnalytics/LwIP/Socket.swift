@@ -5,6 +5,7 @@
 import CNELwIP
 import NIOCore
 
+@available(SwiftStdlib 5.3, *)
 class Socket: BaseSocket {
 
   func write(pointer: UnsafeRawBufferPointer, flags: Int32) throws {

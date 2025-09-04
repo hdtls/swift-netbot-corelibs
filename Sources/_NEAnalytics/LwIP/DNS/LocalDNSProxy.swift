@@ -18,7 +18,7 @@ import _DNSSupport
   import NIOPosix
 #endif
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+@available(SwiftStdlib 5.3, *)
 actor LocalDNSProxy: PacketHandleProtocol {
 
   private nonisolated let parser = PrettyDNSParser()
@@ -419,6 +419,7 @@ actor LocalDNSProxy: PacketHandleProtocol {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension LocalDNSProxy: _DNSSupport.Resolver {
 
   nonisolated func queryA(name: String) async throws -> [ARecord] {
@@ -541,6 +542,7 @@ extension LocalDNSProxy: _DNSSupport.Resolver {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension LocalDNSProxy: Anlzr.Resolver {
 
   nonisolated func initiateAQuery(host: String, port: Int) -> EventLoopFuture<[SocketAddress]> {
@@ -563,9 +565,11 @@ extension LocalDNSProxy: Anlzr.Resolver {
 }
 
 #if !canImport(Network)
+  @available(SwiftStdlib 5.3, *)
   extension LocalDNSProxy: NIOPosix.Resolver {}
 #endif
 
+@available(SwiftStdlib 5.3, *)
 private struct Expirable<Record: ResourceRecord>: Sendable {
 
   var record: Record
@@ -582,6 +586,7 @@ private struct Expirable<Record: ResourceRecord>: Sendable {
 }
 
 #if canImport(Network)
+  @available(SwiftStdlib 5.3, *)
   final private class AddressedEnvelopeSuite: ChannelDuplexHandler, Sendable {
     typealias InboundIn = ByteBuffer
     typealias InboundOut = AddressedEnvelope<ByteBuffer>

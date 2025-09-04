@@ -8,6 +8,7 @@ import NEAddressProcessing
 import NIOConcurrencyHelpers
 import NIOCore
 
+@available(SwiftStdlib 5.3, *)
 class BaseSocketChannel<SocketType: BaseSocketProtocol>: Channel, ChannelCore, @unchecked Sendable {
 
   internal let socket: SocketType

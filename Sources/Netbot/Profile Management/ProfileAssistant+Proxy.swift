@@ -13,8 +13,7 @@ import _ProfileSupport
 #endif
 
 /// `AnyProxy` management
-@available(swift 5.9)
-@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+@available(SwiftStdlib 5.9, *)
 extension ProfileAssistant {
 
   /// Insert new `AnyProxy` item into `ProfileAssistant` managed profile file.

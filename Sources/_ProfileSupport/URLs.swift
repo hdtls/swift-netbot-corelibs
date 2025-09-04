@@ -8,6 +8,7 @@
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension URL {
 
   #if !canImport(Darwin)
@@ -34,7 +35,7 @@ extension URL {
   public static var profile: URL {
     #if canImport(Darwin)
       let pathComponent = "Library/Application Support/Netbot/Profiles/Default.netbotcfg"
-      if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+      if #available(SwiftStdlib 5.7, *) {
         return
           securityApplicationGroupDirectory
           .appending(component: pathComponent, directoryHint: .notDirectory)
@@ -59,7 +60,7 @@ extension URL {
       let pathComponent = "com.tenbits.netbot.packet-tunnel.extension/MaxMindDB"
     #endif
     #if canImport(Darwin)
-      if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+      if #available(SwiftStdlib 5.7, *) {
         return .applicationSupportDirectory
           .appending(component: pathComponent, directoryHint: .isDirectory)
       } else {
@@ -86,7 +87,7 @@ extension URL {
       let pathComponent = "com.tenbits.netbot.packet-tunnel.extension/External Resource"
     #endif
     #if canImport(Darwin)
-      if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+      if #available(SwiftStdlib 5.7, *) {
         return .applicationSupportDirectory
           .appending(component: pathComponent, directoryHint: .isDirectory)
       } else {
@@ -106,6 +107,7 @@ extension URL {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension String {
 
   package static var profilePathExtension: String { "netbotcfg" }

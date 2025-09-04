@@ -17,8 +17,7 @@
 
       """
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func setDNSServers() async throws {
       try await withManagedProfile { profileAssistant in
         let profileURL = await profileAssistant.profileURL
@@ -47,8 +46,7 @@
       }
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func removeDNSServer() async throws {
       try await withManagedProfile { profileAssistant in
         let profileURL = await profileAssistant.profileURL
@@ -67,8 +65,7 @@
       }
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func removeDNSServerThatDoseNotExistInProfileFile() async throws {
       try await withManagedProfile { profileAssistant in
         let profileURL = await profileAssistant.profileURL
@@ -87,8 +84,7 @@
       }
     }
 
-    @available(swift 5.9)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @available(SwiftStdlib 5.9, *)
     @Test func removeDNSServersAtSpecifiedOffsets() async throws {
       try await withManagedProfile { profileAssistant in
         let profileURL = await profileAssistant.profileURL

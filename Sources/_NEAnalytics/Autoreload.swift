@@ -23,6 +23,7 @@
     import Network
   #endif
 
+  @available(SwiftStdlib 5.3, *)
   public protocol AutoreloadDelegate: AnyObject, Sendable {
     func autoReloadEnabledHTTPCapabilities(_ capabilities: CapabilityFlags)
     func autoReloadGeoLite2(filePath: String)
@@ -30,6 +31,7 @@
     func autoReloadProfile(url: URL, mode: ProxyMode)
   }
 
+  @available(SwiftStdlib 5.3, *)
   final public class AutoreloadSubscription: @unchecked Sendable {
 
     @Preference(Prefs.Name.profileURL, store: .applicationGroup)
@@ -133,7 +135,7 @@
       #if canImport(Network)
         configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
 
-        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+        if #available(SwiftStdlib 5.9, *) {
           configuration.proxyConfigurations = [
             .init(
               httpCONNECTProxy: .hostPort(
@@ -178,7 +180,7 @@
           .sink { [weak self] _ in
             let filename = "GeoLite2-Country.mmdb"
             let file: String
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            if #available(SwiftStdlib 5.7, *) {
               file = URL.maxmind.appending(path: filename).path(percentEncoded: false)
             } else {
               file = URL.maxmind.appendingPathComponent(filename).path
@@ -212,8 +214,13 @@
             existingGeoLite2AutoUpdateTask?.cancel()
             return
           }
-
-          let timeIntervalPast = date > .now ? 86400 * 7 : Int64(Date.now.timeIntervalSince(date))
+          let now: Date
+          if #available(SwiftStdlib 5.5, *) {
+            now = .now
+          } else {
+            now = .init()
+          }
+          let timeIntervalPast = date > now ? 86400 * 7 : Int64(now.timeIntervalSince(date))
           let initialDelay = TimeAmount.seconds(max(0, 86400 * 7 - timeIntervalPast))
           let delay = TimeAmount.hours(24 * 7)
           existingGeoLite2AutoUpdateTask?.cancel()
@@ -233,7 +240,13 @@
           .filter { $0 != .distantPast }
           .sink { [weak self] date in
             guard let self else { return }
-            let timeIntervalPast = date > .now ? 24 * 3600 : Int64(Date.now.timeIntervalSince(date))
+            let now: Date
+            if #available(SwiftStdlib 5.5, *) {
+              now = .now
+            } else {
+              now = .init()
+            }
+            let timeIntervalPast = date > now ? 24 * 3600 : Int64(now.timeIntervalSince(date))
             let initialDelay = TimeAmount.seconds(max(0, 24 * 60 * 60 - timeIntervalPast))
             let delay = TimeAmount.hours(24)
             existingForwardingRulesAutoUpdateTask?.cancel()
@@ -255,12 +268,13 @@
         let profile = try Profile(contentsOf: self.profileURL)
         let session = self._session(
           host: profile.httpListenAddress, port: UInt16(profile.httpListenPort ?? 6152))
-        let (url, _) = try await session.download(from: url)
+
+        let (url, _) = try await session._download(from: url)
 
         let filename = "GeoLite2-Country.mmdb"
         let fileURL: URL
         let filePath: String
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+        if #available(SwiftStdlib 5.7, *) {
           fileURL = URL.maxmind.appending(path: filename, directoryHint: .notDirectory)
           filePath = fileURL.path(percentEncoded: false)
         } else {
@@ -275,7 +289,11 @@
         }
         try fs.moveItem(at: url, to: fileURL)
 
-        self.maxminddbLastUpdatedDate = .now
+        if #available(SwiftStdlib 5.5, *) {
+          self.maxminddbLastUpdatedDate = .now
+        } else {
+          self.maxminddbLastUpdatedDate = .init()
+        }
       } catch {
         self.logger.error(
           "MaxMind GeoLite2-Country.mmdb update failure with error: \(error)")
@@ -291,9 +309,14 @@
         let session = self._session(
           host: profile.httpListenAddress, port: UInt16(profile.httpListenPort ?? 6152))
 
-        if !FileManager.default.fileExists(
-          atPath: URL.externalResourceDirectory.path(percentEncoded: false))
-        {
+        let path: String
+        if #available(SwiftStdlib 5.7, *) {
+          path = URL.externalResourceDirectory.path(percentEncoded: false)
+        } else {
+          path = URL.externalResourceDirectory.path
+        }
+
+        if !FileManager.default.fileExists(atPath: path) {
           do {
             try FileManager.default.createDirectory(
               at: .externalResourceDirectory, withIntermediateDirectories: true)
@@ -326,13 +349,18 @@
             var srcURL = resourceURL
             do {
               if !resourceURL.isFileURL {
-                let (tmpURL, _) = try await session.download(from: srcURL)
+                let (tmpURL, _) = try await session._download(from: srcURL)
                 srcURL = tmpURL
               }
 
-              if FileManager.default.fileExists(
-                atPath: dstURL.path(percentEncoded: false))
-              {
+              let path: String
+              if #available(SwiftStdlib 5.7, *) {
+                path = dstURL.path(percentEncoded: false)
+              } else {
+                path = dstURL.path
+              }
+
+              if FileManager.default.fileExists(atPath: path) {
                 try FileManager.default.removeItem(at: dstURL)
               }
               try FileManager.default.moveItem(at: srcURL, to: dstURL)
@@ -344,7 +372,11 @@
         }
         await g.waitForAll()
 
-        self.forwardingRuleResourcesLastUpdatedDate = .now
+        if #available(SwiftStdlib 5.5, *) {
+          self.forwardingRuleResourcesLastUpdatedDate = .now
+        } else {
+          self.forwardingRuleResourcesLastUpdatedDate = .init()
+        }
       }
     }
 
@@ -358,5 +390,6 @@
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   extension CapabilityFlags: @retroactive PreferenceRepresentable {}
 #endif

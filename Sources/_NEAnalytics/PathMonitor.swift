@@ -18,6 +18,7 @@
   #endif
 
   /// A wrap class for `NWPathMonitor` providing default `pathUpdateHandler`.
+  @available(SwiftStdlib 5.3, *)
   @Lockable final public class PathMonitor: Sendable {
 
     private let pathMonitor: NWPathMonitor
@@ -101,10 +102,14 @@
         self.logger.info("Network has been changed to \(ssid), New IP address: \(address)")
 
         let content = UNMutableNotificationContent()
-        content.title = String(
-          localized: "Network Changed",
-          comment: "Network changed notification title"
-        )
+        if #available(SwiftStdlib 5.5, *) {
+          content.title = String(
+            localized: "Network Changed",
+            comment: "Network changed notification title"
+          )
+        } else {
+          content.title = "Network Changed"
+        }
         content.subtitle = ssid
         content.body = address
 

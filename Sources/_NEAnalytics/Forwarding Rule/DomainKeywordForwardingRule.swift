@@ -12,6 +12,7 @@ import CoWOptimization
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 @_cowOptimization
 struct DomainKeywordForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
@@ -32,6 +33,7 @@ struct DomainKeywordForwardingRule: ForwardingRule, ForwardingRuleConvertible, H
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension DomainKeywordForwardingRule._Storage: Hashable {
   static func == (
     lhs: DomainKeywordForwardingRule._Storage, rhs: DomainKeywordForwardingRule._Storage
@@ -47,4 +49,5 @@ extension DomainKeywordForwardingRule._Storage: Hashable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension DomainKeywordForwardingRule._Storage: @unchecked Sendable {}

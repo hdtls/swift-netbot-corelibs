@@ -9,6 +9,7 @@
 #endif
 
 /// An object that encapsualtes the performance metrics during the execution of a network speed test.
+@available(SwiftStdlib 5.3, *)
 public struct TransactionMetrics: Codable, Equatable, Hashable, Sendable {
 
   /// The maximum amount of data that can be transmitted over a network in a given amount of time.
@@ -30,7 +31,7 @@ public struct TransactionMetrics: Codable, Equatable, Hashable, Sendable {
     self.latency = .max
     self.roundTripTime = .max
     self.packetLoss = 100
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+    if #available(SwiftStdlib 5.5, *) {
       creationDate = .now
     } else {
       creationDate = .init()

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+@available(SwiftStdlib 5.3, *)
 enum PacketHandleResult: Hashable, Sendable {
 
   /// The handler processed packet.
@@ -11,6 +12,7 @@ enum PacketHandleResult: Hashable, Sendable {
   case discarded
 }
 
+@available(SwiftStdlib 5.3, *)
 protocol PacketHandleProtocol {
 
   var packetFlow: any PacketTunnelFlow { get }

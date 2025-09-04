@@ -4,6 +4,7 @@
 
 import NIOCore
 
+@available(SwiftStdlib 5.3, *)
 public struct Datagram: Hashable, Sendable {
 
   public typealias Data = ByteBuffer

@@ -5,6 +5,7 @@
 import NEAddressProcessing
 import NIOCore
 
+@available(SwiftStdlib 5.3, *)
 func _chksum(_ data: ByteBuffer, zeroization: Bool = false, offset: Int = 10) -> UInt16 {
   var sum = UInt32.zero
 
@@ -29,6 +30,7 @@ func _chksum(_ data: ByteBuffer, zeroization: Bool = false, offset: Int = 10) ->
   return ~UInt16(sum)
 }
 
+@available(SwiftStdlib 5.3, *)
 func _chksum(
   _ data: ByteBuffer, pseudoFields: PseudoFields, zeroization: Bool = false, offset: Int = 6
 ) -> UInt16 {

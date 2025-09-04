@@ -56,6 +56,7 @@ import Foundation
   #error("The Socket Addresses module was unable to identify your C library.")
 #endif
 
+@available(SwiftStdlib 5.3, *)
 struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
   @usableFromInline final class _Storage {
@@ -136,6 +137,7 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension IPCIDRForwardingRule._Storage: Hashable {
   static func == (lhs: IPCIDRForwardingRule._Storage, rhs: IPCIDRForwardingRule._Storage) -> Bool {
     lhs.classlessInterDomainRouting == rhs.classlessInterDomainRouting
@@ -150,8 +152,10 @@ extension IPCIDRForwardingRule._Storage: Hashable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension IPCIDRForwardingRule._Storage: @unchecked Sendable {}
 
+@available(SwiftStdlib 5.3, *)
 extension IPCIDRForwardingRule {
 
   struct Addresses: Hashable, Sendable {
@@ -323,6 +327,7 @@ extension IPCIDRForwardingRule {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension SocketAddress {
 
   fileprivate init(packedAddress: UInt32) {

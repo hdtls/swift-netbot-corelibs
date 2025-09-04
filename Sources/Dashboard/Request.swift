@@ -12,6 +12,7 @@ import HTTPTypes
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension Request {
 
   public func url() -> String {
@@ -36,8 +37,8 @@ extension Request {
   }
 }
 
-#if swift(>=6.2) || canImport(Darwin)
-  @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+#if swift(>=6.3) || canImport(Darwin)
+  @available(SwiftStdlib 5.9, *)
   extension V1._Request {
 
     /// Returns the host component of the Request if present, otherwise returns `nil`.

@@ -5,11 +5,11 @@
 import RegexBuilder
 import _ProfileSupport
 
+@available(SwiftStdlib 5.7, *)
 extension HTTPFieldsRewrite {
 
   static let delimiter: Character = " "
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
   func buildAsRegex() -> some RegexComponent {
     switch action {
     case .add:
@@ -64,7 +64,6 @@ extension HTTPFieldsRewrite {
     }
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
   static var sectionRegex: some RegexComponent {
     Regex {
       ZeroOrMore(.whitespace)

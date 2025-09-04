@@ -50,7 +50,7 @@ public struct DNSMapping: Equatable, Hashable, Sendable {
   {
     self.domainName = domainName
     self.value = value
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+    if #available(SwiftStdlib 5.5, *) {
       self.creationDate = .now
     } else {
       self.creationDate = .init()

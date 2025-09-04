@@ -6,11 +6,11 @@ import HTTPTypes
 import RegexBuilder
 import _ProfileSupport
 
+@available(SwiftStdlib 5.7, *)
 extension StubbedHTTPResponse {
 
   static let delimiter: Character = ","
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
   func buildAsRegex() -> some RegexComponent {
     Regex {
       isEnabled ? "" : "# "
@@ -29,7 +29,6 @@ extension StubbedHTTPResponse {
     }
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
   static var sectionRegex: some RegexComponent {
     Regex {
       ZeroOrMore(.whitespace)
@@ -39,7 +38,6 @@ extension StubbedHTTPResponse {
     }
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
   static var regex: Regex<(Substring, Bool, Substring, Substring)> {
     Regex {
       TryCapture(Optionally(/\ *# +/)) { $0.isEmpty }

@@ -19,6 +19,7 @@ import _ProfileSupport
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension Profile {
 
   func asForwardingRules() -> [any ForwardingRuleConvertible] {
@@ -217,6 +218,7 @@ extension Profile {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxy {
 
   func asForwardProtocol() -> any ForwardProtocolConvertible {
@@ -279,19 +281,25 @@ extension AnyProxy {
         passwordReference: passwordReference
       )
     case .vmess:
-      forwardProtocol = ForwardProtocolVMESS(
-        name: name,
-        serverAddress: serverAddress,
-        port: port,
-        userID: UUID(uuidString: username)!,
-        ws: ws,
-        tls: tls
-      )
+      if #available(SwiftStdlib 5.7, *) {
+        forwardProtocol = ForwardProtocolVMESS(
+          name: name,
+          serverAddress: serverAddress,
+          port: port,
+          userID: UUID(uuidString: username)!,
+          ws: ws,
+          tls: tls
+        )
+      } else {
+        // TODO: Fallback to SwiftStdlib 5.3
+        forwardProtocol = .direct
+      }
     }
     return forwardProtocol
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyForwardingRule {
 
   func asForwardingRule(_ forwardProtocol: any ForwardProtocolConvertible)

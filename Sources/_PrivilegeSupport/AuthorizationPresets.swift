@@ -27,7 +27,11 @@
     private var description: String {
       switch self {
       case .systemProtocolProxiesModification:
-        return String(localized: "Netbot is trying to modify the system network configuration.")
+        if #available(SwiftStdlib 5.5, *) {
+          return String(localized: "Netbot is trying to modify the system network configuration.")
+        } else {
+          return "Netbot is trying to modify the system network configuration."
+        }
       }
     }
 

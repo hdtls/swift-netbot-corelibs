@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxy {
   /// Engress IP settings
   public struct Engress: Codable, Hashable, Sendable {

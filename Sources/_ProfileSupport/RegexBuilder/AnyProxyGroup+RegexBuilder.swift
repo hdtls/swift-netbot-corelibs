@@ -4,11 +4,12 @@
 
 import RegexBuilder
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxyGroup {
 
   public static let sectionName = "[Proxy Group]"
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   public static var regex: Regex<(Substring, Substring, AnyProxyGroup.Kind, Substring)> {
     Regex {
       /([^=\n]+) *= */

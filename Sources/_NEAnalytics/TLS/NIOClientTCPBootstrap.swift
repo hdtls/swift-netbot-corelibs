@@ -6,6 +6,7 @@ import Anlzr
 import NEAddressProcessing
 import NIOCore
 
+@available(SwiftStdlib 5.3, *)
 extension NIOClientTCPBootstrap {
 
   /// Enable TLS.

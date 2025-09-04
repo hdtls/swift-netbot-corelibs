@@ -4,6 +4,7 @@
 
 import AnlzrReports
 
+@available(SwiftStdlib 5.3, *)
 extension Connection.State {
 
   public var localizedName: String {

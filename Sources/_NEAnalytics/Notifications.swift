@@ -13,12 +13,15 @@
     import UIKit
   #endif
 
+  @available(SwiftStdlib 5.3, *)
   private enum UserNotificationError: Error {
     case denied
   }
 
+  @available(SwiftStdlib 5.3, *)
   private let logger = Logger(label: "UserNotifications")
 
+  @available(SwiftStdlib 5.3, *)
   extension UNUserNotificationCenter {
 
     public static var `default`: UNUserNotificationCenter {
@@ -53,6 +56,7 @@
     }
   }
 
+  @available(SwiftStdlib 5.3, *)
   extension Notification.Name {
 
     internal static var applicationWillTerminate: Notification.Name {

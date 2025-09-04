@@ -27,11 +27,11 @@ extension DNSMapping.FormatStyle {
   }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(SwiftStdlib 5.5, *)
 extension DNSMapping.FormatStyle: FormatStyle {
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(SwiftStdlib 5.7, *)
 extension DNSMapping.FormatStyle {
   public func parse(_ value: String) throws -> DNSMapping {
     let parseInput = value
@@ -53,7 +53,7 @@ extension DNSMapping.FormatStyle {
   }
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(SwiftStdlib 5.7, *)
 extension DNSMapping.FormatStyle: ParseStrategy {
 }
 
@@ -63,18 +63,18 @@ extension DNSMapping.FormatStyle {
   }
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(SwiftStdlib 5.7, *)
 extension DNSMapping.FormatStyle: ParseableFormatStyle {
 }
 
 extension DNSMapping.FormatStyle: Codable, Hashable {}
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(SwiftStdlib 5.5, *)
 extension FormatStyle where Self == DNSMapping.FormatStyle {
   public static var dnsMapping: Self { .init() }
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(SwiftStdlib 5.7, *)
 extension ParseStrategy where Self == DNSMapping.FormatStyle {
   @_disfavoredOverload
   public static var dnsMapping: Self { .init() }
@@ -88,7 +88,7 @@ extension DNSMapping {
       return v.format(self)
     }
   #else
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @available(SwiftStdlib 5.5, *)
     public func formatted<S>(_ v: S) -> S.FormatOutput
     where S: Foundation.FormatStyle, S.FormatInput == DNSMapping {
       return v.format(self)
@@ -99,7 +99,7 @@ extension DNSMapping {
     FormatStyle().format(self)
   }
 
-  @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+  @available(SwiftStdlib 5.7, *)
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
   where T.ParseOutput == Self {
     self = try strategy.parse(value)

@@ -11,6 +11,7 @@ import NIOCore
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 public struct PrettyDNSParser: Sendable {
 
   public init() {}

@@ -4,6 +4,7 @@
 
 import HTTPTypes
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxy {
 
   /// WebSocket settings for VMESS protocol.

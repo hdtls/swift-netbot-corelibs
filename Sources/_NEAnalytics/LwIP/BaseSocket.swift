@@ -6,6 +6,7 @@ import CNELwIP
 import NEAddressProcessing
 import NIOCore
 
+@available(SwiftStdlib 5.3, *)
 protocol BaseSocketProtocol {
 
   func close() throws
@@ -17,6 +18,7 @@ protocol BaseSocketProtocol {
   func remoteAddress() throws -> SocketAddress
 }
 
+@available(SwiftStdlib 5.3, *)
 class BaseSocket: BaseSocketProtocol {
 
   var descriptor: UnsafeMutablePointer<tcp_pcb>
@@ -77,6 +79,7 @@ class BaseSocket: BaseSocketProtocol {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension BaseSocket: CustomStringConvertible {
   var description: String {
     "BaseSocket { fd=\(self.descriptor) }"

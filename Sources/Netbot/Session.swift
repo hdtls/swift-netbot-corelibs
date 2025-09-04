@@ -8,6 +8,7 @@
   @preconcurrency import NetworkExtension
 
   /// NETunnelProviderSession wrapper.
+  @available(SwiftStdlib 5.3, *)
   @globalActor public actor Session {
 
     public static let shared = Session()
