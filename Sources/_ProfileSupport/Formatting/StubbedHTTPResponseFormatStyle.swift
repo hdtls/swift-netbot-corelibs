@@ -10,6 +10,7 @@ import HTTPTypes
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension StubbedHTTPResponse {
   public struct FormatStyle: Sendable {
     private var delimiter: Character { "," }
@@ -18,6 +19,7 @@ extension StubbedHTTPResponse {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension StubbedHTTPResponse.FormatStyle {
   public func format(_ value: StubbedHTTPResponse) -> String {
     var formatOutput = value.isEnabled ? "" : "# "
@@ -43,7 +45,7 @@ extension StubbedHTTPResponse.FormatStyle {
 extension StubbedHTTPResponse.FormatStyle: FormatStyle {
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.3, *)
 extension StubbedHTTPResponse.FormatStyle {
   public func parse(_ value: String) throws -> StubbedHTTPResponse {
     func errorOut() -> CocoaError {
@@ -108,20 +110,22 @@ extension StubbedHTTPResponse.FormatStyle {
   }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension StubbedHTTPResponse.FormatStyle: ParseStrategy {
 }
 
+@available(SwiftStdlib 5.3, *)
 extension StubbedHTTPResponse.FormatStyle {
   public var parseStrategy: StubbedHTTPResponse.FormatStyle {
     self
   }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension StubbedHTTPResponse.FormatStyle: ParseableFormatStyle {
 }
 
+@available(SwiftStdlib 5.3, *)
 extension StubbedHTTPResponse.FormatStyle: Codable, Hashable {}
 
 @available(SwiftStdlib 5.5, *)
@@ -129,12 +133,13 @@ extension FormatStyle where Self == StubbedHTTPResponse.FormatStyle {
   public static var stubbedHTTPResponse: Self { .init() }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension ParseStrategy where Self == StubbedHTTPResponse.FormatStyle {
   @_disfavoredOverload
   public static var stubbedHTTPResponse: Self { .init() }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension StubbedHTTPResponse {
 
   #if canImport(FoundationEssentials)
@@ -154,7 +159,7 @@ extension StubbedHTTPResponse {
     FormatStyle().format(self)
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.5, *)
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
   where T.ParseOutput == Self {
     self = try strategy.parse(value)

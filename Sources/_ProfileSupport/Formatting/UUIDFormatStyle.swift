@@ -9,6 +9,7 @@
 #endif
 
 #if canImport(Darwin)
+  @available(SwiftStdlib 5.3, *)
   extension UUID {
     public class Formatter: Foundation.Formatter {
       public override func string(for obj: Any?) -> String? {
@@ -46,6 +47,7 @@
   }
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension UUID {
   public struct FormatStyle: Sendable {
     public init() {}
@@ -74,6 +76,7 @@ extension UUID.FormatStyle: FormatStyle {
 extension UUID.FormatStyle: ParseStrategy {
 }
 
+@available(SwiftStdlib 5.3, *)
 extension UUID.FormatStyle {
   public var parseStrategy: UUID.FormatStyle {
     self
@@ -84,6 +87,7 @@ extension UUID.FormatStyle {
 extension UUID.FormatStyle: ParseableFormatStyle {
 }
 
+@available(SwiftStdlib 5.3, *)
 extension UUID.FormatStyle: Codable, Hashable {}
 
 @available(SwiftStdlib 5.5, *)
@@ -97,6 +101,7 @@ extension ParseStrategy where Self == UUID.FormatStyle {
   public static var uuid: Self { .init() }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension UUID {
 
   #if canImport(FoundationEssentials)

@@ -38,12 +38,22 @@ struct URLRewriteFormatStyleTests {
   ])
   func parse(_ parser: URLRewrite.FormatStyle) throws {
     let parseInput = "found, (?:http://)?swift.org, https://swift.org"
-    let parseOutput = try parser.parse(parseInput)
 
-    #expect(parseOutput.isEnabled)
-    #expect(parseOutput.type == .found)
-    #expect(parseOutput.pattern == "(?:http://)?swift.org")
-    #expect(parseOutput.destination == "https://swift.org")
+    let parseFunctions: [(String) throws -> URLRewrite]
+    if #available(SwiftStdlib 5.7, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+
+      #expect(parseOutput.isEnabled)
+      #expect(parseOutput.type == .found)
+      #expect(parseOutput.pattern == "(?:http://)?swift.org")
+      #expect(parseOutput.destination == "https://swift.org")
+    }
   }
 
   @Test(arguments: [
@@ -51,8 +61,19 @@ struct URLRewriteFormatStyleTests {
     "found, (?:http://)?swift.org",
   ])
   func parseFromInvalidString(_ parseInput: String) throws {
-    #expect(throws: CocoaError.self) {
-      try URLRewrite.FormatStyle().parse(parseInput)
+    let parser = URLRewrite.FormatStyle()
+
+    let parseFunctions: [(String) throws -> URLRewrite]
+    if #available(SwiftStdlib 5.7, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      #expect(throws: CocoaError.self) {
+        try parse(parseInput)
+      }
     }
   }
 

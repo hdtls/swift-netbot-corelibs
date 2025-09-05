@@ -26,12 +26,12 @@ struct HTTPFieldsFormatStyleTests {
     #expect(httpFields.formatted() == expected)
   }
 
-  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     "",
     "⚽️:football",
   ])
   func parseWithInvalidInputString(_ parseInput: String) {
+
     #expect(throws: CocoaError.self) {
       try HTTPFields.FormatStyle().parse(parseInput)
     }
@@ -46,10 +46,28 @@ struct HTTPFieldsFormatStyleTests {
     }
   }
 
-  @available(SwiftStdlib 5.7, *)
-  @Test func parse() throws {
+  @Test(arguments: [
+    HTTPFields.FormatStyle(),
+    HTTPFields.FormatStyle().parseStrategy,
+    HTTPFields.FormatStyle.httpFields,
+  ])
+  func parse(parser: HTTPFields.FormatStyle) throws {
     let expected: HTTPFields = [.connection: "keep-alive", .contentLength: "0"]
     let parseInput = "Connection:keep-alive|Content-Length:0"
+
+    let parseFunctions: [(String) throws -> HTTPFields]
+    if #available(SwiftStdlib 5.7, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      #expect(throws: Never.self) {
+        let httpFields = try parse(parseInput)
+        #expect(httpFields == expected)
+      }
+    }
 
     #expect(throws: Never.self) {
       let httpFields = try HTTPFields(parseInput, strategy: .httpFields)

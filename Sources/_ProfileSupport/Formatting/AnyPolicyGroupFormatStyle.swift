@@ -8,12 +8,14 @@
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxyGroup {
   public struct FormatStyle: Sendable {
     public init() {}
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxyGroup.FormatStyle {
   public func format(_ value: AnyProxyGroup) -> String {
     var formatOutput = "\(value.name) = \(value.kind.rawValue)"
@@ -35,25 +37,42 @@ extension AnyProxyGroup.FormatStyle {
 extension AnyProxyGroup.FormatStyle: FormatStyle {
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxyGroup.FormatStyle {
-  @available(SwiftStdlib 5.7, *)
+
   public func parse(_ value: String) throws -> AnyProxyGroup {
     func buildError(value: String, example: String) -> CocoaError {
       let errorStr =
         "Cannot parse \(value). String should adhere to the preferred format, such as \"\(example)\"."
       return CocoaError(.formatting, userInfo: [NSDebugDescriptionErrorKey: errorStr])
     }
-
-    guard let match = value.firstMatch(of: AnyProxyGroup.regex) else {
+    // Example format: name = kind, prop1 = val1, prop2 = val2
+    let parts = value.split(separator: ",", maxSplits: 1, omittingEmptySubsequences: false)
+    guard parts.count > 1 else {
       throw buildError(value: value, example: "example = select, proxies = DIRECT, REJECT")
     }
-    var parseOutput = AnyProxyGroup(name: match.1._trimmingWhitespaces())
-    parseOutput.kind = match.2
+
+    // Split head: "name = kind"
+    let head = parts[0].split(separator: "=", maxSplits: 1).map {
+      String($0)._trimmingWhitespaces()
+    }
+    guard head.count == 2 else {
+      throw buildError(value: value, example: "example = select, proxies = DIRECT, REJECT")
+    }
+
+    var parseOutput = AnyProxyGroup(name: head[0])
+
+    guard let kind = AnyProxyGroup.Kind(rawValue: head[1]) else {
+      throw buildError(value: value, example: "example = select, proxies = DIRECT, REJECT")
+    }
+    parseOutput.kind = kind
+
     var source: AnyProxyGroup.Resource.Source?
 
+    // Parse property section (if exists)
     let properties: [String: [String]]
     do {
-      properties = try PropertiesParseStrategy().parse(String(match.3))
+      properties = try PropertiesParseStrategy().parse(String(parts[1]))
     } catch {
       throw buildError(value: value, example: "example = select, proxies = DIRECT, REJECT")
     }
@@ -61,41 +80,21 @@ extension AnyProxyGroup.FormatStyle {
     for property in properties {
       if property.key == "proxies" {
         guard !property.value.isEmpty else {
-          // Must contains at least one policy.
           throw buildError(value: value, example: "example = select, proxies = DIRECT, REJECT")
         }
         parseOutput.lazyProxies = property.value
         source = .cache
       }
-      //      if let match = property.firstMatch(of: /\ *proxies *= *(.*)/) {
-      //        if match.1.isEmpty {
-      //          // Must contains at least one policy.
-      //          throw buildError(value: value, example: "example = select, proxies = DIRECT, REJECT")
-      //        }
-      //        parseOutput.lazyProxies = match.1.split(separator: ",").map({ $0._trimmingWhitespaces() })
-      //        source = .cache
-      //      }
       if property.key == "proxies-url" {
         guard let urlString = property.value.first, let url = URL(string: urlString),
           url.scheme != nil
         else {
-          // proxies-url is required for external resource.
           throw buildError(
             value: value, example: "example = select, proxies-url = https://example.com")
         }
         parseOutput.resource.externalProxiesURL = url
         source = .query
       }
-      //      if let match = property.firstMatch(of: /\ *proxies-url *= *(.*)/) {
-      //        guard let url = URL(string: match.1._trimmingWhitespaces()), url.scheme != nil
-      //        else {
-      //          // proxies-url is required for external resource.
-      //          throw buildError(
-      //            value: value, example: "example = select, proxies-url = https://example.com")
-      //        }
-      //        parseOutput.resource.externalProxiesURL = url
-      //        source = .query
-      //      }
       if property.key == "proxies-auto-update-time-interval" {
         guard let timeIntervalString = property.value.first,
           let timeInterval = Int(timeIntervalString)
@@ -108,41 +107,31 @@ extension AnyProxyGroup.FormatStyle {
         }
         parseOutput.resource.externalProxiesAutoUpdateTimeInterval = timeInterval
       }
-      //      if let match = property.firstMatch(of: /\ *proxies-auto-update-time-interval *= *([0-9]*)/) {
-      //        guard let timeInterval = Int(match.1._trimmingWhitespaces()) else {
-      //          throw buildError(
-      //            value: value,
-      //            example:
-      //              "example = select, proxies-url = https://example.com, proxies-auto-update-time-interval = 86400"
-      //          )
-      //        }
-      //        parseOutput.resource.externalProxiesAutoUpdateTimeInterval = timeInterval
-      //      }
     }
-
     guard let source else {
       throw buildError(value: value, example: "example = select, proxies = DIRECT, REJECT")
     }
-
     parseOutput.resource.source = source
     return parseOutput
   }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension AnyProxyGroup.FormatStyle: ParseStrategy {
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxyGroup.FormatStyle {
   public var parseStrategy: AnyProxyGroup.FormatStyle {
     self
   }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension AnyProxyGroup.FormatStyle: ParseableFormatStyle {
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxyGroup.FormatStyle: Codable, Hashable {}
 
 @available(SwiftStdlib 5.5, *)
@@ -150,17 +139,18 @@ extension FormatStyle where Self == AnyProxyGroup.FormatStyle {
   public static var proxyGroup: Self { .init() }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension ParseableFormatStyle where Self == AnyProxyGroup.FormatStyle {
   public static var proxyGroup: Self { .init() }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension ParseStrategy where Self == AnyProxyGroup.FormatStyle {
   @_disfavoredOverload
   public static var proxyGroup: Self { .init() }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxyGroup {
 
   #if canImport(FoundationEssentials)
@@ -182,7 +172,7 @@ extension AnyProxyGroup {
     FormatStyle().format(self)
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.5, *)
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
   where T.ParseOutput == Self {
     self = try strategy.parse(value)

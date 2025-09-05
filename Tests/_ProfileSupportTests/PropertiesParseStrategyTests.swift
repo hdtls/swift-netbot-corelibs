@@ -19,31 +19,70 @@ struct PropertiesParseStrategyTests {
 
   @Test(arguments: ["==", " = = ", "p1, p2 = 1", "p1"])
   func parsePropertiesFromInvalidInput(_ parseInput: String) async throws {
-    #expect(throws: CocoaError.self) {
-      try parser.parse(parseInput)
+    let parseFunctions: [(String) throws -> [String: [String]]]
+    if #available(SwiftStdlib 5.7, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      #expect(throws: CocoaError.self) {
+        try parse(parseInput)
+      }
     }
   }
 
   @Test func parse() async throws {
-    #expect(try parser.parse("p1 = 1") == ["p1": ["1"]])
-    #expect(try parser.parse("p1 = 1, p2 = 2") == ["p1": ["1"], "p2": ["2"]])
-    #expect(try parser.parse("p1 = 1, p2 = 2, 3, 4") == ["p1": ["1"], "p2": ["2", "3", "4"]])
-    #expect(try parser.parse("p1 = 1, 2, 3, p2 = 2") == ["p1": ["1", "2", "3"], "p2": ["2"]])
-    #expect(
-      try parser.parse("p1 = 1, 2, 3, p2 = 2, 3, 4, p3 = 3") == [
-        "p1": ["1", "2", "3"], "p2": ["2", "3", "4"], "p3": ["3"],
-      ])
+    let parseFunctions: [(String) throws -> [String: [String]]]
+    if #available(SwiftStdlib 5.7, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      #expect(try parse("p1 = 1") == ["p1": ["1"]])
+      #expect(try parse("p1 = 1, p2 = 2") == ["p1": ["1"], "p2": ["2"]])
+      #expect(try parse("p1 = 1, p2 = 2, 3, 4") == ["p1": ["1"], "p2": ["2", "3", "4"]])
+      #expect(try parse("p1 = 1, 2, 3, p2 = 2") == ["p1": ["1", "2", "3"], "p2": ["2"]])
+      #expect(
+        try parse("p1 = 1, 2, 3, p2 = 2, 3, 4, p3 = 3") == [
+          "p1": ["1", "2", "3"], "p2": ["2", "3", "4"], "p3": ["3"],
+        ])
+    }
   }
 
   @Test func parsePropertiesFromInputContainingQuotationMarks() throws {
+
     let parseInput = "p1 = 1, \"p2 = 2\""
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput == ["p1": ["1", "p2 = 2"]])
+
+    let parseFunctions: [(String) throws -> [String: [String]]]
+    if #available(SwiftStdlib 5.7, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+      #expect(parseOutput == ["p1": ["1", "p2 = 2"]])
+    }
   }
 
   @Test func parsePropertiesFromInputContainingMultipleQuotationMarks() throws {
     let parseInput = "p1 = 1, \"p2 = 2\", p3 = \"a\""
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput == ["p1": ["1", "p2 = 2"], "p3": ["a"]])
+
+    let parseFunctions: [(String) throws -> [String: [String]]]
+    if #available(SwiftStdlib 5.7, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+      #expect(parseOutput == ["p1": ["1", "p2 = 2"], "p3": ["a"]])
+    }
   }
 }

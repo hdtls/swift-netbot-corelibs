@@ -15,7 +15,7 @@ import Testing
 @Suite(.tags(.formatting, .forwardingRule))
 struct AnyForwardingRuleFormatStyleTests {
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.3, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -23,15 +23,25 @@ struct AnyForwardingRuleFormatStyleTests {
   ])
   func parseRuleWithoutComment(_ parser: AnyForwardingRule.FormatStyle) throws {
     let parseInput = "DOMAIN,www.swift.org,Auto URL Test"
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.isEnabled)
-    #expect(parseOutput.kind == .domain)
-    #expect(parseOutput.value == "www.swift.org")
-    #expect(parseOutput.foreignKey == "Auto URL Test")
-    #expect(parseOutput.comment == "")
+
+    let parseFunctions: [(String) throws -> AnyForwardingRule]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+      #expect(parseOutput.isEnabled)
+      #expect(parseOutput.kind == .domain)
+      #expect(parseOutput.value == "www.swift.org")
+      #expect(parseOutput.foreignKey == "Auto URL Test")
+      #expect(parseOutput.comment == "")
+    }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.3, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -39,15 +49,25 @@ struct AnyForwardingRuleFormatStyleTests {
   ])
   func parseRuleWithComment(_ parser: AnyForwardingRule.FormatStyle) throws {
     let parseInput = "DOMAIN,www.swift.org,Auto URL Test // note..."
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.isEnabled)
-    #expect(parseOutput.kind == .domain)
-    #expect(parseOutput.value == "www.swift.org")
-    #expect(parseOutput.foreignKey == "Auto URL Test")
-    #expect(parseOutput.comment == "note...")
+
+    let parseFunctions: [(String) throws -> AnyForwardingRule]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+      #expect(parseOutput.isEnabled)
+      #expect(parseOutput.kind == .domain)
+      #expect(parseOutput.value == "www.swift.org")
+      #expect(parseOutput.foreignKey == "Auto URL Test")
+      #expect(parseOutput.comment == "note...")
+    }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.3, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -55,15 +75,25 @@ struct AnyForwardingRuleFormatStyleTests {
   ])
   func parseDisabledRuleWithoutComment(_ parser: AnyForwardingRule.FormatStyle) throws {
     let parseInput = "# DOMAIN,www.swift.org,Auto URL Test"
-    let parseOutput = try parser.parse(parseInput)
-    #expect(!parseOutput.isEnabled)
-    #expect(parseOutput.kind == .domain)
-    #expect(parseOutput.value == "www.swift.org")
-    #expect(parseOutput.foreignKey == "Auto URL Test")
-    #expect(parseOutput.comment == "")
+
+    let parseFunctions: [(String) throws -> AnyForwardingRule]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+      #expect(!parseOutput.isEnabled)
+      #expect(parseOutput.kind == .domain)
+      #expect(parseOutput.value == "www.swift.org")
+      #expect(parseOutput.foreignKey == "Auto URL Test")
+      #expect(parseOutput.comment == "")
+    }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.3, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -71,15 +101,25 @@ struct AnyForwardingRuleFormatStyleTests {
   ])
   func parseDisabledRuleWithComment(_ parser: AnyForwardingRule.FormatStyle) throws {
     let parseInput = "# DOMAIN,www.swift.org,Auto URL Test // note..."
-    let parseOutput = try parser.parse(parseInput)
-    #expect(!parseOutput.isEnabled)
-    #expect(parseOutput.kind == .domain)
-    #expect(parseOutput.value == "www.swift.org")
-    #expect(parseOutput.foreignKey == "Auto URL Test")
-    #expect(parseOutput.comment == "note...")
+
+    let parseFunctions: [(String) throws -> AnyForwardingRule]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+      #expect(!parseOutput.isEnabled)
+      #expect(parseOutput.kind == .domain)
+      #expect(parseOutput.value == "www.swift.org")
+      #expect(parseOutput.foreignKey == "Auto URL Test")
+      #expect(parseOutput.comment == "note...")
+    }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.3, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -90,17 +130,27 @@ struct AnyForwardingRuleFormatStyleTests {
       "FINAL,dns-failed,Auto URL Test // test note",
       "FINAL,Auto URL Test // test note",
     ]
+
+    let parseFunctions: [(String) throws -> AnyForwardingRule]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
     for (offset, parseInput) in parseInputs.enumerated() {
-      let parseOutput = try parser.parse(parseInput)
-      #expect(parseOutput.isEnabled)
-      #expect(parseOutput.kind == .final)
-      #expect(parseOutput.value == (offset == 0 ? "dns-failed" : ""))
-      #expect(parseOutput.foreignKey == "Auto URL Test")
-      #expect(parseOutput.comment == "test note")
+      for parse in parseFunctions {
+        let parseOutput = try parse(parseInput)
+        #expect(parseOutput.isEnabled)
+        #expect(parseOutput.kind == .final)
+        #expect(parseOutput.value == (offset == 0 ? "dns-failed" : ""))
+        #expect(parseOutput.foreignKey == "Auto URL Test")
+        #expect(parseOutput.comment == "test note")
+      }
     }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.3, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -111,17 +161,27 @@ struct AnyForwardingRuleFormatStyleTests {
       "FINAL,dns-failed,Auto URL Test",
       "FINAL,Auto URL Test",
     ]
+
+    let parseFunctions: [(String) throws -> AnyForwardingRule]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
     for (offset, parseInput) in parseInputs.enumerated() {
-      let parseOutput = try parser.parse(parseInput)
-      #expect(parseOutput.isEnabled)
-      #expect(parseOutput.kind == .final)
-      #expect(parseOutput.value == (offset == 0 ? "dns-failed" : ""))
-      #expect(parseOutput.foreignKey == "Auto URL Test")
-      #expect(parseOutput.comment == "")
+      for parse in parseFunctions {
+        let parseOutput = try parse(parseInput)
+        #expect(parseOutput.isEnabled)
+        #expect(parseOutput.kind == .final)
+        #expect(parseOutput.value == (offset == 0 ? "dns-failed" : ""))
+        #expect(parseOutput.foreignKey == "Auto URL Test")
+        #expect(parseOutput.comment == "")
+      }
     }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.3, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -132,17 +192,27 @@ struct AnyForwardingRuleFormatStyleTests {
       "# FINAL,dns-failed,Auto URL Test // test note",
       "# FINAL,Auto URL Test // test note",
     ]
+
+    let parseFunctions: [(String) throws -> AnyForwardingRule]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
     for (offset, parseInput) in parseInputs.enumerated() {
-      let parseOutput = try parser.parse(parseInput)
-      #expect(!parseOutput.isEnabled)
-      #expect(parseOutput.kind == .final)
-      #expect(parseOutput.value == (offset == 0 ? "dns-failed" : ""))
-      #expect(parseOutput.foreignKey == "Auto URL Test")
-      #expect(parseOutput.comment == "test note")
+      for parse in parseFunctions {
+        let parseOutput = try parse(parseInput)
+        #expect(!parseOutput.isEnabled)
+        #expect(parseOutput.kind == .final)
+        #expect(parseOutput.value == (offset == 0 ? "dns-failed" : ""))
+        #expect(parseOutput.foreignKey == "Auto URL Test")
+        #expect(parseOutput.comment == "test note")
+      }
     }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.3, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -153,17 +223,27 @@ struct AnyForwardingRuleFormatStyleTests {
       "# FINAL,dns-failed,Auto URL Test",
       "# FINAL,Auto URL Test",
     ]
+
+    let parseFunctions: [(String) throws -> AnyForwardingRule]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
     for (offset, parseInput) in parseInputs.enumerated() {
-      let parseOutput = try parser.parse(parseInput)
-      #expect(!parseOutput.isEnabled)
-      #expect(parseOutput.kind == .final)
-      #expect(parseOutput.value == (offset == 0 ? "dns-failed" : ""))
-      #expect(parseOutput.foreignKey == "Auto URL Test")
-      #expect(parseOutput.comment == "")
+      for parse in parseFunctions {
+        let parseOutput = try parse(parseInput)
+        #expect(!parseOutput.isEnabled)
+        #expect(parseOutput.kind == .final)
+        #expect(parseOutput.value == (offset == 0 ? "dns-failed" : ""))
+        #expect(parseOutput.foreignKey == "Auto URL Test")
+        #expect(parseOutput.comment == "")
+      }
     }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.3, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -176,39 +256,61 @@ struct AnyForwardingRuleFormatStyleTests {
       "#   DOMAIN, www.swift.org,Auto URL Test",
       "# DOMAIN,www.swift.org,   Auto URL Test // test note",
     ]
-    for (offset, parseInput) in collection.enumerated() {
-      let parseOutput = try parser.parse(parseInput)
-      #expect(parseOutput.isEnabled == (offset > 1 ? false : true))
-      #expect(parseOutput.kind == .domain)
-      #expect(parseOutput.value == "www.swift.org")
-      #expect(parseOutput.foreignKey == "Auto URL Test")
-      #expect(parseOutput.comment == (offset % 2 == 0 ? "" : "test note"))
+
+    let parseFunctions: [(String) throws -> AnyForwardingRule]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
     }
 
-    let parseOutput = try parser.parse("FINAL,Auto URL Test // test note    ")
-    #expect(parseOutput.isEnabled == true)
-    #expect(parseOutput.kind == .final)
-    #expect(parseOutput.value == "")
-    #expect(parseOutput.foreignKey == "Auto URL Test")
-    #expect(parseOutput.comment == "test note")
+    for (offset, parseInput) in collection.enumerated() {
+      for parse in parseFunctions {
+        let parseOutput = try parse(parseInput)
+        #expect(parseOutput.isEnabled == (offset > 1 ? false : true))
+        #expect(parseOutput.kind == .domain)
+        #expect(parseOutput.value == "www.swift.org")
+        #expect(parseOutput.foreignKey == "Auto URL Test")
+        #expect(parseOutput.comment == (offset % 2 == 0 ? "" : "test note"))
+      }
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse("FINAL,Auto URL Test // test note    ")
+      #expect(parseOutput.isEnabled == true)
+      #expect(parseOutput.kind == .final)
+      #expect(parseOutput.value == "")
+      #expect(parseOutput.foreignKey == "Auto URL Test")
+      #expect(parseOutput.comment == "test note")
+    }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.3, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
     AnyForwardingRule.FormatStyle.forwardingRule,
   ])
   func parseRuleContainsUnknownTypes(_ parser: AnyForwardingRule.FormatStyle) {
-    #expect(throws: CocoaError.self) {
-      try parser.parse("UNKNOWN,swift.org,Auto URL Test")
+    let parseFunctions: [(String) throws -> AnyForwardingRule]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
     }
-    #expect(throws: CocoaError.self) {
-      try parser.parse("# UNKNOWN,swift.org,Auto URL Test")
+
+    for parse in parseFunctions {
+      #expect(throws: CocoaError.self) {
+        try parse("UNKNOWN,swift.org,Auto URL Test")
+      }
+
+      #expect(throws: CocoaError.self) {
+        try parse("# UNKNOWN,swift.org,Auto URL Test")
+      }
     }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.3, *)
   @Test func parseStrategyConformance() {
     #expect(throws: Never.self) {
       try AnyForwardingRule("GEOIP, CN, direct", strategy: .forwardingRule)

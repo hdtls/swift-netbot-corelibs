@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+@available(SwiftStdlib 5.3, *)
 public struct AnyDNSSettings: Codable, Equatable, Hashable, Sendable {
 
   /// The DNS protocol used by the server, such as HTTPS or TLS.
@@ -37,6 +38,7 @@ public struct AnyDNSSettings: Codable, Equatable, Hashable, Sendable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 public enum DNSProtocol: Int, Codable, Hashable, Sendable {
   case cleartext
   case tls

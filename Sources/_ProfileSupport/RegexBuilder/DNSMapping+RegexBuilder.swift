@@ -4,6 +4,7 @@
 
 import RegexBuilder
 
+@available(SwiftStdlib 5.3, *)
 extension DNSMapping {
 
   static let delimiter = "="

@@ -98,15 +98,25 @@ struct HTTPFieldsRewriteFormatStyleTests {
   ])
   func parseAddRewrite(_ parser: HTTPFieldsRewrite.FormatStyle) throws {
     let parseInput = "request (?:http://)?swift.org add Proxy-Connection keep-alive"
-    let parseOutput = try parser.parse(parseInput)
 
-    #expect(parseOutput.isEnabled)
-    #expect(parseOutput.direction == .request)
-    #expect(parseOutput.pattern == "(?:http://)?swift.org")
-    #expect(parseOutput.action == .add)
-    #expect(parseOutput.name == "Proxy-Connection")
-    #expect(parseOutput.value == "keep-alive")
-    #expect(parseOutput.replacement == "")
+    let parseFunctions: [(String) throws -> HTTPFieldsRewrite]
+    if #available(SwiftStdlib 5.7, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+
+      #expect(parseOutput.isEnabled)
+      #expect(parseOutput.direction == .request)
+      #expect(parseOutput.pattern == "(?:http://)?swift.org")
+      #expect(parseOutput.action == .add)
+      #expect(parseOutput.name == "Proxy-Connection")
+      #expect(parseOutput.value == "keep-alive")
+      #expect(parseOutput.replacement == "")
+    }
   }
 
   @Test(arguments: [
@@ -116,15 +126,25 @@ struct HTTPFieldsRewriteFormatStyleTests {
   ])
   func parseReplaceRewrite(_ parser: HTTPFieldsRewrite.FormatStyle) throws {
     let parseInput = "request (?:http://)?swift.org replace Proxy-Connection keep-alive"
-    let parseOutput = try parser.parse(parseInput)
 
-    #expect(parseOutput.isEnabled)
-    #expect(parseOutput.direction == .request)
-    #expect(parseOutput.pattern == "(?:http://)?swift.org")
-    #expect(parseOutput.action == .replace)
-    #expect(parseOutput.name == "Proxy-Connection")
-    #expect(parseOutput.value == "")
-    #expect(parseOutput.replacement == "keep-alive")
+    let parseFunctions: [(String) throws -> HTTPFieldsRewrite]
+    if #available(SwiftStdlib 5.7, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+
+      #expect(parseOutput.isEnabled)
+      #expect(parseOutput.direction == .request)
+      #expect(parseOutput.pattern == "(?:http://)?swift.org")
+      #expect(parseOutput.action == .replace)
+      #expect(parseOutput.name == "Proxy-Connection")
+      #expect(parseOutput.value == "")
+      #expect(parseOutput.replacement == "keep-alive")
+    }
   }
 
   @Test(arguments: [
@@ -134,15 +154,25 @@ struct HTTPFieldsRewriteFormatStyleTests {
   ])
   func parseReplaceWithRegexRewrite(_ parser: HTTPFieldsRewrite.FormatStyle) throws {
     let parseInput = "request (?:http://)?swift.org replace Set-Cookie 2592000 2590000"
-    let parseOutput = try parser.parse(parseInput)
 
-    #expect(parseOutput.isEnabled)
-    #expect(parseOutput.direction == .request)
-    #expect(parseOutput.pattern == "(?:http://)?swift.org")
-    #expect(parseOutput.action == .replace)
-    #expect(parseOutput.name == "Set-Cookie")
-    #expect(parseOutput.value == "2592000")
-    #expect(parseOutput.replacement == "2590000")
+    let parseFunctions: [(String) throws -> HTTPFieldsRewrite]
+    if #available(SwiftStdlib 5.7, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+
+      #expect(parseOutput.isEnabled)
+      #expect(parseOutput.direction == .request)
+      #expect(parseOutput.pattern == "(?:http://)?swift.org")
+      #expect(parseOutput.action == .replace)
+      #expect(parseOutput.name == "Set-Cookie")
+      #expect(parseOutput.value == "2592000")
+      #expect(parseOutput.replacement == "2590000")
+    }
   }
 
   @Test(arguments: [
@@ -151,8 +181,19 @@ struct HTTPFieldsRewriteFormatStyleTests {
     "request (?:http://)?example.com remove",
   ])
   func parseFromInvalidString(_ parseInput: String) throws {
-    #expect(throws: CocoaError.self) {
-      try HTTPFieldsRewrite.FormatStyle().parse(parseInput)
+    let parser = HTTPFieldsRewrite.FormatStyle()
+
+    let parseFunctions: [(String) throws -> HTTPFieldsRewrite]
+    if #available(SwiftStdlib 5.7, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      #expect(throws: CocoaError.self) {
+        try parse(parseInput)
+      }
     }
   }
 

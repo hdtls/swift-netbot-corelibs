@@ -11,6 +11,7 @@ import Logging
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 @_cowOptimization public struct Profile: Equatable, Hashable, Sendable {
 
   /// The url the resource was storaged..
@@ -163,6 +164,7 @@ import Logging
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension Profile._Storage: Hashable {
   @inlinable static func == (lhs: Profile._Storage, rhs: Profile._Storage) -> Bool {
     lhs.url == rhs.url
@@ -218,11 +220,12 @@ extension Profile._Storage: Hashable {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension Profile._Storage: @unchecked Sendable {}
 
+@available(SwiftStdlib 5.3, *)
 extension Profile {
 
-  @available(SwiftStdlib 5.7, *)
   public init(contentsOf url: URL) throws {
     let parseInput: String
     if #available(SwiftStdlib 5.7, *) {
@@ -230,7 +233,7 @@ extension Profile {
     } else {
       parseInput = try String(contentsOfFile: url.path, encoding: .utf8)
     }
-    self = try Profile(parseInput, strategy: .profile)
+    self = try Profile.FormatStyle().parse(parseInput)
     self.url = url
   }
 }

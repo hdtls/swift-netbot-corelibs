@@ -10,12 +10,14 @@ import HTTPTypes
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxy {
   public struct FormatStyle: Sendable {
     public init() {}
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxy.FormatStyle {
 
   private enum Fields: String {
@@ -230,9 +232,19 @@ extension AnyProxy.FormatStyle {
 extension AnyProxy.FormatStyle: FormatStyle {
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.3, *)
 extension AnyProxy.FormatStyle {
+
   public func parse(_ value: String) throws -> AnyProxy {
+    if #available(SwiftStdlib 5.7, *) {
+      try _parse(value)
+    } else {
+      try _parse0(value)
+    }
+  }
+
+  @available(SwiftStdlib 5.7, *)
+  func _parse(_ value: String) throws -> AnyProxy {
     var parseOutput = ParseOutput()
 
     guard let match = value.firstMatch(of: AnyProxy.regex) else {
@@ -445,22 +457,29 @@ extension AnyProxy.FormatStyle {
 
     return parseOutput
   }
+
+  func _parse0(_ value: String) throws -> AnyProxy {
+    // TODO: Parse AnyProxy
+    fatalError("Not implemented")
+  }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension AnyProxy.FormatStyle: ParseStrategy {
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxy.FormatStyle {
   public var parseStrategy: AnyProxy.FormatStyle {
     self
   }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension AnyProxy.FormatStyle: ParseableFormatStyle {
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxy.FormatStyle: Codable, Hashable {}
 
 @available(SwiftStdlib 5.5, *)
@@ -468,17 +487,18 @@ extension FormatStyle where Self == AnyProxy.FormatStyle {
   public static var proxy: Self { .init() }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension ParseableFormatStyle where Self == AnyProxy.FormatStyle {
   public static var proxy: Self { .init() }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension ParseStrategy where Self == AnyProxy.FormatStyle {
   @_disfavoredOverload
   public static var proxy: Self { .init() }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyProxy {
 
   #if canImport(FoundationEssentials)
@@ -500,7 +520,7 @@ extension AnyProxy {
     FormatStyle().format(self)
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.5, *)
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
   where T.ParseOutput == Self {
     self = try strategy.parse(value)

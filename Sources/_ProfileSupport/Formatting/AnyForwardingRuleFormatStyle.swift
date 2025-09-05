@@ -8,6 +8,7 @@
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension AnyForwardingRule {
   /// Strategies for formatting a `AnyForwardingRule`.
   public struct FormatStyle: Sendable {
@@ -16,6 +17,7 @@ extension AnyForwardingRule {
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyForwardingRule.FormatStyle {
   public func format(_ value: AnyForwardingRule) -> String {
     var formatOutput = ""
@@ -42,9 +44,19 @@ extension AnyForwardingRule.FormatStyle {
 extension AnyForwardingRule.FormatStyle: FormatStyle {
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.3, *)
 extension AnyForwardingRule.FormatStyle {
+
   public func parse(_ value: String) throws -> AnyForwardingRule {
+    if #available(SwiftStdlib 5.7, *) {
+      try _parse(value)
+    } else {
+      try _parse0(value)
+    }
+  }
+
+  @available(SwiftStdlib 5.7, *)
+  func _parse(_ value: String) throws -> AnyForwardingRule {
     var parseOutput = ParseOutput()
     // Because the value of FINAL rules can be omitted,
     // so special treatment for FINAL rules is needed.
@@ -74,22 +86,81 @@ extension AnyForwardingRule.FormatStyle {
       return parseOutput
     }
   }
+
+  func _parse0(_ value: String) throws -> AnyForwardingRule {
+    var parseOutput = AnyForwardingRule()
+    var parseInput = value
+    // Check for disabled flag
+    let isDisabled = parseInput.hasPrefix("#")
+    if isDisabled {
+      parseOutput.isEnabled = false
+      parseInput.removeFirst()
+    } else {
+      parseOutput.isEnabled = true
+    }
+
+    // Remove extra spaces
+    parseInput = parseInput._trimmingWhitespaces()
+
+    // Find the last occurrence of // for comment
+    var rulePart = parseInput
+    if let commentRange = rulePart.range(of: "//", options: .backwards) {
+      parseOutput.comment = rulePart[commentRange.upperBound...]._trimmingWhitespaces()
+      rulePart = String(rulePart[..<commentRange.lowerBound])._trimmingWhitespaces()
+    } else {
+      parseOutput.comment = ""
+    }
+
+    // Now split by delimiter to get kind, value, foreignKey
+    let delimiter = AnyForwardingRule.delimiter
+    let pieces = rulePart.components(separatedBy: delimiter).map { $0._trimmingWhitespaces() }
+    guard let kindStr = pieces.first, let kind = AnyForwardingRule.Kind(rawValue: kindStr) else {
+      throw CocoaError(.formatting, userInfo: [NSDebugDescriptionErrorKey: "Unknown rule kind"])
+    }
+    parseOutput.kind = kind
+
+    if kind == .final {
+      guard pieces.count > 1 else {
+        let example = AnyForwardingRule(kind: .geoip, value: "CN", comment: "")
+        let exampleFormattedString = AnyForwardingRule.FormatStyle().format(example)
+        let errorStr =
+          "Cannot parse \(value). String should adhere to the preferred format, such as \(exampleFormattedString)."
+        throw CocoaError(.formatting, userInfo: [NSDebugDescriptionErrorKey: errorStr])
+      }
+      // For FINAL kind, value can be omitted
+      parseOutput.value = pieces.count > 2 ? pieces[1] : ""
+      parseOutput.foreignKey = pieces.count > 2 ? pieces[2] : pieces[1]
+    } else {
+      guard pieces.count > 2 else {
+        let example = AnyForwardingRule(kind: .geoip, value: "CN", comment: "")
+        let exampleFormattedString = AnyForwardingRule.FormatStyle().format(example)
+        let errorStr =
+          "Cannot parse \(value). String should adhere to the preferred format, such as \(exampleFormattedString)."
+        throw CocoaError(.formatting, userInfo: [NSDebugDescriptionErrorKey: errorStr])
+      }
+      parseOutput.value = pieces[1]
+      parseOutput.foreignKey = pieces[2]
+    }
+    return parseOutput
+  }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension AnyForwardingRule.FormatStyle: ParseStrategy {
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyForwardingRule.FormatStyle {
   public var parseStrategy: AnyForwardingRule.FormatStyle {
     self
   }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension AnyForwardingRule.FormatStyle: ParseableFormatStyle {
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyForwardingRule.FormatStyle: Codable, Hashable {}
 
 @available(SwiftStdlib 5.5, *)
@@ -97,17 +168,18 @@ extension FormatStyle where Self == AnyForwardingRule.FormatStyle {
   public static var forwardingRule: Self { .init() }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension ParseableFormatStyle where Self == AnyForwardingRule.FormatStyle {
   public static var forwardingRule: Self { .init() }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension ParseStrategy where Self == AnyForwardingRule.FormatStyle {
   @_disfavoredOverload
   public static var forwardingRule: Self { .init() }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension AnyForwardingRule {
 
   #if canImport(FoundationEssentials)
@@ -129,7 +201,7 @@ extension AnyForwardingRule {
     FormatStyle().format(self)
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.5, *)
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
   where T.ParseOutput == Self {
     self = try strategy.parse(value)

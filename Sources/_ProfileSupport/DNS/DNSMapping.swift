@@ -9,6 +9,7 @@
 #endif
 
 /// An Object declaring DNS mapping rules.
+@available(SwiftStdlib 5.3, *)
 public struct DNSMapping: Equatable, Hashable, Sendable {
 
   /// Kind of the mDNS apping.

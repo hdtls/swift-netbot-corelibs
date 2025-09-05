@@ -94,7 +94,15 @@ extension Profile {
     return lazyProxy.asForwardProtocol()
   }
 
-  func asDecryptionPKCS12Bundle() throws -> NIOSSLPKCS12Bundle? {
+  func asDecryptionPKCS12Bundle0() throws -> NIOSSLPKCS12Bundle? {
+    if #available(SwiftStdlib 5.5, *) {
+      return try asDecryptionPKCS12Bundle0(notValidBefore: .now)
+    } else {
+      return try asDecryptionPKCS12Bundle0(notValidBefore: .init())
+    }
+  }
+
+  func asDecryptionPKCS12Bundle0(notValidBefore: Date) throws -> NIOSSLPKCS12Bundle? {
     guard let data = Data(base64Encoded: base64EncodedP12String) else {
       return nil
     }
@@ -189,7 +197,6 @@ extension Profile {
 
     // Issuer new self-signed certificates and private key for HTTPS decryption.
     let privateKey = try _RSA.Signing.PrivateKey(keySize: .bits2048)
-    let notValidBefore = Date()
     let subject = try DistinguishedName {
       CommonName("*")
     }
@@ -214,6 +221,62 @@ extension Profile {
     return try NIOSSLPKCS12Bundle(
       certificateChain: [NIOSSLCertificate(bytes: serializer.serializedBytes, format: .der)],
       privateKey: .init(bytes: Array(privateKey.derRepresentation), format: .der)
+    )
+  }
+
+  func asDecryptionPKCS12Bundle() throws -> NIOSSLPKCS12Bundle? {
+    if #available(SwiftStdlib 5.5, *) {
+      return try asDecryptionPKCS12Bundle(notValidBefore: .now)
+    } else {
+      return try asDecryptionPKCS12Bundle(notValidBefore: .init())
+    }
+  }
+
+  func asDecryptionPKCS12Bundle(notValidBefore: Date) throws -> NIOSSLPKCS12Bundle? {
+    // Step 1: Decode and extract CA cert & key
+    guard let data = Data(base64Encoded: base64EncodedP12String) else {
+      return nil
+    }
+
+    let p12 = try NIOSSLPKCS12Bundle(buffer: Array(data), passphrase: passphrase.utf8)
+    guard let caCert = p12.certificateChain.first else {
+      return nil
+    }
+    let caPKey = p12.privateKey
+
+    // Step 2: Extract CA subject (issuer DN)
+    let issuer = try Certificate(derEncoded: caCert.toDERBytes()).subject
+
+    // Step 3: Extract CA private key
+    let caPrivateKey = try Certificate.PrivateKey(
+      _RSA.Signing.PrivateKey(derRepresentation: caPKey.derBytes)
+    )
+
+    // Step 4: Generate leaf key and leaf cert (signed by CA)
+    let leafPrivateKey = try _RSA.Signing.PrivateKey(keySize: .bits2048)
+    let subject = try DistinguishedName { CommonName("*") }
+    let extensions = try Certificate.Extensions {
+      SubjectAlternativeNames(hostnames.map { .dnsName($0) })
+    }
+    let leafCert = try Certificate(
+      version: .v3,
+      serialNumber: .init(),
+      publicKey: .init(leafPrivateKey.publicKey),
+      notValidBefore: notValidBefore,
+      notValidAfter: notValidBefore.addingTimeInterval(60 * 60 * 24 * 30),
+      issuer: issuer,
+      subject: subject,
+      signatureAlgorithm: .sha256WithRSAEncryption,
+      extensions: extensions,
+      issuerPrivateKey: caPrivateKey
+    )
+    var leafSerializer = DER.Serializer()
+    try leafSerializer.serialize(leafCert)
+
+    // Step 5: Return PKCS12 bundle with chain [leaf], private key = leaf
+    return try NIOSSLPKCS12Bundle(
+      certificateChain: [NIOSSLCertificate(bytes: leafSerializer.serializedBytes, format: .der)],
+      privateKey: .init(bytes: Array(leafPrivateKey.derRepresentation), format: .der)
     )
   }
 }

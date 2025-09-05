@@ -11,12 +11,14 @@ import RegexBuilder
   import Foundation
 #endif
 
+@available(SwiftStdlib 5.3, *)
 extension Profile {
   public struct FormatStyle: Sendable {
     public init() {}
   }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension Profile.FormatStyle {
 
   public enum Fields: String, Sendable {
@@ -157,10 +159,19 @@ extension Profile.FormatStyle {
 extension Profile.FormatStyle: FormatStyle {
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.3, *)
 extension Profile.FormatStyle {
 
   public func parse(_ value: String) throws -> Profile {
+    if #available(SwiftStdlib 5.7, *) {
+      try _parse(value)
+    } else {
+      try _parse0(value)
+    }
+  }
+
+  @available(SwiftStdlib 5.7, *)
+  func _parse(_ value: String) throws -> Profile {
     var parseOutput = Profile()
     let parseInputs = value.split(separator: .newlineSequence, omittingEmptySubsequences: false)
 
@@ -424,22 +435,29 @@ extension Profile.FormatStyle {
     parseOutput.lazyHTTPFieldsRewrites = httpFieldsRewrites
     return parseOutput
   }
+
+  func _parse0(_ value: String) throws -> Profile {
+    // TODO: Parse Profile
+    fatalError("Not implemented")
+  }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension Profile.FormatStyle: ParseStrategy {
 }
 
+@available(SwiftStdlib 5.3, *)
 extension Profile.FormatStyle {
   public var parseStrategy: Profile.FormatStyle {
     self
   }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension Profile.FormatStyle: ParseableFormatStyle {
 }
 
+@available(SwiftStdlib 5.3, *)
 extension Profile.FormatStyle: Codable, Hashable {}
 
 @available(SwiftStdlib 5.5, *)
@@ -447,12 +465,13 @@ extension FormatStyle where Self == Profile.FormatStyle {
   public static var profile: Self { .init() }
 }
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.5, *)
 extension ParseStrategy where Self == Profile.FormatStyle {
   @_disfavoredOverload
   public static var profile: Self { .init() }
 }
 
+@available(SwiftStdlib 5.3, *)
 extension Profile {
 
   #if canImport(FoundationEssentials)
@@ -472,7 +491,7 @@ extension Profile {
     FormatStyle().format(self)
   }
 
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.5, *)
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
   where T.ParseOutput == Self {
     self = try strategy.parse(value)

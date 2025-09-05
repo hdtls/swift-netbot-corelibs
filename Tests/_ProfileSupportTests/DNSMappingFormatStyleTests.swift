@@ -82,22 +82,29 @@ struct DNSMappingFormatStyleTests {
     #expect(formatOutput == "# example.com = server:8.8.8.8")
   }
 
-  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     DNSMapping.FormatStyle(),
     DNSMapping.FormatStyle().parseStrategy,
     DNSMapping.FormatStyle.dnsMapping,
   ])
   func parseDNSMappingFromInvalidString(_ parser: DNSMapping.FormatStyle) {
-    #expect(throws: CocoaError.self) {
-      try parser.parse("example.com")
+    let parseFunctions: [(String) throws -> DNSMapping]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
     }
-    #expect(throws: CocoaError.self) {
-      try parser.parse("example.com = example1.com?query=1")
+
+    for parse in parseFunctions {
+      #expect(throws: CocoaError.self) {
+        try parse("example.com")
+      }
+      #expect(throws: CocoaError.self) {
+        try parse("example.com = example1.com?query=1")
+      }
     }
   }
 
-  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     DNSMapping.FormatStyle(),
     DNSMapping.FormatStyle().parseStrategy,
@@ -105,15 +112,24 @@ struct DNSMappingFormatStyleTests {
   ])
   func parseDNSMapping(_ parser: DNSMapping.FormatStyle) throws {
     let parseInput = "example.com = 1.1.1.1"
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.kind == .mapping)
-    #expect(parseOutput.isEnabled)
-    #expect(parseOutput.domainName == "example.com")
-    #expect(parseOutput.value == "1.1.1.1")
-    #expect(parseOutput.note == "")
+
+    let parseFunctions: [(String) throws -> DNSMapping]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+      #expect(parseOutput.kind == .mapping)
+      #expect(parseOutput.isEnabled)
+      #expect(parseOutput.domainName == "example.com")
+      #expect(parseOutput.value == "1.1.1.1")
+      #expect(parseOutput.note == "")
+    }
   }
 
-  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     DNSMapping.FormatStyle(),
     DNSMapping.FormatStyle().parseStrategy,
@@ -121,15 +137,24 @@ struct DNSMappingFormatStyleTests {
   ])
   func parseCNAMEDNSMapping(_ parser: DNSMapping.FormatStyle) throws {
     let parseInput = "example.com = example1.com"
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.kind == .cname)
-    #expect(parseOutput.isEnabled)
-    #expect(parseOutput.domainName == "example.com")
-    #expect(parseOutput.value == "example1.com")
-    #expect(parseOutput.note == "")
+
+    let parseFunctions: [(String) throws -> DNSMapping]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+      #expect(parseOutput.kind == .cname)
+      #expect(parseOutput.isEnabled)
+      #expect(parseOutput.domainName == "example.com")
+      #expect(parseOutput.value == "example1.com")
+      #expect(parseOutput.note == "")
+    }
   }
 
-  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     DNSMapping.FormatStyle(),
     DNSMapping.FormatStyle().parseStrategy,
@@ -137,15 +162,24 @@ struct DNSMappingFormatStyleTests {
   ])
   func parseDNSDNSMapping(_ parser: DNSMapping.FormatStyle) throws {
     let parseInput = "example.com = server:8.8.8.8"
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.kind == .dns)
-    #expect(parseOutput.isEnabled)
-    #expect(parseOutput.domainName == "example.com")
-    #expect(parseOutput.value == "8.8.8.8")
-    #expect(parseOutput.note == "")
+
+    let parseFunctions: [(String) throws -> DNSMapping]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+      #expect(parseOutput.kind == .dns)
+      #expect(parseOutput.isEnabled)
+      #expect(parseOutput.domainName == "example.com")
+      #expect(parseOutput.value == "8.8.8.8")
+      #expect(parseOutput.note == "")
+    }
   }
 
-  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     DNSMapping.FormatStyle(),
     DNSMapping.FormatStyle().parseStrategy,
@@ -153,15 +187,24 @@ struct DNSMappingFormatStyleTests {
   ])
   func parseDisabledDNSMapping(_ parser: DNSMapping.FormatStyle) throws {
     let parseInput = "# example.com = 1.1.1.1"
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.kind == .mapping)
-    #expect(!parseOutput.isEnabled)
-    #expect(parseOutput.domainName == "example.com")
-    #expect(parseOutput.value == "1.1.1.1")
-    #expect(parseOutput.note == "")
+
+    let parseFunctions: [(String) throws -> DNSMapping]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+      #expect(parseOutput.kind == .mapping)
+      #expect(!parseOutput.isEnabled)
+      #expect(parseOutput.domainName == "example.com")
+      #expect(parseOutput.value == "1.1.1.1")
+      #expect(parseOutput.note == "")
+    }
   }
 
-  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     DNSMapping.FormatStyle(),
     DNSMapping.FormatStyle().parseStrategy,
@@ -169,15 +212,24 @@ struct DNSMappingFormatStyleTests {
   ])
   func parseDisabledCNAMEDNSMapping(_ parser: DNSMapping.FormatStyle) throws {
     let parseInput = "# example.com = example1.com"
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.kind == .cname)
-    #expect(!parseOutput.isEnabled)
-    #expect(parseOutput.domainName == "example.com")
-    #expect(parseOutput.value == "example1.com")
-    #expect(parseOutput.note == "")
+
+    let parseFunctions: [(String) throws -> DNSMapping]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+      #expect(parseOutput.kind == .cname)
+      #expect(!parseOutput.isEnabled)
+      #expect(parseOutput.domainName == "example.com")
+      #expect(parseOutput.value == "example1.com")
+      #expect(parseOutput.note == "")
+    }
   }
 
-  @available(SwiftStdlib 5.7, *)
   @Test(arguments: [
     DNSMapping.FormatStyle(),
     DNSMapping.FormatStyle().parseStrategy,
@@ -185,12 +237,22 @@ struct DNSMappingFormatStyleTests {
   ])
   func parseDisabledDNSDNSMapping(_ parser: DNSMapping.FormatStyle) throws {
     let parseInput = "# example.com = server:8.8.8.8"
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.kind == .dns)
-    #expect(!parseOutput.isEnabled)
-    #expect(parseOutput.domainName == "example.com")
-    #expect(parseOutput.value == "8.8.8.8")
-    #expect(parseOutput.note == "")
+
+    let parseFunctions: [(String) throws -> DNSMapping]
+    if #available(SwiftStdlib 5.5, *) {
+      parseFunctions = [parser.parse, parser._parse, parser._parse0]
+    } else {
+      parseFunctions = [parser.parse, parser._parse0]
+    }
+
+    for parse in parseFunctions {
+      let parseOutput = try parse(parseInput)
+      #expect(parseOutput.kind == .dns)
+      #expect(!parseOutput.isEnabled)
+      #expect(parseOutput.domainName == "example.com")
+      #expect(parseOutput.value == "8.8.8.8")
+      #expect(parseOutput.note == "")
+    }
   }
 
   @Test func formatStyleConformance() {
