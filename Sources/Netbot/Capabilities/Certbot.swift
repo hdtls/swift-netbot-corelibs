@@ -3,7 +3,6 @@
 //
 
 #if canImport(Darwin)
-  @_implementationOnly import CNIOBoringSSL
   import Foundation
   import NIOCore
   import Logging
@@ -12,47 +11,7 @@
   import SwiftASN1
   import X509
   import _CryptoExtras
-
-  /// Wraps a single error from BoringSSL.
-  @available(SwiftStdlib 5.3, *)
-  private struct BoringSSLInternalError: Equatable, CustomStringConvertible {
-    let errorCode: UInt32
-
-    var errorMessage: String? {
-      // TODO(cory): This should become non-optional in the future, as it always succeeds.
-      var scratchBuffer = [CChar](repeating: 0, count: 512)
-      return scratchBuffer.withUnsafeMutableBufferPointer { pointer in
-        CNIOBoringSSL_ERR_error_string_n(self.errorCode, pointer.baseAddress!, pointer.count)
-        return String(cString: pointer.baseAddress!)
-      }
-    }
-
-    var description: String {
-      return "Error: \(errorCode) \(errorMessage ?? "")"
-    }
-
-    init(errorCode: UInt32) {
-      self.errorCode = errorCode
-    }
-  }
-
-  /// An enum that wraps individual BoringSSL errors directly.
-  @available(SwiftStdlib 5.3, *)
-  private enum BoringSSLError: Error {
-    case unknownError([BoringSSLInternalError])
-
-    static func buildErrorStack() -> [BoringSSLInternalError] {
-      var errorStack = [BoringSSLInternalError]()
-
-      while true {
-        let errorCode = CNIOBoringSSL_ERR_get_error()
-        if errorCode == 0 { break }
-        errorStack.append(BoringSSLInternalError(errorCode: errorCode))
-      }
-
-      return errorStack
-    }
-  }
+  import NIOSSL
 
   @available(SwiftStdlib 5.3, *)
   public enum CertbotError: Error {
@@ -390,69 +349,11 @@
       key: _RSA.Signing.PrivateKey,
       passphrase: String? = nil
     ) throws -> String {
-      // TODO: Pure Swift implementation
-
-      let certPtr = certBytes.withUnsafeBytes { (ptr) -> OpaquePointer? in
-        let bio = CNIOBoringSSL_BIO_new_mem_buf(ptr.baseAddress, ptr.count)!
-        defer {
-          CNIOBoringSSL_BIO_free(bio)
-        }
-        return CNIOBoringSSL_d2i_X509_bio(bio, nil)
-      }
-
-      guard let certPtr else {
-        logger.trace("generate certificate failed with error: boringssl")
-        throw BoringSSLError.unknownError(BoringSSLError.buildErrorStack())
-      }
-
-      let privateKeyPtr = key.derRepresentation.withUnsafeBytes { (ptr) -> OpaquePointer? in
-        let bio = CNIOBoringSSL_BIO_new_mem_buf(ptr.baseAddress!, ptr.count)!
-        defer {
-          CNIOBoringSSL_BIO_free(bio)
-        }
-        return CNIOBoringSSL_d2i_PrivateKey_bio(bio, nil)
-      }
-
-      var p12: OpaquePointer?
-      if let passphrase = passphrase {
-        p12 = passphrase.withCString {
-          CNIOBoringSSL_PKCS12_create($0, nil, privateKeyPtr, certPtr, nil, 0, 0, 0, 0, 0)
-        }
-      } else {
-        p12 = CNIOBoringSSL_PKCS12_create(nil, nil, privateKeyPtr, certPtr, nil, 0, 0, 0, 0, 0)
-      }
-
-      guard let p12 = p12 else {
-        logger.trace("generate certificate failed with error: boringssl")
-        throw BoringSSLError.unknownError(BoringSSLError.buildErrorStack())
-      }
-      defer {
-        CNIOBoringSSL_PKCS12_free(p12)
-      }
-
-      guard let bio = CNIOBoringSSL_BIO_new(CNIOBoringSSL_BIO_s_mem()) else {
-        logger.error("generate certificate failed with error: failed to malloc for a BIO handler")
-        throw BoringSSLError.unknownError(BoringSSLError.buildErrorStack())
-      }
-      defer {
-        CNIOBoringSSL_BIO_free(bio)
-      }
-
-      let rc = CNIOBoringSSL_i2d_PKCS12_bio(bio, p12)
-      guard rc == 1 else {
-        throw BoringSSLError.unknownError(BoringSSLError.buildErrorStack())
-      }
-
-      var dataPtr: UnsafeMutablePointer<CChar>? = nil
-      let length = CNIOBoringSSL_BIO_get_mem_data(bio, &dataPtr)
-
-      guard let bytes = dataPtr.map({ UnsafeRawBufferPointer(start: $0, count: length) }) else {
-        logger.error(
-          "generate certificate failed with error: failed to map bytes from a certificate"
-        )
-        throw CertbotError.missingData
-      }
-
+      let p12 = try NIOSSLPKCS12Bundle(
+        certificateChain: [NIOSSLCertificate(bytes: certBytes, format: .der)],
+        privateKey: NIOSSLPrivateKey(bytes: Array(key.derRepresentation), format: .der)
+      )
+      let bytes = try p12.serialize(passphrase: [])
       return Data(bytes).base64EncodedString()
     }
 
