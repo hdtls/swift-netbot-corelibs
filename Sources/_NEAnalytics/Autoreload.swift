@@ -34,37 +34,37 @@
   @available(SwiftStdlib 5.3, *)
   final public class AutoreloadSubscription: @unchecked Sendable {
 
-    @Preference(Prefs.Name.profileURL, store: .applicationGroup)
+    @Preference(Prefs.Name.profileURL, store: .__shared)
     public var profileURL = URL.profile
 
-    @Preference(Prefs.Name.profileLastContentModificationDate, store: .applicationGroup)
+    @Preference(Prefs.Name.profileLastContentModificationDate, store: .__shared)
     public var profileLastContentModificationDate = Date.distantFuture
 
-    @Preference(Prefs.Name.profileAutoreload, store: .applicationGroup)
+    @Preference(Prefs.Name.profileAutoreload, store: .__shared)
     public var profileAutoreload = false
 
-    @Preference(Prefs.Name.proxyMode, store: .applicationGroup)
+    @Preference(Prefs.Name.proxyMode, store: .__shared)
     public var proxyMode: ProxyMode = [.webProxy]
 
-    @Preference(Prefs.Name.outboundMode, store: .applicationGroup)
+    @Preference(Prefs.Name.outboundMode, store: .__shared)
     public var outboundMode = OutboundMode.direct
 
-    @Preference(Prefs.Name.enabledHTTPCapabilities, store: .applicationGroup)
+    @Preference(Prefs.Name.enabledHTTPCapabilities, store: .__shared)
     public var enabledHTTPCapabilities = CapabilityFlags()
 
-    @Preference(Prefs.Name.selectionRecordForGroups, store: .applicationGroup)
+    @Preference(Prefs.Name.selectionRecordForGroups, store: .__shared)
     public var selectionRecords = "{}"
 
-    @Preference(Prefs.Name.maxminddbDownloadURL, store: .applicationGroup)
+    @Preference(Prefs.Name.maxminddbDownloadURL, store: .__shared)
     public var maxminddbDownloadURL = URL(string: "https://git.io/GeoLite2-Country.mmdb")!
 
-    @Preference(Prefs.Name.maxminddbLastUpdatedDate, store: .applicationGroup)
+    @Preference(Prefs.Name.maxminddbLastUpdatedDate, store: .__shared)
     public var maxminddbLastUpdatedDate = Date.distantFuture
 
-    @Preference(Prefs.Name.maxminddbKeepUpToDate, store: .applicationGroup)
+    @Preference(Prefs.Name.maxminddbKeepUpToDate, store: .__shared)
     public var maxminddbKeepUpToDate = true
 
-    @Preference(Prefs.Name.forwardingRuleResourcesLastUpdatedDate, store: .applicationGroup)
+    @Preference(Prefs.Name.forwardingRuleResourcesLastUpdatedDate, store: .__shared)
     public var forwardingRuleResourcesLastUpdatedDate = Date.distantFuture
 
     private var cancellables = Set<AnyCancellable>()
@@ -79,10 +79,7 @@
 
     private let eventLoopGroup: any EventLoopGroup
 
-    public init(
-      group: any EventLoopGroup,
-      store: UserDefaults? = .applicationGroup
-    ) {
+    public init(group: any EventLoopGroup, store: UserDefaults? = .__shared) {
       self.eventLoopGroup = group
       self._logger = .init(Logger(label: "AnalyzerBot-autoreload"))
       self._profileURL = .init(wrappedValue: .profile, Prefs.Name.profileURL, store: store)

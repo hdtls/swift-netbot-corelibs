@@ -82,9 +82,6 @@
     }
 
     private func waitUntilLoaded() async throws {
-      // We don't want to load any tunnel provider manager relative actions while testing.
-      guard !CommandLine.arguments.contains("--testable") else { return }
-
       if let task = managerLoadingTask {
         try await task.value
       }

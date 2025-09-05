@@ -29,13 +29,13 @@ extension ProfileAssistant {
 
     private let profileAssistant = ProfileAssistant.shared
 
-    @Preference(Prefs.Name.profileURL, store: .applicationGroup)
+    @Preference(Prefs.Name.profileURL, store: .__shared)
     private var profileURL: URL = .profile
 
-    @Preference(Prefs.Name.profileLastContentModificationDate, store: .applicationGroup)
+    @Preference(Prefs.Name.profileLastContentModificationDate, store: .__shared)
     private var profileLastContentModificationDate = Date.now
 
-    @Preference(Prefs.Name.profilesDirectory, store: .applicationGroup)
+    @Preference(Prefs.Name.profilesDirectory, store: .__shared)
     private var profilesDirectory: URL = .profile.deletingLastPathComponent()
 
     /// Create FilePresenter with current active profiles directory.

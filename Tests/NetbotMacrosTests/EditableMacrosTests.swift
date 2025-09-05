@@ -38,7 +38,7 @@ final class EditableMacrosTests: XCTestCase {
       let expectedExpandedSource = """
         struct Presentation {
 
-          @AppStorage(Prefs.Name.profileURL, store: .applicationGroup) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
 
           @Environment(\\.dismiss) private var dismiss
 
@@ -109,13 +109,13 @@ final class EditableMacrosTests: XCTestCase {
         """
         @Editable<Data> struct Presentation {
 
-          @AppStorage(Prefs.Name.profileURL, store: .applicationGroup) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
         }
         """
       let expectedExpandedSource = """
         struct Presentation {
 
-          @AppStorage(Prefs.Name.profileURL, store: .applicationGroup) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
 
           @Environment(\\.dismiss) private var dismiss
 
@@ -193,7 +193,7 @@ final class EditableMacrosTests: XCTestCase {
 
           @Environment(\\.dismiss) private var dismiss
 
-          @AppStorage(Prefs.Name.profileURL, store: .applicationGroup) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
 
           @Environment(\\.modelContext) private var modelContext
 
@@ -269,7 +269,7 @@ final class EditableMacrosTests: XCTestCase {
 
           @Environment(\\.modelContext) private var modelContext
 
-          @AppStorage(Prefs.Name.profileURL, store: .applicationGroup) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
 
           @Environment(\\.dismiss) private var dismiss
 
@@ -345,7 +345,7 @@ final class EditableMacrosTests: XCTestCase {
 
           @Environment(\\.profileAssistant) private var profileAssistant
 
-          @AppStorage(Prefs.Name.profileURL, store: .applicationGroup) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
 
           @Environment(\\.dismiss) private var dismiss
 
@@ -421,7 +421,7 @@ final class EditableMacrosTests: XCTestCase {
 
           @State private var data: Data
 
-          @AppStorage(Prefs.Name.profileURL, store: .applicationGroup) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
 
           @Environment(\\.dismiss) private var dismiss
 
@@ -497,7 +497,7 @@ final class EditableMacrosTests: XCTestCase {
 
           private let persistentModel: Data.PersistentModel?
 
-          @AppStorage(Prefs.Name.profileURL, store: .applicationGroup) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
 
           @Environment(\\.dismiss) private var dismiss
 
@@ -587,7 +587,7 @@ final class EditableMacrosTests: XCTestCase {
             }
           }
 
-          @AppStorage(Prefs.Name.profileURL, store: .applicationGroup) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
 
           @Environment(\\.dismiss) private var dismiss
 
@@ -674,7 +674,7 @@ final class EditableMacrosTests: XCTestCase {
 
           init() {}
 
-          @AppStorage(Prefs.Name.profileURL, store: .applicationGroup) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
 
           @Environment(\\.dismiss) private var dismiss
 
@@ -757,7 +757,7 @@ final class EditableMacrosTests: XCTestCase {
             }
           }
 
-          @AppStorage(Prefs.Name.profileURL, store: .applicationGroup) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
 
           @Environment(\\.dismiss) private var dismiss
 
@@ -840,7 +840,7 @@ final class EditableMacrosTests: XCTestCase {
             }
           }
 
-          @AppStorage(Prefs.Name.profileURL, store: .applicationGroup) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
 
           @Environment(\\.dismiss) private var dismiss
 
@@ -920,7 +920,7 @@ final class EditableMacrosTests: XCTestCase {
           private func save() {
           }
 
-          @AppStorage(Prefs.Name.profileURL, store: .applicationGroup) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
 
           @Environment(\\.dismiss) private var dismiss
 
