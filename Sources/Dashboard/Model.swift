@@ -21,9 +21,9 @@
   #endif
 
   @available(SwiftStdlib 5.3, *)
-  public enum TrafficDirection: Hashable, Sendable {
-    case inbound
-    case outbound
+  public enum DataTransfer: Hashable, Sendable {
+    case upload
+    case download
   }
 
   @available(SwiftStdlib 5.3, *)
@@ -195,8 +195,8 @@
     nonisolated private let logger = Logger(label: "com.tenbits.netbot.dashboard")
     nonisolated private let dependency: any ConnectionsDependency
     private var earliestBeginDate = Date.distantPast
-    private var _transmissionRate = DataTransferReport.PathReport()
-    private var _dataTransferReport = DataTransferReport.PathReport()
+    private var _dataTraffic = DataTransferReport.PathReport()
+    private var _dataVolumeTable: [String: DataTransferReport.PathReport] = [:]
     private var timerSource: DispatchSourceTimer?
 
     nonisolated public convenience init() {
@@ -251,7 +251,7 @@
         #else
           let models = self._activeIndexes.map(\.value) as [Data]
         #endif
-        self._transmissionRate =
+        self._dataTraffic =
           models
           .reduce(DataTransferReport.PathReport()) { nextPartialResult, nextElement in
             nextPartialResult &+ (nextElement.dataTransferReport?.pathReports.first ?? .init())
@@ -265,37 +265,31 @@
       self.dependency.shutdownGracefully()
     }
 
-    public func transferredBytes(_ direction: TrafficDirection) -> Measurement<
-      UnitInformationStorage
-    > {
-      switch direction {
-      case .outbound:
-        return Measurement(
-          value: Double(self._dataTransferReport.sentApplicationByteCount),
-          unit: .bytes
-        )
-      case .inbound:
-        return Measurement(
-          value: Double(self._dataTransferReport.receivedApplicationByteCount),
-          unit: .bytes
-        )
+    public func dataVolume(of dataTransfer: DataTransfer, forwardProtocol: String? = nil) -> Int64 {
+      let dataTransferReport: DataTransferReport.PathReport
+
+      if let forwardProtocol {
+        dataTransferReport = self._dataVolumeTable[forwardProtocol, default: .init()]
+      } else {
+        dataTransferReport = self._dataVolumeTable.values.reduce(into: .init()) {
+          $0 &+= $1
+        }
+      }
+
+      switch dataTransfer {
+      case .upload:
+        return Int64(clamping: dataTransferReport.sentApplicationByteCount)
+      case .download:
+        return Int64(clamping: dataTransferReport.receivedApplicationByteCount)
       }
     }
 
-    public func transmissionRate(_ direction: TrafficDirection) -> Measurement<
-      UnitInformationStorage
-    > {
-      switch direction {
-      case .outbound:
-        return Measurement(
-          value: Double(self._transmissionRate.sentApplicationByteCount),
-          unit: .bytes
-        )
-      case .inbound:
-        return Measurement(
-          value: Double(self._transmissionRate.receivedApplicationByteCount),
-          unit: .bytes
-        )
+    public func dataTraffic(of dataTransfer: DataTransfer) -> Int64 {
+      switch dataTransfer {
+      case .upload:
+        return Int64(clamping: self._dataTraffic.sentApplicationByteCount)
+      case .download:
+        return Int64(clamping: self._dataTraffic.receivedApplicationByteCount)
       }
     }
 
@@ -409,8 +403,16 @@
             #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
               modelContext.insert(dataTransferReport)
             #endif
+
+            self._dataVolumeTable[
+              model.forwardingReport?.forwardProtocol ?? "DIRECT", default: .init()] &+=
+              backingData.aggregatePathReport
             persistentModel.dataTransferReport = dataTransferReport
           } else {
+            self._dataVolumeTable[
+              model.forwardingReport?.forwardProtocol ?? "DIRECT", default: .init()] &+=
+              backingData.aggregatePathReport
+              &- persistentModel.dataTransferReport!.aggregatePathReport
             persistentModel.dataTransferReport?.mergeValues(backingData)
           }
         }

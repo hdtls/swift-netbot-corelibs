@@ -45,35 +45,24 @@
         .first?.currentRequest?.hostname ?? ""
     }
 
-    public func dataTransferred(direction: TrafficDirection) -> Measurement<UnitInformationStorage>
-    {
-      switch direction {
-      case .outbound:
-        return Measurement(
-          value: Double(dataTransferReport?.aggregatePathReport.sentApplicationByteCount ?? 0),
-          unit: .bytes
-        )
-      case .inbound:
-        return Measurement(
-          value: Double(dataTransferReport?.aggregatePathReport.receivedApplicationByteCount ?? 0),
-          unit: .bytes
-        )
+    public func dataVolume(of dataTransfer: DataTransfer) -> Int64 {
+      switch dataTransfer {
+      case .upload:
+        return Int64(
+          clamping: dataTransferReport?.aggregatePathReport.sentApplicationByteCount ?? 0)
+      case .download:
+        return Int64(
+          clamping: dataTransferReport?.aggregatePathReport.receivedApplicationByteCount ?? 0)
       }
     }
 
-    public func transmissionRate(direction: TrafficDirection) -> Measurement<UnitInformationStorage>
-    {
-      switch direction {
-      case .outbound:
-        return Measurement(
-          value: Double(dataTransferReport?.pathReports.first?.sentApplicationByteCount ?? 0),
-          unit: .bytes
-        )
-      case .inbound:
-        return Measurement(
-          value: Double(dataTransferReport?.pathReports.first?.receivedApplicationByteCount ?? 0),
-          unit: .bytes
-        )
+    public func dataTraffic(of dataTransfer: DataTransfer) -> Int64 {
+      switch dataTransfer {
+      case .upload:
+        return Int64(clamping: dataTransferReport?.pathReports.first?.sentApplicationByteCount ?? 0)
+      case .download:
+        return Int64(
+          clamping: dataTransferReport?.pathReports.first?.receivedApplicationByteCount ?? 0)
       }
     }
   }
@@ -87,11 +76,11 @@
       switch options {
       case .traffic:
         return self.sorted { lhs, rhs in
-          lhs.dataTransferred(direction: .inbound) > rhs.dataTransferred(direction: .inbound)
+          lhs.dataVolume(of: .download) > rhs.dataVolume(of: .download)
         }
       case .speed:
         return self.sorted { lhs, rhs in
-          lhs.transmissionRate(direction: .inbound) > rhs.transmissionRate(direction: .inbound)
+          lhs.dataTraffic(of: .download) > rhs.dataTraffic(of: .download)
         }
       case .name:
         return self.sorted(using: SortDescriptor(\.localizedName))
