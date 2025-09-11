@@ -156,7 +156,7 @@
         _searchResult
       }
       private var _searchResult: [Data] = []
-      @ObservationIgnored private var _indexes: [Data.ID: Data] = [:]
+      private var _indexes: [Data.ID: Data] = [:]
       @ObservationIgnored private var _activeIndexes: [Data.ID: Data] = [:]
 
       public var programs: [Program.PersistentModel] {
@@ -166,17 +166,15 @@
       @ObservationIgnored private var _indexesForPrograms:
         [Program.PersistentModel.ID: Program.PersistentModel] = [:]
 
-      public func fetch(_ persistentModelID: Data.ID) -> [Data] {
-        guard let persistentModel = self._indexes[persistentModelID] else {
+      public func fetch(_ id: Data.ID) -> [Data] {
+        guard let persistentModel = self._indexes[id] else {
           return []
         }
         return [persistentModel]
       }
 
-      public func fetch(_ persistentModelID: Program.PersistentModel.ID) -> [Program
-        .PersistentModel]
-      {
-        guard let persistentModel = self._indexesForPrograms[persistentModelID] else {
+      public func fetch(_ id: Program.PersistentModel.ID) -> [Program.PersistentModel] {
+        guard let persistentModel = self._indexesForPrograms[id] else {
           return []
         }
         return [persistentModel]
@@ -318,7 +316,7 @@
           ]
           let _persistentModel = try modelContext.fetch(fd).first
         #else
-          let _persistentModel = self._indexes[model.taskIdentifier]
+          let _persistentModel = self._indexes[model.id]
         #endif
 
         if let _persistentModel {
@@ -331,16 +329,16 @@
             modelContext.insert(persistentModel)
           #else
             self._searchResult.append(persistentModel)
-            self._indexes[model.taskIdentifier] = persistentModel
+            self._indexes[model.id] = persistentModel
           #endif
         }
 
         #if !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
           // Track active status
           if model.state == .active {
-            self._activeIndexes[persistentModel.persistentModelID] = persistentModel
+            self._activeIndexes[persistentModel.id] = persistentModel
           } else {
-            self._activeIndexes[persistentModel.persistentModelID] = nil
+            self._activeIndexes[persistentModel.id] = nil
           }
         #endif
 
@@ -472,7 +470,6 @@
                 persistentModel.dataTransferReport?.pathReports ?? []
               #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
                 modelContext.insert(program)
-                persistentModel.processReport?.program = program
               #else
                 assert(persistentModel.processReport != nil)
                 // FIXME: Retain Cycle
@@ -480,6 +477,7 @@
                 self._programs.append(program)
                 self._indexesForPrograms[backingData.persistentModelID] = program
               #endif
+              persistentModel.processReport?.program = program
             }
 
             // Update data transfer report for program.
