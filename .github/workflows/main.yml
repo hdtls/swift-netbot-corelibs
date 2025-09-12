@@ -11,8 +11,10 @@ jobs:
     secrets:
       PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN  }}
     with:
-      linux_5_9_enabled: false
-      linux_5_10_enabled: false
+      linux_6_0_enabled: true
+      linux_6_1_enabled: true
+      linux_nightly_release_enabled: true
+      linux_nightly_main_enabled: true
       linux_build_command_options: "-Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error"
       linux_nightly_release_build_command_options: "--explicit-target-dependency-import-check error"
       linux_nightly_main_build_command_options: "--explicit-target-dependency-import-check error"
