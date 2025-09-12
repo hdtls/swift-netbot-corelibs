@@ -141,6 +141,14 @@ let package = Package(
   ]
 )
 
+if Context.environment["ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA"] != nil {
+  for target in package.targets {
+    var settings = target.swiftSettings ?? []
+    settings.append(.define("ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA"))
+    target.swiftSettings = settings
+  }
+}
+
 for target in package.targets {
   var settings = target.swiftSettings ?? []
   settings.append(.define("EXTENDED_ALL"))
