@@ -250,10 +250,16 @@
 
           let term = Connection.State.active.rawValue
           var fd = FetchDescriptor<Data>(predicate: #Predicate { $0._state == term })
-          let models =
-            (try? modelContext.fetch(fd).compactMap(\.dataTransferReport?.pathReport)) ?? []
+          let models: [DataTransferReport.PathReport] =
+            (try? modelContext.fetch(fd).compactMap {
+              guard let pathReport = $0.dataTransferReport?.pathReport else { return nil }
+              return DataTransferReport.PathReport(persistentModel: pathReport)
+            }) ?? []
         #else
-          let models = self._activeIndexes.compactMap(\.value.dataTransferReport?.pathReport)
+          let models: [DataTransferReport.PathReport] = self._activeIndexes.compactMap {
+            guard let pathReport = $0.value.dataTransferReport?.pathReport else { return nil }
+            return DataTransferReport.PathReport(persistentModel: pathReport)
+          }
         #endif
 
         Task.detached {
@@ -318,12 +324,18 @@
             \.response,
             \.processReport,
             \.dataTransferReport,
+            \.dataTransferReport?.pathReport,
+            \.dataTransferReport?.aggregatePathReport,
           ]
           let _persistentModel = try modelContext.fetch(fd).first
         #else
           let _persistentModel = self._indexes[model.id]
         #endif
 
+        // If a persistent model with the given identifier already exists,
+        // merge new values into it (update). Otherwise, create a new
+        // persistent model instance for this connection and add it to the
+        // relevant collections or persistent store.
         if let _persistentModel {
           persistentModel = _persistentModel
           persistentModel.mergeValues(model)
@@ -339,7 +351,9 @@
         }
 
         #if !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
-          // Track active status
+          // Track whether this connection is currently active. If so, index
+          // for quick access to active connections; otherwise, remove it
+          // from the active index.
           if model.state == .active {
             self._activeIndexes[persistentModel.id] = persistentModel
           } else {
@@ -347,6 +361,11 @@
           }
         #endif
 
+        // Insert or update the associated originalRequest persistent model
+        // if present in source model.
+        //
+        // This ensures the connection's originalRequest is accurately
+        // reflected in the persistent layer.
         if let backingData = model.originalRequest {
           if persistentModel.originalRequest == nil {
             let originalRequest = Request.PersistentModel()
@@ -360,6 +379,11 @@
           }
         }
 
+        // Insert or update the associated currentRequest persistent model
+        // if present in source model.
+        //
+        // This ensures the connection's currentRequest is accurately
+        // reflected in the persistent layer.
         if let backingData = model.currentRequest {
           if persistentModel.currentRequest == nil {
             let currentRequest = Request.PersistentModel()
@@ -373,6 +397,10 @@
           }
         }
 
+        // Insert or update the associated response persistent model
+        // if present in source model.
+        // This ensures the connection's response is accurately
+        // reflected in the persistent layer.
         if let backingData = model.response {
           if persistentModel.response == nil {
             let response = Response.PersistentModel()
@@ -386,6 +414,11 @@
           }
         }
 
+        // Insert or update the associated establishmentReport persistent
+        // model if present in source model.
+        //
+        // This ensures the connection's establishmentReport is
+        // accurately reflected in the persistent layer.
         if let backingData = model.establishmentReport {
           if persistentModel.establishmentReport == nil {
             let establishmentReport = EstablishmentReport.PersistentModel()
@@ -399,31 +432,78 @@
           }
         }
 
+        // Handle insertion and updates for DataTransferReport and
+        // associated path reports.
+        //
+        // This block manages both creation of new DataTransferReport
+        // instances and merging updates into existing ones, while also
+        // maintaining aggregate path report data for forwarding protocols.
         if let backingData = model.dataTransferReport {
           if persistentModel.dataTransferReport == nil {
+            // If no existing DataTransferReport, create a new one along with
+            // its related path reports.
+            // Insert these new objects into the model context if applicable.
+            // This initializes the data structure necessary to track transfer
+            // metrics.
             let dataTransferReport = DataTransferReport.PersistentModel()
             dataTransferReport.mergeValues(backingData)
             #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
               modelContext.insert(dataTransferReport)
             #endif
 
-            let key = model.forwardingReport?.forwardProtocol ?? "DIRECT"
-            var aggregatePathReport = self._aggregatePathReportTable[key, default: .init()]
-            aggregatePathReport &+= backingData.aggregatePathReport
-            self._aggregatePathReportTable[key, default: .init()] = aggregatePathReport
+            let aggregatePathReport = V1._PathReport()
+            aggregatePathReport.mergeValues(backingData.aggregatePathReport)
+            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+              modelContext.insert(aggregatePathReport)
+            #endif
+            dataTransferReport.aggregatePathReport = aggregatePathReport
+
+            let pathReport = V1._PathReport()
+            pathReport.mergeValues(backingData.pathReport)
+            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+              modelContext.insert(pathReport)
+            #endif
+            dataTransferReport.pathReport = pathReport
 
             persistentModel.dataTransferReport = dataTransferReport
-          } else {
+
+            // Update the aggregate path report table for the forwarding
+            // protocol or "DIRECT" if none.
+            //
+            // This allows quick access to cumulative transfer data by protocol.
             let key = model.forwardingReport?.forwardProtocol ?? "DIRECT"
-            var aggregatePathReport = self._aggregatePathReportTable[key, default: .init()]
-            aggregatePathReport &+=
+            self._aggregatePathReportTable[key, default: .init()] &+=
               backingData.aggregatePathReport
-              &- persistentModel.dataTransferReport!.aggregatePathReport
-            self._aggregatePathReportTable[key] = aggregatePathReport
+          } else {
+            // If a DataTransferReport already exists, merge new values
+            // into it and its path reports.
+            //
+            // This ensures metrics are kept up to date without losing
+            // existing data.
+            //
+            // The aggregate path report table is updated by adding the new
+            // aggregate data and subtracting the old to maintain accurate
+            // cumulative totals.
+            assert(persistentModel.dataTransferReport?.aggregatePathReport != nil)
+            assert(persistentModel.dataTransferReport?.pathReport != nil)
+            let aggregatePathReport = DataTransferReport.PathReport(
+              persistentModel: persistentModel.dataTransferReport!.aggregatePathReport!
+            )
+
+            persistentModel.dataTransferReport?.aggregatePathReport?.mergeValues(
+              backingData.aggregatePathReport)
+            persistentModel.dataTransferReport?.pathReport?.mergeValues(backingData.pathReport)
             persistentModel.dataTransferReport?.mergeValues(backingData)
+
+            let key = model.forwardingReport?.forwardProtocol ?? "DIRECT"
+            self._aggregatePathReportTable[key, default: .init()] &+=
+              backingData.aggregatePathReport &- aggregatePathReport
           }
         }
 
+        // Insert or update ProcessReport and handle associated Program linkage.
+        // Ensures process records are unique and that data-aggregation for
+        // programs is maintained and up-to-date.
         if let backingData = model.processReport {
           if persistentModel.processReport == nil {
             let processReport = ProcessReport.PersistentModel()
@@ -440,7 +520,8 @@
           }
 
           if let backingData = backingData.program {
-            // Prevents duplicate Process objects from being created for the same underlying process.
+            // Prevents duplicate Process objects from being created for the
+            // same underlying process.
             var program: Program.PersistentModel
             #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
               let _program = try modelContext.fetch(
@@ -453,10 +534,10 @@
               let _program = self._indexesForPrograms[backingData.persistentModelID]
             #endif
 
-            // Ensures that every referenced process actually exists in the database, even if it’s new.
+            // Ensures that every referenced process actually exists in the database,
+            // even if it’s new.
             if let _program {
               program = _program
-              program.mergeValues(backingData)
               if persistentModel.processReport?.program == nil {
                 persistentModel.processReport?.program = program
                 #if !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
@@ -465,48 +546,67 @@
                     $0.connection?.persistentModelID == persistentModel.persistentModelID
                   }
                   if !inserted {
-                    program.processReports.append(persistentModel.processReport.unsafelyUnwrapped)
+                    program.processReports.append(persistentModel.processReport!)
                   }
                 #endif
               }
             } else {
               program = Program.PersistentModel()
               program.mergeValues(backingData)
-              program.dataTransferReport = .init()
-              program.dataTransferReport?.aggregatePathReport =
-                persistentModel.dataTransferReport?.aggregatePathReport ?? .init()
-              program.dataTransferReport?.pathReport =
-                persistentModel.dataTransferReport?.pathReport ?? .init()
               #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
                 modelContext.insert(program)
               #else
                 assert(persistentModel.processReport != nil)
                 // FIXME: Retain Cycle
-                program.processReports.append(persistentModel.processReport.unsafelyUnwrapped)
+                program.processReports.append(persistentModel.processReport!)
                 self._programs.append(program)
                 self._indexesForPrograms[backingData.persistentModelID] = program
               #endif
               persistentModel.processReport?.program = program
+
+              let dataTransferReport = V1._DataTransferReport()
+              #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+                modelContext.insert(dataTransferReport)
+              #endif
+              program.dataTransferReport = dataTransferReport
+
+              let aggregatePathReport = V1._PathReport()
+              #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+                modelContext.insert(aggregatePathReport)
+              #endif
+              dataTransferReport.aggregatePathReport = aggregatePathReport
+
+              let pathReport = V1._PathReport()
+              #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+                modelContext.insert(pathReport)
+              #endif
+              dataTransferReport.pathReport = pathReport
             }
 
-            // Update data transfer report for program.
+            assert(program.dataTransferReport?.aggregatePathReport != nil)
+            assert(program.dataTransferReport?.pathReport != nil)
             var aggregatePathReport = DataTransferReport.PathReport()
             var pathReport = DataTransferReport.PathReport()
+
             for dataTransferReport in program.processReports.compactMap(
               \.connection?.dataTransferReport)
             {
-              aggregatePathReport &+= dataTransferReport.aggregatePathReport
-              pathReport &+= dataTransferReport.pathReport
+              if let persistentModel = dataTransferReport.aggregatePathReport {
+                aggregatePathReport &+= .init(persistentModel: persistentModel)
+              }
+              if let persistentModel = dataTransferReport.pathReport {
+                pathReport &+= .init(persistentModel: persistentModel)
+              }
             }
 
-            program.dataTransferReport?.aggregatePathReport = aggregatePathReport
+            program.dataTransferReport?.aggregatePathReport?.mergeValues(aggregatePathReport)
+            program.dataTransferReport?.pathReport?.mergeValues(pathReport)
             program.dataTransferReport?.aggregatePathReportFormatted = .init(
               sentApplicationByteCount: aggregatePathReport.sentApplicationByteCount
                 .formatted(.byteCount(style: .binary, spellsOutZero: false)),
               receivedApplicationByteCount: aggregatePathReport.receivedApplicationByteCount
                 .formatted(.byteCount(style: .binary, spellsOutZero: false))
             )
-            program.dataTransferReport?.pathReport = pathReport
             program.dataTransferReport?.pathReportFormatted = .init(
               sentApplicationByteCount: pathReport.sentApplicationByteCount
                 .formatted(.byteCount(style: .binary, spellsOutZero: false)),

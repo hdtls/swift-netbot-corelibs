@@ -39,8 +39,8 @@
       processReports
         .compactMap { $0.connection }
         .sorted { lhs, rhs in
-          (lhs.dataTransferReport?.aggregatePathReport.receivedApplicationByteCount ?? 0)
-            > (rhs.dataTransferReport?.aggregatePathReport.receivedApplicationByteCount ?? 0)
+          (lhs.dataTransferReport?.aggregatePathReport?.receivedApplicationByteCount ?? 0)
+            > (rhs.dataTransferReport?.aggregatePathReport?.receivedApplicationByteCount ?? 0)
         }
         .first?.currentRequest?.hostname ?? ""
     }
@@ -55,13 +55,13 @@
       switch options {
       case .traffic:
         return self.sorted { lhs, rhs in
-          lhs.dataTransferReport?.aggregatePathReport.receivedApplicationByteCount ?? 0 > rhs
-            .dataTransferReport?.aggregatePathReport.receivedApplicationByteCount ?? 0
+          lhs.dataTransferReport?.aggregatePathReport?.receivedApplicationByteCount ?? 0 > rhs
+            .dataTransferReport?.aggregatePathReport?.receivedApplicationByteCount ?? 0
         }
       case .speed:
         return self.sorted { lhs, rhs in
-          lhs.dataTransferReport?.pathReport.receivedApplicationByteCount ?? 0 > rhs
-            .dataTransferReport?.pathReport.receivedApplicationByteCount ?? 0
+          lhs.dataTransferReport?.pathReport?.receivedApplicationByteCount ?? 0 > rhs
+            .dataTransferReport?.pathReport?.receivedApplicationByteCount ?? 0
         }
       case .name:
         return self.sorted(using: SortDescriptor(\.localizedName))
