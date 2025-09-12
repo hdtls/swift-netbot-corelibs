@@ -15,50 +15,9 @@
   @available(SwiftStdlib 5.9, *)
   extension Connection.PersistentModel {
 
-    /// Formatted earliest begin date.
-    public var formattedEarliestBeginDate: String {
-      earliestBeginDate.formatted(.dateTime.hour().minute().second())
-    }
-
-    /// Formatted data transfer duration.
-    public var duration: String {
-      self.dataTransferReport?.duration
-        .formatted(
-          .units(
-            allowed: [.hours, .minutes, .seconds, .milliseconds],
-            width: .narrow,
-            maximumUnitCount: 2
-          )
-        ) ?? "0ms"
-    }
-
     /// Pretty printed forwarding policy.
     public var forwardingPolicy: String {
       "\(forwardingReport?.forwardProtocol ?? "FINAL") (\(forwardingReport?.forwardingRule ?? "*"))"
-    }
-
-    /// Formatted total received application byte count of the connection.
-    public var receivedApplicationByteCount: String {
-      Int64(clamping: dataTransferReport?.aggregatePathReport.receivedApplicationByteCount ?? 0)
-        .formatted(.byteCount(style: .binary, spellsOutZero: false))
-    }
-
-    /// Formatted total sent application byte count of the connection.
-    public var sentApplicationByteCount: String {
-      Int64(clamping: dataTransferReport?.aggregatePathReport.sentApplicationByteCount ?? 0)
-        .formatted(.byteCount(style: .binary, spellsOutZero: false))
-    }
-
-    public var realtimeUploadSpeedString: String {
-      Int64(clamping: dataTransferReport?.pathReports.first?.sentApplicationByteCount ?? 0)
-        .formatted(.byteCount(style: .binary, spellsOutZero: false))
-        .appending("/s")
-    }
-
-    public var realtimeDownloadSpeedString: String {
-      Int64(clamping: dataTransferReport?.pathReports.first?.receivedApplicationByteCount ?? 0)
-        .formatted(.byteCount(style: .binary, spellsOutZero: false))
-        .appending("/s")
     }
 
     public var maximumUploadBandwidthString: String { "" }
@@ -71,11 +30,6 @@
         return "TCP"
       }
       return (httpRequest.scheme ?? "TCP").uppercased()
-    }
-
-    /// The `URL` string of the current request of the `Connection`.
-    public var currentRequestURLString: String {
-      currentRequest?.url() ?? ""
     }
   }
 

@@ -44,27 +44,6 @@
         }
         .first?.currentRequest?.hostname ?? ""
     }
-
-    public func dataVolume(of dataTransfer: DataTransfer) -> Int64 {
-      switch dataTransfer {
-      case .upload:
-        return Int64(
-          clamping: dataTransferReport?.aggregatePathReport.sentApplicationByteCount ?? 0)
-      case .download:
-        return Int64(
-          clamping: dataTransferReport?.aggregatePathReport.receivedApplicationByteCount ?? 0)
-      }
-    }
-
-    public func dataTraffic(of dataTransfer: DataTransfer) -> Int64 {
-      switch dataTransfer {
-      case .upload:
-        return Int64(clamping: dataTransferReport?.pathReports.first?.sentApplicationByteCount ?? 0)
-      case .download:
-        return Int64(
-          clamping: dataTransferReport?.pathReports.first?.receivedApplicationByteCount ?? 0)
-      }
-    }
   }
 
   @available(SwiftStdlib 5.9, *)
@@ -76,11 +55,13 @@
       switch options {
       case .traffic:
         return self.sorted { lhs, rhs in
-          lhs.dataVolume(of: .download) > rhs.dataVolume(of: .download)
+          lhs.dataTransferReport?.aggregatePathReport.receivedApplicationByteCount ?? 0 > rhs
+            .dataTransferReport?.aggregatePathReport.receivedApplicationByteCount ?? 0
         }
       case .speed:
         return self.sorted { lhs, rhs in
-          lhs.dataTraffic(of: .download) > rhs.dataTraffic(of: .download)
+          lhs.dataTransferReport?.pathReport.receivedApplicationByteCount ?? 0 > rhs
+            .dataTransferReport?.pathReport.receivedApplicationByteCount ?? 0
         }
       case .name:
         return self.sorted(using: SortDescriptor(\.localizedName))

@@ -190,11 +190,15 @@
     }
     private var _fetchError: LocalizedError?
 
+    public var pathReportFormatted: DataTransferReport.PersistentModel.PathReportFormatted {
+      _pathReportFormatted
+    }
+    private var _pathReportFormatted = DataTransferReport.PersistentModel.PathReportFormatted()
+
     nonisolated private let logger = Logger(label: "com.tenbits.netbot.dashboard")
     nonisolated private let dependency: any ConnectionsDependency
     private var earliestBeginDate = Date.distantPast
-    private var _dataTraffic = DataTransferReport.PathReport()
-    private var _dataVolumeTable: [String: DataTransferReport.PathReport] = [:]
+    private var _aggregatePathReportTable: [String: DataTransferReport.PathReport] = [:]
     private var timerSource: DispatchSourceTimer?
 
     nonisolated public convenience init() {
@@ -224,12 +228,13 @@
       self._fetchError = nil
       self.dependency.run()
 
-      Task { [weak self] in
+      Task.detached { [weak self] in
         guard let self else { return }
 
         for await message in dependency.messages {
           do {
-            try performBatchUpdates(message.get())
+            let models = try message.get()
+            await performBatchUpdates(models)
           } catch {
             logger.error("\(error)")
           }
@@ -245,15 +250,24 @@
 
           let term = Connection.State.active.rawValue
           var fd = FetchDescriptor<Data>(predicate: #Predicate { $0._state == term })
-          let models = (try? modelContext.fetch(fd)) ?? []
+          let models =
+            (try? modelContext.fetch(fd).compactMap(\.dataTransferReport?.pathReport)) ?? []
         #else
-          let models = self._activeIndexes.map(\.value) as [Data]
+          let models = self._activeIndexes.compactMap(\.value.dataTransferReport?.pathReport)
         #endif
-        self._dataTraffic =
-          models
-          .reduce(DataTransferReport.PathReport()) { nextPartialResult, nextElement in
-            nextPartialResult &+ (nextElement.dataTransferReport?.pathReports.first ?? .init())
+
+        Task.detached {
+          let pathReport = models.reduce(DataTransferReport.PathReport()) { $0 &+ $1 }
+          let pathReportFormatted = DataTransferReport.PersistentModel.PathReportFormatted(
+            sentApplicationByteCount: pathReport.sentApplicationByteCount
+              .formatted(.byteCount(style: .binary, spellsOutZero: false)),
+            receivedApplicationByteCount: pathReport.receivedApplicationByteCount
+              .formatted(.byteCount(style: .binary, spellsOutZero: false))
+          )
+          await MainActor.run {
+            self._pathReportFormatted = pathReportFormatted
           }
+        }
       }
       timerSource?.resume()
     }
@@ -263,32 +277,23 @@
       self.dependency.shutdownGracefully()
     }
 
-    public func dataVolume(of dataTransfer: DataTransfer, forwardProtocol: String? = nil) -> Int64 {
-      let dataTransferReport: DataTransferReport.PathReport
+    public func aggregatePathReportFormatted(forwardProtocol: String? = nil)
+      -> DataTransferReport.PersistentModel.PathReportFormatted
+    {
+      var aggregatePathReport: DataTransferReport.PathReport
 
       if let forwardProtocol {
-        dataTransferReport = self._dataVolumeTable[forwardProtocol, default: .init()]
+        aggregatePathReport = self._aggregatePathReportTable[forwardProtocol, default: .init()]
       } else {
-        dataTransferReport = self._dataVolumeTable.values.reduce(into: .init()) {
-          $0 &+= $1
-        }
+        aggregatePathReport = self._aggregatePathReportTable.values.reduce(.init()) { $0 &+ $1 }
       }
 
-      switch dataTransfer {
-      case .upload:
-        return Int64(clamping: dataTransferReport.sentApplicationByteCount)
-      case .download:
-        return Int64(clamping: dataTransferReport.receivedApplicationByteCount)
-      }
-    }
-
-    public func dataTraffic(of dataTransfer: DataTransfer) -> Int64 {
-      switch dataTransfer {
-      case .upload:
-        return Int64(clamping: self._dataTraffic.sentApplicationByteCount)
-      case .download:
-        return Int64(clamping: self._dataTraffic.receivedApplicationByteCount)
-      }
+      return .init(
+        sentApplicationByteCount: aggregatePathReport.sentApplicationByteCount
+          .formatted(.byteCount(style: .binary, spellsOutZero: false)),
+        receivedApplicationByteCount: aggregatePathReport.receivedApplicationByteCount
+          .formatted(.byteCount(style: .binary, spellsOutZero: false))
+      )
     }
 
     /// Updates the underlying value of the stored value.
@@ -402,15 +407,19 @@
               modelContext.insert(dataTransferReport)
             #endif
 
-            self._dataVolumeTable[
-              model.forwardingReport?.forwardProtocol ?? "DIRECT", default: .init()] &+=
-              backingData.aggregatePathReport
+            let key = model.forwardingReport?.forwardProtocol ?? "DIRECT"
+            var aggregatePathReport = self._aggregatePathReportTable[key, default: .init()]
+            aggregatePathReport &+= backingData.aggregatePathReport
+            self._aggregatePathReportTable[key, default: .init()] = aggregatePathReport
+
             persistentModel.dataTransferReport = dataTransferReport
           } else {
-            self._dataVolumeTable[
-              model.forwardingReport?.forwardProtocol ?? "DIRECT", default: .init()] &+=
+            let key = model.forwardingReport?.forwardProtocol ?? "DIRECT"
+            var aggregatePathReport = self._aggregatePathReportTable[key, default: .init()]
+            aggregatePathReport &+=
               backingData.aggregatePathReport
               &- persistentModel.dataTransferReport!.aggregatePathReport
+            self._aggregatePathReportTable[key] = aggregatePathReport
             persistentModel.dataTransferReport?.mergeValues(backingData)
           }
         }
@@ -466,8 +475,8 @@
               program.dataTransferReport = .init()
               program.dataTransferReport?.aggregatePathReport =
                 persistentModel.dataTransferReport?.aggregatePathReport ?? .init()
-              program.dataTransferReport?.pathReports =
-                persistentModel.dataTransferReport?.pathReports ?? []
+              program.dataTransferReport?.pathReport =
+                persistentModel.dataTransferReport?.pathReport ?? .init()
               #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
                 modelContext.insert(program)
               #else
@@ -487,10 +496,23 @@
               \.connection?.dataTransferReport)
             {
               aggregatePathReport &+= dataTransferReport.aggregatePathReport
-              pathReport &+= dataTransferReport.pathReports.first ?? .init()
+              pathReport &+= dataTransferReport.pathReport
             }
+
             program.dataTransferReport?.aggregatePathReport = aggregatePathReport
-            program.dataTransferReport?.pathReports = [pathReport]
+            program.dataTransferReport?.aggregatePathReportFormatted = .init(
+              sentApplicationByteCount: aggregatePathReport.sentApplicationByteCount
+                .formatted(.byteCount(style: .binary, spellsOutZero: false)),
+              receivedApplicationByteCount: aggregatePathReport.receivedApplicationByteCount
+                .formatted(.byteCount(style: .binary, spellsOutZero: false))
+            )
+            program.dataTransferReport?.pathReport = pathReport
+            program.dataTransferReport?.pathReportFormatted = .init(
+              sentApplicationByteCount: pathReport.sentApplicationByteCount
+                .formatted(.byteCount(style: .binary, spellsOutZero: false)),
+              receivedApplicationByteCount: pathReport.receivedApplicationByteCount
+                .formatted(.byteCount(style: .binary, spellsOutZero: false))
+            )
           }
         }
       }
