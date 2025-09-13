@@ -35,14 +35,14 @@
 
   @available(SwiftStdlib 5.3, *)
   extension Data {
-    public var textLiteral: String {
+    public func formatted() -> String {
       String(data: self, encoding: .utf8) ?? "No Data".localizedCapitalized
     }
   }
 
   @available(SwiftStdlib 5.3, *)
   extension HTTPRequest {
-    public var textLiteral: String {
+    public func formatted() -> String {
       """
       \(method) \(host(percentEncoded: false) ?? ""):\(port ?? 443) HTTP/1.1
       Host: \(host(percentEncoded: false) ?? "")
@@ -53,7 +53,7 @@
 
   @available(SwiftStdlib 5.3, *)
   extension HTTPResponse {
-    public var textLiteral: String {
+    public func formatted() -> String {
       """
       HTTP/1.1 \(status)
       \(headerFields.map  { "\($0.name): \($0.value)" }.joined(separator: "\n"))
