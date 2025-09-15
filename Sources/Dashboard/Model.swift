@@ -414,6 +414,42 @@
           }
         }
 
+        // Insert or update the associated forwardingReport persistent
+        // model if present in source model.
+        //
+        // This ensures the connection's forwardingReport is
+        // accurately reflected in the persistent layer.
+        if let backingData = model.dnsResolutionReport {
+          if persistentModel.dnsResolutionReport == nil {
+            let dnsResolutionReport = DNSResolutionReport.PersistentModel()
+            dnsResolutionReport.mergeValues(backingData)
+            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+              modelContext.insert(dnsResolutionReport)
+            #endif
+            persistentModel.dnsResolutionReport = dnsResolutionReport
+          } else {
+            persistentModel.dnsResolutionReport?.mergeValues(backingData)
+          }
+        }
+
+        // Insert or update the associated forwardingReport persistent
+        // model if present in source model.
+        //
+        // This ensures the connection's forwardingReport is
+        // accurately reflected in the persistent layer.
+        if let backingData = model.forwardingReport {
+          if persistentModel.forwardingReport == nil {
+            let forwardingReport = ForwardingReport.PersistentModel()
+            forwardingReport.mergeValues(backingData)
+            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+              modelContext.insert(forwardingReport)
+            #endif
+            persistentModel.forwardingReport = forwardingReport
+          } else {
+            persistentModel.forwardingReport?.mergeValues(backingData)
+          }
+        }
+
         // Insert or update the associated establishmentReport persistent
         // model if present in source model.
         //
