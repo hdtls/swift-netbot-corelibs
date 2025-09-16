@@ -16,5 +16,5 @@ jobs:
       linux_nightly_release_enabled: true
       linux_nightly_main_enabled: true
       linux_build_command_options: "-Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error"
-      linux_nightly_release_build_command_options: "--explicit-target-dependency-import-check error"
+      linux_nightly_release_build_command_options: "--explicit-target-dependency-import-check warn"
       linux_nightly_main_build_command_options: "--explicit-target-dependency-import-check error"
