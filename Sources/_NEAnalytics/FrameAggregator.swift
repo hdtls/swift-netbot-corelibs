@@ -36,9 +36,8 @@ final class WebSocketFrameAggregator: ChannelInboundHandler, ChannelOutboundHand
       var unmaskedData = frame.unmaskedData
       let code = unmaskedData.readWebSocketErrorCode() ?? .unknown(1005)
       close(context: context, code: code, promise: promise)
-      let context = NIOLoopBound(context, eventLoop: context.eventLoop)
-      promise.futureResult.whenComplete { _ in
-        context.value.close(promise: nil)
+      promise.futureResult.assumeIsolatedUnsafeUnchecked().whenComplete { _ in
+        context.close(promise: nil)
       }
     case .ping:
       guard frame.fin else {
