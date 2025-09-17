@@ -81,11 +81,18 @@ public actor AnalyzerBot: Actor {
 
   /// Start analyzer tunnel.
   public func run() async throws {
+    #if os(macOS)
+      let toolVersion = try await PHT.toolVersion()
+      logger.trace("PHT version: \(toolVersion)")
+    #endif
     try await self.core.run()
   }
 
   /// Stop current running analyzer tunnel.
   public func shutdownGracefully() async {
+    #if os(macOS)
+      try? await self.setNWProtocolProxiesOptions(.init())
+    #endif
     try? await self.core.shutdownGracefully()
   }
 
