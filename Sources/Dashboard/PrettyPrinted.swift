@@ -31,6 +31,11 @@
       }
       return (httpRequest.scheme ?? "TCP").uppercased()
     }
+
+    /// A boolean value determinse whether the connection is in an active state.
+    ///
+    /// Please note both `establising` and `active` is consider active.
+    public var isActive: Bool { state == .establishing || state == .active }
   }
 
   @available(SwiftStdlib 5.3, *)

@@ -354,7 +354,7 @@
           // Track whether this connection is currently active. If so, index
           // for quick access to active connections; otherwise, remove it
           // from the active index.
-          if model.state == .active {
+          if model.state == .establishing || model.state == .active {
             self._activeIndexes[persistentModel.id] = persistentModel
           } else {
             self._activeIndexes[persistentModel.id] = nil
