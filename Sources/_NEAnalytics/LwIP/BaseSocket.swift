@@ -75,6 +75,10 @@ class BaseSocket: BaseSocketProtocol {
     if errno != 0 {
       throw IOError(errnoCode: errno, reason: "close")
     }
+    tcp_arg(self.descriptor, nil)
+    tcp_recv(self.descriptor, nil)
+    tcp_sent(self.descriptor, nil)
+    tcp_err(self.descriptor, nil)
     self.isOpen = false
   }
 }

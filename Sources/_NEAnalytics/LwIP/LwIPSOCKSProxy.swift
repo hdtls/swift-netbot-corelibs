@@ -84,11 +84,13 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
   private func newConnectionHandler(_ connection: LwIPConnection) {
     Task {
       try await withThrowingTaskGroup(of: Void.self) { g in
-        g.addTask {
+        g.addTask { [weak self] in
+          guard let self else { return }
           try await connection.closeFuture.get()
           self.logger.trace("LwIP connection closed")
         }
-        g.addTask {
+        g.addTask { [weak self] in
+          guard let self else { return }
           guard let destination = connection.localAddress, let host = destination.ipAddress,
             let port = destination.port
           else {

@@ -49,33 +49,51 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
     tcp_arg(self.socket.descriptor, opaquePtr)
   }
 
+  deinit {
+    assert(inputClosed == true)
+    assert(outputClosed == true)
+    assert(pendingWrites.isEmpty)
+  }
+
   override func close0(error: any Error, mode: CloseMode, promise: EventLoopPromise<Void>?) {
     self.eventLoop.assertInEventLoop()
     switch mode {
     case .output:
-      tcp_sent(self.socket.descriptor, nil)
-      self.outputClosed = true
-      self.pipeline.fireUserInboundEventTriggered(ChannelEvent.outputClosed)
-      if self.inputClosed {
-        self.close0(error: ChannelError.ioOnClosedChannel, mode: .all, promise: promise)
+      if self.outputClosed {
+        promise?.fail(ChannelError.outputClosed)
         return
       }
+      if self.inputClosed {
+        self.close0(error: error, mode: .all, promise: promise)
+        return
+      }
+
+      tcp_sent(self.socket.descriptor, nil)
+      while let pendingWrite = self.pendingWrites.popFirst() {
+        pendingWrite.promise?.fail(error)
+      }
+      self.outputClosed = true
+      self.pipeline.fireUserInboundEventTriggered(ChannelEvent.outputClosed)
     case .input:
+      if self.inputClosed {
+        promise?.fail(ChannelError.inputClosed)
+        return
+      }
+      if self.outputClosed {
+        self.close0(error: error, mode: .all, promise: promise)
+        return
+      }
+
       tcp_recv(self.socket.descriptor, nil)
       self.readPending = false
       self.inputClosed = true
       self.pipeline.fireUserInboundEventTriggered(ChannelEvent.inputClosed)
-      if self.outputClosed {
-        self.close0(error: ChannelError.ioOnClosedChannel, mode: .all, promise: promise)
-        return
-      }
     case .all:
-      tcp_arg(self.socket.descriptor, nil)
-      tcp_recv(self.socket.descriptor, nil)
-      tcp_sent(self.socket.descriptor, nil)
-      tcp_err(self.socket.descriptor, nil)
       self.inputClosed = true
       self.outputClosed = true
+      while let pendingWrite = self.pendingWrites.popFirst() {
+        pendingWrite.promise?.fail(error)
+      }
       super.close0(error: error, mode: mode, promise: promise)
     }
   }

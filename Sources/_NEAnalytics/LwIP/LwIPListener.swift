@@ -94,7 +94,18 @@ final class LwIPListener: BaseSocketChannel<ServerSocket>, @unchecked Sendable {
       p.succeed()
     } catch {
       p.fail(error)
+      self.newConnectionHandler = nil
     }
+  }
+
+  override func close0(error: any Error, mode: CloseMode, promise: EventLoopPromise<Void>?) {
+    switch mode {
+    case .input, .all:
+      self.newConnectionHandler = nil
+    default:
+      break
+    }
+    super.close0(error: error, mode: mode, promise: promise)
   }
 
   final override func hasFlushedPendingWrites() -> Bool {
