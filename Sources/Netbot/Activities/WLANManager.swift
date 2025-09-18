@@ -43,14 +43,14 @@
     public struct NetworkService: Hashable, Sendable {
       public struct IPv4: Hashable, Sendable {
         public var configMethod: String = ""
-        public var router: String = ""
+        public var router: String? = ""
         public var addresses: [String] = []
         public var subnetMasks: [String] = []
       }
 
       public struct IPv6: Hashable, Sendable {
         public var configMethod: String = ""
-        public var router: String = ""
+        public var router: String? = ""
         public var addresses: [String] = []
         public var flags: [String] = []
         public var prefixLength: String = ""
