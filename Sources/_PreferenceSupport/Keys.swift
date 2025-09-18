@@ -24,7 +24,7 @@ extension Prefs.Name {
   public static let showMainWindowAfterLaunching = "Appearence - Show Main Window After Launching"
   public static let shouldGrayOutStatusBarItem = "Appearence - Should Gray Out Status Bar Item"
   public static let shouldCollapsePolicyGroupIfThereAreMoreThanFiveItems = "Appearence - Should Collapse Policy Group if There Are More Than Five Items"
-  public static let maximumNumberOfProcesses = "Appearence - Maximum Number of Processes Displayed"
+  public static let processFetchLimit = "Appearence - Maximum Number of Processes Displayed"
 
   #if EXTENDED_ALL
     public static let showNetworkConnectivityQualilty = "Appearence - Show Network Connectivity Quality"

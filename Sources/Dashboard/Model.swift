@@ -20,6 +20,10 @@
     import Network
   #endif
 
+  #if canImport(NetworkExtension)
+    import NetworkExtension
+  #endif
+
   @available(SwiftStdlib 5.3, *)
   public enum DataTransfer: Hashable, Sendable {
     case upload
@@ -62,27 +66,51 @@
 
   @available(SwiftStdlib 5.3, *)
   final private class DefaultConnectionsDependency: ConnectionsDependency {
-    public let messages: AsyncStream<Result<[Connection], LocalizedError>>
-    private let continuation: AsyncStream<Result<[Connection], LocalizedError>>.Continuation
+    public var messages: AsyncStream<Result<[Connection], LocalizedError>> {
+      stream.0
+    }
+    private var continuation: AsyncStream<Result<[Connection], LocalizedError>>.Continuation {
+      stream.1
+    }
 
+    private typealias Stream = AsyncStream<Result<[Connection], LocalizedError>>
+
+    @LockableTracked private var stream: (Stream, Stream.Continuation)
     #if canImport(Network)
-      private let connection = NIOLockedValueBox<NWConnection?>(nil)
+      @LockableTracked private var connection: NWConnection
     #endif
 
     private nonisolated let logger = Logger(label: "com.tenbits.netbot.dashboard")
 
     public init() {
-      (messages, continuation) = AsyncStream<Result<[Connection], LocalizedError>>.makeStream()
+      self._stream = .init(AsyncStream<Result<[Connection], LocalizedError>>.makeStream())
+      #if canImport(Network)
+        self._connection = .init(
+          NWConnection(
+            to: .url(URL(string: "ws://127.0.0.1:6170")!),
+            using: .tcp
+          ))
+      #endif
+    }
+
+    deinit {
+      shutdownGracefully()
     }
 
     #if canImport(Network)
       public func run() {
+        // Before we can re-run, we should shutdown previous running job first.
+        shutdownGracefully()
+
+        self._stream.withLock {
+          $0 = AsyncStream<Result<[Connection], LocalizedError>>.makeStream()
+        }
+
         let parameters = NWParameters.tcp
         let options = NWProtocolWebSocket.Options()
         parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
-        let connection = self.connection.withLockedValue {
+        self._connection.withLock {
           $0 = NWConnection(to: .url(URL(string: "ws://127.0.0.1:6170")!), using: parameters)
-          return $0!
         }
         connection.stateUpdateHandler = { [weak self] state in
           guard let self else { return }
@@ -124,6 +152,7 @@
             logger.error("Fetch connections failure with error: \(error.localizedDescription)")
             continuation.yield(.failure(.nw(error)))
           case .cancelled:
+            // We have finished continuation immediately when shutdown, so there we do nothing.
             break
           @unknown default:
             continuation.yield(.failure(.operationUnsupported))
@@ -137,7 +166,12 @@
       }
     #endif
 
-    public func shutdownGracefully() {}
+    public func shutdownGracefully() {
+      #if canImport(Network)
+        self.connection.cancel()
+      #endif
+      self.continuation.finish()
+    }
   }
 
   @available(SwiftStdlib 5.9, *)
@@ -201,6 +235,14 @@
     private var _aggregatePathReportTable: [String: DataTransferReport.PathReport] = [:]
     private var timerSource: DispatchSourceTimer?
 
+    #if canImport(NetworkExtension)
+      #if swift(>=6.2)
+        private var vpnStatusObservationTask: Task<Void, Never>?
+      #else
+        nonisolated private let vpnStatusObservationTask: Mutex<Task<Void, Never>?>
+      #endif
+    #endif
+
     nonisolated public convenience init() {
       #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
         let schema = Schema(versionedSchema: V1.self)
@@ -213,21 +255,75 @@
     }
 
     #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
-      nonisolated public init(modelContainer: ModelContainer, dependency: any ConnectionsDependency)
-      {
-        self.modelContainer = modelContainer
-        self.dependency = dependency
+      nonisolated public convenience init(
+        modelContainer: ModelContainer, dependency: any ConnectionsDependency
+      ) {
+        self.init(_modelContainer: modelContainer, dependency: dependency)
       }
     #else
-      nonisolated public init(dependency: any ConnectionsDependency) {
-        self.dependency = dependency
+      nonisolated public convenience init(dependency: any ConnectionsDependency) {
+        self.init(_modelContainer: nil, dependency: dependency)
       }
+    #endif
+
+    nonisolated private init(_modelContainer: Any?, dependency: any ConnectionsDependency) {
+      self.dependency = dependency
+      #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+        self.modelContainer = _modelContainer as! ModelContainer
+      #endif
+
+      #if canImport(NetworkExtension)
+        #if swift(>=6.2)
+          Task { @MainActor [weak self] in
+            self?.vpnStatusObservationTask = Task {
+              for await notification in NotificationCenter.default.notifications(
+                named: .NEVPNStatusDidChange)
+              {
+                guard let self, let connection = notification.object as? NEVPNConnection else {
+                  return
+                }
+                switch connection.status {
+                case .disconnected:
+                  await MainActor.run {
+                    self.cancel()
+                  }
+                case .connected:
+                  await MainActor.run {
+                    self.resume()
+                  }
+                default:
+                  break
+                }
+              }
+            }
+          }
+        #else
+          self.vpnStatusObservationTask = .init(nil)
+          self.vpnStatusObservationTask.withLock { $0 = task }
+        #endif
+      #endif
+    }
+
+    #if canImport(NetworkExtension)
+      #if swift(>=6.2)
+        isolated deinit {
+          vpnStatusObservationTask?.cancel()
+        }
+      #else
+        deinit {
+          vpnStatusObservationTask.withLock {
+            $0?.cancel()
+          }
+        }
+      #endif
     #endif
 
     public func resume() {
       self._fetchError = nil
       self.dependency.run()
 
+      // This task will finished when we call cancel() so we don't
+      // need hold task and cancel it manully.
       Task.detached { [weak self] in
         guard let self else { return }
 
