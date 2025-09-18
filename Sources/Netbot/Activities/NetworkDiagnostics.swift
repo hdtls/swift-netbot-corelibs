@@ -47,7 +47,7 @@
         }
       }
     }
-    
+
     /// DNS latency in ms.
     public var dnsLatency = "N/Ams"
 
