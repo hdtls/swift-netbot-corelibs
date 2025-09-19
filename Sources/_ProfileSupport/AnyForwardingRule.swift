@@ -14,6 +14,7 @@ public struct AnyForwardingRule: Equatable, Hashable, Sendable {
     case ruleset = "RULE-SET"
     case geoip = "GEOIP"
     case ipcidr = "IP-CIDR"
+    case processName = "PROCESS-NAME"
     case final = "FINAL"
 
     public var localizedName: String {
@@ -32,6 +33,8 @@ public struct AnyForwardingRule: Equatable, Hashable, Sendable {
         return "GEOIP"
       case .ipcidr:
         return "IP-CIDR"
+      case .processName:
+        return "PROCESS-NAME"
       case .final:
         return "FINAL"
       }

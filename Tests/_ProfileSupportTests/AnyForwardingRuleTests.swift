@@ -28,7 +28,7 @@ struct AnyForwardingRuleKindTests {
       AnyForwardingRule.Kind.allCases,
       [
         "DOMAIN", "DOMAIN-KEYWORD", "DOMAIN-SUFFIX", "DOMAIN-SET", "RULE-SET", "GEOIP",
-        "IP-CIDR", "FINAL",
+        "IP-CIDR", "PROCESS-NAME", "FINAL",
       ]
     ))
   func rawRepresentableConformance(_ kind: AnyForwardingRule.Kind, _ rawValue: String) {
@@ -42,7 +42,7 @@ struct AnyForwardingRuleKindTests {
       AnyForwardingRule.Kind.allCases,
       [
         "DOMAIN", "DOMAIN-KEYWORD", "DOMAIN-SUFFIX", "DOMAIN-SET", "RULE-SET", "GEOIP",
-        "IP-CIDR", "FINAL",
+        "IP-CIDR", "PROCESS-NAME", "FINAL",
       ]
     ))
   func localizedName(_ kind: AnyForwardingRule.Kind, _ localizedName: String) {

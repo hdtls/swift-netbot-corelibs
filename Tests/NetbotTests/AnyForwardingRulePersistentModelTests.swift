@@ -91,7 +91,7 @@
         V1._AnyForwardingRule.Kind.allCases,
         [
           "DOMAIN", "DOMAIN-KEYWORD", "DOMAIN-SUFFIX", "DOMAIN-SET", "RULE-SET", "GEOIP",
-          "IP-CIDR", "FINAL",
+          "IP-CIDR", "PROCESS-NAME", "FINAL",
         ]
       ))
     func rawRepresentableConformance(_ kind: V1._AnyForwardingRule.Kind, _ rawValue: String) {
@@ -106,7 +106,7 @@
         V1._AnyForwardingRule.Kind.allCases,
         [
           "DOMAIN", "DOMAIN-KEYWORD", "DOMAIN-SUFFIX", "DOMAIN-SET", "RULE-SET", "GEOIP",
-          "IP-CIDR", "FINAL",
+          "IP-CIDR", "PROCESS-NAME", "FINAL",
         ]
       ))
     func localizedName(_ kind: V1._AnyForwardingRule.Kind, _ localizedName: String) {

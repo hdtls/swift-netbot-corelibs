@@ -256,6 +256,8 @@ extension AnyForwardingRule {
     case .ipcidr:
       return IPCIDRForwardingRule(
         classlessInterDomainRouting: value, forwardProtocol: forwardProtocol)
+    case .processName:
+      return ProcessForwardingRule(processName: value, forwardProtocol: forwardProtocol)
     case .final:
       return FinalForwardingRule(value, forwardProtocol: forwardProtocol)
     }
