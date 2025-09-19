@@ -33,12 +33,12 @@ struct IPCIDRForwardingRuleTests {
     ]
 
     for (address, (lowerBound, upperBound)) in testVectors {
-      let addresses = try IPCIDRForwardingRule.Addresses(cidr: address)
+      let addresses = IPCIDRForwardingRule.Addresses(uncheckedBounds: address)
       var expected = try SocketAddress(ipAddress: lowerBound, port: 0)
-      #expect(addresses.lowerBound == expected)
+      #expect(addresses?.lowerBound == expected)
 
       expected = try SocketAddress(ipAddress: upperBound, port: 0)
-      #expect(addresses.upperBound == expected)
+      #expect(addresses?.upperBound == expected)
     }
   }
 
@@ -56,9 +56,7 @@ struct IPCIDRForwardingRuleTests {
     "2001:4860:4860::8888/x",
   ])
   func createAddressesWithInvalidIPCIDRString(_ cidr: String) async throws {
-    #expect(throws: SocketAddressError.self) {
-      try IPCIDRForwardingRule.Addresses(cidr: cidr)
-    }
+    #expect(IPCIDRForwardingRule.Addresses(uncheckedBounds: cidr) == nil)
   }
 
   @Test func createAddressesWithSocketAddressAndPrefix() async throws {
@@ -86,18 +84,16 @@ struct IPCIDRForwardingRuleTests {
         maskBits: maskBits
       )
       var expected = try SocketAddress(ipAddress: lowerBound, port: 0)
-      #expect(addresses.lowerBound == expected)
+      #expect(addresses?.lowerBound == expected)
 
       expected = try SocketAddress(ipAddress: upperBound, port: 0)
-      #expect(addresses.upperBound == expected)
+      #expect(addresses?.upperBound == expected)
     }
   }
 
   @Test func createAddressesWithUnixDomainSocket() async throws {
     let address = try SocketAddress(unixDomainSocketPath: "/var/tmp")
-    #expect(throws: SocketAddressError.self) {
-      try IPCIDRForwardingRule.Addresses(address: address, maskBits: 12)
-    }
+    #expect(IPCIDRForwardingRule.Addresses(address: address, maskBits: 12) == nil)
   }
 
   @Test(
@@ -105,18 +101,22 @@ struct IPCIDRForwardingRuleTests {
       ["127.0.0.0", "127.0.0.1", "127.0.0.2", "127.0.1.0", "127.0.1.1"],
       [false, true, true, true, false]))
   func ipv4AddressesContainsIPv4Address(_ address: String, expected: Bool) async throws {
-    let addresses = IPCIDRForwardingRule.Addresses(
-      lowerBound: try SocketAddress(ipAddress: "127.0.0.1", port: 0),
-      upperBound: try SocketAddress(ipAddress: "127.0.1.0", port: 0)
+    let addresses = try IPCIDRForwardingRule.Addresses(
+      bounds: (
+        SocketAddress(ipAddress: "127.0.0.1", port: 0),
+        SocketAddress(ipAddress: "127.0.1.0", port: 0)
+      )
     )
     let address = try SocketAddress(ipAddress: address, port: 0)
     #expect(addresses.contains(address) == expected)
   }
 
   @Test func ipv4AddressesContainsUnixDomainSocket() async throws {
-    let addresses = IPCIDRForwardingRule.Addresses(
-      lowerBound: try SocketAddress(ipAddress: "127.0.0.1", port: 0),
-      upperBound: try SocketAddress(ipAddress: "127.0.1.0", port: 0)
+    let addresses = try IPCIDRForwardingRule.Addresses(
+      bounds: (
+        SocketAddress(ipAddress: "127.0.0.1", port: 0),
+        SocketAddress(ipAddress: "127.0.1.0", port: 0)
+      )
     )
     let address = try SocketAddress(unixDomainSocketPath: "/var/tmp")
     #expect(!addresses.contains(address))
@@ -127,36 +127,44 @@ struct IPCIDRForwardingRuleTests {
       ["::7f00:0000", "::7f00:0001", "::7f00:0002", "::7f00:0100", "::7f00:0101"],
       [false, true, true, true, false]))
   func ipv6AddressesContainsIPv6Address(_ address: String, expected: Bool) async throws {
-    let addresses = IPCIDRForwardingRule.Addresses(
-      lowerBound: try SocketAddress(ipAddress: "::7f00:0001", port: 0),
-      upperBound: try SocketAddress(ipAddress: "::7f00:0100", port: 0)
+    let addresses = try IPCIDRForwardingRule.Addresses(
+      bounds: (
+        SocketAddress(ipAddress: "::7f00:0001", port: 0),
+        SocketAddress(ipAddress: "::7f00:0100", port: 0)
+      )
     )
     let address = try SocketAddress(ipAddress: address, port: 0)
     #expect(addresses.contains(address) == expected)
   }
 
   @Test func ipv6AddressesContainsUnixDomainSocket() async throws {
-    let addresses = IPCIDRForwardingRule.Addresses(
-      lowerBound: try SocketAddress(ipAddress: "::7f00:0001", port: 0),
-      upperBound: try SocketAddress(ipAddress: "::7f00:0100", port: 0)
+    let addresses = try IPCIDRForwardingRule.Addresses(
+      bounds: (
+        SocketAddress(ipAddress: "::7f00:0001", port: 0),
+        SocketAddress(ipAddress: "::7f00:0100", port: 0)
+      )
     )
     let address = try SocketAddress(unixDomainSocketPath: "/var/tmp")
     #expect(!addresses.contains(address))
   }
 
   @Test func ipv4AddressesContainsIPv6Address() async throws {
-    let addresses = IPCIDRForwardingRule.Addresses(
-      lowerBound: try SocketAddress(ipAddress: "127.0.0.1", port: 0),
-      upperBound: try SocketAddress(ipAddress: "127.0.1.0", port: 0)
+    let addresses = try IPCIDRForwardingRule.Addresses(
+      bounds: (
+        SocketAddress(ipAddress: "127.0.0.1", port: 0),
+        SocketAddress(ipAddress: "127.0.1.0", port: 0)
+      )
     )
     let address = try SocketAddress(ipAddress: "::7f00:0000", port: 0)
     #expect(!addresses.contains(address))
   }
 
   @Test func ipv6AddressesContainsIPv4Address() async throws {
-    let addresses = IPCIDRForwardingRule.Addresses(
-      lowerBound: try SocketAddress(ipAddress: "::7f00:0001", port: 0),
-      upperBound: try SocketAddress(ipAddress: "::7f00:0100", port: 0)
+    let addresses = try IPCIDRForwardingRule.Addresses(
+      bounds: (
+        SocketAddress(ipAddress: "::7f00:0001", port: 0),
+        SocketAddress(ipAddress: "::7f00:0100", port: 0)
+      )
     )
     let address = try SocketAddress(ipAddress: "127.0.0.1", port: 0)
     #expect(!addresses.contains(address))

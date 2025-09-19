@@ -34,38 +34,29 @@ struct GeoIPForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable,
   }
 
   func predicate(_ connection: Connection) throws -> Bool {
-    guard let db else { return false }
+    guard let db, let address = connection.originalRequest?.address else { return false }
 
-    guard let resolutions = connection.establishmentReport?.resolutions else {
-      return false
+    func eval(_ address: Address) -> Bool {
+      guard case .hostPort(let host, _) = address else { return false }
+
+      switch host {
+      case .ipv4, .ipv6:
+        let jsonObject = try? db.lookup(ipAddress: "\(address)") as? [String: [String: Any]]
+        let country = jsonObject?["country"]
+        let countryCode = country?["iso_code"] as? String
+        return countryCode == self.countryCode
+      default: return false
+      }
     }
 
-    var hasMatched = false
+    guard !eval(address) else { return true }
+
+    guard let resolutions = connection.dnsResolutionReport?.resolutions else { return false }
 
     for resolution in resolutions {
-      var address = ""
-      switch resolution.preferredEndpoint {
-      case .hostPort(let host, port: _):
-        switch host {
-        case .ipv4(let addr):
-          address = addr.debugDescription
-        case .ipv6(let addr):
-          address = addr.debugDescription
-        default:
-          continue
-        }
-      default:
-        continue
+      for endpoint in resolution.endpoints {
+        if eval(endpoint) { return true }
       }
-
-      let jsonObject = try? db.lookup(ipAddress: address) as? [String: [String: Any]]
-      let country = jsonObject?["country"]
-      let countryCode = country?["iso_code"] as? String
-      hasMatched = countryCode == self.countryCode
-      guard hasMatched else {
-        continue
-      }
-      return hasMatched
     }
 
     return false

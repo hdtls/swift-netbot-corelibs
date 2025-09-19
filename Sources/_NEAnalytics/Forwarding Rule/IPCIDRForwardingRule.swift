@@ -6,9 +6,10 @@
 
 import Anlzr
 import AnlzrReports
+import NEAddressProcessing
 import NIOCore
+
 #if canImport(FoundationEssentials)
-import Foundation
 import FoundationEssentials
 #else
 import Foundation
@@ -66,7 +67,7 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
 
     @inlinable init(classlessInterDomainRouting: String, addresses: Addresses?, forwardProtocol: any ForwardProtocolConvertible) {
       self.classlessInterDomainRouting = classlessInterDomainRouting
-      self.addresses = try? Addresses(cidr: classlessInterDomainRouting)
+      self.addresses = Addresses(uncheckedBounds: classlessInterDomainRouting)
       self.forwardProtocol = forwardProtocol
     }
 
@@ -101,7 +102,7 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
     set {
       copyStorageIfNotUniquelyReferenced()
       _storage.classlessInterDomainRouting = newValue
-      _storage.addresses = try? Addresses(cidr: newValue)
+      _storage.addresses = Addresses(uncheckedBounds: newValue)
     }
   }
 
@@ -110,7 +111,7 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
   }
 
   @inlinable init(classlessInterDomainRouting: String, forwardProtocol: any ForwardProtocolConvertible) {
-    let addresses = try? Addresses(cidr: classlessInterDomainRouting)
+    let addresses = Addresses(uncheckedBounds: classlessInterDomainRouting)
     self._storage = _Storage(
       classlessInterDomainRouting: classlessInterDomainRouting,
       addresses: addresses,
@@ -125,15 +126,28 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
   }
 
   @inlinable func predicate(_ connection: Connection) throws -> Bool {
-    guard let host = connection.originalRequest?.host(percentEncoded: false) else {
-      return false
+    guard let address = connection.originalRequest?.address else { return false }
+
+    func eval(_ address: Address) -> Bool {
+      guard case .hostPort(let host, _) = address else { return false }
+
+      switch host {
+      case .ipv4, .ipv6: return (try? addresses?.contains(address.asAddress())) ?? false
+      default: return false
+      }
     }
 
-    guard let address = try? SocketAddress(ipAddress: host, port: 0) else {
-      return false
+    guard !eval(address) else { return true }
+
+    guard let resolutions = connection.dnsResolutionReport?.resolutions else { return false }
+
+    for resolution in resolutions {
+      for endpoint in resolution.endpoints {
+        if eval(endpoint) { return true }
+      }
     }
 
-    return addresses?.contains(address) == true
+    return false
   }
 }
 
@@ -162,51 +176,53 @@ extension IPCIDRForwardingRule {
     let lowerBound: SocketAddress
     let upperBound: SocketAddress
 
-    init(lowerBound: SocketAddress, upperBound: SocketAddress) {
-      self.lowerBound = lowerBound
-      self.upperBound = upperBound
+    init(bounds: (lower: SocketAddress, upper: SocketAddress)) {
+      self.lowerBound = bounds.lower
+      self.upperBound = bounds.upper
     }
 
-    init(cidr: String) throws {
-      guard let delimiterRange = cidr.range(of: "/") else {
-        throw SocketAddressError.failedToParseIPString(cidr)
-      }
-      guard delimiterRange.upperBound < cidr.endIndex else {
-        throw SocketAddressError.failedToParseIPString(cidr)
+    init?(uncheckedBounds desired: String) {
+      let addressComponents = desired.split(separator: "/")
+      guard addressComponents.count == 2 else {
+        return nil
       }
 
-      let ipAddress = cidr[..<delimiterRange.lowerBound]
-      let address = try SocketAddress(ipAddress: String(ipAddress), port: 0)
+      let ipAddress = addressComponents[0]
+      guard let address = try? SocketAddress(ipAddress: String(ipAddress), port: 0) else {
+        return nil
+      }
 
-      let prefixString = cidr[delimiterRange.upperBound...]
+      let prefixString = addressComponents[1]
       guard let prefix = Int(prefixString) else {
-        throw SocketAddressError.failedToParseIPString(cidr)
+        return nil
       }
 
       switch address {
       case .v4:
         guard (0...UInt32.bitWidth).contains(prefix) else {
-          throw SocketAddressError.failedToParseIPString(cidr)
+          return nil
         }
-        try self.init(address: address, maskBits: prefix)
+        self.init(address: address, maskBits: prefix)
       case .v6:
         guard (0...128).contains(prefix) else {
-          throw SocketAddressError.failedToParseIPString(cidr)
+          return nil
         }
-        try self.init(address: address, maskBits: prefix)
+        self.init(address: address, maskBits: prefix)
       case .unixDomainSocket:
-        throw SocketAddressError.unsupported
+        return nil
       }
     }
 
-    init(address: SocketAddress, maskBits prefix: Int) throws {
+    init?(address: SocketAddress, maskBits prefix: Int) {
       switch address {
       case .v4(let iPv4Address):
         precondition((0...UInt32.bitWidth).contains(prefix))
 
         guard prefix != 0 else {
-          lowerBound = try SocketAddress(ipAddress: "0.0.0.0", port: 0)
-          upperBound = try SocketAddress(ipAddress: "255.255.255.255", port: 0)
+          do {
+            lowerBound = try SocketAddress(ipAddress: "0.0.0.0", port: 0)
+            upperBound = try SocketAddress(ipAddress: "255.255.255.255", port: 0)
+          } catch { return nil }
           return
         }
 
@@ -246,8 +262,12 @@ extension IPCIDRForwardingRule {
           let lowerBoundIPAddress = "0000:0000:0000:0000:0000:0000:0000:0000"
           let upperBoundIPAddress = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
 
-          lowerBound = try SocketAddress(ipAddress: lowerBoundIPAddress, port: 0)
-          upperBound = try SocketAddress(ipAddress: upperBoundIPAddress, port: 0)
+          do {
+            lowerBound = try SocketAddress(ipAddress: lowerBoundIPAddress, port: 0)
+            upperBound = try SocketAddress(ipAddress: upperBoundIPAddress, port: 0)
+          } catch {
+            return nil
+          }
           return
         }
 
@@ -294,7 +314,7 @@ extension IPCIDRForwardingRule {
           upperBound = .init(packedAddress: packedAddress.bigEndian)
         #endif
       case .unixDomainSocket:
-        throw SocketAddressError.unsupported
+        return nil
       }
     }
 
@@ -357,7 +377,7 @@ extension SocketAddress {
     }
   #endif
 
-  @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+  @available(SwiftStdlib 6.0, *)
   fileprivate init(packedAddress: UInt128) {
     var ipv6Addr = sockaddr_in6()
     ipv6Addr.sin6_family = sa_family_t(AF_INET6)
