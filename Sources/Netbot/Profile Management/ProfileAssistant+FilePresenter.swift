@@ -27,7 +27,7 @@ extension ProfileAssistant {
 
     let presentedItemOperationQueue = OperationQueue()
 
-    private let profileAssistant = ProfileAssistant.shared
+    private weak var profileAssistant: ProfileAssistant?
 
     @Preference(Prefs.Name.profileURL, store: .__shared)
     private var profileURL: URL = .profile
@@ -39,14 +39,15 @@ extension ProfileAssistant {
     private var profilesDirectory: URL = .profile.deletingLastPathComponent()
 
     /// Create FilePresenter with current active profiles directory.
-    init(presentedItemURL: URL) {
+    init(presentedItemURL: URL, profileAssistant: ProfileAssistant) {
       self.presentedItemURL = presentedItemURL
+      self.profileAssistant = profileAssistant
     }
 
     private var isValidURLScope: Bool {
       get async {
-        let profilesDirectory = await profileAssistant.profilesDirectory
-        let profileURL = await profileAssistant.profileURL
+        let profilesDirectory = await profileAssistant?.profilesDirectory
+        let profileURL = await profileAssistant?.profileURL
 
         guard presentedItemURL == profilesDirectory || presentedItemURL == profileURL else {
           return false
@@ -60,12 +61,13 @@ extension ProfileAssistant {
         return
       }
 
-      if await presentedItemURL == profileAssistant.profilesDirectory {
+      let directory = await profileAssistant?.profilesDirectory
+      if presentedItemURL == directory {
         // If entire profiles directory is removed, fallback to default profiles directory.
         profilesDirectory = URL.profile.deletingLastPathComponent()
       } else {
         // If current active profile is removed, fallback to virtual default profile, else ignored.
-        profileURL = await profileAssistant.virtualProfileURL
+        profileURL = await profileAssistant?.virtualProfileURL ?? .profile
       }
     }
 
@@ -76,8 +78,8 @@ extension ProfileAssistant {
         }
 
         let parent = presentedItemURL?.deletingLastPathComponent()
-
-        if await presentedItemURL == profileAssistant.profilesDirectory {
+        let directory = await profileAssistant?.profilesDirectory
+        if presentedItemURL == directory {
           // If newURL and current active profiles directory has same parent, that means we have
           // renamed profiles folder, so we should update active profiles directory to the newURL.
           // else we should fallback to ues default profiles directory.
@@ -90,15 +92,15 @@ extension ProfileAssistant {
           guard newURL.deletingLastPathComponent() == parent else {
             // Current active profile has been move to outside of the profiles directory, so we need
             // to reset active profile to virtual default.
-            profileURL = await profileAssistant.virtualProfileURL
-            await profileAssistant.reloadAllProfiles()
+            profileURL = await profileAssistant?.virtualProfileURL ?? .profile
+            await profileAssistant?.reloadAllProfiles()
             return
           }
 
           // Because current active profile name is changed, so we need update profile url, and
           // also reload profiles.
           profileURL = newURL
-          await profileAssistant.reloadAllProfiles()
+          await profileAssistant?.reloadAllProfiles()
         }
       }
     }
@@ -108,10 +110,11 @@ extension ProfileAssistant {
         guard await isValidURLScope else {
           return
         }
-        if await presentedItemURL == profileAssistant.profileURL {
-          await profileAssistant.reloadProfile()
+        let profileURL = await profileAssistant?.profileURL
+        if presentedItemURL == profileURL {
+          await profileAssistant?.reloadProfile()
         }
-        await profileAssistant.reloadAllProfiles()
+        await profileAssistant?.reloadAllProfiles()
       }
     }
 
@@ -145,12 +148,12 @@ extension ProfileAssistant {
       // If removed profile url is the active profile url, we should also fallback active profile
       // to default profile.
       guard profileURL == url else {
-        await profileAssistant.reloadAllProfiles()
+        await profileAssistant?.reloadAllProfiles()
         return
       }
 
-      profileURL = await profileAssistant.virtualProfileURL
-      await profileAssistant.reloadAllProfiles()
+      profileURL = await profileAssistant?.virtualProfileURL ?? .profile
+      await profileAssistant?.reloadAllProfiles()
     }
 
     func presentedSubitemDidAppear(at url: URL) {
@@ -162,7 +165,7 @@ extension ProfileAssistant {
         guard url.isProfile, url.deletingLastPathComponent() == presentedItemURL else {
           return
         }
-        await profileAssistant.reloadAllProfiles()
+        await profileAssistant?.reloadAllProfiles()
       }
     }
 
@@ -179,7 +182,7 @@ extension ProfileAssistant {
         // If oldURL is not the current active profile url, reload all profiles in folder, else
         // update active profile.
         guard profileURL == oldURL else {
-          await profileAssistant.reloadAllProfiles()
+          await profileAssistant?.reloadAllProfiles()
           return
         }
 
@@ -188,16 +191,16 @@ extension ProfileAssistant {
         // virtual default profile url as active profile url.
         guard newURL.deletingLastPathComponent() != presentedItemURL else {
           profileURL = newURL
-          await profileAssistant.reloadAllProfiles()
+          await profileAssistant?.reloadAllProfiles()
           return
         }
 
         // Profile has been moved to outside of the current profiles directory. we should fallback
         // to the virtual default profile.
-        profileURL = await profileAssistant.virtualProfileURL
+        profileURL = await profileAssistant?.virtualProfileURL ?? .profile
 
         // Also, update profile resources.
-        await profileAssistant.reloadAllProfiles()
+        await profileAssistant?.reloadAllProfiles()
       }
     }
 
@@ -212,9 +215,9 @@ extension ProfileAssistant {
         }
 
         if url == profileURL {
-          await profileAssistant.reloadProfile()
+          await profileAssistant?.reloadProfile()
         }
-        await profileAssistant.reloadAllProfiles()
+        await profileAssistant?.reloadAllProfiles()
       }
     }
   }

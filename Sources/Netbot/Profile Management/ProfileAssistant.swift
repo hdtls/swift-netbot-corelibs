@@ -88,7 +88,7 @@ public actor ProfileAssistant {
     profilesDirectory = newDirectory
 
     if profileAutoreload {
-      filePresenter = _FilePresenter(presentedItemURL: newDirectory)
+      filePresenter = _FilePresenter(presentedItemURL: newDirectory, profileAssistant: self)
     }
 
     let profileURL =
@@ -113,7 +113,7 @@ public actor ProfileAssistant {
       return
     }
 
-    filePresenter = _FilePresenter(presentedItemURL: profilesDirectory)
+    filePresenter = _FilePresenter(presentedItemURL: profilesDirectory, profileAssistant: self)
   }
 
   /// Reload in-used profile into database.
