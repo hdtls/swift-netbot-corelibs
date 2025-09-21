@@ -49,10 +49,6 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
     self.listener.newConnectionHandler = newConnectionHandler
   }
 
-  public func runIfActive() async throws {
-    try await run()
-  }
-
   public func run() async throws {
     let address = try SocketAddress(ipAddress: "0.0.0.0", port: 0)
     try await listener.register()

@@ -33,15 +33,15 @@ public actor __AnalyzerBot {
     isActive.store(true, ordering: .relaxed)
 
     for handle in handles {
-      try await handle.runIfActive()
+      try await handle.run()
     }
 
     Task(priority: .background) {
-      try await runIfActive()
+      try await readPacketsIfActive()
     }
   }
 
-  func runIfActive() async throws {
+  private func readPacketsIfActive() async throws {
     guard isActive.load(ordering: .relaxed) else { return }
 
     for packetObject in await packetFlow.readPacketObjects() {
@@ -58,7 +58,7 @@ public actor __AnalyzerBot {
       }
     }
 
-    try await runIfActive()
+    try await readPacketsIfActive()
   }
 
   /// Stop current running analyzer tunnel.

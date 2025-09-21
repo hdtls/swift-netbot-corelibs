@@ -91,10 +91,10 @@ struct LocalDNSProxyTests {
     let packetFlow = MockTunnelFlow()
     let p = LocalDNSProxy()
     p.packetFlow = packetFlow
-    p.bindAddress = IPv4Address("198.18.1.1")
+    p.bindAddress = IPv4Address("198.18.1.1")!
     p.availableIPPool = .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
 
-    try await p.runIfActive()
+    try await p.run()
 
     var message = Message(
       headerFields: .init(
@@ -217,7 +217,7 @@ struct LocalDNSProxyTests {
 
     let p = LocalDNSProxy()
     p.additionalServers = [try address.asAddress()]
-    try await p.runIfActive()
+    try await p.run()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryA(name: "example.com")
@@ -245,7 +245,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let p = LocalDNSProxy()
     p.additionalServers = [try address.asAddress()]
-    try await p.runIfActive()
+    try await p.run()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryA(name: "example.com")
@@ -273,7 +273,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let p = LocalDNSProxy()
     p.additionalServers = [try address.asAddress()]
-    try await p.runIfActive()
+    try await p.run()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryAAAA(name: "example.com")
@@ -297,7 +297,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let p = LocalDNSProxy()
     p.additionalServers = [try address.asAddress()]
-    try await p.runIfActive()
+    try await p.run()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryAAAA(name: "example.com")
@@ -324,7 +324,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let p = LocalDNSProxy()
     p.additionalServers = [try address.asAddress()]
-    try await p.runIfActive()
+    try await p.run()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryNS(name: "example.com")
@@ -351,7 +351,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let p = LocalDNSProxy()
     p.additionalServers = [try address.asAddress()]
-    try await p.runIfActive()
+    try await p.run()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryCNAME(name: "example.com")
@@ -382,7 +382,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let p = LocalDNSProxy()
     p.additionalServers = [try address.asAddress()]
-    try await p.runIfActive()
+    try await p.run()
 
     await #expect(throws: Never.self) {
       let result = try await p.querySOA(name: "example.com")
@@ -409,7 +409,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let p = LocalDNSProxy()
     p.additionalServers = [try address.asAddress()]
-    try await p.runIfActive()
+    try await p.run()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryPTR(name: "example.com")
@@ -443,7 +443,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let p = LocalDNSProxy()
     p.additionalServers = [try address.asAddress()]
-    try await p.runIfActive()
+    try await p.run()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryMX(name: "example.com")
@@ -470,7 +470,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let p = LocalDNSProxy()
     p.additionalServers = [try address.asAddress()]
-    try await p.runIfActive()
+    try await p.run()
 
     await #expect(throws: Never.self) {
       let result = try await p.queryTXT(name: "example.com")
@@ -499,7 +499,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let p = LocalDNSProxy()
     p.additionalServers = [try address.asAddress()]
-    try await p.runIfActive()
+    try await p.run()
 
     await #expect(throws: Never.self) {
       let result = try await p.querySRV(name: "example.com")

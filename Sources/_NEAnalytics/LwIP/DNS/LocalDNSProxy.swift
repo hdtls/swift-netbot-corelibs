@@ -294,7 +294,7 @@ import _DNSSupport
 @available(SwiftStdlib 5.3, *)
 extension LocalDNSProxy: PacketHandleProtocol {
 
-  func runIfActive() async throws {}
+  func run() async throws {}
 
   func handleInput(_ packetObject: NEPacket) async throws -> PacketHandleResult {
     // Make it mutable, so we don't need alloc new packet for response.
