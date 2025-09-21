@@ -21,7 +21,7 @@ extension ProfileAssistant {
     try await withCheckedThrowingContinuation { continuation in
       let data = profile.formatted()
       let writeIntent = NSFileAccessIntent.writingIntent(with: profile.url)
-      let coordinator = NSFileCoordinator(filePresenter: filePresenter)
+      let coordinator = NSFileCoordinator(filePresenter: nil)
       coordinator.coordinate(with: [writeIntent], queue: .init()) { error in
         do {
           if let error {
@@ -40,17 +40,15 @@ extension ProfileAssistant {
       return
     }
 
-    await Task { @MainActor in
+    await MainActor.run {
       let profileInfo = ProfileInfo(
         url: profile.url,
         numberOfRules: profile.lazyForwardingRules.count,
         numberOfProxies: profile.lazyProxies.count
       )
-      var profiles = profileResource.profiles
-      profiles.append(profileInfo)
-      profiles.sort(using: KeyPathComparator(\.name))
-      profileResource.profiles = profiles
-    }.value
+      profileResource.profiles.append(profileInfo)
+      profileResource.profiles.sort(using: KeyPathComparator(\.name))
+    }
   }
 
   public func replace<Replacement>(
@@ -211,7 +209,7 @@ extension ProfileAssistant {
       let sourceIntent = NSFileAccessIntent.writingIntent(with: source, options: .forMoving)
       let destinationIntent = NSFileAccessIntent.writingIntent(
         with: destination, options: .forReplacing)
-      let coordinator = NSFileCoordinator(filePresenter: filePresenter)
+      let coordinator = NSFileCoordinator(filePresenter: nil)
       coordinator.coordinate(with: [sourceIntent, destinationIntent], queue: .init()) { error in
         do {
           if let error {
@@ -229,18 +227,20 @@ extension ProfileAssistant {
     guard source.deletingLastPathComponent() == destination.deletingLastPathComponent() else {
       return
     }
-    await Task { @MainActor in
-      guard let original = profileResource.profiles.first(where: { $0.url == source }) else {
-        return
+
+    await MainActor.run {
+      let other = profileResource.profiles.filter { $0.url == source }
+      guard !other.isEmpty else { return }
+
+      let replacement = other.map {
+        var modified = $0
+        modified.url = destination
+        return modified
       }
 
-      var replacement = original
-      replacement.url = destination
-      var profiles = profileResource.profiles
-      profiles.replace(CollectionOfOne(original), with: CollectionOfOne(replacement))
-      profiles.sort(using: KeyPathComparator(\.name))
-      profileResource.profiles = profiles
-    }.value
+      profileResource.profiles.replace(other, with: replacement)
+      profileResource.profiles.sort(using: KeyPathComparator(\.name))
+    }
   }
 
   /// Remove `Profile` item.
@@ -249,7 +249,7 @@ extension ProfileAssistant {
   public func delete(_ profile: Profile) async throws {
     try await withCheckedThrowingContinuation { continuation in
       let writeIntent = NSFileAccessIntent.writingIntent(with: profile.url, options: .forDeleting)
-      let coordinator = NSFileCoordinator(filePresenter: filePresenter)
+      let coordinator = NSFileCoordinator(filePresenter: nil)
       coordinator.coordinate(with: [writeIntent], queue: .init()) { error in
         do {
           if let error {
@@ -262,8 +262,8 @@ extension ProfileAssistant {
         }
       }
     }
-    await Task { @MainActor in
+    await MainActor.run {
       profileResource.profiles.removeAll(where: { $0.url == profile.url })
-    }.value
+    }
   }
 }

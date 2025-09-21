@@ -43,9 +43,6 @@ struct ProfileAssistantTests {
   }
 
   @available(SwiftStdlib 5.9, *)
-  @Test func setFilePresentor() async throws {}
-
-  @available(SwiftStdlib 5.9, *)
   @Test func setProfileURL() async throws {
     try await withManagedProfile { profileAssistant in
       var profileURL = await profileAssistant.profileURL
@@ -67,50 +64,6 @@ struct ProfileAssistantTests {
       let expectedProfileURL = URL.profile.deletingLastPathComponent().appending(
         component: profileURL.lastPathComponent)
       #expect(newProfileURL == expectedProfileURL)
-      #expect(await profileAssistant.filePresenter == nil)
-    }
-  }
-
-  @available(SwiftStdlib 5.9, *)
-  @Test func setProfilesDirectoryIfAutoreloadIsEnabled() async throws {
-    try await withManagedProfile { profileAssistant in
-      await profileAssistant.setAutoreloadEnabled(true)
-      await profileAssistant.setProfilesDirectory(.profile.deletingLastPathComponent())
-      let filePresenter = await profileAssistant.filePresenter
-      #expect(filePresenter != nil)
-      #expect(filePresenter?.presentedItemURL == .profile.deletingLastPathComponent())
-    }
-  }
-
-  @available(SwiftStdlib 5.9, *)
-  @Test func enableAutoreload() async throws {
-    try await withManagedProfile { profileAssistant in
-      #expect(await profileAssistant.filePresenter == nil)
-      await profileAssistant.setAutoreloadEnabled(true)
-      #expect(await profileAssistant.filePresenter != nil)
-    }
-  }
-
-  @available(SwiftStdlib 5.9, *)
-  @Test func disableAutoreload() async throws {
-    try await withManagedProfile { profileAssistant in
-      #expect(await profileAssistant.filePresenter == nil)
-      await profileAssistant.setAutoreloadEnabled(true)
-      #expect(await profileAssistant.filePresenter != nil)
-      await profileAssistant.setAutoreloadEnabled(false)
-      #expect(await profileAssistant.filePresenter == nil)
-    }
-  }
-
-  @available(SwiftStdlib 5.9, *)
-  @Test func ignoreEnableAutoreloadIfItAlreadyEnabled() async throws {
-    try await withManagedProfile { profileAssistant in
-      #expect(await profileAssistant.filePresenter == nil)
-      await profileAssistant.setAutoreloadEnabled(true)
-      let filePresenter = await profileAssistant.filePresenter
-      #expect(filePresenter != nil)
-      await profileAssistant.setAutoreloadEnabled(true)
-      #expect(await profileAssistant.filePresenter === filePresenter)
     }
   }
 

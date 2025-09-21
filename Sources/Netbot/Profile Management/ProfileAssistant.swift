@@ -56,23 +56,12 @@ public actor ProfileAssistant {
 
   nonisolated public let profileResource = ProfileResource()
 
-  var filePresenter: _FilePresenter? {
-    didSet {
-      if let oldValue {
-        NSFileCoordinator.removeFilePresenter(oldValue)
-      }
-      if let filePresenter {
-        NSFileCoordinator.addFilePresenter(filePresenter)
-      }
-    }
-  }
+  private var filePresenter: _FilePresenter?
 
   /// Last error for loading profile.
   public private(set) var lastLoadError: (any Error)?
 
   private var profileLoadingTask: Task<Void, Never>?
-
-  private var profileAutoreload = false
 
   /// Set current active profile URL to new url.
   public func setProfileURL(_ newURL: URL) {
@@ -87,7 +76,7 @@ public actor ProfileAssistant {
   public func setProfilesDirectory(_ newDirectory: URL) {
     profilesDirectory = newDirectory
 
-    if profileAutoreload {
+    if filePresenter?.presentedItemURL != newDirectory {
       filePresenter = _FilePresenter(presentedItemURL: newDirectory, profileAssistant: self)
     }
 
@@ -96,24 +85,6 @@ public actor ProfileAssistant {
       .appending(path: profileURL.suggestedFilename)
       .appendingPathExtension(.profilePathExtension)
     setProfileURL(profileURL)
-  }
-
-  public func setAutoreloadEnabled(_ isEnabled: Bool) {
-    profileAutoreload = isEnabled
-
-    guard isEnabled else {
-      // Remove profiles directory file presenter, so we will not receive any notification when
-      // profile modified from other process.
-      filePresenter = nil
-      return
-    }
-
-    // If profiles directory file presenter already exists, we can ignored.
-    guard filePresenter == nil else {
-      return
-    }
-
-    filePresenter = _FilePresenter(presentedItemURL: profilesDirectory, profileAssistant: self)
   }
 
   /// Reload in-used profile.
@@ -387,7 +358,7 @@ public actor ProfileAssistant {
   nonisolated private func loadAllProfiles(at url: URL) async -> [Profile] {
     await withTaskGroup(of: Optional<Profile>.self) { g in
       let urls: [URL] = await withCheckedContinuation { continuation in
-        let readIntent = NSFileAccessIntent.readingIntent(with: url)
+        let readIntent = NSFileAccessIntent.readingIntent(with: url, options: .withoutChanges)
         let coordinator = NSFileCoordinator(filePresenter: nil)
         coordinator.coordinate(with: [readIntent], queue: .init()) { error in
           do {
@@ -468,33 +439,47 @@ public actor ProfileAssistant {
   /// Modify in-used Profile contents within file access intents.
   #if swift(>=6.2)
     @concurrent func modify(
+      readingOptions: NSFileCoordinator.ReadingOptions = [],
+      writingOptions: NSFileCoordinator.WritingOptions = [.forReplacing],
       accessor: @escaping @Sendable (NSFileAccessIntent, NSFileAccessIntent) throws -> Void
     ) async throws {
-      try await _modify(accessor: accessor)
+      try await _modify(
+        readingOptions: readingOptions,
+        writingOptions: writingOptions,
+        accessor: accessor
+      )
     }
   #else
     nonisolated func modify(
+      readingOptions: NSFileCoordinator.ReadingOptions = [],
+      writingOptions: NSFileCoordinator.WritingOptions = [.forReplacing],
       accessor: @escaping @Sendable (NSFileAccessIntent, NSFileAccessIntent) throws -> Void
     ) async throws {
-      try await _modify(accessor: accessor)
+      try await _modify(
+        readingOptions: readingOptions,
+        writingOptions: writingOptions,
+        accessor: accessor
+      )
     }
   #endif
 
   nonisolated private func _modify(
+    readingOptions: NSFileCoordinator.ReadingOptions,
+    writingOptions: NSFileCoordinator.WritingOptions,
     accessor: @escaping @Sendable (NSFileAccessIntent, NSFileAccessIntent) throws -> Void
   ) async throws {
     let profileURL = await profileURL
     let filePresenter = await filePresenter
     try await withCheckedThrowingContinuation { continuation in
-      let readIntent = NSFileAccessIntent.readingIntent(with: profileURL)
-      let writeIntent = NSFileAccessIntent.writingIntent(with: profileURL, options: .forReplacing)
+      let readIntent = NSFileAccessIntent.readingIntent(with: profileURL, options: readingOptions)
+      let writeIntent = NSFileAccessIntent.writingIntent(with: profileURL, options: writingOptions)
       let coordinator = NSFileCoordinator(filePresenter: filePresenter)
       coordinator.coordinate(with: [readIntent, writeIntent], queue: .init()) { error in
         do {
           if let error {
             throw error
           }
-
+          filePresenter?.permitted.enter()
           try accessor(readIntent, writeIntent)
           continuation.resume()
         } catch {
