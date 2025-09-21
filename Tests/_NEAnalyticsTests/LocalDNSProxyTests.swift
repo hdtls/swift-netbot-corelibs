@@ -89,12 +89,11 @@ struct LocalDNSProxyTests {
 
   @Test func handleInput() async throws {
     let packetFlow = MockTunnelFlow()
-    let p = LocalDNSProxy(
-      packetFlow: packetFlow,
-      server: IPv4Address("198.18.1.1")!,
-      additionalServers: [Address](),
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
+    let p = LocalDNSProxy()
+    p.packetFlow = packetFlow
+    p.bindAddress = IPv4Address("198.18.1.1")
+    p.availableIPPool = .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+
     try await p.runIfActive()
 
     var message = Message(
@@ -216,12 +215,8 @@ struct LocalDNSProxyTests {
     )
     let address = try #require(await server.start())
 
-    let p = LocalDNSProxy(
-      packetFlow: MockTunnelFlow(),
-      server: IPv4Address("198.18.0.2")!,
-      additionalServers: [try address.asAddress()],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
+    let p = LocalDNSProxy()
+    p.additionalServers = [try address.asAddress()]
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -248,12 +243,8 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(
-      packetFlow: MockTunnelFlow(),
-      server: IPv4Address("198.18.0.2")!,
-      additionalServers: [try address.asAddress()],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
+    let p = LocalDNSProxy()
+    p.additionalServers = [try address.asAddress()]
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -280,12 +271,8 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(
-      packetFlow: MockTunnelFlow(),
-      server: IPv4Address("198.18.0.2")!,
-      additionalServers: [try address.asAddress()],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
+    let p = LocalDNSProxy()
+    p.additionalServers = [try address.asAddress()]
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -308,12 +295,8 @@ struct LocalDNSProxyTests {
       response: [AAAARecord(domainName: "example.com", ttl: 1, data: .init("::1")!)]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(
-      packetFlow: MockTunnelFlow(),
-      server: IPv4Address("198.18.0.2")!,
-      additionalServers: [try address.asAddress()],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
+    let p = LocalDNSProxy()
+    p.additionalServers = [try address.asAddress()]
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -339,12 +322,8 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(
-      packetFlow: MockTunnelFlow(),
-      server: IPv4Address("198.18.0.2")!,
-      additionalServers: [try address.asAddress()],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
+    let p = LocalDNSProxy()
+    p.additionalServers = [try address.asAddress()]
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -370,12 +349,8 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(
-      packetFlow: MockTunnelFlow(),
-      server: IPv4Address("198.18.0.2")!,
-      additionalServers: [try address.asAddress()],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
+    let p = LocalDNSProxy()
+    p.additionalServers = [try address.asAddress()]
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -405,12 +380,8 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(
-      packetFlow: MockTunnelFlow(),
-      server: IPv4Address("198.18.0.2")!,
-      additionalServers: [try address.asAddress()],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
+    let p = LocalDNSProxy()
+    p.additionalServers = [try address.asAddress()]
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -436,12 +407,8 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(
-      packetFlow: MockTunnelFlow(),
-      server: IPv4Address("198.18.0.2")!,
-      additionalServers: [try address.asAddress()],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
+    let p = LocalDNSProxy()
+    p.additionalServers = [try address.asAddress()]
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -474,12 +441,8 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(
-      packetFlow: MockTunnelFlow(),
-      server: IPv4Address("198.18.0.2")!,
-      additionalServers: [try address.asAddress()],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
+    let p = LocalDNSProxy()
+    p.additionalServers = [try address.asAddress()]
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -505,12 +468,8 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(
-      packetFlow: MockTunnelFlow(),
-      server: IPv4Address("198.18.0.2")!,
-      additionalServers: [try address.asAddress()],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
+    let p = LocalDNSProxy()
+    p.additionalServers = [try address.asAddress()]
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {
@@ -538,12 +497,8 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy(
-      packetFlow: MockTunnelFlow(),
-      server: IPv4Address("198.18.0.2")!,
-      additionalServers: [try address.asAddress()],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
-    )
+    let p = LocalDNSProxy()
+    p.additionalServers = [try address.asAddress()]
     try await p.runIfActive()
 
     await #expect(throws: Never.self) {

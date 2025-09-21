@@ -15,8 +15,6 @@ enum PacketHandleResult: Hashable, Sendable {
 @available(SwiftStdlib 5.3, *)
 protocol PacketHandleProtocol {
 
-  var packetFlow: any PacketTunnelFlow { get }
-
   func runIfActive() async throws
 
   func handleInput(_ packetObject: NEPacket) async throws -> PacketHandleResult

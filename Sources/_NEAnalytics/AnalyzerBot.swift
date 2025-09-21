@@ -42,7 +42,7 @@ public actor AnalyzerBot: Actor {
 
   private var maxminddb: MaxMindDB?
 
-  public init(group: any EventLoopGroup = .shared) {
+  public init(group: any EventLoopGroup = .shared, dns: LocalDNSProxy) {
     self.eventLoopGroup = group
 
     let dbFilename = "GeoLite2-Country.mmdb"
@@ -67,6 +67,8 @@ public actor AnalyzerBot: Actor {
     #endif
 
     core = Analyzer(group: eventLoopGroup, logger: logger)
+
+    core.services.dns.use { _ in dns }
 
     let pulse = ConnectionPulse(
       group: eventLoopGroup,

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information
 //
 
+import Anlzr
 import Atomics
 import Logging
 import NEAddressProcessing
@@ -10,33 +11,17 @@ import NIOCore
 @available(SwiftStdlib 5.3, *)
 public actor __AnalyzerBot {
 
-  private nonisolated let allocator = ByteBufferAllocator()
   private nonisolated let isActive = ManagedAtomic<Bool>(false)
   private nonisolated let packetFlow: PacketTunnelFlow
-  private nonisolated let dnsServer: IPv4Address
-  private nonisolated let additionalDNSServers: [Address]
   private nonisolated let handles: [any PacketHandleProtocol & Sendable]
   private nonisolated let logger: Logger = Logger(label: "AnalyzerBot")
 
   public init(
     group: any EventLoopGroup,
     packetFlow: PacketTunnelFlow,
-    dnsServer: IPv4Address,
-    additionalDNSServers: [IPv4Address],
-    availableIPPool: AvailableIPPool
+    dns: LocalDNSProxy
   ) {
     self.packetFlow = packetFlow
-    self.dnsServer = dnsServer
-    self.additionalDNSServers = additionalDNSServers.map { .hostPort(host: .ipv4($0), port: 53) }
-
-    let dns = LocalDNSProxy(
-      group: group,
-      packetFlow: packetFlow,
-      server: dnsServer,
-      additionalServers: additionalDNSServers,
-      availableIPPool: availableIPPool
-    )
-
     self.handles = [
       dns,
       LwIPSOCKSProxy(group: group, packetFlow: packetFlow, dns: dns),
