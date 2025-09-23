@@ -8,6 +8,6 @@
   @available(SwiftStdlib 5.9, *)
   extension EnvironmentValues {
 
-    @Entry public var connectivity = Connectivity()
+    @Entry public var diagnostics = Diagnostics()
   }
 #endif

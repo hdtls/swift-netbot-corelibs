@@ -5,9 +5,9 @@
 #if canImport(SwiftUI)
   import SwiftUI
 
-  @available(SwiftStdlib 5.9, *)
+  @available(SwiftStdlib 5.3, *)
   extension EnvironmentValues {
 
-    @Entry public var connectivity = Connectivity()
+    @Entry public var urlSession = URLSession.shared
   }
 #endif
