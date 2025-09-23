@@ -74,7 +74,7 @@ let package = Package(
       name: "_DNSSupport",
       dependencies: [
         .product(name: "NIOCore", package: "swift-nio"),
-        .product(name: "NEAddressProcessing", package: "swift-netbot-frame-processing"),
+        .product(name: "NEAddressProcessing", package: "swift-netbot-framing"),
       ]
     ),
     .target(
@@ -147,7 +147,7 @@ if Context.environment["ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA"] != nil {
 if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
   package.dependencies += [
     .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.24.0"),
-    .package(url: "https://github.com/hdtls/swift-netbot-frame-processing.git", branch: "main"),
+    .package(url: "https://github.com/hdtls/swift-netbot-framing.git", branch: "main"),
     .package(url: "https://github.com/hdtls/swift-netbot-essentials.git", branch: "main"),
     .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.3.0"),
     .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
@@ -155,7 +155,7 @@ if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
 } else {
   package.dependencies += [
     .package(path: "../swift-nio-transport-services"),
-    .package(path: "../swift-netbot-frame-processing"),
+    .package(path: "../swift-netbot-framing"),
     .package(path: "../swift-netbot-essentials"),
     .package(path: "../swift-maxminddb"),
     .package(path: "../swift-preference"),
