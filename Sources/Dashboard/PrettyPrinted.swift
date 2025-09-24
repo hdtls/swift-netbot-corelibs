@@ -65,4 +65,25 @@
       """
     }
   }
+
+  @available(SwiftStdlib 5.9, *)
+  extension Response.PersistentModel {
+
+    public var isImage: Bool {
+      httpResponse?.headerFields[.contentType]?.hasPrefix("image") ?? false
+    }
+
+    public var isText: Bool {
+      httpResponse?.headerFields[.contentType]?.hasPrefix("text") ?? false
+    }
+
+    public var isForm: Bool {
+      let possibleValues = ["application/x-www-form-urlencoded", "multipart/form-data"]
+      return possibleValues.contains(httpResponse?.headerFields[.contentType] ?? "")
+    }
+
+    public var isJSON: Bool {
+      httpResponse?.headerFields[.contentType]?.hasSuffix("json") ?? false
+    }
+  }
 #endif

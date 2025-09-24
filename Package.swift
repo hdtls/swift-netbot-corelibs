@@ -91,6 +91,7 @@ let package = Package(
       name: "Dashboard",
       dependencies: [
         "_PreferenceSupport",
+        .product(name: "NIOCore", package: "swift-nio"),
         .product(name: "AnlzrReports", package: "swift-netbot-essentials"),
       ]
     ),
