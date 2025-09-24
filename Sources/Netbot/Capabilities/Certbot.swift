@@ -365,7 +365,7 @@
         var status: OSStatus
         let attributes: [CFString: Any] = [
           kSecClass: kSecClassCertificate,
-          kSecValueRef: backing.representation,
+          kSecValueRef: try backing.certificate,
           kSecAttrLabel: backing.commonName,
         ]
 
