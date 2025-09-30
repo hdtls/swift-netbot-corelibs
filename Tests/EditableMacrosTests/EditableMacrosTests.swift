@@ -9,8 +9,8 @@ import SwiftSyntaxMacrosTestSupport
 import XCTest
 
 // Macro implementations build for the host, so the corresponding module is not available when cross-compiling. Cross-compiled tests may still make use of the macro itself in end-to-end tests.
-#if canImport(NetbotMacros)
-  import NetbotMacros
+#if canImport(EditableMacros)
+  import EditableMacros
 
   let testMacros: [String: (Macro & Sendable).Type] = [
     "Editable": EditableMacro.self
@@ -20,7 +20,7 @@ import XCTest
 final class EditableMacrosTests: XCTestCase {
 
   func testEditableMacro() throws {
-    #if canImport(NetbotMacros)
+    #if canImport(EditableMacros)
       let originalSources = [
         """
         @Editable<Data> struct Presentation {
@@ -103,8 +103,8 @@ final class EditableMacrosTests: XCTestCase {
     #endif
   }
 
-  func testIgnoreProfileURLProperty() {
-    #if canImport(NetbotMacros)
+  func testIgnoreProfileURLProperty() throws {
+    #if canImport(EditableMacros)
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -178,8 +178,8 @@ final class EditableMacrosTests: XCTestCase {
     #endif
   }
 
-  func testIgnoreDismissProperty() {
-    #if canImport(NetbotMacros)
+  func testIgnoreDismissProperty() throws {
+    #if canImport(EditableMacros)
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -254,8 +254,8 @@ final class EditableMacrosTests: XCTestCase {
     #endif
   }
 
-  func testIgnoreModelContextProperty() {
-    #if canImport(NetbotMacros)
+  func testIgnoreModelContextProperty() throws {
+    #if canImport(EditableMacros)
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -330,8 +330,8 @@ final class EditableMacrosTests: XCTestCase {
     #endif
   }
 
-  func testIgnoreProfileAssistantProperty() {
-    #if canImport(NetbotMacros)
+  func testIgnoreProfileAssistantProperty() throws {
+    #if canImport(EditableMacros)
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -406,8 +406,8 @@ final class EditableMacrosTests: XCTestCase {
     #endif
   }
 
-  func testIgnoreDataProperty() {
-    #if canImport(NetbotMacros)
+  func testIgnoreDataProperty() throws {
+    #if canImport(EditableMacros)
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -482,8 +482,8 @@ final class EditableMacrosTests: XCTestCase {
     #endif
   }
 
-  func testIgnorePersistentModelProperty() {
-    #if canImport(NetbotMacros)
+  func testIgnorePersistentModelProperty() throws {
+    #if canImport(EditableMacros)
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -558,8 +558,8 @@ final class EditableMacrosTests: XCTestCase {
     #endif
   }
 
-  func testIgnoreInitialzier() {
-    #if canImport(NetbotMacros)
+  func testIgnoreInitialzier() throws {
+    #if canImport(EditableMacros)
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -641,8 +641,8 @@ final class EditableMacrosTests: XCTestCase {
     #endif
   }
 
-  func testIgnoreInitializerIfAlreadyContainsMoreThanOneInititlaizers() {
-    #if canImport(NetbotMacros)
+  func testIgnoreInitializerIfAlreadyContainsMoreThanOneInititlaizers() throws {
+    #if canImport(EditableMacros)
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -728,8 +728,8 @@ final class EditableMacrosTests: XCTestCase {
     #endif
   }
 
-  func testIgnoreInitializerIfExisitInitializerIsNotBuildForPreview() {
-    #if canImport(NetbotMacros)
+  func testIgnoreInitializerIfExisitInitializerIsNotBuildForPreview() throws {
+    #if canImport(EditableMacros)
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -811,8 +811,8 @@ final class EditableMacrosTests: XCTestCase {
     #endif
   }
 
-  func testGenerateInitializerIfExistInitializerIsForPreview() {
-    #if canImport(NetbotMacros)
+  func testGenerateInitializerIfExistInitializerIsForPreview() throws {
+    #if canImport(EditableMacros)
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -903,8 +903,8 @@ final class EditableMacrosTests: XCTestCase {
     #endif
   }
 
-  func testIgnoreSaveFunction() {
-    #if canImport(NetbotMacros)
+  func testIgnoreSaveFunction() throws {
+    #if canImport(EditableMacros)
       let originalSource =
         """
         @Editable<Data> struct Presentation {

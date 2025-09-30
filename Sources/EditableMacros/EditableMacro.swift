@@ -10,7 +10,9 @@ import SwiftSyntaxMacros
 public struct EditableMacro: MemberMacro, Sendable {
 
   public static func expansion(
-    of node: AttributeSyntax, providingMembersOf declaration: some DeclGroupSyntax,
+    of node: AttributeSyntax,
+    providingMembersOf declaration: some DeclGroupSyntax,
+    conformingTo protocols: [TypeSyntax],
     in context: some MacroExpansionContext
   ) throws -> [DeclSyntax] {
     let attributes = declaration.attributes.compactMap {

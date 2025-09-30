@@ -10,7 +10,7 @@ import Preference
 #endif
 
 @available(SwiftStdlib 5.3, *)
-extension OutboundMode: @retroactive RawRepresentable {
+extension OutboundMode: RawRepresentable {
 
   public var rawValue: String {
     switch self {
@@ -38,7 +38,7 @@ extension OutboundMode: @retroactive RawRepresentable {
 }
 
 @available(SwiftStdlib 5.3, *)
-extension OutboundMode: @retroactive PreferenceRepresentable {}
+extension OutboundMode: PreferenceRepresentable {}
 
 @available(SwiftStdlib 5.3, *)
 extension OutboundMode {

@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.1
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 //
 // See LICENSE.txt for license information
@@ -15,10 +15,10 @@ let package = Package(
     .tvOS(.v13),
   ],
   products: [
+    .library(name: "Netbot", targets: ["Netbot"]),
+    .library(name: "Dashboard", targets: ["Dashboard"]),
     .library(name: "_NEAnalytics", targets: ["_NEAnalytics"]),
     .library(name: "_PrivilegeSupport", targets: ["_PrivilegeSupport"]),
-    .library(name: "Dashboard", targets: ["Dashboard"]),
-    .library(name: "Netbot", targets: ["Netbot"]),
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
@@ -31,7 +31,7 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-nio-extras.git", from: "1.25.0"),
     .package(url: "https://github.com/apple/swift-http-types.git", from: "1.4.0"),
     .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.3.0"),
-    .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "602.0.0"),
+    .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "601.0.0"),
   ],
   targets: [
     .macro(
@@ -164,12 +164,6 @@ let package = Package(
     ),
     .testTarget(name: "_ProfileSupportTests", dependencies: ["_ProfileSupport"]),
     .testTarget(
-      name: "AnlzrReportsTests",
-      dependencies: [
-        "AnlzrReports"
-      ]
-    ),
-    .testTarget(
       name: "AnlzrTests",
       dependencies: [
         "Anlzr",
@@ -180,6 +174,12 @@ let package = Package(
       ]
     ),
     .testTarget(
+      name: "AnlzrReportsTests",
+      dependencies: [
+        "AnlzrReports"
+      ]
+    ),
+    .testTarget(
       name: "CoWOptimizationTests",
       dependencies: [
         "CoWOptimizationMacros",
@@ -187,17 +187,17 @@ let package = Package(
       ]
     ),
     .testTarget(
-      name: "EditableMacrosTests",
+      name: "SynchronizationMacrosTests",
       dependencies: [
-        "EditableMacros",
+        "SynchronizationMacros",
         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
       ]
     ),
     .testTarget(name: "NetbotTests", dependencies: ["Netbot"]),
     .testTarget(
-      name: "SynchronizationMacrosTests",
+      name: "EditableMacrosTests",
       dependencies: [
-        "SynchronizationMacros",
+        "EditableMacros",
         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
       ]
     ),
