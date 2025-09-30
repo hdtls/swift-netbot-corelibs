@@ -4,9 +4,10 @@
 
 import SwiftSyntax
 import SwiftSyntaxBuilder
+import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
-import SwiftSyntaxMacrosTestSupport
-import XCTest
+import SwiftSyntaxMacrosGenericTestSupport
+import Testing
 
 // Macro implementations build for the host, so the corresponding module is not available when cross-compiling. Cross-compiled tests may still make use of the macro itself in end-to-end tests.
 #if canImport(EditableMacros)
@@ -17,10 +18,10 @@ import XCTest
   ]
 #endif
 
-final class EditableMacrosTests: XCTestCase {
+@Suite struct EditableMacrosTests {
 
-  func testEditableMacro() throws {
-    #if canImport(EditableMacros)
+  #if canImport(EditableMacros)
+    @Test func editableMacro() throws {
       let originalSources = [
         """
         @Editable<Data> struct Presentation {
@@ -94,92 +95,106 @@ final class EditableMacrosTests: XCTestCase {
         assertMacroExpansion(
           originalSource,
           expandedSource: expectedExpandedSource,
-          macros: testMacros,
+          macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
           indentationWidth: .spaces(2)
+        ) {
+          #expect(
+            Bool(false),
+            "\($0.message)",
+            sourceLocation: SourceLocation(
+              fileID: $0.location.fileID,
+              filePath: $0.location.filePath,
+              line: $0.location.line,
+              column: $0.location.column
+            )
+          )
+        }
+      }
+    }
+
+    @Test func ignoreProfileURLProperty() throws {
+      let originalSource =
+        """
+        @Editable<Data> struct Presentation {
+
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+        }
+        """
+      let expectedExpandedSource = """
+        struct Presentation {
+
+          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+
+          @Environment(\\.dismiss) private var dismiss
+
+          @Environment(\\.modelContext) private var modelContext
+
+          @Environment(\\.profileAssistant) private var profileAssistant
+
+          @State private var data: Data
+
+          private let persistentModel: Data.PersistentModel?
+
+          init(data: Data.PersistentModel?) {
+            self.persistentModel = data
+            if let data {
+              self._data = .init(initialValue: .init(persistentModel: data))
+            } else {
+              self._data = .init(initialValue: .init())
+            }
+          }
+
+          private func save() {
+            do {
+              if let persistentModel {
+                let outdated = Data(persistentModel: persistentModel)
+                persistentModel.mergeValues(data)
+                Task(priority: .background) {
+                  try await profileAssistant.replace(outdated, with: data)
+                }
+              } else {
+                var fd = FetchDescriptor<Profile.PersistentModel>()
+                fd.predicate = #Predicate {
+                  $0.url == profileURL
+                }
+                guard let profile = try modelContext.fetch(fd).first else {
+                  return
+                }
+                Task(priority: .background) {
+                  try await profileAssistant.insert(data)
+                }
+                let persistentModel = Data.PersistentModel()
+                persistentModel.mergeValues(data)
+                persistentModel.lazyProfile = profile
+              }
+
+              try modelContext.save()
+            } catch {
+              assertionFailure(error.localizedDescription)
+            }
+          }
+        }
+        """
+      assertMacroExpansion(
+        originalSource,
+        expandedSource: expectedExpandedSource,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
+        indentationWidth: .spaces(2)
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
         )
       }
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+    }
 
-  func testIgnoreProfileURLProperty() throws {
-    #if canImport(EditableMacros)
-      let originalSource =
-        """
-        @Editable<Data> struct Presentation {
-
-          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
-        }
-        """
-      let expectedExpandedSource = """
-        struct Presentation {
-
-          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
-
-          @Environment(\\.dismiss) private var dismiss
-
-          @Environment(\\.modelContext) private var modelContext
-
-          @Environment(\\.profileAssistant) private var profileAssistant
-
-          @State private var data: Data
-
-          private let persistentModel: Data.PersistentModel?
-
-          init(data: Data.PersistentModel?) {
-            self.persistentModel = data
-            if let data {
-              self._data = .init(initialValue: .init(persistentModel: data))
-            } else {
-              self._data = .init(initialValue: .init())
-            }
-          }
-
-          private func save() {
-            do {
-              if let persistentModel {
-                let outdated = Data(persistentModel: persistentModel)
-                persistentModel.mergeValues(data)
-                Task(priority: .background) {
-                  try await profileAssistant.replace(outdated, with: data)
-                }
-              } else {
-                var fd = FetchDescriptor<Profile.PersistentModel>()
-                fd.predicate = #Predicate {
-                  $0.url == profileURL
-                }
-                guard let profile = try modelContext.fetch(fd).first else {
-                  return
-                }
-                Task(priority: .background) {
-                  try await profileAssistant.insert(data)
-                }
-                let persistentModel = Data.PersistentModel()
-                persistentModel.mergeValues(data)
-                persistentModel.lazyProfile = profile
-              }
-
-              try modelContext.save()
-            } catch {
-              assertionFailure(error.localizedDescription)
-            }
-          }
-        }
-        """
-      assertMacroExpansion(
-        originalSource,
-        expandedSource: expectedExpandedSource,
-        macros: testMacros,
-        indentationWidth: .spaces(2)
-      )
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
-
-  func testIgnoreDismissProperty() throws {
-    #if canImport(EditableMacros)
+    @Test func ignoreDismissProperty() throws {
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -246,16 +261,23 @@ final class EditableMacrosTests: XCTestCase {
       assertMacroExpansion(
         originalSource,
         expandedSource: expectedExpandedSource,
-        macros: testMacros,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
         indentationWidth: .spaces(2)
-      )
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
+        )
+      }
+    }
 
-  func testIgnoreModelContextProperty() throws {
-    #if canImport(EditableMacros)
+    @Test func ignoreModelContextProperty() throws {
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -322,16 +344,23 @@ final class EditableMacrosTests: XCTestCase {
       assertMacroExpansion(
         originalSource,
         expandedSource: expectedExpandedSource,
-        macros: testMacros,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
         indentationWidth: .spaces(2)
-      )
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
+        )
+      }
+    }
 
-  func testIgnoreProfileAssistantProperty() throws {
-    #if canImport(EditableMacros)
+    @Test func ignoreProfileAssistantProperty() throws {
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -398,16 +427,23 @@ final class EditableMacrosTests: XCTestCase {
       assertMacroExpansion(
         originalSource,
         expandedSource: expectedExpandedSource,
-        macros: testMacros,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
         indentationWidth: .spaces(2)
-      )
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
+        )
+      }
+    }
 
-  func testIgnoreDataProperty() throws {
-    #if canImport(EditableMacros)
+    @Test func ignoreDataProperty() throws {
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -474,16 +510,23 @@ final class EditableMacrosTests: XCTestCase {
       assertMacroExpansion(
         originalSource,
         expandedSource: expectedExpandedSource,
-        macros: testMacros,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
         indentationWidth: .spaces(2)
-      )
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
+        )
+      }
+    }
 
-  func testIgnorePersistentModelProperty() throws {
-    #if canImport(EditableMacros)
+    @Test func ignorePersistentModelProperty() throws {
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -550,16 +593,23 @@ final class EditableMacrosTests: XCTestCase {
       assertMacroExpansion(
         originalSource,
         expandedSource: expectedExpandedSource,
-        macros: testMacros,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
         indentationWidth: .spaces(2)
-      )
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
+        )
+      }
+    }
 
-  func testIgnoreInitialzier() throws {
-    #if canImport(EditableMacros)
+    @Test func ignoreInitialzier() throws {
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -633,16 +683,23 @@ final class EditableMacrosTests: XCTestCase {
       assertMacroExpansion(
         originalSource,
         expandedSource: expectedExpandedSource,
-        macros: testMacros,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
         indentationWidth: .spaces(2)
-      )
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
+        )
+      }
+    }
 
-  func testIgnoreInitializerIfAlreadyContainsMoreThanOneInititlaizers() throws {
-    #if canImport(EditableMacros)
+    @Test func ignoreInitializerIfAlreadyContainsMoreThanOneInititlaizers() throws {
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -720,16 +777,23 @@ final class EditableMacrosTests: XCTestCase {
       assertMacroExpansion(
         originalSource,
         expandedSource: expectedExpandedSource,
-        macros: testMacros,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
         indentationWidth: .spaces(2)
-      )
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
+        )
+      }
+    }
 
-  func testIgnoreInitializerIfExisitInitializerIsNotBuildForPreview() throws {
-    #if canImport(EditableMacros)
+    @Test func ignoreInitializerIfExisitInitializerIsNotBuildForPreview() throws {
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -803,16 +867,23 @@ final class EditableMacrosTests: XCTestCase {
       assertMacroExpansion(
         originalSource,
         expandedSource: expectedExpandedSource,
-        macros: testMacros,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
         indentationWidth: .spaces(2)
-      )
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
+        )
+      }
+    }
 
-  func testGenerateInitializerIfExistInitializerIsForPreview() throws {
-    #if canImport(EditableMacros)
+    @Test func generateInitializerIfExistInitializerIsForPreview() throws {
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -895,16 +966,23 @@ final class EditableMacrosTests: XCTestCase {
       assertMacroExpansion(
         originalSource,
         expandedSource: expectedExpandedSource,
-        macros: testMacros,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
         indentationWidth: .spaces(2)
-      )
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
+        )
+      }
+    }
 
-  func testIgnoreSaveFunction() throws {
-    #if canImport(EditableMacros)
+    @Test func ignoreSaveFunction() throws {
       let originalSource =
         """
         @Editable<Data> struct Presentation {
@@ -945,11 +1023,20 @@ final class EditableMacrosTests: XCTestCase {
       assertMacroExpansion(
         originalSource,
         expandedSource: expectedExpandedSource,
-        macros: testMacros,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
         indentationWidth: .spaces(2)
-      )
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
+        )
+      }
+    }
+  #endif
 }

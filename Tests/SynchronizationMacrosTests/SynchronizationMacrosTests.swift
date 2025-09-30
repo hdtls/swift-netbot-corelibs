@@ -14,9 +14,10 @@
 
 import SwiftSyntax
 import SwiftSyntaxBuilder
+import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
-import SwiftSyntaxMacrosTestSupport
-import XCTest
+import SwiftSyntaxMacrosGenericTestSupport
+import Testing
 
 // Macro implementations build for the host, so the corresponding module is not available when cross-compiling. Cross-compiled tests may still make use of the macro itself in end-to-end tests.
 #if canImport(SynchronizationMacros)
@@ -29,17 +30,17 @@ import XCTest
   ]
 #endif
 
-final class SynchronizationMacrosTests: XCTestCase {
+@Suite struct SynchronizationMacrosTests {
 
-  func testTrackedMacro() async throws {
-    #if canImport(SynchronizationMacros)
-      let originalSources = [
+  #if canImport(SynchronizationMacros)
+    @Test func trackedMacro() throws {
+      let originalSource =
         """
         class Tracked {
           @LockableTracked var p1: String
         }
         """
-      ]
+
       let expectedExpandedSource = """
         class Tracked {
           var p1: String {
@@ -58,22 +59,27 @@ final class SynchronizationMacrosTests: XCTestCase {
           private let _p1: Mutex<String>
         }
         """
-      for originalSource in originalSources {
-        assertMacroExpansion(
-          originalSource,
-          expandedSource: expectedExpandedSource,
-          macros: testMacros,
-          indentationWidth: .spaces(2)
+      assertMacroExpansion(
+        originalSource,
+        expandedSource: expectedExpandedSource,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
+        indentationWidth: .spaces(2)
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
         )
       }
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+    }
 
-  func testTrackedWithAccessMode() async throws {
-    #if canImport(SynchronizationMacros)
-      let originalSources = [
+    @Test func trackedWithAccessMode() throws {
+      let originalSource =
         """
         class Tracked {
           @LockableTracked(accessors: .get) var p1: Int
@@ -81,7 +87,7 @@ final class SynchronizationMacrosTests: XCTestCase {
           @LockableTracked(accessors: .get, .set) var p3: Int
         }
         """
-      ]
+
       let expectedExpandedSource = """
         class Tracked {
           var p1: Int {
@@ -118,22 +124,27 @@ final class SynchronizationMacrosTests: XCTestCase {
           private let _p3: Mutex<Int>
         }
         """
-      for originalSource in originalSources {
-        assertMacroExpansion(
-          originalSource,
-          expandedSource: expectedExpandedSource,
-          macros: testMacros,
-          indentationWidth: .spaces(2)
+      assertMacroExpansion(
+        originalSource,
+        expandedSource: expectedExpandedSource,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
+        indentationWidth: .spaces(2)
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
         )
       }
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+    }
 
-  func testTrackedWithAccessLevel() async throws {
-    #if canImport(SynchronizationMacros)
-      let originalSources = [
+    @Test func trackedWithAccessLevel() throws {
+      let originalSource =
         """
         class Tracked {
           @LockableTracked(accessLevel: .open) var p1: Int
@@ -144,7 +155,7 @@ final class SynchronizationMacrosTests: XCTestCase {
           @LockableTracked(accessLevel: .private) var p6: Int
         }
         """
-      ]
+
       let expectedExpandedSource = """
         class Tracked {
           var p1: Int {
@@ -233,56 +244,66 @@ final class SynchronizationMacrosTests: XCTestCase {
           private let _p6: Mutex<Int>
         }
         """
-      for originalSource in originalSources {
-        assertMacroExpansion(
-          originalSource,
-          expandedSource: expectedExpandedSource,
-          macros: testMacros,
-          indentationWidth: .spaces(2)
+      assertMacroExpansion(
+        originalSource,
+        expandedSource: expectedExpandedSource,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
+        indentationWidth: .spaces(2)
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
         )
       }
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+    }
 
-  func testIgnoredMacro() async throws {
-    #if canImport(SynchronizationMacros)
-      let originalSources = [
+    @Test func ignoredMacro() throws {
+      let originalSource =
         """
         class Ignored {
           @LockableIgnored var p1: String
         }
         """
-      ]
+
       let expectedExpandedSource = """
         class Ignored {
           var p1: String
         }
         """
-      for originalSource in originalSources {
-        assertMacroExpansion(
-          originalSource,
-          expandedSource: expectedExpandedSource,
-          macros: testMacros,
-          indentationWidth: .spaces(2)
+      assertMacroExpansion(
+        originalSource,
+        expandedSource: expectedExpandedSource,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
+        indentationWidth: .spaces(2)
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
         )
       }
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+    }
 
-  func testLockableMacro() async throws {
-    #if canImport(SynchronizationMacros)
-      let originalSources = [
+    @Test func lockableMacro() throws {
+      let originalSource =
         """
         @Lockable class Contact {
           var givenName: String
           var familyName: String
         }
         """
-      ]
+
       let expectedExpandedSource = """
         class Contact {
           var givenName: String {
@@ -315,29 +336,34 @@ final class SynchronizationMacrosTests: XCTestCase {
           private let _familyName: Mutex<String>
         }
         """
-      for originalSource in originalSources {
-        assertMacroExpansion(
-          originalSource,
-          expandedSource: expectedExpandedSource,
-          macros: testMacros,
-          indentationWidth: .spaces(2)
+      assertMacroExpansion(
+        originalSource,
+        expandedSource: expectedExpandedSource,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
+        indentationWidth: .spaces(2)
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
         )
       }
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+    }
 
-  func testIgnoreUnderLockable() async throws {
-    #if canImport(SynchronizationMacros)
-      let originalSources = [
+    @Test func ignoreUnderLockable() throws {
+      let originalSource =
         """
         @Lockable class Contact {
           var givenName: String
           @LockableIgnored var familyName: String
         }
         """
-      ]
+
       let expectedExpandedSource = """
         class Contact {
           var givenName: String {
@@ -357,29 +383,34 @@ final class SynchronizationMacrosTests: XCTestCase {
           var familyName: String
         }
         """
-      for originalSource in originalSources {
-        assertMacroExpansion(
-          originalSource,
-          expandedSource: expectedExpandedSource,
-          macros: testMacros,
-          indentationWidth: .spaces(2)
+      assertMacroExpansion(
+        originalSource,
+        expandedSource: expectedExpandedSource,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
+        indentationWidth: .spaces(2)
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
         )
       }
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+    }
 
-  func testTrackedUnderLockable() async throws {
-    #if canImport(SynchronizationMacros)
-      let originalSources = [
+    @Test func trackedUnderLockable() throws {
+      let originalSource =
         """
         @Lockable class Contact {
           @LockableTracked var givenName: String
           var familyName: String
         }
         """
-      ]
+
       let expectedExpandedSource = """
         class Contact {
           var givenName: String {
@@ -412,29 +443,34 @@ final class SynchronizationMacrosTests: XCTestCase {
           private let _familyName: Mutex<String>
         }
         """
-      for originalSource in originalSources {
-        assertMacroExpansion(
-          originalSource,
-          expandedSource: expectedExpandedSource,
-          macros: testMacros,
-          indentationWidth: .spaces(2)
+      assertMacroExpansion(
+        originalSource,
+        expandedSource: expectedExpandedSource,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
+        indentationWidth: .spaces(2)
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
         )
       }
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+    }
 
-  func testTrackedWithAccessModeUnderLockable() async throws {
-    #if canImport(SynchronizationMacros)
-      let originalSources = [
+    @Test func trackedWithAccessModeUnderLockable() throws {
+      let originalSource =
         """
         @Lockable class Tracked {
           @LockableTracked(accessors: .get) var p1: Int
           @LockableTracked(accessors: .get, .set) var p2: Int
         }
         """
-      ]
+
       let expectedExpandedSource = """
         class Tracked {
           var p1: Int {
@@ -462,28 +498,33 @@ final class SynchronizationMacrosTests: XCTestCase {
           private let _p2: Mutex<Int>
         }
         """
-      for originalSource in originalSources {
-        assertMacroExpansion(
-          originalSource,
-          expandedSource: expectedExpandedSource,
-          macros: testMacros,
-          indentationWidth: .spaces(2)
+      assertMacroExpansion(
+        originalSource,
+        expandedSource: expectedExpandedSource,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
+        indentationWidth: .spaces(2)
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
         )
       }
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+    }
 
-  func testLockableWithDefaultAccessControl() async throws {
-    #if canImport(SynchronizationMacros)
-      let originalSources = [
+    @Test func lockableWithDefaultAccessControl() throws {
+      let originalSource =
         """
         @Lockable() class Locked {
           var p1: Int
         }
         """
-      ]
+
       let expectedExpandedSource = """
         class Locked {
           var p1: Int {
@@ -502,16 +543,23 @@ final class SynchronizationMacrosTests: XCTestCase {
           private let _p1: Mutex<Int>
         }
         """
-      for originalSource in originalSources {
-        assertMacroExpansion(
-          originalSource,
-          expandedSource: expectedExpandedSource,
-          macros: testMacros,
-          indentationWidth: .spaces(2)
+      assertMacroExpansion(
+        originalSource,
+        expandedSource: expectedExpandedSource,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
+        indentationWidth: .spaces(2)
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
         )
       }
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+    }
+  #endif
 }

@@ -4,9 +4,10 @@
 
 import SwiftSyntax
 import SwiftSyntaxBuilder
+import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
-import SwiftSyntaxMacrosTestSupport
-import XCTest
+import SwiftSyntaxMacrosGenericTestSupport
+import Testing
 
 // Macro implementations build for the host, so the corresponding module is not available when cross-compiling. Cross-compiled tests may still make use of the macro itself in end-to-end tests.
 #if canImport(CoWOptimizationMacros)
@@ -19,18 +20,18 @@ import XCTest
   ]
 #endif
 
-final class CopyonWriteMacrosTests: XCTestCase {
+@Suite struct CopyonWriteMacrosTests {
 
-  func testCoWOptimizationMacro() throws {
-    #if canImport(CoWOptimizationMacros)
-      let originalSources = [
+  #if canImport(CoWOptimizationMacros)
+    @Test func coWOptimizationMacro() throws {
+      let originalSource =
         """
         @_cowOptimization struct Contact {
           var givenName: String
           var familyName: String
         }
         """
-      ]
+
       let expectedExpandedSource = """
         struct Contact {
           @inlinable
@@ -84,29 +85,34 @@ final class CopyonWriteMacrosTests: XCTestCase {
           }
         }
         """
-      for originalSource in originalSources {
-        assertMacroExpansion(
-          originalSource,
-          expandedSource: expectedExpandedSource,
-          macros: testMacros,
-          indentationWidth: .spaces(2)
+      assertMacroExpansion(
+        originalSource,
+        expandedSource: expectedExpandedSource,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
+        indentationWidth: .spaces(2)
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
         )
       }
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+    }
 
-  func testCoWOptimizationIgnoredMacro() throws {
-    #if canImport(CoWOptimizationMacros)
-      let originalSources = [
+    @Test func coWOptimizationIgnoredMacro() throws {
+      let originalSource =
         """
         @_cowOptimization struct Contact {
           @_cowOptimizationIgnored var givenName: String
           var familyName: String
         }
         """
-      ]
+
       let expectedExpandedSource = """
         struct Contact {
           var givenName: String
@@ -147,29 +153,34 @@ final class CopyonWriteMacrosTests: XCTestCase {
           }
         }
         """
-      for originalSource in originalSources {
-        assertMacroExpansion(
-          originalSource,
-          expandedSource: expectedExpandedSource,
-          macros: testMacros,
-          indentationWidth: .spaces(2)
+      assertMacroExpansion(
+        originalSource,
+        expandedSource: expectedExpandedSource,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
+        indentationWidth: .spaces(2)
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
         )
       }
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+    }
 
-  func testCoWOptimizationTrackedMacro() throws {
-    #if canImport(CoWOptimizationMacros)
-      let originalSources = [
+    @Test func coWOptimizationTrackedMacro() throws {
+      let originalSource =
         """
         @_cowOptimization struct Contact {
           @_cowOptimizationTracked var givenName: String
           var familyName: String
         }
         """
-      ]
+
       let expectedExpandedSource = """
         struct Contact {
           @inlinable var givenName: String {
@@ -222,16 +233,23 @@ final class CopyonWriteMacrosTests: XCTestCase {
           }
         }
         """
-      for originalSource in originalSources {
-        assertMacroExpansion(
-          originalSource,
-          expandedSource: expectedExpandedSource,
-          macros: testMacros,
-          indentationWidth: .spaces(2)
+      assertMacroExpansion(
+        originalSource,
+        expandedSource: expectedExpandedSource,
+        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
+        indentationWidth: .spaces(2)
+      ) {
+        #expect(
+          Bool(false),
+          "\($0.message)",
+          sourceLocation: SourceLocation(
+            fileID: $0.location.fileID,
+            filePath: $0.location.filePath,
+            line: $0.location.line,
+            column: $0.location.column
+          )
         )
       }
-    #else
-      throw XCTSkip("macros are only supported when running tests for the host platform")
-    #endif
-  }
+    }
+  #endif
 }

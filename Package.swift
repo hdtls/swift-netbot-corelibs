@@ -180,17 +180,17 @@ let package = Package(
       ]
     ),
     .testTarget(
-      name: "CoWOptimizationTests",
+      name: "CoWOptimizationMacrosTests",
       dependencies: [
         "CoWOptimizationMacros",
-        .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
       ]
     ),
     .testTarget(
       name: "EditableMacrosTests",
       dependencies: [
         "EditableMacros",
-        .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
       ]
     ),
     .testTarget(name: "NetbotTests", dependencies: ["Netbot"]),
@@ -198,7 +198,7 @@ let package = Package(
       name: "SynchronizationMacrosTests",
       dependencies: [
         "SynchronizationMacros",
-        .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
       ]
     ),
   ]

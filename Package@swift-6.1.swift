@@ -15,10 +15,10 @@ let package = Package(
     .tvOS(.v13),
   ],
   products: [
-    .library(name: "Netbot", targets: ["Netbot"]),
-    .library(name: "Dashboard", targets: ["Dashboard"]),
     .library(name: "_NEAnalytics", targets: ["_NEAnalytics"]),
     .library(name: "_PrivilegeSupport", targets: ["_PrivilegeSupport"]),
+    .library(name: "Dashboard", targets: ["Dashboard"]),
+    .library(name: "Netbot", targets: ["Netbot"]),
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
@@ -180,7 +180,7 @@ let package = Package(
       ]
     ),
     .testTarget(
-      name: "CoWOptimizationTests",
+      name: "CoWOptimizationMacrosTests",
       dependencies: [
         "CoWOptimizationMacros",
         .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
