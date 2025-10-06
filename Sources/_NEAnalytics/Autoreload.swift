@@ -116,7 +116,7 @@
         store: store
       )
       self._maxminddbKeepUpToDate = .init(
-        wrappedValue: false,
+        wrappedValue: true,
         Prefs.Name.maxminddbKeepUpToDate,
         store: store
       )
