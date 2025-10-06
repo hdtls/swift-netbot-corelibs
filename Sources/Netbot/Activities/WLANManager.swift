@@ -3,6 +3,7 @@
 //
 
 #if os(macOS)
+  import Alamofire
   import CoreWLAN
   import Foundation
   import Observation
@@ -171,15 +172,12 @@
       configuration.proxyConfigurations = []
       configuration.connectionProxyDictionary = [:]
 
-      let session = URLSession(configuration: configuration)
+      let session = Session(configuration: configuration)
+      let addresses = try await session.request("https://icanhazip.com").serializingString().value
+        .components(separatedBy: .whitespacesAndNewlines)
 
-      let (data, _) = try await session.data(from: URL(string: "https://icanhazip.com")!)
-
-      let addresses = String(data: data, encoding: .utf8)?.components(
-        separatedBy: .whitespacesAndNewlines
-      )
       Task { @MainActor in
-        device?.externalIPAddresses = addresses ?? []
+        device?.externalIPAddresses = addresses
         device?.addressesUpdatedDate = .now
       }
     }

@@ -3,6 +3,7 @@
 //
 
 #if canImport(Darwin)
+  import Alamofire
   import AnlzrReports
   import Combine
   import Logging
@@ -127,27 +128,32 @@
       )
     }
 
-    private func _session(host: String, port: UInt16) -> URLSession {
-      let configuration = URLSessionConfiguration.default
-      #if canImport(Network)
-        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+    private var session: Session {
+      get throws {
+        let profile = try Profile(contentsOf: profileURL)
+        let configuration = URLSessionConfiguration.default
+        #if canImport(Network)
+          configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
 
-        if #available(SwiftStdlib 5.9, *) {
-          configuration.proxyConfigurations = [
-            .init(
-              httpCONNECTProxy: .hostPort(
-                host: .init(host), port: .init(rawValue: port) ?? 6152)
-            )
-          ]
-        } else {
-          configuration.connectionProxyDictionary = [
-            kCFNetworkProxiesHTTPEnable as String: 1,
-            kCFNetworkProxiesHTTPProxy as String: host,
-            kCFNetworkProxiesHTTPPort as String: port,
-          ]
-        }
-      #endif
-      return URLSession(configuration: configuration)
+          if let httpListenPort = profile.httpListenPort,
+            let port = NWEndpoint.Port(rawValue: UInt16(httpListenPort))
+          {
+            if #available(SwiftStdlib 5.9, *) {
+              configuration.proxyConfigurations = [
+                .init(
+                  httpCONNECTProxy: .hostPort(host: .init(profile.httpListenAddress), port: port))
+              ]
+            } else {
+              configuration.connectionProxyDictionary = [
+                kCFNetworkProxiesHTTPEnable as String: 1,
+                kCFNetworkProxiesHTTPProxy as String: profile.httpListenAddress,
+                kCFNetworkProxiesHTTPPort as String: port.rawValue,
+              ]
+            }
+          }
+        #endif
+        return Session(configuration: configuration)
+      }
     }
 
     public func run() async throws {
@@ -204,19 +210,14 @@
           $maxminddbLastUpdatedDate,
           $maxminddbKeepUpToDate
         )
-        .sink { [weak self] url, date, keepUpToDate in
+        .sink { [weak self] _, date, keepUpToDate in
           guard let self else { return }
           guard keepUpToDate else {
             // Cancel auto update task.
             existingGeoLite2AutoUpdateTask?.cancel()
             return
           }
-          let now: Date
-          if #available(SwiftStdlib 5.5, *) {
-            now = .now
-          } else {
-            now = .init()
-          }
+          let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
           let timeIntervalPast = date > now ? 86400 * 7 : Int64(now.timeIntervalSince(date))
           let initialDelay = TimeAmount.seconds(max(0, 86400 * 7 - timeIntervalPast))
           let delay = TimeAmount.hours(24 * 7)
@@ -225,9 +226,7 @@
             eventLoopGroup
             .any()
             .scheduleRepeatedTask(initialDelay: initialDelay, delay: delay) { _ in
-              Task.detached {
-                try await self.downloadGeoLite2(from: url)
-              }
+              try self.downloadMaxmindDBs()
             }
         }
         .store(in: &cancellables)
@@ -237,12 +236,7 @@
           .filter { $0 != .distantPast }
           .sink { [weak self] date in
             guard let self else { return }
-            let now: Date
-            if #available(SwiftStdlib 5.5, *) {
-              now = .now
-            } else {
-              now = .init()
-            }
+            let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
             let timeIntervalPast = date > now ? 24 * 3600 : Int64(now.timeIntervalSince(date))
             let initialDelay = TimeAmount.seconds(max(0, 24 * 60 * 60 - timeIntervalPast))
             let delay = TimeAmount.hours(24)
@@ -251,129 +245,76 @@
               eventLoopGroup
               .any()
               .scheduleRepeatedTask(initialDelay: initialDelay, delay: delay) { _ in
-                Task.detached {
-                  try await self.downloadExternalForwardingRules()
-                }
+                try self.downloadForwardingRuleExternalResources()
               }
           }
           .store(in: &cancellables)
       }
     }
 
-    private func downloadGeoLite2(from url: URL) async throws {
-      do {
-        let profile = try Profile(contentsOf: self.profileURL)
-        let session = self._session(
-          host: profile.httpListenAddress, port: UInt16(profile.httpListenPort ?? 6152))
-
-        let (url, _) = try await session._download(from: url)
-
-        let filename = "GeoLite2-Country.mmdb"
-        let fileURL: URL
-        let filePath: String
-        if #available(SwiftStdlib 5.7, *) {
-          fileURL = URL.maxmind.appending(path: filename, directoryHint: .notDirectory)
-          filePath = fileURL.path(percentEncoded: false)
-        } else {
-          fileURL = URL.maxmind.appendingPathComponent(filename, isDirectory: false)
-          filePath = fileURL.path
-        }
-
-        let fs = FileManager.default
-        try fs.createDirectory(at: .maxmind, withIntermediateDirectories: true)
-        if fs.fileExists(atPath: filePath) {
-          try fs.removeItem(at: fileURL)
-        }
-        try fs.moveItem(at: url, to: fileURL)
-
-        if #available(SwiftStdlib 5.5, *) {
-          self.maxminddbLastUpdatedDate = .now
-        } else {
-          self.maxminddbLastUpdatedDate = .init()
-        }
-      } catch {
-        self.logger.error(
-          "MaxMind GeoLite2-Country.mmdb update failure with error: \(error)")
+    private func downloadMaxmindDBs() throws {
+      let url = maxminddbDownloadURL
+      let filename = "GeoLite2-Country.mmdb"
+      let fileURL: URL
+      if #available(SwiftStdlib 5.7, *) {
+        fileURL = URL.maxmind.appending(path: filename, directoryHint: .notDirectory)
+      } else {
+        fileURL = URL.maxmind.appendingPathComponent(filename, isDirectory: false)
       }
+
+      let destination: DownloadRequest.Destination = { _, _ in
+        (fileURL, [.createIntermediateDirectories, .removePreviousFile])
+      }
+      try session.download(url, interceptor: .retryPolicy, to: destination)
+        .responseURL { [weak self] response in
+          guard let self, let url = try? response.result.get() else { return }
+          let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+          maxminddbLastUpdatedDate =
+            (try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate)
+            ?? now
+        }
     }
 
-    private func downloadExternalForwardingRules() async throws {
-      guard let profile = try? Profile(contentsOf: profileURL) else {
-        return
-      }
-      await withTaskGroup(of: Void.self) { g in
+    private func downloadForwardingRuleExternalResources() throws {
+      Task {
+        let profile = try Profile(contentsOf: profileURL)
 
-        let session = self._session(
-          host: profile.httpListenAddress, port: UInt16(profile.httpListenPort ?? 6152))
+        try await withThrowingTaskGroup(of: Void.self) { g in
+          for forwardingRuleConvertible in profile.asForwardingRules() {
+            let dstURL: URL
+            let resourceURL: URL?
 
-        let path: String
-        if #available(SwiftStdlib 5.7, *) {
-          path = URL.externalResourceDirectory.path(percentEncoded: false)
-        } else {
-          path = URL.externalResourceDirectory.path
-        }
+            switch forwardingRuleConvertible {
+            case let forwardingRule as DomainsetForwardingRule:
+              resourceURL = URL(string: forwardingRule.originalURLString)
+              dstURL = forwardingRule.externalResourceURL
+            case let forwardingRule as RulesetForwardingRule:
+              resourceURL = URL(string: forwardingRule.originalURLString)
+              dstURL = forwardingRule.externalResourceURL
+            default:
+              continue
+            }
 
-        if !FileManager.default.fileExists(atPath: path) {
-          do {
-            try FileManager.default.createDirectory(
-              at: .externalResourceDirectory, withIntermediateDirectories: true)
-          } catch {
-            self.logger.error(
-              "Create external resource directory failure with error: \(error)")
-          }
-        }
+            guard let resourceURL, !resourceURL.isFileURL else {
+              continue
+            }
 
-        for forwardingRuleConvertible in profile.asForwardingRules() {
-          let dstURL: URL
-          let resourceURL: URL?
-
-          switch forwardingRuleConvertible {
-          case let forwardingRule as DomainsetForwardingRule:
-            resourceURL = URL(string: forwardingRule.originalURLString)
-            dstURL = forwardingRule.externalResourceURL
-          case let forwardingRule as RulesetForwardingRule:
-            resourceURL = URL(string: forwardingRule.originalURLString)
-            dstURL = forwardingRule.externalResourceURL
-          default:
-            continue
-          }
-
-          guard let resourceURL else {
-            continue
-          }
-
-          g.addTask {
-            var srcURL = resourceURL
-            do {
-              if !resourceURL.isFileURL {
-                let (tmpURL, _) = try await session._download(from: srcURL)
-                srcURL = tmpURL
+            g.addTask { [weak self] in
+              let destination: DownloadRequest.Destination = { _, _ in
+                (dstURL, [.createIntermediateDirectories, .removePreviousFile])
               }
-
-              let path: String
-              if #available(SwiftStdlib 5.7, *) {
-                path = dstURL.path(percentEncoded: false)
-              } else {
-                path = dstURL.path
-              }
-
-              if FileManager.default.fileExists(atPath: path) {
-                try FileManager.default.removeItem(at: dstURL)
-              }
-              try FileManager.default.moveItem(at: srcURL, to: dstURL)
-            } catch {
-              self.logger.error(
-                "External resources \(srcURL) update failure with error: \(error)")
+              let _ = try await self?.session.download(
+                resourceURL, interceptor: .retryPolicy, to: destination
+              )
+              .serializingDownloadedFileURL()
+              .response
             }
           }
+          try await g.waitForAll()
         }
-        await g.waitForAll()
 
-        if #available(SwiftStdlib 5.5, *) {
-          self.forwardingRuleResourcesLastUpdatedDate = .now
-        } else {
-          self.forwardingRuleResourcesLastUpdatedDate = .init()
-        }
+        forwardingRuleResourcesLastUpdatedDate =
+          if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
       }
     }
 

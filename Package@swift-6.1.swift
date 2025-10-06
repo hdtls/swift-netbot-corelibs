@@ -32,6 +32,7 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-http-types.git", from: "1.4.0"),
     .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.3.0"),
     .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "601.0.0"),
+    .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.10.2"),
   ],
   targets: [
     .macro(
@@ -78,6 +79,7 @@ let package = Package(
         .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
         .product(name: "Preference", package: "swift-preference"),
         .product(name: "X509", package: "swift-certificates"),
+        .product(name: "Alamofire", package: "Alamofire"),
       ]
     ),
     .target(
@@ -154,6 +156,7 @@ let package = Package(
         .product(name: "Preference", package: "swift-preference"),
         .product(name: "SwiftASN1", package: "swift-asn1"),
         .product(name: "X509", package: "swift-certificates"),
+        .product(name: "Alamofire", package: "Alamofire"),
       ]
     ),
     .testTarget(name: "_DNSSupportTests", dependencies: ["_DNSSupport"]),

@@ -3,31 +3,11 @@
 //
 
 #if canImport(Darwin)
+  import Alamofire
   import Foundation
 
   @available(SwiftStdlib 5.9, *)
   public struct Connectivity: Sendable {
-
-    private class SessionDelegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
-
-      var urlSessionTaskDidFinishCollectingMetrics:
-        (
-          (URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void
-        )?
-
-      func urlSession(
-        _ session: URLSession, task: URLSessionTask,
-        didFinishCollecting metrics: URLSessionTaskMetrics
-      ) {
-        urlSessionTaskDidFinishCollectingMetrics?(session, task, metrics)
-      }
-
-      func urlSession(
-        _ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?
-      ) {
-
-      }
-    }
 
     public init() {}
 
@@ -60,55 +40,37 @@
       Duration,
       Duration
     ) {
-      try await withCheckedThrowingContinuation { continuation in
-        let connectivityCheckURL =
-          connectivityCheckURL ?? URL(
-            string: "https://captive.apple.com/hotspot-detect.html"
-          )!
-        let timeoutInterval = timeoutInterval ?? 5.0
-        var urlRequest = URLRequest(url: connectivityCheckURL)
-        urlRequest.httpMethod = "HEAD"
-        urlRequest.timeoutInterval = timeoutInterval
+      let urlConvertible =
+        connectivityCheckURL?.absoluteString ?? "https://captive.apple.com/hotspot-detect.html"
 
-        let configuration = URLSessionConfiguration.default
-        configuration.proxyConfigurations = []
-        configuration.connectionProxyDictionary = [:]
+      let configuration = URLSessionConfiguration.default
+      configuration.proxyConfigurations = []
+      configuration.connectionProxyDictionary = [:]
+      configuration.timeoutIntervalForRequest = timeoutInterval ?? 5.0
 
-        let sessionDelegate = SessionDelegate()
-        sessionDelegate.urlSessionTaskDidFinishCollectingMetrics = { _, _, metrics in
-          guard let transactionMetrics = metrics.transactionMetrics.first else {
-            return
-          }
+      let session = Session(configuration: configuration)
+      let metrics = await session.request(urlConvertible, method: .head).serializingData().response
+        .metrics
 
-          var result = (Duration.seconds(0), Duration.seconds(0))
+      var result = (Duration.seconds(0), Duration.seconds(0))
 
-          if let domainLookupStartDate = transactionMetrics.domainLookupStartDate,
-            let domainLookupEndDate = transactionMetrics.domainLookupEndDate
-          {
-            result.0 = .seconds(domainLookupStartDate.distance(to: domainLookupEndDate))
-          }
-
-          if let requestStartDate = transactionMetrics.requestStartDate,
-            let responseStartDate = transactionMetrics.responseStartDate
-          {
-            result.1 = .seconds(requestStartDate.distance(to: responseStartDate))
-          }
-
-          continuation.resume(returning: result)
-        }
-
-        let session = URLSession(
-          configuration: configuration,
-          delegate: sessionDelegate,
-          delegateQueue: OperationQueue()
-        )
-        session.dataTask(with: urlRequest) { _, _, error in
-          if let error {
-            continuation.resume(throwing: error)
-          }
-        }
-        .resume()
+      guard let transactionMetrics = metrics?.transactionMetrics.first else {
+        return result
       }
+
+      if let domainLookupStartDate = transactionMetrics.domainLookupStartDate,
+        let domainLookupEndDate = transactionMetrics.domainLookupEndDate
+      {
+        result.0 = .seconds(domainLookupStartDate.distance(to: domainLookupEndDate))
+      }
+
+      if let requestStartDate = transactionMetrics.requestStartDate,
+        let responseStartDate = transactionMetrics.responseStartDate
+      {
+        result.1 = .seconds(requestStartDate.distance(to: responseStartDate))
+      }
+
+      return result
     }
   }
 #endif
