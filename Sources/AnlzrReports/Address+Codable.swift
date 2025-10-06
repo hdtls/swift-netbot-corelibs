@@ -24,64 +24,142 @@ import NEAddressProcessing
 @available(SwiftStdlib 5.3, *)
 extension Address: @retroactive Codable {
 
+  private struct CodingKeys: CodingKey {
+
+    var stringValue: String
+    var intValue: Int?
+
+    init?(stringValue: String) {
+      self.init(stringValue: stringValue, intValue: nil)
+    }
+
+    init?(intValue: Int) {
+      self.init(stringValue: "_\(intValue)", intValue: intValue)
+    }
+
+    init(stringValue: String, intValue: Int?) {
+      self.stringValue = stringValue
+      self.intValue = intValue
+    }
+  }
+
+  private enum HostPortCodingKeys: CodingKey {
+    case host
+    case port
+  }
+
+  private enum NameCodingKeys: CodingKey {
+    case _0
+  }
+
+  private enum Ipv4CodingKeys: CodingKey {
+    case _0
+  }
+
+  private enum Ipv6CodingKeys: CodingKey {
+    case _0
+  }
+
+  private enum UnixCodingKeys: CodingKey {
+    case path
+  }
+
+  private enum UrlCodingKeys: CodingKey {
+    case _0
+  }
+
   public init(from decoder: any Decoder) throws {
-    let container = try decoder.singleValueContainer()
-    let data = try container.decode(String.self)
+    let container = try decoder.container(keyedBy: CodingKeys.self)
 
-    switch data {
-    case _ where data.hasPrefix("[hostPort] "):
-      let offset = "[hostPort] ".count
-      guard data.count > offset else {
-        throw DecodingError.dataCorruptedError(
-          in: container, debugDescription: "Address buffer is empty")
-      }
-      let addressDescription = data.suffix(from: data.index(data.startIndex, offsetBy: offset))
-
-      // IPv6 address contains multiple :, so we can't use firstIndex to split address.
-      guard let position = addressDescription.lastIndex(of: ":") else {
-        throw DecodingError.dataCorruptedError(
-          in: container, debugDescription: "Port is missing (\(addressDescription))")
-      }
-      let host = String(addressDescription.prefix(upTo: position))
-      guard let port = UInt16(addressDescription.suffix(from: position).dropFirst()) else {
-        throw DecodingError.dataCorruptedError(
-          in: container, debugDescription: "Invalid port value (\(addressDescription))")
-      }
-      self = .hostPort(host: .init(host), port: .init(rawValue: port))
-    case _ where data.hasPrefix("[unix] "):
-      let offset = "[unix] ".count
-      guard data.count > offset else {
-        throw DecodingError.dataCorruptedError(
-          in: container, debugDescription: "Address buffer is empty")
-      }
-      let addressDescription = data.suffix(from: data.index(data.startIndex, offsetBy: offset))
-      self = .unix(path: String(addressDescription))
-    case _ where data.hasPrefix("[url] "):
-      let offset = "[url] ".count
-      guard data.count > offset else {
-        throw DecodingError.dataCorruptedError(
-          in: container, debugDescription: "Address buffer is empty")
-      }
-      let addressDescription = data.suffix(from: data.index(data.startIndex, offsetBy: offset))
-      guard let url = URL(string: String(addressDescription)) else {
-        throw DecodingError.dataCorruptedError(
-          in: container, debugDescription: "Invalid URL string \(addressDescription)")
-      }
+    if let urlContainer = try? container.nestedContainer(
+      keyedBy: UrlCodingKeys.self, forKey: CodingKeys(stringValue: "url", intValue: nil))
+    {
+      let url = try urlContainer.decode(URL.self, forKey: ._0)
       self = .url(url)
-    default:
-      throw DecodingError.dataCorruptedError(in: container, debugDescription: "Bad address")
+      return
+    }
+
+    if let unixContainer = try? container.nestedContainer(
+      keyedBy: UnixCodingKeys.self, forKey: CodingKeys(stringValue: "unix", intValue: nil))
+    {
+      let path = try unixContainer.decode(String.self, forKey: .path)
+      self = .unix(path: path)
+      return
+    }
+
+    let hostPortContainer = try container.nestedContainer(
+      keyedBy: HostPortCodingKeys.self, forKey: CodingKeys(stringValue: "hostPort", intValue: nil))
+    let port = try Address.Port(rawValue: hostPortContainer.decode(UInt16.self, forKey: .port))
+    let hostContainer = try hostPortContainer.nestedContainer(
+      keyedBy: CodingKeys.self, forKey: .host)
+    if let ipv4Container = try? hostContainer.nestedContainer(
+      keyedBy: Ipv4CodingKeys.self, forKey: CodingKeys(stringValue: "ipv4", intValue: nil))
+    {
+      let decoded = try ipv4Container.decode(String.self, forKey: ._0)
+      guard let v4 = IPv4Address(decoded) else {
+        throw DecodingError.dataCorrupted(
+          DecodingError.Context(
+            codingPath: ipv4Container.codingPath + [Ipv4CodingKeys._0],
+            debugDescription:
+              "Cannot initialize \(IPv4Address.self) from invalid \(String.self) value \(decoded)"
+          )
+        )
+      }
+      self = .hostPort(host: .ipv4(v4), port: port)
+    } else if let ipv6Container = try? hostContainer.nestedContainer(
+      keyedBy: Ipv6CodingKeys.self, forKey: CodingKeys(stringValue: "ipv6", intValue: nil))
+    {
+      let decoded = try ipv6Container.decode(String.self, forKey: ._0)
+      guard let v6 = IPv6Address(decoded) else {
+        throw DecodingError.dataCorrupted(
+          DecodingError.Context(
+            codingPath: ipv6Container.codingPath + [Ipv6CodingKeys._0],
+            debugDescription:
+              "Cannot initialize \(IPv6Address.self) from invalid \(String.self) value \(decoded)"
+          )
+        )
+      }
+      self = .hostPort(host: .ipv6(v6), port: port)
+    } else {
+      let nameContainer = try hostContainer.nestedContainer(
+        keyedBy: NameCodingKeys.self, forKey: CodingKeys(stringValue: "name", intValue: nil))
+      let name = try nameContainer.decode(String.self, forKey: ._0)
+      self = .hostPort(host: .name(name), port: port)
     }
   }
 
   public func encode(to encoder: any Encoder) throws {
-    var container = encoder.singleValueContainer()
+    var container = encoder.container(keyedBy: CodingKeys.self)
+
     switch self {
     case .hostPort(let host, let port):
-      try container.encode("[hostPort] \(host.debugDescription):\(port.debugDescription)")
+      var hostPortContainer = container.nestedContainer(
+        keyedBy: HostPortCodingKeys.self, forKey: CodingKeys(stringValue: "hostPort", intValue: nil)
+      )
+      var hostContainer = hostPortContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .host)
+      switch host {
+      case .name(let name):
+        var nameContainer = hostContainer.nestedContainer(
+          keyedBy: NameCodingKeys.self, forKey: CodingKeys(stringValue: "name", intValue: nil))
+        try nameContainer.encode(name, forKey: ._0)
+      case .ipv4(let v4):
+        var ipv4Container = hostContainer.nestedContainer(
+          keyedBy: Ipv4CodingKeys.self, forKey: CodingKeys(stringValue: "ipv4", intValue: nil))
+        try ipv4Container.encode(v4.debugDescription, forKey: ._0)
+      case .ipv6(let v6):
+        var ipv6Container = hostContainer.nestedContainer(
+          keyedBy: Ipv6CodingKeys.self, forKey: CodingKeys(stringValue: "ipv6", intValue: nil))
+        try ipv6Container.encode(v6.debugDescription, forKey: ._0)
+      }
+      try hostPortContainer.encode(port.rawValue, forKey: .port)
     case .unix(let path):
-      try container.encode("[unix] \(path)")
+      var unixContainer = container.nestedContainer(
+        keyedBy: UnixCodingKeys.self, forKey: CodingKeys(stringValue: "unix", intValue: nil))
+      try unixContainer.encode(path, forKey: .path)
     case .url(let url):
-      try container.encode("[url] \(url)")
+      var urlContainer = container.nestedContainer(
+        keyedBy: UrlCodingKeys.self, forKey: CodingKeys(stringValue: "url", intValue: nil))
+      try urlContainer.encode(url, forKey: ._0)
     }
   }
 }

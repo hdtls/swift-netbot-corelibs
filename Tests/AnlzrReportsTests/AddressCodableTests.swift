@@ -25,13 +25,20 @@ import Testing
 
 @Suite struct AddressCodableTests {
 
-  @available(SwiftStdlib 5.9, *)
-  @Test func hostPortAddress() async throws {
-    let hostPort = Address.hostPort(host: "127.0.0.1", port: 1111)
+  private var encoder: JSONEncoder {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = .sortedKeys
+    return encoder
+  }
 
-    let data = try JSONEncoder().encode(hostPort)
+  @available(SwiftStdlib 5.9, *)
+  @Test func hostPortNameAddress() async throws {
+    let hostPort = Address.hostPort(host: "swift.org", port: 443)
+
+    let data = try encoder.encode(hostPort)
     let jsonString = String(data: data, encoding: .utf8)
-    #expect(jsonString == "\"[hostPort] 127.0.0.1:1111\"")
+    #expect(
+      jsonString == "{\"hostPort\":{\"host\":{\"name\":{\"_0\":\"swift.org\"}},\"port\":443}}")
 
     #expect(throws: Never.self) {
       let result = try JSONDecoder().decode(Address.self, from: data)
@@ -40,12 +47,27 @@ import Testing
   }
 
   @available(SwiftStdlib 5.9, *)
-  @Test func ipv6HostPortAddress() async throws {
-    let hostPort = Address.hostPort(host: "::1", port: 1111)
+  @Test func hostPortIPv4Address() async throws {
+    let hostPort = Address.hostPort(host: "127.0.0.1", port: 443)
 
-    let data = try JSONEncoder().encode(hostPort)
+    let data = try encoder.encode(hostPort)
     let jsonString = String(data: data, encoding: .utf8)
-    #expect(jsonString == "\"[hostPort] ::1:1111\"")
+    #expect(
+      jsonString == "{\"hostPort\":{\"host\":{\"ipv4\":{\"_0\":\"127.0.0.1\"}},\"port\":443}}")
+
+    #expect(throws: Never.self) {
+      let result = try JSONDecoder().decode(Address.self, from: data)
+      #expect(result == hostPort)
+    }
+  }
+
+  @available(SwiftStdlib 5.9, *)
+  @Test func hostPortIPv6Address() async throws {
+    let hostPort = Address.hostPort(host: "::1", port: 443)
+
+    let data = try encoder.encode(hostPort)
+    let jsonString = String(data: data, encoding: .utf8)
+    #expect(jsonString == "{\"hostPort\":{\"host\":{\"ipv6\":{\"_0\":\"::1\"}},\"port\":443}}")
 
     #expect(throws: Never.self) {
       let result = try JSONDecoder().decode(Address.self, from: data)
@@ -55,11 +77,11 @@ import Testing
 
   @available(SwiftStdlib 5.9, *)
   @Test func unixPathAddress() async throws {
-    let unix = Address.unix(path: "/var/run/tmp.socks")
+    let unix = Address.unix(path: "/var/run/tmp.sock")
 
-    let data = try JSONEncoder().encode(unix)
+    let data = try encoder.encode(unix)
     let jsonString = String(data: data, encoding: .utf8)
-    #expect(jsonString == "\"[unix] \\/var\\/run\\/tmp.socks\"")
+    #expect(jsonString == "{\"unix\":{\"path\":\"\\/var\\/run\\/tmp.sock\"}}")
 
     #expect(throws: Never.self) {
       let result = try JSONDecoder().decode(Address.self, from: data)
@@ -71,29 +93,13 @@ import Testing
   @Test func urlAddress() async throws {
     let url = Address.url(URL(string: "https://example.com")!)
 
-    let data = try JSONEncoder().encode(url)
+    let data = try encoder.encode(url)
     let jsonString = String(data: data, encoding: .utf8)
-    #expect(jsonString == "\"[url] https:\\/\\/example.com\"")
+    #expect(jsonString == "{\"url\":{\"_0\":\"https:\\/\\/example.com\"}}")
 
     #expect(throws: Never.self) {
       let result = try JSONDecoder().decode(Address.self, from: data)
       #expect(result == url)
-    }
-  }
-
-  @available(SwiftStdlib 5.9, *)
-  @Test func decodeURLAddressFromInvalidData() async throws {
-    let data = "\"[url] https://[fe80::3221:5634:6544]invalid:433/\"".data(using: .utf8)!
-    #expect(throws: DecodingError.self) {
-      _ = try JSONDecoder().decode(Address.self, from: data)
-    }
-  }
-
-  @available(SwiftStdlib 5.9, *)
-  @Test func decodeAddressFromUnknown() async throws {
-    let data = "\"[unknown] 127.0.0.1:80\"".data(using: .utf8)!
-    #expect(throws: DecodingError.self) {
-      _ = try JSONDecoder().decode(Address.self, from: data)
     }
   }
 }
