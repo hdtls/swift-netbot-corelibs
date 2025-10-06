@@ -9,9 +9,9 @@
 
   /// NETunnelProviderSession wrapper.
   @available(SwiftStdlib 5.3, *)
-  @globalActor public actor Session {
+  @globalActor public actor VPNSession {
 
-    public static let shared = Session()
+    public static let shared = VPNSession()
 
     public enum Message: Sendable {
       case data(Data)
