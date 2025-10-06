@@ -26,14 +26,12 @@ extension Prefs.Name {
   public static let shouldCollapsePolicyGroupIfThereAreMoreThanFiveItems = "Appearence - Should Collapse Policy Group if There Are More Than Five Items"
   public static let processFetchLimit = "Appearence - Maximum Number of Processes Displayed"
 
-  #if EXTENDED_ALL
-    public static let showNetworkConnectivityQualilty = "Appearence - Show Network Connectivity Quality"
-    public static let showRemoteDashboardShortcuts = "Appearence - Show Remote Dashboard Shortcuts"
-    public static let dockDisplayMode = "Appearence - Dock Display Mode"
-    public static let isLocalNotificationsEnabled = "Notifications - Enable Local Notifications"
-    public static let isCloudNotificationsEnabled = "Notifications - Enable Cloud Notifications"
-    public static let shouldAutomaticallyDismissInessentialNotifications = "Notifications - Automatically Dismiss Inessential Notifications"
-  #endif
+  public static let showNetworkConnectivityQualilty = "Appearence - Show Network Connectivity Quality"
+  public static let showRemoteDashboardShortcuts = "Appearence - Show Remote Dashboard Shortcuts"
+  public static let dockDisplayMode = "Appearence - Dock Display Mode"
+  public static let isLocalNotificationsEnabled = "Notifications - Enable Local Notifications"
+  public static let isCloudNotificationsEnabled = "Notifications - Enable Cloud Notifications"
+  public static let shouldAutomaticallyDismissInessentialNotifications = "Notifications - Automatically Dismiss Inessential Notifications"
 
   public static let selectionRecordForGroups = "Policy Group - Preferred Policy Selection Record for Policy Groups"
 

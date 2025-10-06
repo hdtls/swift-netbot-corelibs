@@ -233,7 +233,6 @@ if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
 
 for target in package.targets {
   var settings = target.swiftSettings ?? []
-  settings.append(.define("EXTENDED_ALL"))
   settings.append(.enableExperimentalFeature("StrictConcurrency=complete"))
   settings.append(
     .enableExperimentalFeature(
