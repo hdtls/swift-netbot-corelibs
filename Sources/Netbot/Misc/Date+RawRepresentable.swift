@@ -18,6 +18,7 @@
   import Foundation
 #endif
 
+// swift-format-ignore: AvoidRetroactiveConformances
 @available(SwiftStdlib 5.3, *)
 extension Date: @retroactive RawRepresentable {
 

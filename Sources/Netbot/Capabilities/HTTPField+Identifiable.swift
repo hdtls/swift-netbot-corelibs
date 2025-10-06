@@ -14,6 +14,7 @@
 
 import HTTPTypes
 
+// swift-format-ignore: AvoidRetroactiveConformances
 @available(SwiftStdlib 5.3, *)
 extension HTTPField: @retroactive Identifiable {
   public var id: String {

@@ -27,8 +27,9 @@ public protocol PacketTunnelFlow: AnyObject, Sendable {
 }
 
 #if canImport(NetworkExtension)
+  // swift-format-ignore: AvoidRetroactiveConformances
   @available(SwiftStdlib 5.3, *)
-  extension NEPacketTunnelFlow: @unchecked @retroactive Sendable, PacketTunnelFlow {
+  extension NEPacketTunnelFlow: @retroactive @unchecked Sendable, PacketTunnelFlow {
 
     public func readPacketObjects() async -> [NEPacket] {
       let packetObjects: [NetworkExtension.NEPacket] = await readPacketObjects()

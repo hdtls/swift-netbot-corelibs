@@ -15,5 +15,6 @@
 import Logging
 import Preference
 
+// swift-format-ignore: AvoidRetroactiveConformances
 @available(SwiftStdlib 5.3, *)
 extension Logger.Level: @retroactive PreferenceRepresentable {}
