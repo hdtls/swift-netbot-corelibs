@@ -1,4 +1,4 @@
 version: 1
 builder:
   configs:
-    - documentation_targets: [_NEAnalytics, _PrettyDNS, _ResourceProcessing, Netbot, Dashboard, NEXPCService]
+    - documentation_targets: [_DNSSupport, _NEAnalytics, _PreferenceSupport, _PrivilegeSupport, _ProfileSupport, Anlzr, AnlzrReports, Dashboard, Netbot]
