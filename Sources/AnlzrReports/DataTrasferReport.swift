@@ -127,41 +127,39 @@ public struct DataTransferReport: Codable, Hashable, Sendable {
   }
 }
 
-#if swift(>=6.3) || canImport(Darwin)
-  @available(SwiftStdlib 5.9, *)
-  extension DataTransferReport {
+@available(SwiftStdlib 5.9, *)
+extension DataTransferReport {
 
-    public typealias PersistentModel = V1._DataTransferReport
+  public typealias PersistentModel = V1._DataTransferReport
 
-    public init(persistentModel: PersistentModel) {
-      self._duration = persistentModel.duration.seconds
-      self.aggregatePathReport = .init()
-      self.pathReport = .init()
-    }
+  public init(persistentModel: PersistentModel) {
+    self._duration = persistentModel.duration.seconds
+    self.aggregatePathReport = .init()
+    self.pathReport = .init()
   }
+}
 
-  @available(SwiftStdlib 5.9, *)
-  extension DataTransferReport.PathReport {
+@available(SwiftStdlib 5.9, *)
+extension DataTransferReport.PathReport {
 
-    public typealias PersistentModel = V1._PathReport
+  public typealias PersistentModel = V1._PathReport
 
-    public init(persistentModel: V1._PathReport) {
-      self.receivedIPPacketCount = persistentModel.receivedIPPacketCount
-      self.sentIPPacketCount = persistentModel.sentIPPacketCount
-      self.receivedTransportByteCount = persistentModel.receivedTransportByteCount
-      self.receivedTransportDuplicateByteCount = persistentModel.receivedTransportDuplicateByteCount
-      self.receivedTransportOutOfOrderByteCount =
-        persistentModel.receivedTransportOutOfOrderByteCount
-      self.sentTransportByteCount = persistentModel.sentTransportByteCount
-      self.retransmittedTransportByteCount = persistentModel.retransmittedTransportByteCount
-      self.transportSmoothedRTT = persistentModel.transportSmoothedRTT
-      self.transportMinimumRTT = persistentModel.transportMinimumRTT
-      self.transportRTTVariance = persistentModel.transportRTTVariance
-      self.receivedApplicationByteCount = persistentModel.receivedApplicationByteCount
-      self.sentApplicationByteCount = persistentModel.sentApplicationByteCount
-    }
+  public init(persistentModel: V1._PathReport) {
+    self.receivedIPPacketCount = persistentModel.receivedIPPacketCount
+    self.sentIPPacketCount = persistentModel.sentIPPacketCount
+    self.receivedTransportByteCount = persistentModel.receivedTransportByteCount
+    self.receivedTransportDuplicateByteCount = persistentModel.receivedTransportDuplicateByteCount
+    self.receivedTransportOutOfOrderByteCount =
+      persistentModel.receivedTransportOutOfOrderByteCount
+    self.sentTransportByteCount = persistentModel.sentTransportByteCount
+    self.retransmittedTransportByteCount = persistentModel.retransmittedTransportByteCount
+    self.transportSmoothedRTT = persistentModel.transportSmoothedRTT
+    self.transportMinimumRTT = persistentModel.transportMinimumRTT
+    self.transportRTTVariance = persistentModel.transportRTTVariance
+    self.receivedApplicationByteCount = persistentModel.receivedApplicationByteCount
+    self.sentApplicationByteCount = persistentModel.sentApplicationByteCount
   }
-#endif
+}
 
 @available(SwiftStdlib 5.3, *)
 extension DataTransferReport.PathReport {

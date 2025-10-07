@@ -196,38 +196,36 @@ import Testing
     #expect(result == report)
   }
 
-  #if swift(>=6.3) || canImport(Darwin)
-    @available(SwiftStdlib 5.9, *)
-    @Test func persistentModel() {
-      let source = EstablishmentReport.PersistentModel.self
-      #expect(source == V1._EstablishmentReport.self)
-    }
+  @available(SwiftStdlib 5.9, *)
+  @Test func persistentModel() {
+    let source = EstablishmentReport.PersistentModel.self
+    #expect(source == V1._EstablishmentReport.self)
+  }
 
-    @available(SwiftStdlib 5.9, *)
-    @Test func initializeEstablishmentReportFromPersistentModel() async throws {
-      let persistentModel = V1._EstablishmentReport()
-      persistentModel.resolutions = [
-        .init(
-          source: .cache, duration: 0.5, endpointCount: 1,
-          successfulEndpoint: .hostPort(host: "127.0.0.1", port: 443),
-          preferredEndpoint: .hostPort(host: "127.0.0.1", port: 443), dnsProtocol: .udp)
-      ]
-      let establishmentReport = EstablishmentReport(persistentModel: persistentModel)
-      #expect(
-        establishmentReport
-          == EstablishmentReport(
-            duration: 0,
-            attemptStartedAfterInterval: 0,
-            previousAttemptCount: 0,
-            sourceEndpoint: nil,
-            usedProxy: false,
-            proxyEndpoint: nil,
-            resolutions: [
-              .init(
-                source: .cache, duration: 0.5, endpointCount: 1,
-                successfulEndpoint: .hostPort(host: "127.0.0.1", port: 443),
-                preferredEndpoint: .hostPort(host: "127.0.0.1", port: 443), dnsProtocol: .udp)
-            ]))
-    }
-  #endif
+  @available(SwiftStdlib 5.9, *)
+  @Test func initializeEstablishmentReportFromPersistentModel() async throws {
+    let persistentModel = V1._EstablishmentReport()
+    persistentModel.resolutions = [
+      .init(
+        source: .cache, duration: 0.5, endpointCount: 1,
+        successfulEndpoint: .hostPort(host: "127.0.0.1", port: 443),
+        preferredEndpoint: .hostPort(host: "127.0.0.1", port: 443), dnsProtocol: .udp)
+    ]
+    let establishmentReport = EstablishmentReport(persistentModel: persistentModel)
+    #expect(
+      establishmentReport
+        == EstablishmentReport(
+          duration: 0,
+          attemptStartedAfterInterval: 0,
+          previousAttemptCount: 0,
+          sourceEndpoint: nil,
+          usedProxy: false,
+          proxyEndpoint: nil,
+          resolutions: [
+            .init(
+              source: .cache, duration: 0.5, endpointCount: 1,
+              successfulEndpoint: .hostPort(host: "127.0.0.1", port: 443),
+              preferredEndpoint: .hostPort(host: "127.0.0.1", port: 443), dnsProtocol: .udp)
+          ]))
+  }
 }

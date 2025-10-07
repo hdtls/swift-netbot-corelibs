@@ -12,203 +12,207 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if swift(>=6.3) || canImport(Darwin)
-  import NEAddressProcessing
+import NEAddressProcessing
+
+#if swift(>=6.3)
   import Observation
+#endif
 
-  #if canImport(FoundationEssentials)
-    import FoundationEssentials
-    import FoundationInternationalization
-  #else
-    import Foundation
-  #endif
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+  import FoundationInternationalization
+#else
+  import Foundation
+#endif
 
-  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
-    import SwiftData
-  #endif
+#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  import SwiftData
+#endif
 
-  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
-    @available(SwiftStdlib 5.9, *)
-    extension V1 {
-      @available(SwiftStdlib 5.9, *)
-      @Model final public class _Connection {
+#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  @available(SwiftStdlib 5.9, *)
+  extension V1 {
 
-        @available(SwiftStdlib 6.0, *)
-        #Unique<_Connection>([\.taskIdentifier])
+    @Model final public class _Connection {
 
-        @available(SwiftStdlib 6.0, *)
-        #Index<_Connection>([\.taskIdentifier])
+      @available(SwiftStdlib 6.0, *)
+      #Unique<_Connection>([\.taskIdentifier])
 
-        /// The identifier of the connection.
-        @Attribute(.unique)
-        public var taskIdentifier: UInt64 = 0
+      @available(SwiftStdlib 6.0, *)
+      #Index<_Connection>([\.taskIdentifier])
 
-        /// The persistent original request of the connection.
-        public var originalRequest: _Request?
+      /// The identifier of the connection.
+      @Attribute(.unique)
+      public var taskIdentifier: UInt64 = 0
 
-        /// The persistent current request of the connection.
-        public var currentRequest: _Request?
+      /// The persistent original request of the connection.
+      public var originalRequest: _Request?
 
-        /// The persistent response of the connection.
-        public var response: _Response?
+      /// The persistent current request of the connection.
+      public var currentRequest: _Request?
 
-        /// The date when the connection begin.
-        public var earliestBeginDate = Date.now
+      /// The persistent response of the connection.
+      public var response: _Response?
 
-        public var earliestBeginDateFormatted = ""
+      /// The date when the connection begin.
+      public var earliestBeginDate = Date.now
 
-        public var duration: Duration {
-          get { .seconds(_duration) }
-          set { _duration = newValue.seconds }
-        }
-        public var _duration: Double = 0
+      public var earliestBeginDateFormatted = ""
 
-        /// Description of the task.
-        public var taskDescription = ""
+      public var duration: Duration {
+        get { .seconds(_duration) }
+        set { _duration = newValue.seconds }
+      }
+      public var _duration: Double = 0
 
-        /// A boolean value determine whether the connection is transfer over TLS.
-        public var tls = false
+      /// Description of the task.
+      public var taskDescription = ""
 
-        public typealias State = Connection.State
+      /// A boolean value determine whether the connection is transfer over TLS.
+      public var tls = false
 
-        /// Access the current state of the connection
-        public var state: State {
-          get { State(rawValue: _state) ?? .establishing }
-          set { _state = newValue.rawValue }
-        }
-        public var _state = State.establishing.rawValue
+      public typealias State = Connection.State
 
-        /// The dns resolution report of the connection.
-        @Relationship(deleteRule: .cascade, inverse: \_DNSResolutionReport.connection)
-        public var dnsResolutionReport: _DNSResolutionReport?
+      /// Access the current state of the connection
+      public var state: State {
+        get { State(rawValue: _state) ?? .establishing }
+        set { _state = newValue.rawValue }
+      }
+      public var _state = State.establishing.rawValue
 
-        /// The persistent establishment report of the connection.
-        @Relationship(deleteRule: .cascade, inverse: \_EstablishmentReport.connection)
-        public var establishmentReport: _EstablishmentReport?
+      /// The dns resolution report of the connection.
+      @Relationship(deleteRule: .cascade, inverse: \_DNSResolutionReport.connection)
+      public var dnsResolutionReport: _DNSResolutionReport?
 
-        /// A persistent forwardingReport report.
-        @Relationship(deleteRule: .cascade, inverse: \_ForwardingReport.connection)
-        public var forwardingReport: _ForwardingReport?
+      /// The persistent establishment report of the connection.
+      @Relationship(deleteRule: .cascade, inverse: \_EstablishmentReport.connection)
+      public var establishmentReport: _EstablishmentReport?
 
-        /// The persistent process report of the connection.
-        @Relationship(deleteRule: .cascade, inverse: \_ProcessReport.connection)
-        public var processReport: _ProcessReport?
+      /// A persistent forwardingReport report.
+      @Relationship(deleteRule: .cascade, inverse: \_ForwardingReport.connection)
+      public var forwardingReport: _ForwardingReport?
 
-        @Relationship(deleteRule: .cascade, inverse: \_DataTransferReport.connection)
-        public var dataTransferReport: _DataTransferReport?
+      /// The persistent process report of the connection.
+      @Relationship(deleteRule: .cascade, inverse: \_ProcessReport.connection)
+      public var processReport: _ProcessReport?
 
-        public init() {
-          self.earliestBeginDateFormatted = self.earliestBeginDate
-            .formatted(.dateTime.hour().minute().second())
-        }
+      @Relationship(deleteRule: .cascade, inverse: \_DataTransferReport.connection)
+      public var dataTransferReport: _DataTransferReport?
+
+      public init() {
+        self.earliestBeginDateFormatted = self.earliestBeginDate
+          .formatted(.dateTime.hour().minute().second())
       }
     }
-  #else
-    @available(SwiftStdlib 5.9, *)
-    extension V1 {
-      @available(SwiftStdlib 5.9, *)
-      @Observable final public class _Connection {
+  }
+#else
+  @available(SwiftStdlib 5.9, *)
+  extension V1 {
 
-        public var persistentModelID: UInt64 { taskIdentifier }
+    #if swift(>=6.3)
+      @Observable
+    #endif
+    final public class _Connection {
 
-        /// The identifier of the connection.
-        public var taskIdentifier: UInt64
+      public var persistentModelID: UInt64 { taskIdentifier }
 
-        /// The persistent original request of the connection.
-        public var originalRequest: _Request?
+      /// The identifier of the connection.
+      public var taskIdentifier: UInt64
 
-        /// The persistent current request of the connection.
-        public var currentRequest: _Request?
+      /// The persistent original request of the connection.
+      public var originalRequest: _Request?
 
-        /// The persistent response of the connection.
-        public var response: _Response?
+      /// The persistent current request of the connection.
+      public var currentRequest: _Request?
 
-        /// The date when the connection begin.
-        public var earliestBeginDate = Date.now
+      /// The persistent response of the connection.
+      public var response: _Response?
 
-        public var earliestBeginDateFormatted = ""
+      /// The date when the connection begin.
+      public var earliestBeginDate = Date.now
 
-        public var duration = Duration.zero
+      public var earliestBeginDateFormatted = ""
 
-        /// Description of the task.
-        public var taskDescription = ""
+      public var duration = Duration.zero
 
-        /// A boolean value determine whether the connection is transfer over TLS.
-        public var tls = false
+      /// Description of the task.
+      public var taskDescription = ""
 
-        public typealias State = Connection.State
+      /// A boolean value determine whether the connection is transfer over TLS.
+      public var tls = false
 
-        /// Access the current state of the connection
-        public var state = State.establishing
+      public typealias State = Connection.State
 
-        /// The dns resolution report of the connection.
-        public var dnsResolutionReport: _DNSResolutionReport?
+      /// Access the current state of the connection
+      public var state = State.establishing
 
-        /// The persistent establishment report of the connection.
-        public var establishmentReport: _EstablishmentReport?
+      /// The dns resolution report of the connection.
+      public var dnsResolutionReport: _DNSResolutionReport?
 
-        /// A persistent forwardingReport report.
-        public var forwardingReport: _ForwardingReport?
+      /// The persistent establishment report of the connection.
+      public var establishmentReport: _EstablishmentReport?
 
-        /// The persistent process report of the connection.
-        public var processReport: _ProcessReport?
+      /// A persistent forwardingReport report.
+      public var forwardingReport: _ForwardingReport?
 
-        /// The persistent data transfer report of the connection.
-        public var dataTransferReport: _DataTransferReport?
+      /// The persistent process report of the connection.
+      public var processReport: _ProcessReport?
 
-        public init() {
-          self.taskIdentifier = 0
-          self.earliestBeginDateFormatted = self.earliestBeginDate
-            .formatted(.dateTime.hour().minute().second())
-        }
+      /// The persistent data transfer report of the connection.
+      public var dataTransferReport: _DataTransferReport?
+
+      public init() {
+        self.taskIdentifier = 0
+        self.earliestBeginDateFormatted = self.earliestBeginDate
+          .formatted(.dateTime.hour().minute().second())
       }
     }
-
-    @available(SwiftStdlib 5.9, *)
-    extension V1._Connection: Identifiable {
-      public var id: UInt64 { persistentModelID }
-    }
-  #endif
+  }
 
   @available(SwiftStdlib 5.9, *)
-  extension V1._Connection {
+  extension V1._Connection: Identifiable {
+    public var id: UInt64 { persistentModelID }
+  }
+#endif
 
-    /// Merge new values from data transfer object.
-    /// Please note that relationship values will not be merged.
-    ///
-    /// - Parameter data: New `Connection` to merge.
-    public func mergeValues(_ data: Connection) {
-      #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+@available(SwiftStdlib 5.9, *)
+extension V1._Connection {
+
+  /// Merge new values from data transfer object.
+  /// Please note that relationship values will not be merged.
+  ///
+  /// - Parameter data: New `Connection` to merge.
+  public func mergeValues(_ data: Connection) {
+    #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+      self.taskIdentifier = data.taskIdentifier
+      self.earliestBeginDate = data.earliestBeginDate
+      self.earliestBeginDateFormatted = data.earliestBeginDate
+        .formatted(.dateTime.hour().minute().second())
+      self.duration = data.duration
+      self.taskDescription = data.taskDescription
+      self.tls = data.tls
+      self.state = data.state
+    #else
+      if self.taskIdentifier != data.taskIdentifier {
         self.taskIdentifier = data.taskIdentifier
+      }
+      if self.earliestBeginDate != data.earliestBeginDate {
         self.earliestBeginDate = data.earliestBeginDate
         self.earliestBeginDateFormatted = data.earliestBeginDate
           .formatted(.dateTime.hour().minute().second())
+      }
+      if self.duration != data.duration {
         self.duration = data.duration
+      }
+      if self.taskDescription != data.taskDescription {
         self.taskDescription = data.taskDescription
+      }
+      if self.tls != data.tls {
         self.tls = data.tls
+      }
+      if self.state != data.state {
         self.state = data.state
-      #else
-        if self.taskIdentifier != data.taskIdentifier {
-          self.taskIdentifier = data.taskIdentifier
-        }
-        if self.earliestBeginDate != data.earliestBeginDate {
-          self.earliestBeginDate = data.earliestBeginDate
-          self.earliestBeginDateFormatted = data.earliestBeginDate
-            .formatted(.dateTime.hour().minute().second())
-        }
-        if self.duration != data.duration {
-          self.duration = data.duration
-        }
-        if self.taskDescription != data.taskDescription {
-          self.taskDescription = data.taskDescription
-        }
-        if self.tls != data.tls {
-          self.tls = data.tls
-        }
-        if self.state != data.state {
-          self.state = data.state
-        }
-      #endif
-    }
+      }
+    #endif
   }
-#endif
+}

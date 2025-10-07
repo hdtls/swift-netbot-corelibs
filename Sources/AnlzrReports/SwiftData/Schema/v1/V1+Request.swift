@@ -12,161 +12,163 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if swift(>=6.3) || canImport(Darwin)
-  import HTTPTypes
-  import NEAddressProcessing
-  import Observation
+import HTTPTypes
+import NEAddressProcessing
 
-  #if canImport(FoundationEssentials)
-    import FoundationEssentials
-  #else
-    import Foundation
-  #endif
+#if swift(>=6.3)
+  import Observation
+#endif
+
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
+#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  import SwiftData
+#endif
+
+@available(SwiftStdlib 5.9, *)
+extension V1 {
 
   #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
-    import SwiftData
-  #endif
+    @Model final public class _Request {
 
-  @available(SwiftStdlib 5.9, *)
-  extension V1 {
-
-    #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
-      @available(SwiftStdlib 5.9, *)
-      @Model final public class _Request {
-
-        /// The HTTP request object if present. otherwise returns `nil`.
-        public var httpRequest: HTTPRequest? {
-          get {
-            guard let _httpRequest else {
-              return nil
-            }
-            return try? JSONDecoder().decode(HTTPRequest.self, from: _httpRequest)
+      /// The HTTP request object if present. otherwise returns `nil`.
+      public var httpRequest: HTTPRequest? {
+        get {
+          guard let _httpRequest else {
+            return nil
           }
-          set {
-            guard let httpRequest = newValue else {
-              _httpRequest = nil
-              return
-            }
-            _httpRequest = try? JSONEncoder().encode(httpRequest)
-          }
+          return try? JSONDecoder().decode(HTTPRequest.self, from: _httpRequest)
         }
-        public var _httpRequest: Data?
-
-        /// The address of the receiver.
-        public var address: Address? {
-          get {
-            guard let _address else { return nil }
-            return try? JSONDecoder().decode(Address.self, from: _address)
+        set {
+          guard let httpRequest = newValue else {
+            _httpRequest = nil
+            return
           }
-          set {
-            guard let address = newValue else {
-              _address = nil
-              return
-            }
-            _address = try? JSONEncoder().encode(address)
-          }
+          _httpRequest = try? JSONEncoder().encode(httpRequest)
         }
-        public var _address: Data?
-
-        /// The host of the receiver.
-        public var hostname: String?
-
-        /// The URL string of the receiver.
-        public var absoluteURLString: String?
-
-        /// The data is sent as the message body of the request.
-        @Attribute(.externalStorage) public var body: Data?
-
-        public init() {}
       }
+      public var _httpRequest: Data?
+
+      /// The address of the receiver.
+      public var address: Address? {
+        get {
+          guard let _address else { return nil }
+          return try? JSONDecoder().decode(Address.self, from: _address)
+        }
+        set {
+          guard let address = newValue else {
+            _address = nil
+            return
+          }
+          _address = try? JSONEncoder().encode(address)
+        }
+      }
+      public var _address: Data?
+
+      /// The host of the receiver.
+      public var hostname: String?
+
+      /// The URL string of the receiver.
+      public var absoluteURLString: String?
+
+      /// The data is sent as the message body of the request.
+      @Attribute(.externalStorage) public var body: Data?
+
+      public init() {}
+    }
+  #else
+    #if swift(>=6.3)
+      @Observable
+    #endif
+    final public class _Request {
+
+      /// The HTTP request object if present. otherwise returns `nil`.
+      public var httpRequest: HTTPRequest?
+
+      /// The address of the receiver.
+      public var address: Address?
+
+      /// The host of the receiver.
+      public var hostname: String?
+
+      /// The URL string of the receiver.
+      public var absoluteURLString: String?
+
+      /// The data is sent as the message body of the request.
+      public var body: Data?
+
+      public init() {}
+    }
+  #endif
+}
+
+@available(SwiftStdlib 5.9, *)
+extension V1._Request {
+
+  /// Merge new values from data transfer object.
+  /// - Parameter data: New `Request` to merge.
+  public func mergeValues(_ data: Request) {
+    var absoluteURLString = ""
+    if let host = data.host(percentEncoded: false) {
+      var portString = ""
+      if let port = data.port {
+        if port != 80 && port != 443 {
+          portString = ":\(port)"
+        }
+      }
+
+      if var path = data.httpRequest?.path, !path.isEmpty {
+        path = path.hasPrefix("/") ? path : "/\(path)"
+        path = path.last == "/" ? String(path.dropLast(1)) : path
+        absoluteURLString = "\(host)\(portString)\(path)"
+      } else {
+        absoluteURLString = "\(host)\(portString)"
+      }
+    }
+
+    #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+      self.httpRequest = data.httpRequest
+      self.address = data.address
+      self.hostname = data.host(percentEncoded: false)
+      self.absoluteURLString = absoluteURLString
+      self.body = data.body
     #else
-      @available(SwiftStdlib 5.9, *)
-      @Observable final public class _Request {
+      #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+        if let httpRequest = data.httpRequest {
+          let _httpRequest = try? JSONEncoder().encode(httpRequest)
+          if self._httpRequest != _httpRequest {
+            self._httpRequest = _httpRequest
+          }
+        }
+        if let address = data.address {
+          let _address = try? JSONEncoder().encode(address)
+          if self._address != _address {
+            self._address = _address
+          }
+        }
+      #else
+        if self.httpRequest != data.httpRequest {
+          self.httpRequest = data.httpRequest
+        }
+        if self.address != data.address {
+          self.address = data.address
+        }
+      #endif
 
-        /// The HTTP request object if present. otherwise returns `nil`.
-        public var httpRequest: HTTPRequest?
+      if self.hostname != data.host(percentEncoded: false) {
+        self.hostname = data.host(percentEncoded: false)
+      }
 
-        /// The address of the receiver.
-        public var address: Address?
-
-        /// The host of the receiver.
-        public var hostname: String?
-
-        /// The URL string of the receiver.
-        public var absoluteURLString: String?
-
-        /// The data is sent as the message body of the request.
-        public var body: Data?
-
-        public init() {}
+      if self.absoluteURLString != absoluteURLString {
+        self.absoluteURLString = absoluteURLString
+      }
+      if self.body != data.body {
+        self.body = data.body
       }
     #endif
   }
-
-  @available(SwiftStdlib 5.9, *)
-  extension V1._Request {
-
-    /// Merge new values from data transfer object.
-    /// - Parameter data: New `Request` to merge.
-    public func mergeValues(_ data: Request) {
-      var absoluteURLString = ""
-      if let host = data.host(percentEncoded: false) {
-        var portString = ""
-        if let port = data.port {
-          if port != 80 && port != 443 {
-            portString = ":\(port)"
-          }
-        }
-
-        if var path = data.httpRequest?.path, !path.isEmpty {
-          path = path.hasPrefix("/") ? path : "/\(path)"
-          path = path.last == "/" ? String(path.dropLast(1)) : path
-          absoluteURLString = "\(host)\(portString)\(path)"
-        } else {
-          absoluteURLString = "\(host)\(portString)"
-        }
-      }
-
-      #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
-        self.httpRequest = data.httpRequest
-        self.address = data.address
-        self.hostname = data.host(percentEncoded: false)
-        self.absoluteURLString = absoluteURLString
-        self.body = data.body
-      #else
-        #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
-          if let httpRequest = data.httpRequest {
-            let _httpRequest = try? JSONEncoder().encode(httpRequest)
-            if self._httpRequest != _httpRequest {
-              self._httpRequest = _httpRequest
-            }
-          }
-          if let address = data.address {
-            let _address = try? JSONEncoder().encode(address)
-            if self._address != _address {
-              self._address = _address
-            }
-          }
-        #else
-          if self.httpRequest != data.httpRequest {
-            self.httpRequest = data.httpRequest
-          }
-          if self.address != data.address {
-            self.address = data.address
-          }
-        #endif
-
-        if self.hostname != data.host(percentEncoded: false) {
-          self.hostname = data.host(percentEncoded: false)
-        }
-
-        if self.absoluteURLString != absoluteURLString {
-          self.absoluteURLString = absoluteURLString
-        }
-        if self.body != data.body {
-          self.body = data.body
-        }
-      #endif
-    }
-  }
-#endif
+}

@@ -61,19 +61,17 @@ import Testing
     #expect(response == result)
   }
 
-  #if swift(>=6.3) || canImport(Darwin)
-    @available(SwiftStdlib 5.9, *)
-    @Test func persistentModel() {
-      let source = Response.PersistentModel.self
-      #expect(source == V1._Response.self)
-    }
+  @available(SwiftStdlib 5.9, *)
+  @Test func persistentModel() {
+    let source = Response.PersistentModel.self
+    #expect(source == V1._Response.self)
+  }
 
-    @available(SwiftStdlib 5.9, *)
-    @Test func initializeResponseFromPersistentModel() async throws {
-      let persistentModel = V1._Response()
-      persistentModel.httpResponse = .init(status: .ok)
-      let response = Response(persistentModel: persistentModel)
-      #expect(response == Response(httpResponse: .init(status: .ok)))
-    }
-  #endif
+  @available(SwiftStdlib 5.9, *)
+  @Test func initializeResponseFromPersistentModel() async throws {
+    let persistentModel = V1._Response()
+    persistentModel.httpResponse = .init(status: .ok)
+    let response = Response(persistentModel: persistentModel)
+    #expect(response == Response(httpResponse: .init(status: .ok)))
+  }
 }

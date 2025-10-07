@@ -172,25 +172,23 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
   }
 }
 
-#if swift(>=6.3) || canImport(Darwin)
-  @available(SwiftStdlib 5.9, *)
-  extension EstablishmentReport {
+@available(SwiftStdlib 5.9, *)
+extension EstablishmentReport {
 
-    public typealias PersistentModel = V1._EstablishmentReport
+  public typealias PersistentModel = V1._EstablishmentReport
 
-    public init(persistentModel: PersistentModel) {
-      _duration = persistentModel.duration.seconds
-      attemptStartedAfterInterval = persistentModel.attemptStartedAfterInterval
-      previousAttemptCount = persistentModel.previousAttemptCount
-      sourceEndpoint = persistentModel.sourceEndpoint
-      usedProxy = persistentModel.usedProxy
-      proxyEndpoint = persistentModel.proxyEndpoint
-      resolutions = persistentModel.resolutions.map {
-        Resolution(
-          source: $0.source, duration: $0.duration.seconds, endpointCount: $0.endpointCount,
-          successfulEndpoint: $0.successfulEndpoint, preferredEndpoint: $0.preferredEndpoint,
-          dnsProtocol: $0.dnsProtocol)
-      }
+  public init(persistentModel: PersistentModel) {
+    _duration = persistentModel.duration.seconds
+    attemptStartedAfterInterval = persistentModel.attemptStartedAfterInterval
+    previousAttemptCount = persistentModel.previousAttemptCount
+    sourceEndpoint = persistentModel.sourceEndpoint
+    usedProxy = persistentModel.usedProxy
+    proxyEndpoint = persistentModel.proxyEndpoint
+    resolutions = persistentModel.resolutions.map {
+      Resolution(
+        source: $0.source, duration: $0.duration.seconds, endpointCount: $0.endpointCount,
+        successfulEndpoint: $0.successfulEndpoint, preferredEndpoint: $0.preferredEndpoint,
+        dnsProtocol: $0.dnsProtocol)
     }
   }
-#endif
+}

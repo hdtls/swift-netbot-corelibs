@@ -150,28 +150,26 @@ import Testing
     #expect(request == result)
   }
 
-  #if swift(>=6.3) || canImport(Darwin)
-    @available(SwiftStdlib 5.9, *)
-    @Test func persistentModel() {
-      let source = Request.PersistentModel.self
-      #expect(source == V1._Request.self)
-    }
+  @available(SwiftStdlib 5.9, *)
+  @Test func persistentModel() {
+    let source = Request.PersistentModel.self
+    #expect(source == V1._Request.self)
+  }
 
-    @available(SwiftStdlib 5.9, *)
-    @Test func initializeRequestFromPersistentModel() async throws {
-      let httpRequest = HTTPRequest(
-        method: .get, scheme: "https", authority: "swift.org:443", path: nil)
+  @available(SwiftStdlib 5.9, *)
+  @Test func initializeRequestFromPersistentModel() async throws {
+    let httpRequest = HTTPRequest(
+      method: .get, scheme: "https", authority: "swift.org:443", path: nil)
 
-      let source = V1._Request()
-      source.httpRequest = httpRequest
-      source.address = .hostPort(host: "swift.org", port: 443)
-      source.body = Data([0])
+    let source = V1._Request()
+    source.httpRequest = httpRequest
+    source.address = .hostPort(host: "swift.org", port: 443)
+    source.body = Data([0])
 
-      let data = Request(persistentModel: source)
+    let data = Request(persistentModel: source)
 
-      #expect(data.httpRequest == httpRequest)
-      #expect(data.address == .hostPort(host: "swift.org", port: 443))
-      #expect(data.body == Data([0]))
-    }
-  #endif
+    #expect(data.httpRequest == httpRequest)
+    #expect(data.address == .hostPort(host: "swift.org", port: 443))
+    #expect(data.body == Data([0]))
+  }
 }

@@ -144,37 +144,35 @@ import Testing
     #expect(result.earliestBeginDate == connection.earliestBeginDate)
   }
 
-  #if swift(>=6.3) || canImport(Darwin)
-    @available(SwiftStdlib 5.9, *)
-    @Test func persistentModel() {
-      let source = Connection.PersistentModel.self
-      #expect(source == V1._Connection.self)
-    }
+  @available(SwiftStdlib 5.9, *)
+  @Test func persistentModel() {
+    let source = Connection.PersistentModel.self
+    #expect(source == V1._Connection.self)
+  }
 
-    @available(SwiftStdlib 5.9, *)
-    @Test func initializeConnectionFromPersistentModel() {
-      let data = V1._Connection()
-      data.taskIdentifier = 123
-      data.earliestBeginDate = Date()
-      data.taskDescription = "test"
-      data.duration = .seconds(239842)
-      data.tls = true
-      data.state = .completed
+  @available(SwiftStdlib 5.9, *)
+  @Test func initializeConnectionFromPersistentModel() {
+    let data = V1._Connection()
+    data.taskIdentifier = 123
+    data.earliestBeginDate = Date()
+    data.taskDescription = "test"
+    data.duration = .seconds(239842)
+    data.tls = true
+    data.state = .completed
 
-      let connection = Connection(persistentModel: data)
-      #expect(connection.taskIdentifier == data.taskIdentifier)
-      #expect(connection.originalRequest == nil)
-      #expect(connection.currentRequest == nil)
-      #expect(connection.response == nil)
-      #expect(connection.earliestBeginDate == data.earliestBeginDate)
-      #expect(connection.duration == data.duration)
-      #expect(connection.taskDescription == data.taskDescription)
-      #expect(connection.tls == data.tls)
-      #expect(connection.state == data.state)
-      #expect(connection.establishmentReport == nil)
-      #expect(connection.forwardingReport == nil)
-      #expect(connection.processReport == nil)
-      #expect(connection.dataTransferReport == nil)
-    }
-  #endif
+    let connection = Connection(persistentModel: data)
+    #expect(connection.taskIdentifier == data.taskIdentifier)
+    #expect(connection.originalRequest == nil)
+    #expect(connection.currentRequest == nil)
+    #expect(connection.response == nil)
+    #expect(connection.earliestBeginDate == data.earliestBeginDate)
+    #expect(connection.duration == data.duration)
+    #expect(connection.taskDescription == data.taskDescription)
+    #expect(connection.tls == data.tls)
+    #expect(connection.state == data.state)
+    #expect(connection.establishmentReport == nil)
+    #expect(connection.forwardingReport == nil)
+    #expect(connection.processReport == nil)
+    #expect(connection.dataTransferReport == nil)
+  }
 }

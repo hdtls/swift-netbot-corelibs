@@ -73,16 +73,14 @@ public struct ForwardingReport: Codable, Hashable, Sendable {
   }
 }
 
-#if swift(>=6.3) || canImport(Darwin)
-  @available(SwiftStdlib 5.9, *)
-  extension ForwardingReport {
+@available(SwiftStdlib 5.9, *)
+extension ForwardingReport {
 
-    public typealias PersistentModel = V1._ForwardingReport
+  public typealias PersistentModel = V1._ForwardingReport
 
-    public init(persistentModel: PersistentModel) {
-      self._duration = persistentModel._duration
-      self.forwardingRule = persistentModel.forwardingRule
-      self.forwardProtocol = persistentModel.forwardProtocol
-    }
+  public init(persistentModel: PersistentModel) {
+    self._duration = persistentModel._duration
+    self.forwardingRule = persistentModel.forwardingRule
+    self.forwardProtocol = persistentModel.forwardProtocol
   }
-#endif
+}

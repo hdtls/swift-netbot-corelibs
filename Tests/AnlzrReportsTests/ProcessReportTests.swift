@@ -57,13 +57,11 @@ import Testing
     #expect(result == report)
   }
 
-  #if swift(>=6.3) || canImport(Darwin)
-    @available(SwiftStdlib 5.9, *)
-    @Test func initFromPersistentModel() throws {
-      let model = V1._ProcessReport()
-      model.processIdentifier = 12345
-      let report = ProcessReport(persistentModel: model)
-      #expect(report.processIdentifier == 12345)
-    }
-  #endif
+  @available(SwiftStdlib 5.9, *)
+  @Test func initFromPersistentModel() throws {
+    let model = V1._ProcessReport()
+    model.processIdentifier = 12345
+    let report = ProcessReport(persistentModel: model)
+    #expect(report.processIdentifier == 12345)
+  }
 }

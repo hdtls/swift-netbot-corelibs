@@ -232,33 +232,31 @@ import Testing
     #expect(mut == minus)
   }
 
-  #if swift(>=6.3) || canImport(Darwin)
-    @available(SwiftStdlib 5.9, *)
-    @Test("Initialization from PersistentModel copies all properties")
-    func initFromPersistentModel() throws {
-      let pathReport = V1._DataTransferReport.PathReport()
-      pathReport.receivedIPPacketCount = 10
-      pathReport.sentIPPacketCount = 20
-      pathReport.receivedTransportByteCount = 30
-      pathReport.receivedTransportDuplicateByteCount = 40
-      pathReport.receivedTransportOutOfOrderByteCount = 50
-      pathReport.sentTransportByteCount = 60
-      pathReport.retransmittedTransportByteCount = 70
-      pathReport.transportSmoothedRTT = 80
-      pathReport.transportMinimumRTT = 90
-      pathReport.transportRTTVariance = 100
-      pathReport.receivedApplicationByteCount = 110
-      pathReport.sentApplicationByteCount = 12
+  @available(SwiftStdlib 5.9, *)
+  @Test("Initialization from PersistentModel copies all properties")
+  func initFromPersistentModel() throws {
+    let pathReport = V1._DataTransferReport.PathReport()
+    pathReport.receivedIPPacketCount = 10
+    pathReport.sentIPPacketCount = 20
+    pathReport.receivedTransportByteCount = 30
+    pathReport.receivedTransportDuplicateByteCount = 40
+    pathReport.receivedTransportOutOfOrderByteCount = 50
+    pathReport.sentTransportByteCount = 60
+    pathReport.retransmittedTransportByteCount = 70
+    pathReport.transportSmoothedRTT = 80
+    pathReport.transportMinimumRTT = 90
+    pathReport.transportRTTVariance = 100
+    pathReport.receivedApplicationByteCount = 110
+    pathReport.sentApplicationByteCount = 12
 
-      let model = V1._DataTransferReport()
-      model._duration = 1.5
-      model.aggregatePathReport = pathReport
-      model.pathReport = pathReport
+    let model = V1._DataTransferReport()
+    model._duration = 1.5
+    model.aggregatePathReport = pathReport
+    model.pathReport = pathReport
 
-      let report = DataTransferReport(persistentModel: model)
-      #expect(report._duration == 1.5)
-      #expect(report.aggregatePathReport == .init())
-      #expect(report.pathReport == .init())
-    }
-  #endif
+    let report = DataTransferReport(persistentModel: model)
+    #expect(report._duration == 1.5)
+    #expect(report.aggregatePathReport == .init())
+    #expect(report.pathReport == .init())
+  }
 }

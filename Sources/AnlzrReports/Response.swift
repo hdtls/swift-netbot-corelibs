@@ -36,15 +36,13 @@ public struct Response: Codable, Hashable, Sendable {
   public init() {}
 }
 
-#if swift(>=6.3) || canImport(Darwin)
-  @available(SwiftStdlib 5.9, *)
-  extension Response {
+@available(SwiftStdlib 5.9, *)
+extension Response {
 
-    public typealias PersistentModel = V1._Response
+  public typealias PersistentModel = V1._Response
 
-    public init(persistentModel: PersistentModel) {
-      httpResponse = persistentModel.httpResponse
-      body = persistentModel.body
-    }
+  public init(persistentModel: PersistentModel) {
+    httpResponse = persistentModel.httpResponse
+    body = persistentModel.body
   }
-#endif
+}

@@ -12,47 +12,49 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if swift(>=6.3) || canImport(Darwin)
+#if swift(>=6.3)
   import Observation
+#endif
+
+#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  import SwiftData
+#endif
+
+@available(SwiftStdlib 5.9, *)
+extension V1 {
 
   #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
-    import SwiftData
-  #endif
-
-  @available(SwiftStdlib 5.9, *)
-  extension V1 {
-
-    #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
-      @Model
-    #else
+    @Model
+  #else
+    #if swift(>=6.3)
       @Observable
     #endif
-    final public class _ProcessReport {
+  #endif
+  final public class _ProcessReport {
 
-      /// Indicates the process identifier (pid) of the application.
-      public var processIdentifier: Int32?
+    /// Indicates the process identifier (pid) of the application.
+    public var processIdentifier: Int32?
 
-      public var connection: _Connection?
+    public var connection: _Connection?
 
-      public var program: _Program?
+    public var program: _Program?
 
-      public init() {}
-    }
+    public init() {}
   }
+}
 
-  @available(SwiftStdlib 5.9, *)
-  extension V1._ProcessReport {
+@available(SwiftStdlib 5.9, *)
+extension V1._ProcessReport {
 
-    /// Merge new values from data transfer object.
-    /// - Parameter data: New `ProcessReport` to merge.
-    public func mergeValues(_ data: ProcessReport) {
-      #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+  /// Merge new values from data transfer object.
+  /// - Parameter data: New `ProcessReport` to merge.
+  public func mergeValues(_ data: ProcessReport) {
+    #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+      processIdentifier = data.processIdentifier
+    #else
+      if processIdentifier != data.processIdentifier {
         processIdentifier = data.processIdentifier
-      #else
-        if processIdentifier != data.processIdentifier {
-          processIdentifier = data.processIdentifier
-        }
-      #endif
-    }
+      }
+    #endif
   }
-#endif
+}

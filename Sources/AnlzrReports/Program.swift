@@ -56,17 +56,15 @@ extension Program: Identifiable {
   public var persistentModelID: String { localizedName }
 }
 
-#if swift(>=6.3) || canImport(Darwin)
-  @available(SwiftStdlib 5.9, *)
-  extension Program {
+@available(SwiftStdlib 5.9, *)
+extension Program {
 
-    public typealias PersistentModel = V1._Program
+  public typealias PersistentModel = V1._Program
 
-    public init(persistentModel: PersistentModel) {
-      localizedName = persistentModel.localizedName
-      bundleURL = persistentModel.bundleURL
-      executableURL = persistentModel.executableURL
-      iconTIFFRepresentation = persistentModel.iconTIFFRepresentation
-    }
+  public init(persistentModel: PersistentModel) {
+    localizedName = persistentModel.localizedName
+    bundleURL = persistentModel.bundleURL
+    executableURL = persistentModel.executableURL
+    iconTIFFRepresentation = persistentModel.iconTIFFRepresentation
   }
-#endif
+}

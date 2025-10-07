@@ -171,19 +171,17 @@ extension Connection: Codable {
   }
 }
 
-#if swift(>=6.3) || canImport(Darwin)
-  @available(SwiftStdlib 5.9, *)
-  extension Connection {
+@available(SwiftStdlib 5.9, *)
+extension Connection {
 
-    public typealias PersistentModel = V1._Connection
+  public typealias PersistentModel = V1._Connection
 
-    public convenience init(persistentModel: PersistentModel) {
-      self.init(taskIdentifier: persistentModel.taskIdentifier)
-      self.earliestBeginDate = persistentModel.earliestBeginDate
-      self._duration = persistentModel.duration.seconds
-      self.taskDescription = persistentModel.taskDescription
-      self.tls = persistentModel.tls
-      self.state = persistentModel.state
-    }
+  public convenience init(persistentModel: PersistentModel) {
+    self.init(taskIdentifier: persistentModel.taskIdentifier)
+    self.earliestBeginDate = persistentModel.earliestBeginDate
+    self._duration = persistentModel.duration.seconds
+    self.taskDescription = persistentModel.taskDescription
+    self.tls = persistentModel.tls
+    self.state = persistentModel.state
   }
-#endif
+}

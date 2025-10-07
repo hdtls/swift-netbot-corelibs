@@ -78,22 +78,20 @@ public struct DNSResolutionReport: Codable, Hashable, Sendable {
   }
 }
 
-#if swift(>=6.3) || canImport(Darwin)
-  @available(SwiftStdlib 5.9, *)
-  extension DNSResolutionReport {
+@available(SwiftStdlib 5.9, *)
+extension DNSResolutionReport {
 
-    public typealias PersistentModel = V1._DNSResolutionReport
+  public typealias PersistentModel = V1._DNSResolutionReport
 
-    public init(persistentModel: PersistentModel) {
-      self._duration = persistentModel._duration
-      self.resolutions = persistentModel.resolutions.map {
-        Resolution(
-          source: $0.source,
-          duration: $0._duration,
-          dnsProtocol: $0.dnsProtocol,
-          endpoints: $0.endpoints
-        )
-      }
+  public init(persistentModel: PersistentModel) {
+    self._duration = persistentModel._duration
+    self.resolutions = persistentModel.resolutions.map {
+      Resolution(
+        source: $0.source,
+        duration: $0._duration,
+        dnsProtocol: $0.dnsProtocol,
+        endpoints: $0.endpoints
+      )
     }
   }
-#endif
+}

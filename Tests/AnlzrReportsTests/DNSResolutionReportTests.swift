@@ -81,54 +81,52 @@ import Testing
     }
   }
 
-  #if swift(>=6.3) || canImport(Darwin)
-    @available(SwiftStdlib 5.9, *)
-    @Test func dnsResolutionReportFromPersistentModel() throws {
-      let persistent = V1._DNSResolutionReport()
-      persistent._duration = 12.5
-      persistent.resolutions = [
-        V1._DNSResolutionReport.Resolution(
-          source: .query,
-          duration: 3.5,
-          dnsProtocol: .udp,
-          endpoints: [
-            Address.hostPort(host: "2.2.2.2", port: 53),
-            Address.hostPort(host: "3.3.3.3", port: 53),
-          ]
-        ),
-        V1._DNSResolutionReport.Resolution(
-          source: .cache,
-          duration: 4.75,
-          dnsProtocol: .tcp,
-          endpoints: [
-            Address.hostPort(host: "4.4.4.4", port: 53)
-          ]
-        ),
-      ]
-
-      let report = DNSResolutionReport(persistentModel: persistent)
-
-      #expect(report.duration.seconds == 12.5)
-      #expect(report.resolutions.count == 2)
-
-      let first = report.resolutions[0]
-      #expect(first.duration.seconds == 3.5)
-      #expect(first.source == .query)
-      #expect(first.dnsProtocol == .udp)
-      #expect(
-        first.endpoints == [
+  @available(SwiftStdlib 5.9, *)
+  @Test func dnsResolutionReportFromPersistentModel() throws {
+    let persistent = V1._DNSResolutionReport()
+    persistent._duration = 12.5
+    persistent.resolutions = [
+      V1._DNSResolutionReport.Resolution(
+        source: .query,
+        duration: 3.5,
+        dnsProtocol: .udp,
+        endpoints: [
           Address.hostPort(host: "2.2.2.2", port: 53),
           Address.hostPort(host: "3.3.3.3", port: 53),
-        ])
-
-      let second = report.resolutions[1]
-      #expect(second.duration.seconds == 4.75)
-      #expect(second.source == .cache)
-      #expect(second.dnsProtocol == .tcp)
-      #expect(
-        second.endpoints == [
+        ]
+      ),
+      V1._DNSResolutionReport.Resolution(
+        source: .cache,
+        duration: 4.75,
+        dnsProtocol: .tcp,
+        endpoints: [
           Address.hostPort(host: "4.4.4.4", port: 53)
-        ])
-    }
-  #endif
+        ]
+      ),
+    ]
+
+    let report = DNSResolutionReport(persistentModel: persistent)
+
+    #expect(report.duration.seconds == 12.5)
+    #expect(report.resolutions.count == 2)
+
+    let first = report.resolutions[0]
+    #expect(first.duration.seconds == 3.5)
+    #expect(first.source == .query)
+    #expect(first.dnsProtocol == .udp)
+    #expect(
+      first.endpoints == [
+        Address.hostPort(host: "2.2.2.2", port: 53),
+        Address.hostPort(host: "3.3.3.3", port: 53),
+      ])
+
+    let second = report.resolutions[1]
+    #expect(second.duration.seconds == 4.75)
+    #expect(second.source == .cache)
+    #expect(second.dnsProtocol == .tcp)
+    #expect(
+      second.endpoints == [
+        Address.hostPort(host: "4.4.4.4", port: 53)
+      ])
+  }
 }

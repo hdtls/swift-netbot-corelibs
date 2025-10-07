@@ -12,34 +12,32 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if swift(>=6.3) || canImport(Darwin)
-  import NEAddressProcessing
-  import Testing
+import NEAddressProcessing
+import Testing
 
-  @testable import AnlzrReports
+@testable import AnlzrReports
 
-  @Suite struct V1_ForwardingReportTests {
+@Suite struct V1_ForwardingReportTests {
 
-    @available(SwiftStdlib 5.9, *)
-    @Test func persistentModelTypealias() {
-      #expect(ForwardingReport.PersistentModel.self == V1._ForwardingReport.self)
-    }
-
-    @available(SwiftStdlib 5.9, *)
-    @Test func mergeValues() {
-      let model = V1._ForwardingReport()
-
-      let data = ForwardingReport(
-        duration: 13.5,
-        forwardProtocol: "REJECT",
-        forwardingRule: "FINAL"
-      )
-
-      model.mergeValues(data)
-
-      #expect(model._duration == 13.5)
-      #expect(model.forwardProtocol == "REJECT")
-      #expect(model.forwardingRule == "FINAL")
-    }
+  @available(SwiftStdlib 5.9, *)
+  @Test func persistentModelTypealias() {
+    #expect(ForwardingReport.PersistentModel.self == V1._ForwardingReport.self)
   }
-#endif
+
+  @available(SwiftStdlib 5.9, *)
+  @Test func mergeValues() {
+    let model = V1._ForwardingReport()
+
+    let data = ForwardingReport(
+      duration: 13.5,
+      forwardProtocol: "REJECT",
+      forwardingRule: "FINAL"
+    )
+
+    model.mergeValues(data)
+
+    #expect(model._duration == 13.5)
+    #expect(model.forwardProtocol == "REJECT")
+    #expect(model.forwardingRule == "FINAL")
+  }
+}

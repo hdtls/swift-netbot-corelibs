@@ -63,19 +63,17 @@ public struct Request: Codable, Hashable, Sendable {
   }
 }
 
-#if swift(>=6.3) || canImport(Darwin)
-  @available(SwiftStdlib 5.9, *)
-  extension Request {
+@available(SwiftStdlib 5.9, *)
+extension Request {
 
-    public typealias PersistentModel = V1._Request
+  public typealias PersistentModel = V1._Request
 
-    public init(persistentModel: PersistentModel) {
-      httpRequest = persistentModel.httpRequest
-      address = persistentModel.address
-      body = persistentModel.body
-    }
+  public init(persistentModel: PersistentModel) {
+    httpRequest = persistentModel.httpRequest
+    address = persistentModel.address
+    body = persistentModel.body
   }
-#endif
+}
 
 @available(SwiftStdlib 5.3, *)
 extension HTTPRequest {

@@ -26,14 +26,12 @@ public struct ProcessReport: Codable, Hashable, Sendable {
   }
 }
 
-#if swift(>=6.3) || canImport(Darwin)
-  @available(SwiftStdlib 5.9, *)
-  extension ProcessReport {
+@available(SwiftStdlib 5.9, *)
+extension ProcessReport {
 
-    public typealias PersistentModel = V1._ProcessReport
+  public typealias PersistentModel = V1._ProcessReport
 
-    public init(persistentModel: PersistentModel) {
-      processIdentifier = persistentModel.processIdentifier
-    }
+  public init(persistentModel: PersistentModel) {
+    processIdentifier = persistentModel.processIdentifier
   }
-#endif
+}

@@ -12,35 +12,33 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if swift(>=6.3) || canImport(Darwin)
-  import Testing
+import Testing
 
-  @testable import AnlzrReports
+@testable import AnlzrReports
 
-  #if canImport(FoundationEssentials)
-    import FoundationEssentials
-  #else
-    import Foundation
-  #endif
-
-  @Suite struct ProgramTests {
-
-    @available(SwiftStdlib 5.9, *)
-    @Test func programInitFromPersistentModel() async throws {
-      let bundleURL = URL(string: "file:///Applications/FakeApp.app")
-      let execURL = URL(string: "file:///Applications/FakeApp.app/Contents/MacOS/FakeApp")
-      let iconData = "icondata".data(using: .utf8)
-      let persistent = V1._Program()
-      persistent.localizedName = "FakeApp"
-      persistent.bundleURL = bundleURL
-      persistent.executableURL = execURL
-      persistent.iconTIFFRepresentation = iconData
-
-      let program = Program(persistentModel: persistent)
-      #expect(program.localizedName == "FakeApp")
-      #expect(program.bundleURL == bundleURL)
-      #expect(program.executableURL == execURL)
-      #expect(program.iconTIFFRepresentation == iconData)
-    }
-  }
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
 #endif
+
+@Suite struct ProgramTests {
+
+  @available(SwiftStdlib 5.9, *)
+  @Test func programInitFromPersistentModel() async throws {
+    let bundleURL = URL(string: "file:///Applications/FakeApp.app")
+    let execURL = URL(string: "file:///Applications/FakeApp.app/Contents/MacOS/FakeApp")
+    let iconData = "icondata".data(using: .utf8)
+    let persistent = V1._Program()
+    persistent.localizedName = "FakeApp"
+    persistent.bundleURL = bundleURL
+    persistent.executableURL = execURL
+    persistent.iconTIFFRepresentation = iconData
+
+    let program = Program(persistentModel: persistent)
+    #expect(program.localizedName == "FakeApp")
+    #expect(program.bundleURL == bundleURL)
+    #expect(program.executableURL == execURL)
+    #expect(program.iconTIFFRepresentation == iconData)
+  }
+}
