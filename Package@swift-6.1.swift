@@ -25,7 +25,7 @@ let package = Package(
     .tvOS(.v13),
   ],
   products: [
-    .library(name: "_NEAnalytics", targets: ["_NEAnalytics"]),
+    .library(name: "Networking", targets: ["Networking"]),
     .library(name: "_PrivilegeSupport", targets: ["_PrivilegeSupport"]),
     .library(name: "Dashboard", targets: ["Dashboard"]),
     .library(name: "Netbot", targets: ["Netbot"]),
@@ -74,44 +74,19 @@ let package = Package(
       ]
     ),
     .target(
-      name: "_NEAnalytics",
+      name: "Networking",
       dependencies: [
         "_DNSSupport",
         "_PreferenceSupport",
         "_ProfileSupport",
         "_PrivilegeSupport",
-        "Anlzr",
+        "AnlzrReports",
         "CNELwIP",
         "CoWOptimization",
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
-        .product(name: "NIOCore", package: "swift-nio"),
-        .product(name: "NIOSSL", package: "swift-nio-ssl"),
-        .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
         .product(name: "Preference", package: "swift-preference"),
         .product(name: "X509", package: "swift-certificates"),
         .product(name: "Alamofire", package: "Alamofire"),
-      ]
-    ),
-    .target(
-      name: "_PreferenceSupport",
-      dependencies: [
-        .product(name: "Logging", package: "swift-log"),
-        .product(name: "Preference", package: "swift-preference"),
-      ]
-    ),
-    .target(name: "_PrivilegeSupport"),
-    .target(
-      name: "_ProfileSupport",
-      dependencies: [
-        "CoWOptimization",
-        .product(name: "HTTPTypes", package: "swift-http-types"),
-        .product(name: "Logging", package: "swift-log"),
-      ]
-    ),
-    .target(
-      name: "Anlzr",
-      dependencies: [
-        "AnlzrReports",
         .product(name: "_CryptoExtras", package: "swift-crypto"),
         .product(name: "Atomics", package: "swift-atomics"),
         .product(name: "Tracing", package: "swift-distributed-tracing"),
@@ -130,6 +105,22 @@ let package = Package(
         .product(name: "NESOCKS", package: "swift-netbot-framing"),
         .product(name: "NESS", package: "swift-netbot-framing"),
         .product(name: "NEVMESS", package: "swift-netbot-framing"),
+      ]
+    ),
+    .target(
+      name: "_PreferenceSupport",
+      dependencies: [
+        .product(name: "Logging", package: "swift-log"),
+        .product(name: "Preference", package: "swift-preference"),
+      ]
+    ),
+    .target(name: "_PrivilegeSupport"),
+    .target(
+      name: "_ProfileSupport",
+      dependencies: [
+        "CoWOptimization",
+        .product(name: "HTTPTypes", package: "swift-http-types"),
+        .product(name: "Logging", package: "swift-log"),
       ]
     ),
     .target(
@@ -171,21 +162,17 @@ let package = Package(
     ),
     .testTarget(name: "_DNSSupportTests", dependencies: ["_DNSSupport"]),
     .testTarget(
-      name: "_NEAnalyticsTests",
-      dependencies: ["_NEAnalytics"],
-      exclude: ["External Resource"]
-    ),
-    .testTarget(name: "_ProfileSupportTests", dependencies: ["_ProfileSupport"]),
-    .testTarget(
-      name: "AnlzrTests",
+      name: "NetworkingTests",
       dependencies: [
-        "Anlzr",
+        "Networking",
         .product(name: "NIOCore", package: "swift-nio"),
         .product(name: "NIOEmbedded", package: "swift-nio"),
         .product(name: "NIOHTTP1", package: "swift-nio"),
         .product(name: "NIOWebSocket", package: "swift-nio"),
-      ]
+      ],
+      exclude: ["External Resource"]
     ),
+    .testTarget(name: "_ProfileSupportTests", dependencies: ["_ProfileSupport"]),
     .testTarget(
       name: "AnlzrReportsTests",
       dependencies: [
@@ -196,22 +183,22 @@ let package = Package(
       name: "CoWOptimizationMacrosTests",
       dependencies: [
         "CoWOptimizationMacros",
-        .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
       ]
     ),
-    .testTarget(
-      name: "SynchronizationMacrosTests",
-      dependencies: [
-        "SynchronizationMacros",
-        .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
-      ]
-    ),
-    .testTarget(name: "NetbotTests", dependencies: ["Netbot"]),
     .testTarget(
       name: "EditableMacrosTests",
       dependencies: [
         "EditableMacros",
-        .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
+      ]
+    ),
+    .testTarget(name: "NetbotTests", dependencies: ["Netbot"]),
+    .testTarget(
+      name: "SynchronizationMacrosTests",
+      dependencies: [
+        "SynchronizationMacros",
+        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
       ]
     ),
   ]
@@ -227,7 +214,7 @@ if Context.environment["ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA"] != nil {
 
 if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
   package.dependencies += [
-    .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.24.0"),
+    .package(url: "https://github.com/hdtls/swift-nio-transport-services.git", branch: "release/2.0"),
     .package(url: "https://github.com/hdtls/swift-netbot-framing.git", branch: "main"),
     .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.3.0"),
     .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
