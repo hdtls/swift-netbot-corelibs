@@ -16,18 +16,18 @@
   import Alamofire
   import AnlzrReports
   import Combine
+  import Foundation
   import Logging
+  import MaxMindDB
   import NIOConcurrencyHelpers
   import NIOCore
+  import NIOSSL
   import Preference
   import _PreferenceSupport
   import _ProfileSupport
 
-  #if canImport(FoundationEssentials)
-    import FoundationEssentials
+  #if canImport(FoundationNetworking)
     import FoundationNetworking
-  #else
-    import Foundation
   #endif
 
   #if canImport(Network)
@@ -36,10 +36,12 @@
 
   @available(SwiftStdlib 5.3, *)
   public protocol AutoreloadDelegate: AnyObject, Sendable {
-    func autoReloadEnabledHTTPCapabilities(_ capabilities: CapabilityFlags)
-    func autoReloadGeoLite2(filePath: String)
-    func autoReloadOutboundMode(_ mode: OutboundMode)
-    func autoReloadProfile(url: URL, mode: ProxyMode)
+    func autoReloadEnabledHTTPCapabilities(_ capabilities: CapabilityFlags) async
+    func autoReloadForwardProtocol(_ forwardProtocol: any ForwardProtocolConvertible) async
+    func autoReloadForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) async
+    func autoReloadOutboundMode(_ mode: OutboundMode) async
+    func autoReloadProfile(_ profile: Profile, mode: ProxyMode) async
+    func autoReloadDecryptionPKCS12Bundle(_ bundle: NIOSSLPKCS12Bundle?) async
   }
 
   @available(SwiftStdlib 5.3, *)
@@ -84,15 +86,31 @@
 
     private let lock = NIOLock()
 
-    public weak var delegate: (any AutoreloadDelegate)?
+    @LockableTracked public weak var delegate: (any AutoreloadDelegate)?
 
     @LockableTracked public var logger: Logger
 
+    @LockableTracked private var maxminddb: MaxMindDB?
+
     private let eventLoopGroup: any EventLoopGroup
 
-    public init(group: any EventLoopGroup, store: UserDefaults? = .__shared) {
+    private var maxminddbFile: String {
+      let filename = "GeoLite2-Country.mmdb"
+      let filePath: String
+      if #available(SwiftStdlib 5.7, *) {
+        filePath = URL.maxmind.appending(path: filename, directoryHint: .notDirectory).path(
+          percentEncoded: false)
+      } else {
+        filePath = URL.maxmind.appendingPathComponent(filename, isDirectory: false).path
+      }
+      return filePath
+    }
+
+    public init(group: any EventLoopGroup = .shared, store: UserDefaults? = .__shared) {
       self.eventLoopGroup = group
+      self._delegate = .init(nil)
       self._logger = .init(Logger(label: "AnalyzerBot-autoreload"))
+      self._maxminddb = .init(nil)
       self._profileURL = .init(wrappedValue: .profile, Prefs.Name.profileURL, store: store)
       self._profileLastContentModificationDate = .init(
         wrappedValue: .distantFuture,
@@ -167,52 +185,43 @@
     }
 
     public func run() async throws {
+      maxminddb = try MaxMindDB(file: maxminddbFile, mode: .mmap)
+      let profile = try Profile(contentsOf: profileURL)
+      await setOutboundMode(outboundMode)
+      await setProfile(profile, mode: proxyMode)
+      await setEnabledHTTPCapabilities(enabledHTTPCapabilities)
+
       lock.withLock {
-        // We use `Date.distantPast` to trigger a force update, so ignore it.
-        let autoreload =
-          $profileLastContentModificationDate
-          .removeDuplicates()
-          .combineLatest($forwardingRuleResourcesLastUpdatedDate.removeDuplicates())
-          .filter { $0.0 != .distantPast && $0.1 != .distantPast }
-          .combineLatest($profileAutoreload)
-          // Reload profile only when autoreload is enabled.
-          .filter { _, autoreload in autoreload }
-          .map { _ in "" }
-
         $profileURL
-          .combineLatest(autoreload.merge(with: $selectionRecords))
-          .map(\.0)
-          .combineLatest($proxyMode)
-          .sink { [weak self] url, mode in
-            self?.delegate?.autoReloadProfile(url: url, mode: mode)
-          }
-          .store(in: &cancellables)
-
-        $maxminddbLastUpdatedDate
-          .removeDuplicates()
-          .sink { [weak self] _ in
-            let filename = "GeoLite2-Country.mmdb"
-            let file: String
-            if #available(SwiftStdlib 5.7, *) {
-              file = URL.maxmind.appending(path: filename).path(percentEncoded: false)
-            } else {
-              file = URL.maxmind.appendingPathComponent(filename).path
+          .combineLatest($proxyMode, $profileLastContentModificationDate, $selectionRecords)
+          .dropFirst()
+          .sink { [weak self] url, mode, _, _ in
+            guard let self, let profile = try? Profile(contentsOf: url) else { return }
+            Task {
+              await setProfile(profile, mode: mode)
             }
-            self?.delegate?.autoReloadGeoLite2(filePath: file)
           }
           .store(in: &cancellables)
 
         $enabledHTTPCapabilities
           .removeDuplicates()
+          .dropFirst()
           .sink { [weak self] capabilities in
-            self?.delegate?.autoReloadEnabledHTTPCapabilities(capabilities)
+            guard let self else { return }
+            Task {
+              await setEnabledHTTPCapabilities(capabilities)
+            }
           }
           .store(in: &cancellables)
 
         $outboundMode
           .removeDuplicates()
+          .dropFirst()
           .sink { [weak self] mode in
-            self?.delegate?.autoReloadOutboundMode(mode)
+            guard let self else { return }
+            Task {
+              await setOutboundMode(mode)
+            }
           }
           .store(in: &cancellables)
 
@@ -265,31 +274,31 @@
     }
 
     private func downloadMaxmindDBs() throws {
+      let session = try self.session
       let url = maxminddbDownloadURL
-      let filename = "GeoLite2-Country.mmdb"
-      let fileURL: URL
-      if #available(SwiftStdlib 5.7, *) {
-        fileURL = URL.maxmind.appending(path: filename, directoryHint: .notDirectory)
-      } else {
-        fileURL = URL.maxmind.appendingPathComponent(filename, isDirectory: false)
-      }
-
-      let destination: DownloadRequest.Destination = { _, _ in
-        (fileURL, [.createIntermediateDirectories, .removePreviousFile])
-      }
-      try session.download(url, interceptor: .retryPolicy, to: destination)
-        .responseURL { [weak self] response in
-          guard let self, let url = try? response.result.get() else { return }
-          let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
-          maxminddbLastUpdatedDate =
-            (try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate)
-            ?? now
+      let fileURL = URL(fileURLWithPath: maxminddbFile)
+      Task {
+        let destination: DownloadRequest.Destination = { _, _ in
+          (fileURL, [.createIntermediateDirectories, .removePreviousFile])
         }
+        let _ = try await session.download(url, interceptor: .retryPolicy, to: destination)
+          .serializingDownloadedFileURL()
+          .value
+
+        let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+        maxminddbLastUpdatedDate =
+          (try? fileURL.resourceValues(forKeys: [.contentModificationDateKey])
+            .contentModificationDate)
+          ?? now
+
+        let profile = try Profile(contentsOf: profileURL)
+        await setForwardingRules(profile.asForwardingRules())
+      }
     }
 
     private func downloadForwardingRuleExternalResources() throws {
       Task {
-        let profile = try Profile(contentsOf: profileURL)
+        var profile = try Profile(contentsOf: profileURL)
 
         try await withThrowingTaskGroup(of: Void.self) { g in
           let session = try self.session
@@ -330,7 +339,49 @@
 
         forwardingRuleResourcesLastUpdatedDate =
           if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+
+        profile = try Profile(contentsOf: profileURL)
+        await setForwardingRules(profile.asForwardingRules())
       }
+    }
+
+    private func setProfile(_ profile: Profile, mode: ProxyMode) async {
+      await setForwardingRules(profile.asForwardingRules())
+      await delegate?.autoReloadProfile(profile, mode: mode)
+      await delegate?.autoReloadForwardProtocol(profile.asForwardProtocol())
+      await delegate?.autoReloadDecryptionPKCS12Bundle(try? profile.asDecryptionPKCS12Bundle())
+    }
+
+    private func setOutboundMode(_ mode: OutboundMode) async {
+      await delegate?.autoReloadOutboundMode(mode)
+    }
+
+    private func setEnabledHTTPCapabilities(_ capabilities: CapabilityFlags) async {
+      await delegate?.autoReloadEnabledHTTPCapabilities(capabilities)
+    }
+
+    private func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) async {
+      await delegate?.autoReloadForwardingRules(
+        forwardingRules.map {
+          if var forwardingRule = $0 as? GeoIPForwardingRule {
+            forwardingRule.db = maxminddb
+            return forwardingRule
+          }
+
+          if var forwardingRule = $0 as? RulesetForwardingRule {
+            let externalRules: [any ForwardingRule] = forwardingRule.externalRules.map {
+              guard var element = $0 as? GeoIPForwardingRule else {
+                return $0
+              }
+              element.db = maxminddb
+              return element
+            }
+            forwardingRule.externalRules = externalRules
+            return forwardingRule
+          }
+
+          return $0
+        })
     }
 
     public func shutdownGracefully() async {

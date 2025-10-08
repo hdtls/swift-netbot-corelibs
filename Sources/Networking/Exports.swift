@@ -15,6 +15,7 @@
 @_exported import AnlzrReports
 @_exported import Logging
 @_exported import MaxMindDB
+@_exported import NIOSSL
 @_exported import _PreferenceSupport
 @_exported import _PrivilegeSupport
 @_exported import _ProfileSupport

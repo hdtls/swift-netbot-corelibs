@@ -14,7 +14,6 @@
 
 import AnlzrReports
 import Logging
-import MaxMindDB
 import NEAddressProcessing
 import NIOConcurrencyHelpers
 import NIOCore
@@ -49,31 +48,8 @@ public actor AnalyzerBot: Actor {
 
   public var logger: Logger = Logger(label: "AnalyzerBot")
 
-  private var maxminddb: MaxMindDB?
-
   public init(group: any EventLoopGroup = .shared, dns: LocalDNSProxy) {
     self.eventLoopGroup = group
-
-    let dbFilename = "GeoLite2-Country.mmdb"
-
-    #if canImport(Darwin)
-      if #available(SwiftStdlib 5.7, *) {
-        maxminddb = try? MaxMindDB(
-          file: URL.maxmind.appending(path: dbFilename).path(percentEncoded: false),
-          mode: .mmap
-        )
-      } else {
-        maxminddb = try? MaxMindDB(
-          file: URL.maxmind.appendingPathComponent(dbFilename).path,
-          mode: .mmap
-        )
-      }
-    #else
-      maxminddb = try? MaxMindDB(
-        file: URL.maxmind.appending(path: dbFilename).path(percentEncoded: false),
-        mode: .mmap
-      )
-    #endif
 
     core = Analyzer(group: eventLoopGroup, logger: logger)
 
@@ -111,20 +87,6 @@ public actor AnalyzerBot: Actor {
     self.logger = logger
   }
 
-  /// Modify MaxMind GeoLite2-Country.mmdb.
-  public func setGeoLite2DB(_ db: MaxMindDB) async {
-    maxminddb = db
-
-    // GEOIP rules are affected by the GeoLite2 country database, so
-    // we need reload rules.
-    await setForwardingRules(core.forwardingRules)
-  }
-
-  /// Modify Web and SOCKS proxy settings.
-  private func setTunnelNetworkSettings(_ networkSettings: Analyzer.NetworkSettings) async throws {
-    try await core.setTunnelNetworkSettings(networkSettings)
-  }
-
   /// Modify outbound mode.
   public func setOutboundMode(_ outboundMode: OutboundMode) async {
     guard outboundMode != core.outboundMode else { return }
@@ -140,26 +102,6 @@ public actor AnalyzerBot: Actor {
 
   /// Modify forwarding rules.
   public func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) async {
-    let forwardingRules: [any ForwardingRuleConvertible] = forwardingRules.map {
-      if var forwardingRule = $0 as? GeoIPForwardingRule {
-        forwardingRule.db = maxminddb
-        return forwardingRule
-      }
-
-      if var forwardingRule = $0 as? RulesetForwardingRule {
-        let externalRules: [any ForwardingRule] = forwardingRule.externalRules.map {
-          guard var element = $0 as? GeoIPForwardingRule else {
-            return $0
-          }
-          element.db = maxminddb
-          return element
-        }
-        forwardingRule.externalRules = externalRules
-        return forwardingRule
-      }
-
-      return $0
-    }
     await core.setForwardingRules(forwardingRules)
   }
 
@@ -189,16 +131,12 @@ public actor AnalyzerBot: Actor {
 
   /// Modify settings using specific profile.
   public func setProfile(_ newProfile: Profile) async throws {
-    try await setTunnelNetworkSettings(
+    try await core.setTunnelNetworkSettings(
       (
         SocketAddress(
           ipAddress: newProfile.httpListenAddress, port: newProfile.httpListenPort ?? 6152),
         SocketAddress(
           ipAddress: newProfile.socksListenAddress, port: newProfile.socksListenPort ?? 6153)
       ))
-
-    await setForwardProtocol(newProfile.asForwardProtocol())
-    await setForwardingRules(newProfile.asForwardingRules())
-    try await setDecryptionSSLPKCS12Bundle(newProfile.asDecryptionPKCS12Bundle())
   }
 }
