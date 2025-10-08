@@ -189,7 +189,7 @@
           .store(in: &cancellables)
 
         $maxminddbLastUpdatedDate
-          .filter { $0 != .distantPast }
+          .removeDuplicates()
           .sink { [weak self] _ in
             let filename = "GeoLite2-Country.mmdb"
             let file: String
@@ -203,12 +203,14 @@
           .store(in: &cancellables)
 
         $enabledHTTPCapabilities
+          .removeDuplicates()
           .sink { [weak self] capabilities in
             self?.delegate?.autoReloadEnabledHTTPCapabilities(capabilities)
           }
           .store(in: &cancellables)
 
         $outboundMode
+          .removeDuplicates()
           .sink { [weak self] mode in
             self?.delegate?.autoReloadOutboundMode(mode)
           }
@@ -216,9 +218,9 @@
 
         // Maxmind db auto update.
         Publishers.CombineLatest3(
-          $maxminddbDownloadURL,
-          $maxminddbLastUpdatedDate,
-          $maxminddbKeepUpToDate
+          $maxminddbDownloadURL.removeDuplicates(),
+          $maxminddbLastUpdatedDate.removeDuplicates(),
+          $maxminddbKeepUpToDate.removeDuplicates()
         )
         .sink { [weak self] _, date, keepUpToDate in
           guard let self else { return }
@@ -243,7 +245,7 @@
 
         // External forwarding rule resources auto update.
         $forwardingRuleResourcesLastUpdatedDate
-          .filter { $0 != .distantPast }
+          .removeDuplicates()
           .sink { [weak self] date in
             guard let self else { return }
             let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }

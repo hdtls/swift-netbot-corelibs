@@ -61,7 +61,7 @@ extension ProfileAssistant {
     private var profileURL: URL = .profile
 
     @Preference(Prefs.Name.profileLastContentModificationDate, store: .__shared)
-    private var profileLastContentModificationDate = Date.now
+    private var profileLastContentModificationDate = Date.distantFuture
 
     @Preference(Prefs.Name.profilesDirectory, store: .__shared)
     private var profilesDirectory: URL = .profile.deletingLastPathComponent()
