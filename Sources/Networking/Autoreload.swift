@@ -290,6 +290,8 @@
         let profile = try Profile(contentsOf: profileURL)
 
         try await withThrowingTaskGroup(of: Void.self) { g in
+          let session = try self.session
+
           for forwardingRuleConvertible in profile.asForwardingRules() {
             let dstURL: URL
             let resourceURL: URL?
@@ -309,15 +311,16 @@
               continue
             }
 
-            g.addTask { [weak self] in
+            g.addTask {
               let destination: DownloadRequest.Destination = { _, _ in
                 (dstURL, [.createIntermediateDirectories, .removePreviousFile])
               }
-              let _ = try await self?.session.download(
+
+              let _ = try await session.download(
                 resourceURL, interceptor: .retryPolicy, to: destination
               )
               .serializingDownloadedFileURL()
-              .response
+              .value
             }
           }
           try await g.waitForAll()
