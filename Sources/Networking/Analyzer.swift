@@ -52,11 +52,11 @@ import Tracing
 
   /// Address of web proxy (HTTP/HTTPS) server will bind if present.
   @LockableTracked(accessors: .get)
-  public var webProxyListenAddress: SocketAddress
+  final public var webProxyListenAddress: SocketAddress
 
   /// Address of SOCKS proxy server will bind if present.
   @LockableTracked(accessors: .get)
-  public var socksProxyListenAddress: SocketAddress
+  final public var socksProxyListenAddress: SocketAddress
 
   /// The outbound mode control how requests will be process.
   public var outboundMode: OutboundMode = .direct
@@ -74,20 +74,20 @@ import Tracing
 
   /// DNS names that allow HTTPS decryption.
   @LockableTracked(accessors: .get)
-  public var decryptionDNSNames: [String]
+  final public var decryptionDNSNames: [String]
 
   /// `NIOSSLPKCS12Bundle` used to decrypt HTTPS connections.
   @LockableTracked(accessors: .get)
-  public var decryptionSSLPKCS12Bundle: NIOSSLPKCS12Bundle?
+  final public var decryptionSSLPKCS12Bundle: NIOSSLPKCS12Bundle?
 
   /// True if this `Analyzer` is currently active. Active is defined as the period of time after the `run` and before
   /// `shutdownGracefully` has fired.
-  public var isActive: Bool {
+  final public var isActive: Bool {
     _isActive.load(ordering: .relaxed)
   }
   private let _isActive = ManagedAtomic<Bool>(false)
 
-  public var closeFuture: EventLoopFuture<Void>? {
+  final public var closeFuture: EventLoopFuture<Void>? {
     _closePromise.withLock {
       $0?.futureResult
     }
