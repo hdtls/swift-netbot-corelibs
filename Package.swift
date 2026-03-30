@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.3
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 //===----------------------------------------------------------------------===//
 //
@@ -31,18 +31,17 @@ let package = Package(
     .library(name: "Netbot", targets: ["Netbot"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
-    .package(url: "https://github.com/apple/swift-asn1.git", from: "1.0.0"),
-    .package(url: "https://github.com/apple/swift-certificates.git", from: "1.0.1"),
-    .package(url: "https://github.com/apple/swift-crypto.git", "3.12.0"..<"3.13.0"),
-    .package(url: "https://github.com/apple/swift-log.git", from: "1.4.2"),
-    .package(url: "https://github.com/apple/swift-nio.git", from: "2.32.1"),
-    .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.14.1"),
-    .package(url: "https://github.com/apple/swift-nio-extras.git", from: "1.25.0"),
-    .package(url: "https://github.com/apple/swift-http-types.git", from: "1.4.0"),
-    .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.3.0"),
-    .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "602.0.0"),
-    .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.10.2"),
+    .package(url: "https://github.com/apple/swift-atomics.git", from: "1.3.0"),
+    .package(url: "https://github.com/apple/swift-asn1.git", from: "1.6.0"),
+    .package(url: "https://github.com/apple/swift-certificates.git", from: "1.18.0"),
+    .package(url: "https://github.com/apple/swift-log.git", from: "1.10.1"),
+    .package(url: "https://github.com/apple/swift-nio.git", from: "2.97.1"),
+    .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.36.1"),
+    .package(url: "https://github.com/apple/swift-nio-extras.git", from: "1.33.0"),
+    .package(url: "https://github.com/apple/swift-http-types.git", from: "1.5.1"),
+    .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.4.1"),
+    .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "603.0.0"),
+    .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.11.1"),
   ],
   targets: [
     .macro(
@@ -228,6 +227,16 @@ if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
     .package(path: "../swift-preference"),
   ]
 }
+
+#if canImport(Darwin)
+  package.dependencies += [
+    .package(url: "https://github.com/apple/swift-crypto.git", from: "4.3.0")
+  ]
+#else
+  package.dependencies += [
+    .package(url: "https://github.com/apple/swift-crypto.git", "3.12.0"..<"3.13.0")
+  ]
+#endif
 
 for target in package.targets {
   var settings = target.swiftSettings ?? []

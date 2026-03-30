@@ -1,4 +1,4 @@
-// swift-tools-version: 6.1
+// swift-tools-version: 6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 //===----------------------------------------------------------------------===//
 //
@@ -40,7 +40,7 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-nio-extras.git", from: "1.33.0"),
     .package(url: "https://github.com/apple/swift-http-types.git", from: "1.5.1"),
     .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.4.1"),
-    .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "601.0.0"),
+    .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "602.0.0"),
     .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.11.1"),
   ],
   targets: [
@@ -211,9 +211,20 @@ if Context.environment["ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA"] != nil {
   }
 }
 
+#if canImport(Darwin)
+  package.dependencies += [
+    .package(url: "https://github.com/apple/swift-crypto.git", from: "4.3.0")
+  ]
+#else
+  package.dependencies += [
+    .package(url: "https://github.com/apple/swift-crypto.git", "3.12.0"..<"3.13.0")
+  ]
+#endif
+
 if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
   package.dependencies += [
-    .package(url: "https://github.com/hdtls/swift-nio-transport-services.git", branch: "release/2.0"),
+    .package(
+      url: "https://github.com/hdtls/swift-nio-transport-services.git", branch: "release/2.0"),
     .package(url: "https://github.com/hdtls/swift-netbot-framing.git", branch: "main"),
     .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.3.0"),
     .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
@@ -226,16 +237,6 @@ if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
     .package(path: "../swift-preference"),
   ]
 }
-
-#if canImport(Darwin)
-  package.dependencies += [
-    .package(url: "https://github.com/apple/swift-crypto.git", from: "4.3.0")
-  ]
-#else
-  package.dependencies += [
-    .package(url: "https://github.com/apple/swift-crypto.git", "3.12.0"..<"3.13.0")
-  ]
-#endif
 
 for target in package.targets {
   var settings = target.swiftSettings ?? []
