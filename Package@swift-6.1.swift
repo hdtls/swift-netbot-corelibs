@@ -213,7 +213,8 @@ if Context.environment["ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA"] != nil {
 
 if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
   package.dependencies += [
-    .package(url: "https://github.com/hdtls/swift-nio-transport-services.git", branch: "release/2.0"),
+    .package(
+      url: "https://github.com/hdtls/swift-nio-transport-services.git", branch: "release/2.0"),
     .package(url: "https://github.com/hdtls/swift-netbot-framing.git", branch: "main"),
     .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.3.0"),
     .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
