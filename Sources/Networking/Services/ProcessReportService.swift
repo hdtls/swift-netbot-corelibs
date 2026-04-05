@@ -21,18 +21,18 @@ public protocol ProcessReporting: Service, Sendable {
 
   /// Request process info with socket address.
   ///
-  /// - Parameter address: Address the requested process runs on.
+  /// - Parameter connection: Connection the requested process runs on.
   /// - Returns: Generated process report.
-  func processInfo(address: Address) async throws -> ProcessReport
+  func processInfo(connection: Connection) async throws -> ProcessReport
 }
 
 /// A default `ProcessReporting` object.
 ///
-/// Throw `operationUnsupported` for process info report request by default.
+/// Return an empty report entity for process info report request by default.
 @available(SwiftStdlib 5.3, *)
 struct DefaultProcessReporting: ProcessReporting {
 
-  func processInfo(address: Address) async throws -> ProcessReport {
+  func processInfo(connection: Connection) async throws -> ProcessReport {
     return .init()
   }
 }

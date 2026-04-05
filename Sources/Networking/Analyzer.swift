@@ -395,13 +395,11 @@ import Tracing
     // We don't care error of process report generating, so we can use optional try.
     try? await withSpan("process-report gen") { _ in
       assert(session.establishmentReport != nil)
-      var processReport: ProcessReport?
-      if let sourceEndpoint = session.establishmentReport?.sourceEndpoint {
-        processReport = try await self.services.processReport.service.processInfo(
-          address: sourceEndpoint)
-        session.processReport = processReport
+      guard session.establishmentReport?.sourceEndpoint != nil else {
+        return
       }
-      await services.connectionTrasmission.service.push(session)
+      session.processReport = try await self.services.processReport.service.processInfo(
+        connection: session)
     }
   }
 

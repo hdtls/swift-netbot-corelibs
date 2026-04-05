@@ -42,7 +42,7 @@ import Testing
 
     #expect(application.services.processReport.service as? DefaultProcessReporting != nil)
     let p = try await application.services.processReport.service.processInfo(
-      address: .unix(path: "/var/run/tmp.socks"))
+      connection: .init())
     #expect(p == .init())
   }
 }

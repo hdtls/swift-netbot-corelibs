@@ -62,7 +62,7 @@ public actor AnalyzerBot: Actor {
     core.services.connectionTrasmission.use { _ in pulse }
 
     #if os(macOS)
-      core.services.processReport.use { _ in PHT }
+      core.services.processReport.use { _ in ProcessResolver.shared }
     #endif
   }
 

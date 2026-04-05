@@ -36,7 +36,7 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
 
   private let logger = Logger(label: "LwIP")
 
-  public let packetFlow: any PacketTunnelFlow
+  let packetFlow: any PacketTunnelFlow
   let dns: LocalDNSProxy
 
   init(group: any EventLoopGroup = .shared, packetFlow: any PacketTunnelFlow, dns: LocalDNSProxy) {
@@ -58,17 +58,17 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
     self.listener.newConnectionHandler = newConnectionHandler
   }
 
-  public func run() async throws {
+  func run() async throws {
     let address = try SocketAddress(ipAddress: "0.0.0.0", port: 0)
     try await listener.register()
     try await listener.bind(to: address)
   }
 
-  public func shutdownGracefully() async {
+  func shutdownGracefully() async {
     listener.close(promise: nil)
   }
 
-  public func handleInput(_ packetObject: NEPacket) async throws -> PacketHandleResult {
+  func handleInput(_ packetObject: NEPacket) async throws -> PacketHandleResult {
     guard case .v4(let inhdr) = packetObject.headerFields else {
       return .discarded
     }
@@ -96,7 +96,8 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
         }
         g.addTask { [weak self] in
           guard let self else { return }
-          guard let destination = connection.localAddress, let host = destination.ipAddress,
+          guard let source = connection.remoteAddress,
+            let destination = connection.localAddress, let host = destination.ipAddress,
             let port = destination.port
           else {
             connection.close(promise: nil)
@@ -132,14 +133,23 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
             let destinationAddress = destinationAddress
             let channel = try await ClientBootstrap(group: .shared)
               .channelOption(.allowRemoteHalfClosure, value: true)
-              .connect(to: .init(ipAddress: "127.0.0.1", port: 6153)) { channel in
-                channel.configureSOCKS5Pipeline(destinationAddress: destinationAddress) {
-                  channel.pipeline.addHandler(ResponseHandler(connection: connection)).map {
-                    channel
-                  }
-                }
-              }
+              .connect(to: .init(ipAddress: "127.0.0.1", port: 6153))
               .get()
+
+            guard let localAddress = channel.localAddress else {
+              throw ChannelError.unknownLocalAddress
+            }
+
+            try? ProcessResolver.shared.store(
+              localAddress.asAddress(),
+              to: .hostPort(host: "127.0.0.1", port: .init(rawValue: UInt16(source.port ?? 0)))
+            )
+
+            try await channel.configureSOCKS5Pipeline(destinationAddress: destinationAddress) {
+              channel.pipeline.addHandler(ResponseHandler(connection: connection))
+            }
+            .get()
+            .get()
 
             @Sendable func read() {
               connection.receive(maximumLength: 8192) { content, contentContext, _, error in
