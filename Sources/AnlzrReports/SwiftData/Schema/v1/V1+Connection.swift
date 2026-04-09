@@ -135,6 +135,8 @@ import NEAddressProcessing
 
       public var duration = Duration.zero
 
+      public var durationFormatted = "0ms"
+
       /// Description of the task.
       public var taskDescription = ""
 
@@ -185,9 +187,20 @@ extension V1._Connection {
   public func mergeValues(_ data: Connection) {
     #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
       self.taskIdentifier = data.taskIdentifier
+      if self.earliestBeginDate != data.earliestBeginDate {
+        self.earliestBeginDateFormatted = data.earliestBeginDate
+          .formatted(.dateTime.hour().minute().second())
+      }
       self.earliestBeginDate = data.earliestBeginDate
-      self.earliestBeginDateFormatted = data.earliestBeginDate
-        .formatted(.dateTime.hour().minute().second())
+      if self.duration != data.duration {
+        self.durationFormatted = data.duration.formatted(
+          .units(
+            allowed: [.hours, .minutes, .seconds, .milliseconds],
+            width: .narrow,
+            maximumUnitCount: 3
+          )
+        )
+      }
       self.duration = data.duration
       self.taskDescription = data.taskDescription
       self.tls = data.tls
@@ -203,6 +216,13 @@ extension V1._Connection {
       }
       if self.duration != data.duration {
         self.duration = data.duration
+        self.durationFormatted = data.duration.formatted(
+          .units(
+            allowed: [.hours, .minutes, .seconds, .milliseconds],
+            width: .narrow,
+            maximumUnitCount: 3
+          )
+        )
       }
       if self.taskDescription != data.taskDescription {
         self.taskDescription = data.taskDescription

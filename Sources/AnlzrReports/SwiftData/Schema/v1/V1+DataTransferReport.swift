@@ -140,56 +140,46 @@ extension V1._DataTransferReport {
   /// Merge new values from data transfer object.
   /// - Parameter data: New `EstablishmentRepor` to merge.
   public func mergeValues(_ data: DataTransferReport) {
+    if self._duration != data._duration {
+      self.durationFormatted = data.duration.formatted(
+        .units(
+          allowed: [.hours, .minutes, .seconds, .milliseconds],
+          width: .narrow,
+          maximumUnitCount: 3
+        )
+      )
+    }
     #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
       self._duration = data._duration
-      if self._duration != data._duration {
-        self.durationFormatted = data.duration.formatted(
-          .units(
-            allowed: [.hours, .minutes, .seconds, .milliseconds],
-            width: .narrow,
-            maximumUnitCount: 3
-          )
-        )
-      }
-
-      self.pathReportFormatted = .init(
-        sentApplicationByteCount: data.pathReport.sentApplicationByteCount
-          .formatted(.byteCount(style: .binary, spellsOutZero: false)),
-        receivedApplicationByteCount: data.pathReport.receivedApplicationByteCount
-          .formatted(.byteCount(style: .binary, spellsOutZero: false))
-      )
-
-      self.aggregatePathReportFormatted = .init(
-        sentApplicationByteCount: data.aggregatePathReport.sentApplicationByteCount
-          .formatted(.byteCount(style: .binary, spellsOutZero: false)),
-        receivedApplicationByteCount: data.aggregatePathReport.receivedApplicationByteCount
-          .formatted(.byteCount(style: .binary, spellsOutZero: false))
-      )
     #else
       if self._duration != data._duration {
         self._duration = data._duration
-        self.durationFormatted = data.duration.formatted(
-          .units(
-            allowed: [.hours, .minutes, .seconds, .milliseconds],
-            width: .narrow,
-            maximumUnitCount: 2
-          )
-        )
       }
+    #endif
 
+    if self.pathReport?.sentApplicationByteCount != data.pathReport.sentApplicationByteCount
+      || self.pathReport?.receivedApplicationByteCount
+        != data.pathReport.receivedApplicationByteCount
+    {
       self.pathReportFormatted = .init(
         sentApplicationByteCount: data.pathReport.sentApplicationByteCount
           .formatted(.byteCount(style: .binary, spellsOutZero: false)),
         receivedApplicationByteCount: data.pathReport.receivedApplicationByteCount
           .formatted(.byteCount(style: .binary, spellsOutZero: false))
       )
+    }
 
+    if self.aggregatePathReport?.sentApplicationByteCount
+      != data.aggregatePathReport.sentApplicationByteCount
+      || self.aggregatePathReport?.receivedApplicationByteCount
+        != data.aggregatePathReport.receivedApplicationByteCount
+    {
       self.aggregatePathReportFormatted = .init(
         sentApplicationByteCount: data.aggregatePathReport.sentApplicationByteCount
           .formatted(.byteCount(style: .binary, spellsOutZero: false)),
         receivedApplicationByteCount: data.aggregatePathReport.receivedApplicationByteCount
           .formatted(.byteCount(style: .binary, spellsOutZero: false))
       )
-    #endif
+    }
   }
 }
