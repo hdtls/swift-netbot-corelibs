@@ -50,7 +50,7 @@ struct GeoIPForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable,
 
       switch host {
       case .ipv4, .ipv6:
-        let jsonObject = try? db.lookup(ipAddress: "\(address)") as? [String: [String: Any]]
+        let jsonObject = try? db.lookup(ipAddress: "\(host)") as? [String: [String: Any]]
         let country = jsonObject?["country"]
         let countryCode = country?["iso_code"] as? String
         return countryCode == self.countryCode
