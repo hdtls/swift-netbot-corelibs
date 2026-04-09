@@ -119,6 +119,7 @@ extension Connection: Codable {
     case currentRequest
     case response
     case earliestBeginDate
+    case duration
     case taskDescription
     case tls
     case state
@@ -137,6 +138,7 @@ extension Connection: Codable {
     self.currentRequest = try container.decodeIfPresent(Request.self, forKey: .currentRequest)
     self.response = try container.decodeIfPresent(Response.self, forKey: .response)
     self.earliestBeginDate = try container.decode(Date.self, forKey: .earliestBeginDate)
+    self._duration = try container.decode(Double.self, forKey: .duration)
     self.taskDescription = try container.decode(String.self, forKey: .taskDescription)
     self.tls = try container.decode(Bool.self, forKey: .tls)
     self.state = try container.decode(State.self, forKey: .state)
@@ -160,6 +162,7 @@ extension Connection: Codable {
     try container.encodeIfPresent(currentRequest, forKey: .currentRequest)
     try container.encodeIfPresent(response, forKey: .response)
     try container.encode(earliestBeginDate, forKey: .earliestBeginDate)
+    try container.encode(_duration, forKey: .duration)
     try container.encode(taskDescription, forKey: .taskDescription)
     try container.encode(tls, forKey: .tls)
     try container.encode(state, forKey: .state)
