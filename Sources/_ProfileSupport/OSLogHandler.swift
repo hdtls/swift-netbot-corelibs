@@ -17,7 +17,7 @@
   import Logging
   import os
 
-  /// `LogHandler` is a simple implementation of `Logging.LogHandler` for directing
+  /// `LogHandler` is a simple implementation of `LogHandler` for directing
   /// `Logger` output to system log via the factory methods.
   ///
   /// Metadata is merged in the following order:
@@ -25,7 +25,7 @@
   /// 2. The handler's ``metadataProvider`` is invoked, overriding any existing keys.
   /// 3. The per-log-statement metadata is merged, overriding any previously set keys.
   @available(SwiftStdlib 5.3, *)
-  public struct LogHandler: Logging.LogHandler {
+  public struct OSLogHandler: LogHandler {
 
     private let logger: os.Logger
     private let label: String
@@ -58,7 +58,7 @@
       level: Logging.Logger.Level, message: Logging.Logger.Message,
       metadata: Logging.Logger.Metadata?, source: String, file: String, function: String, line: UInt
     ) {
-      let effectiveMetadata = LogHandler.prepareMetadata(
+      let effectiveMetadata = OSLogHandler.prepareMetadata(
         base: self.metadata, provider: self.metadataProvider, explicit: metadata)
 
       let prettyMetadata: String?
