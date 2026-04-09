@@ -39,10 +39,8 @@ import NIOCore
   private let address: Address
   #if canImport(Network)
     private var outboundStreams: [ObjectIdentifier: NWConnection]
-    private var closeFuture: EventLoopFuture<Void> {
-      promise.futureResult
-    }
-    private let promise: EventLoopPromise<Void>
+    private let closePromise: EventLoopPromise<Void>
+    private var listener: NWListener?
   #else
     private var outboundStreams: [ObjectIdentifier: AsyncStream<ByteBuffer>.Continuation]
     private let quiescing: ServerQuiescingHelper
@@ -56,7 +54,8 @@ import NIOCore
     self.address = address
     self._outboundStreams = .init([:])
     #if canImport(Network)
-      self.promise = group.any().makePromise()
+      self.closePromise = group.any().makePromise()
+      self._listener = .init(nil)
     #else
       self.quiescing = ServerQuiescingHelper(group: group)
     #endif
@@ -74,22 +73,22 @@ import NIOCore
       }
       parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
 
-      let listener = try NWListener(using: parameters)
-      listener.stateUpdateHandler = { [self] in
+      listener = try NWListener(using: parameters)
+      listener?.stateUpdateHandler = { [self] in
         switch $0 {
         case .setup, .ready:
           break
         case .waiting(let error):
-          promise.fail(error)
+          closePromise.fail(error)
         case .failed(let error):
-          promise.fail(error)
+          closePromise.fail(error)
         case .cancelled:
-          promise.succeed()
+          closePromise.succeed()
         @unknown default:
           break
         }
       }
-      listener.newConnectionHandler = { connection in
+      listener?.newConnectionHandler = { connection in
         connection.stateUpdateHandler = {
           switch $0 {
           case .setup, .waiting, .preparing:
@@ -108,8 +107,8 @@ import NIOCore
         }
         connection.start(queue: .global())
       }
-      listener.start(queue: .global())
-      try await promise.futureResult.get()
+      listener?.start(queue: .global())
+      try await closePromise.futureResult.get()
     #else
       let channel = try await ServerBootstrap(group: group)
         .serverChannelInitializer { channel in
@@ -210,7 +209,10 @@ import NIOCore
 
     let promise = group.any().makePromise(of: Void.self)
     #if canImport(Network)
-      self.promise.futureResult.cascade(to: promise)
+      promise.futureResult.cascade(to: self.closePromise)
+      self.listener?.cancel()
+      self.listener = nil
+      self.closePromise.succeed()
     #else
       quiescing.initiateShutdown(promise: promise)
     #endif
