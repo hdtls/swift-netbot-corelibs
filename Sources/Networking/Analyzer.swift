@@ -707,13 +707,14 @@ import Tracing
           let currentDataTransferReport = try await outputStream.dataTransferReport(collector).get()
           if let dataTransferReport = session.dataTransferReport {
             session.dataTransferReport = .init(
-              duration: dataTransferReport._duration + 1,
+              duration: dataTransferReport._duration + currentDataTransferReport._duration,
               aggregatePathReport: dataTransferReport.aggregatePathReport
                 &+ currentDataTransferReport.aggregatePathReport,
               pathReport: currentDataTransferReport.aggregatePathReport
             )
           } else {
             session.dataTransferReport = .init(
+              duration: currentDataTransferReport._duration,
               aggregatePathReport: currentDataTransferReport.aggregatePathReport,
               pathReport: currentDataTransferReport.aggregatePathReport
             )
