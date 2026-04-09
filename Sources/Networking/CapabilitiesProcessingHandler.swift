@@ -123,10 +123,6 @@ final class __CapabilitiesProcessingHandler<HeadT: Equatable & Sendable>: Channe
         // Capture modified HTTP request.
         if enabledHTTPCapabilities.contains(.httpCapture) {
           connection.currentRequest?.httpRequest = partialResult
-
-          Task {
-            await self.application.services.connectionTrasmission.service.push(connection)
-          }
         }
 
         let finalize = try HTTPRequestHead(partialResult) as! HeadT
@@ -148,9 +144,6 @@ final class __CapabilitiesProcessingHandler<HeadT: Equatable & Sendable>: Channe
           let body = $0?.body ?? .init()
           $0?.body = body
           $0?.body?.append(contentsOf: Array(buffer: partialResult))
-        }
-        Task {
-          await self.application.services.connectionTrasmission.service.push(connection)
         }
       }
 
@@ -203,9 +196,6 @@ final class __CapabilitiesProcessingHandler<HeadT: Equatable & Sendable>: Channe
         // Capture modified HTTP response
         if enabledHTTPCapabilities.contains(.httpCapture) {
           connection.response = Response(httpResponse: partialResult)
-          Task {
-            await self.application.services.connectionTrasmission.service.push(connection)
-          }
         }
 
         let finalize = HTTPResponseHead(partialResult) as! HeadT
@@ -226,17 +216,11 @@ final class __CapabilitiesProcessingHandler<HeadT: Equatable & Sendable>: Channe
           $0?.body = body
           $0?.body?.append(contentsOf: Array(buffer: partialResult))
         }
-        Task {
-          await self.application.services.connectionTrasmission.service.push(connection)
-        }
       }
       return wrapInboundOut(.body(.byteBuffer(partialResult)))
     case .end(let trailers):
+      connection._duration = -connection.earliestBeginDate.timeIntervalSinceNow
       connection.state = .completed
-      Task {
-        await self.application.services.connectionTrasmission.service.push(connection)
-      }
-
       guard let trailers else {
         return wrapInboundOut(.end(trailers))
       }

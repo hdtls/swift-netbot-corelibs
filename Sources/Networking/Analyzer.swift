@@ -332,6 +332,23 @@ import Tracing
                 resolutions: []
               )
 
+              Task {
+                // Publish initial state of session.
+                await self.services.connectionTrasmission.service.push(session)
+
+                repeat {
+                  try await Task.sleep(nanoseconds: 1_000_000_000)
+                  session._duration += 1
+
+                  // Publish session changes.
+                  await self.services.connectionTrasmission.service.push(session)
+                } while !session.state.isFinished
+
+                // Reset the data transfer report metrics and publish changes.
+                session._dataTransferReport.withLock { $0?.pathReport = .init() }
+                await self.services.connectionTrasmission.service.push(session)
+              }
+
               try await self.forwardProtocolLookup(session: session)
 
               return try await self.initializeVPNTunnel(
@@ -340,8 +357,8 @@ import Tracing
                 inputStream: serverChildChannel
               )
             } catch {
+              session._duration = -session.earliestBeginDate.timeIntervalSinceNow
               session.state = .failed
-              await self.services.connectionTrasmission.service.push(session)
               self.logger.error(
                 "Connection failure with error: \(error)",
                 metadata: session.metadata
@@ -449,7 +466,6 @@ import Tracing
         "Policy evaluating - \(fallback.name)",
         metadata: session.metadata
       )
-      await self.services.connectionTrasmission.service.push(session)
     }
   }
 
@@ -485,7 +501,6 @@ import Tracing
           duration: startTime.distance(to: .now()).timeInterval,
           resolutions: []
         )
-        await self.services.connectionTrasmission.service.push(session)
         return
       }
 
@@ -506,7 +521,6 @@ import Tracing
               )
             ]
           )
-          await self.services.connectionTrasmission.service.push(session)
           return
         }
       case .unix:
@@ -514,7 +528,6 @@ import Tracing
           duration: startTime.distance(to: .now()).timeInterval,
           resolutions: []
         )
-        await self.services.connectionTrasmission.service.push(session)
         return
       case .url:
         // Not supported yet.
@@ -522,7 +535,6 @@ import Tracing
           duration: startTime.distance(to: .now()).timeInterval,
           resolutions: []
         )
-        await self.services.connectionTrasmission.service.push(session)
         return
       }
 
@@ -575,14 +587,12 @@ import Tracing
             }
           }
 
-          var partialResult: [DNSResolutionReport.Resolution] = []
           var lastError: (any Error)?
 
           // There is no error for for-in loop, so we don't need handle this.
           for try await resolution in g {
             do {
               let resolutions: [DNSResolutionReport.Resolution] = try resolution.get()
-              partialResult.append(contentsOf: resolutions)
               session._dnsResolutionReport.withLock {
                 if $0 == nil {
                   $0 = DNSResolutionReport(duration: 0, resolutions: resolutions)
@@ -590,7 +600,6 @@ import Tracing
                   $0?.resolutions.append(contentsOf: resolutions)
                 }
               }
-              await self.services.connectionTrasmission.service.push(session)
               promise.succeed()
             } catch {
               if lastError != nil {
@@ -602,11 +611,10 @@ import Tracing
           }
 
           if let lastError {
-            if partialResult.isEmpty {
+            if session.dnsResolutionReport?.resolutions.isEmpty ?? false {
               throw lastError
             }
           }
-          return partialResult
         }
       }
       try await promise.futureResult.get()
@@ -678,11 +686,9 @@ import Tracing
             $0?.resolutions = establishmentReport.resolutions
           }
         }
-
-        await self.services.connectionTrasmission.service.push(session)
       }
 
-      Task.detached {
+      Task {
         assert(session.dataTransferReport == nil)
 
         repeat {
@@ -692,6 +698,7 @@ import Tracing
             // and the second is that the channel.connection is missing. Both
             // situations indicate that the connection has ended, so we mark it
             // `completed` here.
+            session._duration = -session.earliestBeginDate.timeIntervalSinceNow
             session.state = .completed
             break
           }
@@ -711,15 +718,7 @@ import Tracing
               pathReport: currentDataTransferReport.aggregatePathReport
             )
           }
-          await self.services.connectionTrasmission.service.push(session)
         } while !session.state.isFinished
-
-        // Reset data transfer report and update metrics.
-        session._dataTransferReport.withLock {
-          assert($0 != nil)
-          $0?.pathReport = .init()
-        }
-        await self.services.connectionTrasmission.service.push(session)
       }
 
       return (inputStream, outputStream, session)
@@ -742,7 +741,6 @@ import Tracing
             if case .identified(let proto) = result {
               mayBeTLS = proto == "TLS"
               flow.session.tls = mayBeTLS
-              await self.services.connectionTrasmission.service.push(flow.session)
             }
 
             // Try to setup TLS decryption if current connection is over TLS and enabled
