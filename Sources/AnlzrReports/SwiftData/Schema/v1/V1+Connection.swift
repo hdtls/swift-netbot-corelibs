@@ -14,7 +14,7 @@
 
 import NEAddressProcessing
 
-#if swift(>=6.3)
+#if canImport(Darwin) || swift(>=6.3)
   import Observation
 #endif
 
@@ -109,7 +109,7 @@ import NEAddressProcessing
   @available(SwiftStdlib 5.9, *)
   extension V1 {
 
-    #if swift(>=6.3)
+    #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
     final public class _Connection {

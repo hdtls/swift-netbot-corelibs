@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if swift(>=6.3)
+#if canImport(Darwin) || swift(>=6.3)
   import Observation
 #endif
 
@@ -26,7 +26,7 @@ extension V1 {
   #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
     @Model
   #else
-    #if swift(>=6.3)
+    #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
   #endif

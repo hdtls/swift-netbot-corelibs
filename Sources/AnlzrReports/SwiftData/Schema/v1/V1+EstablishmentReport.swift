@@ -14,7 +14,7 @@
 
 import NEAddressProcessing
 
-#if swift(>=6.3)
+#if canImport(Darwin) || swift(>=6.3)
   import Observation
 #endif
 
@@ -110,7 +110,7 @@ extension V1 {
       }
     }
   #else
-    #if swift(>=6.3)
+    #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
     final public class _EstablishmentReport {

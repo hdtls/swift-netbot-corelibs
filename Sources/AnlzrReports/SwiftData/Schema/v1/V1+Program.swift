@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if swift(>=6.3)
+#if canImport(Darwin) || swift(>=6.3)
   import Observation
 #endif
 
@@ -59,7 +59,7 @@ extension V1 {
       public init() {}
     }
   #else
-    #if swift(>=6.3)
+    #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
     final public class _Program {

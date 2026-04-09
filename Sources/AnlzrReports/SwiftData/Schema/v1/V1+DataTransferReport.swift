@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if swift(>=6.3)
+#if canImport(Darwin) || swift(>=6.3)
   import Observation
 #endif
 
@@ -81,7 +81,7 @@ extension V1 {
       public init() {}
     }
   #else
-    #if swift(>=6.3)
+    #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
     public class _DataTransferReport {
@@ -142,7 +142,7 @@ extension V1._DataTransferReport {
   public func mergeValues(_ data: DataTransferReport) {
     #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
       self._duration = data._duration
-      if self._duration == data._duration {
+      if self._duration != data._duration {
         self.durationFormatted = data.duration.formatted(
           .units(
             allowed: [.hours, .minutes, .seconds, .milliseconds],
