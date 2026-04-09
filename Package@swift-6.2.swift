@@ -69,7 +69,7 @@ let package = Package(
       name: "_DNSSupport",
       dependencies: [
         .product(name: "NIOCore", package: "swift-nio"),
-        .product(name: "NEAddressProcessing", package: "swift-netbot-framing"),
+        .product(name: "NEAddressProcessing", package: "swift-netbot-protoimpl"),
       ]
     ),
     .target(
@@ -100,10 +100,10 @@ let package = Package(
         .product(name: "NIOHTTPCompression", package: "swift-nio-extras"),
         .product(name: "NIOExtras", package: "swift-nio-extras"),
         .product(name: "HTTPTypes", package: "swift-http-types"),
-        .product(name: "NEHTTP", package: "swift-netbot-framing"),
-        .product(name: "NESOCKS", package: "swift-netbot-framing"),
-        .product(name: "NESS", package: "swift-netbot-framing"),
-        .product(name: "NEVMESS", package: "swift-netbot-framing"),
+        .product(name: "NEHTTP", package: "swift-netbot-protoimpl"),
+        .product(name: "NESOCKS", package: "swift-netbot-protoimpl"),
+        .product(name: "NESS", package: "swift-netbot-protoimpl"),
+        .product(name: "NEVMESS", package: "swift-netbot-protoimpl"),
       ]
     ),
     .target(
@@ -128,7 +128,7 @@ let package = Package(
         "SynchronizationMacros",
         .product(name: "Atomics", package: "swift-atomics"),
         .product(name: "HTTPTypes", package: "swift-http-types"),
-        .product(name: "NEAddressProcessing", package: "swift-netbot-framing"),
+        .product(name: "NEAddressProcessing", package: "swift-netbot-protoimpl"),
         .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
       ]
     ),
@@ -225,14 +225,14 @@ if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
   package.dependencies += [
     .package(
       url: "https://github.com/hdtls/swift-nio-transport-services.git", branch: "release/2.0"),
-    .package(url: "https://github.com/hdtls/swift-netbot-framing.git", branch: "main"),
+    .package(url: "https://github.com/hdtls/swift-netbot-protoimpl.git", branch: "main"),
     .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.3.0"),
     .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
   ]
 } else {
   package.dependencies += [
     .package(path: "../swift-nio-transport-services"),
-    .package(path: "../swift-netbot-framing"),
+    .package(path: "../swift-netbot-protoimpl"),
     .package(path: "../swift-maxminddb"),
     .package(path: "../swift-preference"),
   ]
