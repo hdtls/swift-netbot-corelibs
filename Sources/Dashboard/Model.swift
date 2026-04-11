@@ -127,6 +127,7 @@
             continuation.finish()
           case .cancelled:
             // We have finished continuation immediately when shutdown, so there we do nothing.
+            continuation.yield(.failure(.nw(.posix(.ECANCELED))))
             continuation.finish()
           @unknown default:
             continuation.yield(.failure(.operationUnsupported))
@@ -276,8 +277,8 @@
     }
 
     public func resume() {
-      self.cancel()
-
+      // Operation only permitted when fetch task is nil or original task is cancelled.
+      guard self.fetchTask?.isCancelled ?? true else { return }
       self.fetchTask = Task { [weak self] in
         guard let self else { return }
 
@@ -285,11 +286,18 @@
           do {
             let models = try message.get()
             performBatchUpdates(models)
+          } catch let error as LocalizedError {
+            self._fetchError = error
+            logger.error("\(error)")
           } catch {
             logger.error("\(error)")
           }
         }
       }
+
+      self._fetchError = nil
+
+      self.timerSource?.cancel()
       self.timerSource = DispatchSource.makeTimerSource(queue: .main)
       self.timerSource?.schedule(deadline: .now(), repeating: .seconds(1))
       self.timerSource?.setEventHandler {
@@ -326,7 +334,7 @@
       self.timerSource?.resume()
     }
 
-    public func cancel() {
+    private func cancel() {
       self._fetchError = nil
       self.timerSource?.cancel()
       self.fetchTask?.cancel()
