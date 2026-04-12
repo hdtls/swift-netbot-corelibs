@@ -14,22 +14,15 @@
 
 import AnlzrReports
 
-/// `ConnectionTransmissionService` prtocol define a service to transfer connections.
+/// `ConnectionPublisher` prtocol define a service to transfer connections.
 @available(SwiftStdlib 5.3, *)
-public protocol ConnectionTransmissionService: Service, Sendable {
+public protocol ConnectionPublisher: Sendable {
 
-  func push(_ connection: Connection) async
+  func send(_ connection: Connection) async
 }
 
 @available(SwiftStdlib 5.3, *)
-struct DefaultConnectionTransmissionService: ConnectionTransmissionService {
-  func push(_ connection: Connection) async {
-  }
-}
-
-@available(SwiftStdlib 5.3, *)
-extension Analyzer.Services {
-  public var connectionTrasmission: ServiceProvider<any ConnectionTransmissionService> {
-    .init(application: self.application)
+struct DefaultConnectionPublisher: ConnectionPublisher {
+  func send(_ connection: Connection) async {
   }
 }

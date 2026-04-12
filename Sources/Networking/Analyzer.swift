@@ -66,11 +66,23 @@ import Tracing
 
   /// The rules used to make outbound stream.
   public var forwardingRules: [any ForwardingRuleConvertible] {
-    self.services.forwardingRule.service.forwardingRules
+    self.rulesEngine.forwardingRules
   }
 
   /// A set of enabled capabilities, default is empty.
   public var capabilities: CapabilityFlags = []
+
+  /// The dns resolver.
+  public var resolver: Resolver
+
+  /// The RulesEngine evaluates the Rules.
+  public var rulesEngine: RulesEngine
+
+  /// A service help detect the process that the current connection is created.
+  public var processInfo: ProcessReporting
+
+  /// A publisher publish connection states.
+  public var connectionPublisher: ConnectionPublisher
 
   /// DNS names that allow HTTPS decryption.
   @LockableTracked(accessors: .get)
@@ -102,9 +114,6 @@ import Tracing
     "AnalyzerBot"
   }
 
-  @LockableTracked(accessLevel: .public, accessors: .get)
-  public var storage: Storage
-
   /// Initialize an instance of `Netbot` with specified settings.
   public init(
     group: any EventLoopGroup,
@@ -119,28 +128,13 @@ import Tracing
     self._outboundMode = .init(.direct)
     self._forwardProtocol = .init(.direct)
     self._capabilities = .init([])
+    self._resolver = .init(DefaultResolver(eventLoop: group.any()))
+    self._rulesEngine = .init(DefaultRulesEngine(logger: logger))
+    self._processInfo = .init(DefaultProcessReporting())
+    self._connectionPublisher = .init(DefaultConnectionPublisher())
     self._decryptionDNSNames = .init([])
     self._decryptionSSLPKCS12Bundle = .init(nil)
     self._quiescing = .init([])
-    self._storage = .init(.init(logger: logger))
-
-    let resolver = DefaultResolver(eventLoop: group.any())
-    self.services.dns.use { _ in resolver }
-
-    let ruleService = ForwardingRuleService(logger: logger)
-    self.services.forwardingRule.use { _ in
-      ruleService
-    }
-
-    let processReportService = DefaultProcessReporting()
-    self.services.processReport.use { _ in
-      processReportService
-    }
-
-    let connectionTransmissionService = DefaultConnectionTransmissionService()
-    self.services.connectionTrasmission.use { _ in
-      connectionTransmissionService
-    }
   }
 
   /// Modify Web and SOCKS proxy settings.
@@ -171,7 +165,7 @@ import Tracing
 
   /// Modify forwarding rules.
   public func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) async {
-    self.services.forwardingRule.service.setForwardingRules(forwardingRules)
+    self.rulesEngine.setForwardingRules(forwardingRules)
   }
 
   /// Modify enabled HTTP capabilities.
@@ -217,7 +211,6 @@ import Tracing
         _isActive.store(true, ordering: .relaxed)
         _closePromise.withLock { $0 = eventLoopGroup.any().makePromise() }
 
-        try await storage.run()
         try await startVPNTunnel()
       } catch {
         _isActive.store(false, ordering: .relaxed)
@@ -241,8 +234,6 @@ import Tracing
     guard self.isActive else {
       return
     }
-
-    await storage.shutdownGracefully()
 
     do {
       // Wait until all channels closed.
@@ -334,19 +325,19 @@ import Tracing
 
               Task {
                 // Publish initial state of session.
-                await self.services.connectionTrasmission.service.push(session)
+                await self.connectionPublisher.send(session)
 
                 repeat {
                   try await Task.sleep(nanoseconds: 1_000_000_000)
                   session._duration += 1
 
                   // Publish session changes.
-                  await self.services.connectionTrasmission.service.push(session)
+                  await self.connectionPublisher.send(session)
                 } while !session.state.isFinished
 
                 // Reset the data transfer report metrics and publish changes.
                 session._dataTransferReport.withLock { $0?.pathReport = .init() }
-                await self.services.connectionTrasmission.service.push(session)
+                await self.connectionPublisher.send(session)
               }
 
               try await self.forwardProtocolLookup(session: session)
@@ -415,8 +406,7 @@ import Tracing
       guard session.establishmentReport?.sourceEndpoint != nil else {
         return
       }
-      session.processReport = try await self.services.processReport.service.processInfo(
-        connection: session)
+      session.processReport = try await self.processInfo.processInfo(connection: session)
     }
   }
 
@@ -548,10 +538,8 @@ import Tracing
           g.addTask {
             do {
               let startTime = DispatchTime.now()
-              let addresses =
-                try await self.services.dns.service.initiateAAAAQuery(
-                  host: hostname, port: port
-                ).get()
+              let addresses = try await self.resolver.initiateAAAAQuery(host: hostname, port: port)
+                .get()
 
               return .success([
                 DNSResolutionReport.Resolution(
@@ -569,10 +557,8 @@ import Tracing
           g.addTask {
             do {
               let startTime = DispatchTime.now()
-              let addresses =
-                try await self.services.dns.service.initiateAQuery(
-                  host: hostname, port: port
-                ).get()
+              let addresses = try await self.resolver.initiateAQuery(host: hostname, port: port)
+                .get()
 
               return .success([
                 DNSResolutionReport.Resolution(
@@ -630,9 +616,7 @@ import Tracing
     await withSpan("forwarding-rule lookup") { _ in
       let startTime = DispatchTime.now()
 
-      var forwardingReport = await self.services.forwardingRule.service.runLookup(
-        connection: session
-      )
+      var forwardingReport = await self.rulesEngine.executeAllRules(connection: session)
       let duration = startTime.distance(to: .now())
       forwardingReport._duration = duration.timeInterval
       assert(forwardingReport._forwardingRule != nil)

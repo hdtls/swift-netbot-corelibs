@@ -25,15 +25,15 @@ import Testing
   import NIOPosix
 #endif
 
-@Suite struct DNSServiceTests {
+@Suite struct DNSResolverTests {
 
   private let application = Analyzer(
     group: MultiThreadedEventLoopGroup.singleton,
     logger: .init(label: "")
   )
 
-  @Test func dnsService() async throws {
-    final class DNSResolver: Networking.Resolver, Service, Sendable {
+  @Test func dnsResolver() async throws {
+    final class DNSResolver: Networking.Resolver, Sendable {
       let eventLoop: any EventLoop
       init(eventLoop: any EventLoop) {
         self.eventLoop = eventLoop
@@ -60,21 +60,21 @@ import Testing
       logger: .init(label: "")
     )
 
-    #expect(application.services.dns.service as? DefaultResolver != nil)
-    var a = try await application.services.dns.service.initiateAQuery(host: "", port: 0).get()
+    #expect(application.resolver as? DefaultResolver != nil)
+    var a = try await application.resolver.initiateAQuery(host: "", port: 0).get()
     #expect(a == [])
 
-    var aaaa = try await application.services.dns.service.initiateAAAAQuery(host: "", port: 0).get()
+    var aaaa = try await application.resolver.initiateAAAAQuery(host: "", port: 0).get()
     #expect(aaaa == [])
 
     let resolver = DNSResolver(eventLoop: MultiThreadedEventLoopGroup.singleton.any())
-    application.services.dns.use { _ in resolver }
-    #expect(application.services.dns.service as! DNSResolver === resolver)
+    application.resolver = resolver
+    #expect(application.resolver as! DNSResolver === resolver)
 
-    a = try await application.services.dns.service.initiateAQuery(host: "", port: 0).get()
+    a = try await application.resolver.initiateAQuery(host: "", port: 0).get()
     #expect(a == [try! SocketAddress(ipAddress: "127.0.0.1", port: 0)])
 
-    aaaa = try await application.services.dns.service.initiateAAAAQuery(host: "", port: 0).get()
+    aaaa = try await application.resolver.initiateAAAAQuery(host: "", port: 0).get()
     #expect(aaaa == [try! SocketAddress(ipAddress: "::1", port: 0)])
   }
 }

@@ -17,7 +17,7 @@ import NEAddressProcessing
 
 /// Protocol for process report generator
 @available(SwiftStdlib 5.3, *)
-public protocol ProcessReporting: Service, Sendable {
+public protocol ProcessReporting: Sendable {
 
   /// Request process info with socket address.
   ///
@@ -34,13 +34,5 @@ struct DefaultProcessReporting: ProcessReporting {
 
   func processInfo(connection: Connection) async throws -> ProcessReport {
     return .init()
-  }
-}
-
-@available(SwiftStdlib 5.3, *)
-extension Analyzer.Services {
-
-  public var processReport: ServiceProvider<any ProcessReporting> {
-    .init(application: self.application)
   }
 }

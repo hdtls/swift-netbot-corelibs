@@ -33,7 +33,7 @@ import NIOCore
 #endif
 
 @available(SwiftStdlib 5.3, *)
-@Lockable final class ConnectionPulse: ConnectionTransmissionService, Sendable {
+@Lockable final class ConnectionPulse: ConnectionPublisher, Sendable {
 
   private let group: any EventLoopGroup
   private let address: Address
@@ -62,7 +62,7 @@ import NIOCore
     self._connections = .init([:])
   }
 
-  func run() async throws {
+  private func run0() async throws {
     #if canImport(Network)
       let parameters = NWParameters.tcp
       parameters.requiredLocalEndpoint = try address.asEndpoint()
@@ -177,9 +177,9 @@ import NIOCore
     #endif
   }
 
-  func run0() async throws {
+  func run() async throws {
     Task(priority: .high) {
-      try await run()
+      try await run0()
     }
   }
 
@@ -195,7 +195,7 @@ import NIOCore
     }
   #endif
 
-  func shutdownGracyfully() async throws {
+  func shutdownGracefully() async throws {
     self._outboundStreams.withLock { outboundStreams in
       for outboundStream in outboundStreams {
         #if canImport(Network)
@@ -219,11 +219,7 @@ import NIOCore
     try await promise.futureResult.get()
   }
 
-  func shutdownGracyFully0() async {
-    try? await shutdownGracyfully()
-  }
-
-  func push(_ conn: Connection) async {
+  func send(_ conn: Connection) async {
     self._connections.withLock {
       $0[conn.taskIdentifier] = conn
 

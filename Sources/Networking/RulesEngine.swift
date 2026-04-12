@@ -2,7 +2,7 @@
 //
 // This source file is part of the Netbot open source project
 //
-// Copyright (c) 2024 Junfeng Zhang and the Netbot project authors
+// Copyright (c) 2026 Junfeng Zhang and the Netbot project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -21,7 +21,17 @@ import NIOCore
 import Tracing
 
 @available(SwiftStdlib 5.3, *)
-@Lockable final class ForwardingRuleService: Sendable {
+public protocol RulesEngine: Sendable {
+
+  var forwardingRules: [any ForwardingRuleConvertible] { get }
+
+  func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible])
+
+  func executeAllRules(connection: Connection) async -> ForwardingReport
+}
+
+@available(SwiftStdlib 5.3, *)
+@Lockable final class DefaultRulesEngine: RulesEngine {
 
   let logger: Logger
 
@@ -42,7 +52,7 @@ import Tracing
     cache.removeAllValues()
   }
 
-  func runLookup(connection: Connection) async -> ForwardingReport {
+  func executeAllRules(connection: Connection) async -> ForwardingReport {
     guard let originalRequest = connection.originalRequest,
       let host = originalRequest.host(percentEncoded: false)
     else {
@@ -114,13 +124,5 @@ extension ForwardingReport {
   init(duration: Double = 0, forwardProtocol: any ForwardProtocol) {
     self.init(duration: duration, forwardProtocol: forwardProtocol.name)
     self._forwardProtocol = forwardProtocol
-  }
-}
-
-@available(SwiftStdlib 5.3, *)
-extension Analyzer.Services {
-
-  var forwardingRule: ServiceProvider<ForwardingRuleService> {
-    .init(application: self.application)
   }
 }

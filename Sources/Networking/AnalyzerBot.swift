@@ -43,6 +43,7 @@ import _ProfileSupport
 public actor AnalyzerBot: Actor {
 
   nonisolated private let core: Analyzer
+  nonisolated private let connectionPublisher: ConnectionPulse
 
   nonisolated public let eventLoopGroup: any EventLoopGroup
 
@@ -52,17 +53,17 @@ public actor AnalyzerBot: Actor {
     self.eventLoopGroup = group
 
     core = Analyzer(group: eventLoopGroup, logger: logger)
-
-    core.services.dns.use { _ in dns }
-
-    let pulse = ConnectionPulse(
+    connectionPublisher = ConnectionPulse(
       group: eventLoopGroup,
       address: .hostPort(host: "127.0.0.1", port: 6170)
     )
-    core.services.connectionTrasmission.use { _ in pulse }
+
+    core.resolver = dns
+
+    core.connectionPublisher = connectionPublisher
 
     #if os(macOS)
-      core.services.processReport.use { _ in ProcessResolver.shared }
+      core.processInfo = ProcessResolver.shared
     #endif
   }
 
@@ -72,6 +73,7 @@ public actor AnalyzerBot: Actor {
       let toolVersion = try await PHT.toolVersion()
       logger.trace("PHT version: \(toolVersion)")
     #endif
+    try await self.connectionPublisher.run()
     try await self.core.run()
   }
 
@@ -80,6 +82,7 @@ public actor AnalyzerBot: Actor {
     #if os(macOS)
       try? await self.setNWProtocolProxiesOptions(.init())
     #endif
+    try? await self.connectionPublisher.shutdownGracefully()
     try? await self.core.shutdownGracefully()
   }
 

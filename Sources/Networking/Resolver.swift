@@ -40,7 +40,7 @@ import NIOCore
 ///
 /// - SeeAlso: NIOPosix.Resolver for more informations.
 @available(SwiftStdlib 5.3, *)
-public protocol Resolver: Service {
+public protocol Resolver: Sendable {
 
   func initiateAQuery(host: String, port: Int) -> EventLoopFuture<[SocketAddress]>
 
@@ -64,14 +64,5 @@ struct DefaultResolver: Resolver, Sendable {
   }
 
   func cancelQueries() {
-  }
-}
-
-@available(SwiftStdlib 5.3, *)
-extension Analyzer.Services {
-
-  /// DNS resolver service.
-  public var dns: ServiceProvider<any Resolver & Sendable> {
-    .init(application: self.application)
   }
 }

@@ -15,6 +15,7 @@
 import AnlzrReports
 import Atomics
 import Logging
+import NEAddressProcessing
 import NIOCore
 import Testing
 
@@ -26,14 +27,21 @@ import Testing
   import NIOPosix
 #endif
 
-@Suite struct ServicesTests {
+@Suite struct ProcessReportingTests {
 
   private let application = Analyzer(
     group: MultiThreadedEventLoopGroup.singleton,
     logger: .init(label: "")
   )
 
-  @Test func services() async throws {
-    #expect(application.services.application === application)
+  @Test func processReportService() async throws {
+    let application = Analyzer(
+      group: MultiThreadedEventLoopGroup.singleton,
+      logger: .init(label: "")
+    )
+
+    #expect(application.processInfo as? DefaultProcessReporting != nil)
+    let p = try await application.processInfo.processInfo(connection: .init())
+    #expect(p == .init())
   }
 }

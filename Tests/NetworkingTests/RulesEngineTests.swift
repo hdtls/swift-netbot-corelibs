@@ -32,10 +32,10 @@ import Testing
   import NIOPosix
 #endif
 
-@Suite struct ForwardingRuleServiceTests {
+@Suite struct RulesEngineTests {
 
   @Test func setForwardingRules() async throws {
-    let service = ForwardingRuleService(logger: .init(label: ""))
+    let service = DefaultRulesEngine(logger: .init(label: ""))
     #expect(service.forwardingRules.isEmpty)
     #expect(service.cache.isEmpty)
 
@@ -45,7 +45,7 @@ import Testing
 
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "198.51.100.1", port: 80))
-    let _ = await service.runLookup(connection: connection)
+    let _ = await service.executeAllRules(connection: connection)
     #expect(service.forwardingRules.count == 1)
     #expect(!service.cache.isEmpty)
 
@@ -56,28 +56,28 @@ import Testing
   }
 
   @Test func ruleLookupWithoutCache() async throws {
-    let service = ForwardingRuleService(logger: .init(label: ""))
+    let service = DefaultRulesEngine(logger: .init(label: ""))
     service.setForwardingRules([_FinalForwardingRule()])
 
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "198.51.100.1", port: 80))
-    let result = await service.runLookup(connection: connection)
+    let result = await service.executeAllRules(connection: connection)
     #expect(result._forwardingRule as? _FinalForwardingRule != nil)
     #expect(result.forwardingRule == "FINAL")
     #expect(result.forwardProtocol == "DIRECT")
   }
 
   @Test func ruleLookupWithCache() async throws {
-    let service = ForwardingRuleService(logger: .init(label: ""))
+    let service = DefaultRulesEngine(logger: .init(label: ""))
     service.setForwardingRules([_FinalForwardingRule()])
 
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "198.51.100.1", port: 80))
     // We need cache lookup for first request.
-    let _ = await service.runLookup(connection: connection)
+    let _ = await service.executeAllRules(connection: connection)
 
     // The seconds lookup should use cache directly.
-    let result = await service.runLookup(connection: connection)
+    let result = await service.executeAllRules(connection: connection)
 
     #expect(result._forwardingRule as? _FinalForwardingRule != nil)
     #expect(result.forwardingRule == "FINAL")
@@ -85,12 +85,12 @@ import Testing
   }
 
   @Test func ruleLookupForConnectionThatOriginalRequestIsNil() async throws {
-    let service = ForwardingRuleService(logger: .init(label: ""))
+    let service = DefaultRulesEngine(logger: .init(label: ""))
     service.setForwardingRules([_FinalForwardingRule()])
 
     let connection = Connection()
     #expect(connection.originalRequest == nil)
-    let result = await service.runLookup(connection: connection)
+    let result = await service.executeAllRules(connection: connection)
 
     #expect(result._forwardingRule as? _FinalForwardingRule != nil)
     #expect(result.duration == .zero)
@@ -99,13 +99,13 @@ import Testing
   }
 
   @Test func inFlightTaskWorks() async throws {
-    let service = ForwardingRuleService(logger: .init(label: ""))
+    let service = DefaultRulesEngine(logger: .init(label: ""))
     service.setForwardingRules([_FinalForwardingRule()])
 
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "198.51.100.1", port: 80))
-    async let r1 = await service.runLookup(connection: connection)
-    async let r2 = await service.runLookup(connection: connection)
+    async let r1 = await service.executeAllRules(connection: connection)
+    async let r2 = await service.executeAllRules(connection: connection)
 
     let _ = await [r1, r2]
   }
@@ -122,13 +122,13 @@ import Testing
       }
     }
 
-    let service = ForwardingRuleService(logger: .init(label: ""))
+    let service = DefaultRulesEngine(logger: .init(label: ""))
     service.setForwardingRules([MockForwardingRule(), MockForwardingRule()])
 
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "198.51.100.1", port: 80))
 
-    let result = await service.runLookup(connection: connection)
+    let result = await service.executeAllRules(connection: connection)
     #expect(result._forwardingRule as? FinalForwardingRule != nil)
     #expect(result.forwardingRule == "FINAL")
     #expect(result.forwardProtocol == "DIRECT")
@@ -139,13 +139,13 @@ import Testing
       var forwardProtocol: any ForwardProtocolConvertible { .reject }
     }
 
-    let service = ForwardingRuleService(logger: .init(label: ""))
+    let service = DefaultRulesEngine(logger: .init(label: ""))
     service.setForwardingRules([MockForwardingRule()])
 
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "198.51.100.1", port: 80))
 
-    let result = await service.runLookup(connection: connection)
+    let result = await service.executeAllRules(connection: connection)
     #expect(result._forwardingRule as? MockForwardingRule != nil)
     #expect(result.forwardingRule == "FINAL")
     #expect(result.forwardProtocol == "REJECT")
@@ -163,20 +163,20 @@ import Testing
       }
     }
 
-    let service = ForwardingRuleService(logger: .init(label: ""))
+    let service = DefaultRulesEngine(logger: .init(label: ""))
     service.setForwardingRules([MockForwardingRule(), _FinalForwardingRule()])
 
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "198.51.100.1", port: 80))
 
-    let result = await service.runLookup(connection: connection)
+    let result = await service.executeAllRules(connection: connection)
     #expect(result._forwardingRule as? FinalForwardingRule != nil)
     #expect(result.forwardingRule == "FINAL")
     #expect(result.forwardProtocol == "DIRECT")
   }
 
   //  @Test func dnsLookupWithNilApplication() async throws {
-  //    let service = ForwardingRuleService(logger: .init(label: ""))
+  //    let service = DefaultRulesEngine(logger: .init(label: ""))
   //
   //    let connection = Connection()
   //    connection.originalRequest = .init(address: .hostPort(host: "example.com", port: 443))
@@ -185,7 +185,7 @@ import Testing
   //  }
   //
   //  @Test func dnsLookupForConnectionThatHostOfOriginalRequestIsNil() async throws {
-  //    let service = ForwardingRuleService(logger: .init(label: ""))
+  //    let service = DefaultRulesEngine(logger: .init(label: ""))
   //
   //    let connection = Connection()
   //    let result = try await service.dnsLookup(connection: connection)
@@ -193,7 +193,7 @@ import Testing
   //  }
   //
   //  @Test func dnsLookupForConnectionThatPortOfOriginalRequestIsNil() async throws {
-  //    let service = ForwardingRuleService(logger: .init(label: ""))
+  //    let service = DefaultRulesEngine(logger: .init(label: ""))
   //
   //    let connection = Connection()
   //    connection.originalRequest = .init(address: .url(URL(string: "https://example.com")!))
