@@ -25,10 +25,10 @@ let package = Package(
     .tvOS(.v13),
   ],
   products: [
-    .library(name: "Networking", targets: ["Networking"]),
-    .library(name: "_PrivilegeSupport", targets: ["_PrivilegeSupport"]),
     .library(name: "Dashboard", targets: ["Dashboard"]),
     .library(name: "Netbot", targets: ["Netbot"]),
+    .library(name: "NetbotDaemons", targets: ["NetbotDaemons"]),
+    .library(name: "NetbotKit", targets: ["NetbotKit"]),
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-atomics.git", from: "1.3.0"),
@@ -45,14 +45,14 @@ let package = Package(
   ],
   targets: [
     .macro(
-      name: "CoWOptimizationMacros",
+      name: "_EditableMacros",
       dependencies: [
         .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
         .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
       ]
     ),
     .macro(
-      name: "EditableMacros",
+      name: "CoWOptimizationMacros",
       dependencies: [
         .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
         .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
@@ -73,13 +73,40 @@ let package = Package(
       ]
     ),
     .target(
-      name: "Networking",
+      name: "_PreferenceSupport",
+      dependencies: [
+        .product(name: "Logging", package: "swift-log"),
+        .product(name: "Preference", package: "swift-preference"),
+      ]
+    ),
+    .target(name: "_PrivilegeSupport"),
+    .target(
+      name: "_ProfileSupport",
+      dependencies: [
+        "CoWOptimization",
+        .product(name: "HTTPTypes", package: "swift-http-types"),
+        .product(name: "Logging", package: "swift-log"),
+      ]
+    ),
+    .target(name: "CNELwIP"),
+    .target(name: "CoWOptimization", dependencies: ["CoWOptimizationMacros"]),
+    .target(
+      name: "Dashboard",
+      dependencies: [
+        "_PreferenceSupport",
+        "NetbotLiteData",
+        .product(name: "NIOCore", package: "swift-nio"),
+      ]
+    ),
+    .target(
+      name: "Netbot",
       dependencies: [
         "_DNSSupport",
         "_PreferenceSupport",
         "_ProfileSupport",
-        "_PrivilegeSupport",
-        "AnlzrReports",
+        "NetbotDaemons",
+        "NetbotLite",
+        "NetbotLiteData",
         "CNELwIP",
         "CoWOptimization",
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
@@ -106,50 +133,15 @@ let package = Package(
         .product(name: "NEVMESS", package: "swift-netbot-protoimpl"),
       ]
     ),
+    .target(name: "NetbotDaemons", dependencies: ["_PrivilegeSupport"]),
     .target(
-      name: "_PreferenceSupport",
+      name: "NetbotKit",
       dependencies: [
-        .product(name: "Logging", package: "swift-log"),
-        .product(name: "Preference", package: "swift-preference"),
-      ]
-    ),
-    .target(name: "_PrivilegeSupport"),
-    .target(
-      name: "_ProfileSupport",
-      dependencies: [
-        "CoWOptimization",
-        .product(name: "HTTPTypes", package: "swift-http-types"),
-        .product(name: "Logging", package: "swift-log"),
-      ]
-    ),
-    .target(
-      name: "AnlzrReports",
-      dependencies: [
-        "SynchronizationMacros",
-        .product(name: "Atomics", package: "swift-atomics"),
-        .product(name: "HTTPTypes", package: "swift-http-types"),
-        .product(name: "NEAddressProcessing", package: "swift-netbot-protoimpl"),
-        .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
-      ]
-    ),
-    .target(name: "CNELwIP"),
-    .target(name: "CoWOptimization", dependencies: ["CoWOptimizationMacros"]),
-    .target(
-      name: "Dashboard",
-      dependencies: [
-        "_PreferenceSupport",
-        "AnlzrReports",
-        .product(name: "NIOCore", package: "swift-nio"),
-      ]
-    ),
-    .target(
-      name: "Netbot",
-      dependencies: [
+        "_EditableMacros",
         "_PreferenceSupport",
         "_ProfileSupport",
-        "AnlzrReports",
+        "NetbotLiteData",
         "Dashboard",
-        "EditableMacros",
         .product(name: "_CryptoExtras", package: "swift-crypto"),
         .product(name: "Crypto", package: "swift-crypto"),
         .product(name: "NIOSSL", package: "swift-nio-ssl"),
@@ -159,25 +151,48 @@ let package = Package(
         .product(name: "Alamofire", package: "Alamofire"),
       ]
     ),
-    .testTarget(name: "_DNSSupportTests", dependencies: ["_DNSSupport"]),
-    .testTarget(
-      name: "NetworkingTests",
+    .target(
+      name: "NetbotLite",
       dependencies: [
-        "Networking",
+        "NetbotLiteData",
+        .product(name: "_CryptoExtras", package: "swift-crypto"),
+        .product(name: "Atomics", package: "swift-atomics"),
+        .product(name: "Tracing", package: "swift-distributed-tracing"),
+        .product(name: "Logging", package: "swift-log"),
         .product(name: "NIOCore", package: "swift-nio"),
-        .product(name: "NIOEmbedded", package: "swift-nio"),
+        .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
+        .product(name: "NIOPosix", package: "swift-nio"),
         .product(name: "NIOHTTP1", package: "swift-nio"),
         .product(name: "NIOWebSocket", package: "swift-nio"),
-      ],
-      exclude: ["External Resource"]
-    ),
-    .testTarget(name: "_ProfileSupportTests", dependencies: ["_ProfileSupport"]),
-    .testTarget(
-      name: "AnlzrReportsTests",
+        .product(name: "NIOSSL", package: "swift-nio-ssl"),
+        .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
+        .product(name: "NIOHTTPCompression", package: "swift-nio-extras"),
+        .product(name: "NIOExtras", package: "swift-nio-extras"),
+        .product(name: "HTTPTypes", package: "swift-http-types"),
+        .product(name: "NEHTTP", package: "swift-netbot-protoimpl"),
+        .product(name: "NESOCKS", package: "swift-netbot-protoimpl"),
+        .product(name: "NESS", package: "swift-netbot-protoimpl"),
+        .product(name: "NEVMESS", package: "swift-netbot-protoimpl"),
+      ]),
+    .target(
+      name: "NetbotLiteData",
       dependencies: [
-        "AnlzrReports"
+        "SynchronizationMacros",
+        .product(name: "Atomics", package: "swift-atomics"),
+        .product(name: "HTTPTypes", package: "swift-http-types"),
+        .product(name: "NEAddressProcessing", package: "swift-netbot-protoimpl"),
+        .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
       ]
     ),
+    .testTarget(name: "_DNSSupportTests", dependencies: ["_DNSSupport"]),
+    .testTarget(
+      name: "_EditableMacrosTests",
+      dependencies: [
+        "_EditableMacros",
+        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
+      ]
+    ),
+    .testTarget(name: "_ProfileSupportTests", dependencies: ["_ProfileSupport"]),
     .testTarget(
       name: "CoWOptimizationMacrosTests",
       dependencies: [
@@ -186,13 +201,19 @@ let package = Package(
       ]
     ),
     .testTarget(
-      name: "EditableMacrosTests",
+      name: "NetbotTests",
       dependencies: [
-        "EditableMacros",
-        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
-      ]
+        "Netbot",
+        .product(name: "NIOCore", package: "swift-nio"),
+        .product(name: "NIOEmbedded", package: "swift-nio"),
+        .product(name: "NIOHTTP1", package: "swift-nio"),
+        .product(name: "NIOWebSocket", package: "swift-nio"),
+      ],
+      exclude: ["External Resource"]
     ),
-    .testTarget(name: "NetbotTests", dependencies: ["Netbot"]),
+    .testTarget(name: "NetbotKitTests", dependencies: ["NetbotKit"]),
+    .testTarget(name: "NetbotLiteDataTests", dependencies: ["NetbotLiteData"]),
+    .testTarget(name: "NetbotLiteTests", dependencies: ["NetbotLite"]),
     .testTarget(
       name: "SynchronizationMacrosTests",
       dependencies: [
@@ -211,16 +232,6 @@ if Context.environment["ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA"] != nil {
   }
 }
 
-#if canImport(Darwin)
-  package.dependencies += [
-    .package(url: "https://github.com/apple/swift-crypto.git", from: "4.3.0")
-  ]
-#else
-  package.dependencies += [
-    .package(url: "https://github.com/apple/swift-crypto.git", "3.12.0"..<"3.13.0")
-  ]
-#endif
-
 if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
   package.dependencies += [
     .package(
@@ -237,6 +248,16 @@ if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
     .package(path: "../swift-preference"),
   ]
 }
+
+#if canImport(Darwin)
+  package.dependencies += [
+    .package(url: "https://github.com/apple/swift-crypto.git", from: "4.3.0")
+  ]
+#else
+  package.dependencies += [
+    .package(url: "https://github.com/apple/swift-crypto.git", "3.12.0"..<"3.13.0")
+  ]
+#endif
 
 for target in package.targets {
   var settings = target.swiftSettings ?? []

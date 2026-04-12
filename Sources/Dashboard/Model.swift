@@ -13,7 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 #if canImport(Darwin)
-  import AnlzrReports
+  import NetbotLiteData
   import Dispatch
   import Foundation
   import Logging

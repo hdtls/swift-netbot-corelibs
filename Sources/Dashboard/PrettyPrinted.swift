@@ -12,8 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-import AnlzrReports
 import HTTPTypes
+import NetbotLiteData
 
 #if canImport(FoundationEssentials)
   import FoundationInternationalization

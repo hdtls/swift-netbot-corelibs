@@ -15,7 +15,7 @@
 @available(SwiftStdlib 5.3, *)
 extension AnyProxy {
 
-  /// `Source`` indicates if the proxy was builtin, user defined or resolved from external resource.
+  /// `Source` indicates if the proxy was builtin, user defined or resolved from external resource.
   public enum Source: String, CaseIterable, Codable, Hashable, Sendable {
 
     /// Built-in.

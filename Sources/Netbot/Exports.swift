@@ -12,8 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-@_exported import Dashboard
 @_exported import Logging
-@_exported import Preference
+@_exported import MaxMindDB
+@_exported import NIOSSL
+@_exported import NetbotLite
+@_exported import NetbotLiteData
 @_exported import _PreferenceSupport
+@_exported import _PrivilegeSupport
 @_exported import _ProfileSupport

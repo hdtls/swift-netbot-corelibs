@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import AnlzrReports
+import NetbotLiteData
 
 @available(SwiftStdlib 5.3, *)
 extension Connection.State {
