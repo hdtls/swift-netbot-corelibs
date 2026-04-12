@@ -34,7 +34,7 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-atomics.git", from: "1.3.0"),
     .package(url: "https://github.com/apple/swift-asn1.git", from: "1.6.0"),
     .package(url: "https://github.com/apple/swift-certificates.git", from: "1.18.0"),
-    .package(url: "https://github.com/apple/swift-log.git", from: "1.10.1"),
+    .package(url: "https://github.com/apple/swift-log.git", from: "1.11.0"),
     .package(url: "https://github.com/apple/swift-nio.git", from: "2.97.1"),
     .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.36.1"),
     .package(url: "https://github.com/apple/swift-nio-extras.git", from: "1.33.0"),

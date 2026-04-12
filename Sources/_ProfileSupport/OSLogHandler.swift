@@ -54,10 +54,7 @@
       self.label = label
     }
 
-    public func log(
-      level: Logging.Logger.Level, message: Logging.Logger.Message,
-      metadata: Logging.Logger.Metadata?, source: String, file: String, function: String, line: UInt
-    ) {
+    public func log(event: LogEvent) {
       let effectiveMetadata = OSLogHandler.prepareMetadata(
         base: self.metadata, provider: self.metadataProvider, explicit: metadata)
 
@@ -69,7 +66,7 @@
       }
 
       var logLevel: OSLogType = .default
-      switch level {
+      switch event.level {
       case .trace: logLevel = .debug
       case .debug: logLevel = .debug
       case .info: logLevel = .info
@@ -79,7 +76,7 @@
       case .critical: logLevel = .fault
       }
 
-      let _message = "\(prettyMetadata ?? "") \(message)"._trimmingWhitespaces()
+      let _message = "\(prettyMetadata ?? "") \(event.message)"._trimmingWhitespaces()
       logger.log(level: logLevel, "\(_message, privacy: .public)")
     }
 
