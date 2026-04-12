@@ -94,6 +94,7 @@
           case .waiting(let error):
             logger.error("\(error.localizedDescription)")
             continuation.yield(.failure(.nw(error)))
+            continuation.finish()
           case .preparing:
             break
           case .ready:
@@ -288,16 +289,22 @@
             performBatchUpdates(models)
           } catch let error as LocalizedError {
             self._fetchError = error
+            self.fetchTask?.cancel()
+            self.fetchTask = nil
             logger.error("\(error)")
           } catch {
             logger.error("\(error)")
           }
         }
+
+        logger.trace("Fetch operation finished...")
       }
 
       self._fetchError = nil
 
-      self.timerSource?.cancel()
+      if let timerSource, !timerSource.isCancelled {
+        timerSource.cancel()
+      }
       self.timerSource = DispatchSource.makeTimerSource(queue: .main)
       self.timerSource?.schedule(deadline: .now(), repeating: .seconds(1))
       self.timerSource?.setEventHandler {
@@ -331,13 +338,25 @@
           }
         }
       }
+      self.timerSource?.setCancelHandler {
+        Task {
+          let pathReportFormatted = DataTransferReport.PersistentModel.PathReportFormatted(
+            sentApplicationByteCount: 0.formatted(.byteCount(style: .binary, spellsOutZero: false)),
+            receivedApplicationByteCount: 0.formatted(
+              .byteCount(style: .binary, spellsOutZero: false))
+          )
+          await MainActor.run {
+            self._pathReportFormatted = pathReportFormatted
+          }
+        }
+      }
       self.timerSource?.resume()
     }
 
     private func cancel() {
-      self._fetchError = nil
       self.timerSource?.cancel()
       self.fetchTask?.cancel()
+      self.fetchTask = nil
     }
 
     public func aggregatePathReportFormatted(forwardProtocol: String? = nil)
