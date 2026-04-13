@@ -13,12 +13,25 @@
 //===----------------------------------------------------------------------===//
 
 #if os(macOS)
-  //import Foundation
+  import Foundation
+  import Logging
   import Observation
   #if canImport(SwiftUI)
     import SwiftUI
   #endif
   import Network
+
+  public struct EventLog: Hashable {
+    public var level: Logger.Level
+    public var date: Date
+    public var message: String
+
+    public init(level: Logger.Level, date: Date, message: String) {
+      self.level = level
+      self.date = date
+      self.message = message
+    }
+  }
 
   @available(SwiftStdlib 5.9, *)
   @MainActor @Observable final public class Activities {
@@ -40,6 +53,8 @@
     #if canImport(SwiftUI)
       public var internetLatencyAttributed: AttributedString = "N/Ams"
     #endif
+
+    public var events: [EventLog] = []
 
     public let coreWLAN = WLANManager()
 
