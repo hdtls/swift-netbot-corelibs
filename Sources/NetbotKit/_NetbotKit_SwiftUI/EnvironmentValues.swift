@@ -17,7 +17,7 @@
   import SwiftUI
 
   @available(SwiftStdlib 5.3, *)
-  extension EnvironmentValues {
+  @_spi(SwiftUI) extension EnvironmentValues {
 
     @Entry public var urlSession = Session.default
 
@@ -28,5 +28,8 @@
 
     @available(SwiftStdlib 5.9, *)
     @Entry public var diagnostics = Diagnostics()
+
+    @available(SwiftStdlib 5.9, *)
+    @Entry public var profileAssistant = ProfileAssistant.shared
   }
 #endif

@@ -18,7 +18,7 @@
   import UniformTypeIdentifiers
 
   @available(SwiftStdlib 5.9, *)
-  extension V1._ProcessReport {
+  @_spi(SwiftUI) extension V1._ProcessReport {
 
     nonisolated(unsafe) private static let cache = NSCache<NSString, NSImage>()
 
@@ -78,7 +78,7 @@
   }
 
   @available(SwiftStdlib 5.9, *)
-  public struct ProcessImage: View, @MainActor Equatable {
+  @_spi(SwiftUI) public struct ProcessImage: View, @MainActor Equatable {
     public static func == (lhs: ProcessImage, rhs: ProcessImage) -> Bool {
       lhs.data.program?.localizedName == rhs.data.program?.localizedName
     }

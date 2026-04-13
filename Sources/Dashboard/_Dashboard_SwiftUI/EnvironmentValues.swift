@@ -16,7 +16,7 @@
   import SwiftUI
 
   @available(SwiftStdlib 5.9, *)
-  extension EnvironmentValues {
+  @_spi(SwiftUI) extension EnvironmentValues {
 
     @Entry public var recentConnections = RecentConnectionsStore.shared
   }
