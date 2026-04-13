@@ -50,7 +50,9 @@ import Testing
               return self._storage.givenName
             }
             _modify {
-              copyStorageIfNotUniquelyReferenced()
+              if !isKnownUniquelyReferenced(&self._storage) {
+                self._storage = self._storage.copy()
+              }
               yield &self._storage.givenName
             }
           }
@@ -60,7 +62,9 @@ import Testing
               return self._storage.familyName
             }
             _modify {
-              copyStorageIfNotUniquelyReferenced()
+              if !isKnownUniquelyReferenced(&self._storage) {
+                self._storage = self._storage.copy()
+              }
               yield &self._storage.familyName
             }
           }
@@ -87,12 +91,6 @@ import Testing
           }
 
           @usableFromInline var _storage: _Storage
-
-          @usableFromInline mutating func copyStorageIfNotUniquelyReferenced() {
-            if !isKnownUniquelyReferenced(&self._storage) {
-              self._storage = self._storage.copy()
-            }
-          }
         }
         """
       assertMacroExpansion(
@@ -132,7 +130,9 @@ import Testing
               return self._storage.familyName
             }
             _modify {
-              copyStorageIfNotUniquelyReferenced()
+              if !isKnownUniquelyReferenced(&self._storage) {
+                self._storage = self._storage.copy()
+              }
               yield &self._storage.familyName
             }
           }
@@ -155,12 +155,6 @@ import Testing
           }
 
           @usableFromInline var _storage: _Storage
-
-          @usableFromInline mutating func copyStorageIfNotUniquelyReferenced() {
-            if !isKnownUniquelyReferenced(&self._storage) {
-              self._storage = self._storage.copy()
-            }
-          }
         }
         """
       assertMacroExpansion(
@@ -198,7 +192,9 @@ import Testing
               return self._storage.givenName
             }
             _modify {
-              copyStorageIfNotUniquelyReferenced()
+              if !isKnownUniquelyReferenced(&self._storage) {
+                self._storage = self._storage.copy()
+              }
               yield &self._storage.givenName
             }
           }
@@ -208,7 +204,9 @@ import Testing
               return self._storage.familyName
             }
             _modify {
-              copyStorageIfNotUniquelyReferenced()
+              if !isKnownUniquelyReferenced(&self._storage) {
+                self._storage = self._storage.copy()
+              }
               yield &self._storage.familyName
             }
           }
@@ -235,12 +233,6 @@ import Testing
           }
 
           @usableFromInline var _storage: _Storage
-
-          @usableFromInline mutating func copyStorageIfNotUniquelyReferenced() {
-            if !isKnownUniquelyReferenced(&self._storage) {
-              self._storage = self._storage.copy()
-            }
-          }
         }
         """
       assertMacroExpansion(

@@ -66,13 +66,6 @@ extension CoWOptimizationMacro: MemberMacro {
       }
       """,
       "@usableFromInline var _storage: \(raw: className)",
-      """
-      @usableFromInline mutating func copyStorageIfNotUniquelyReferenced() {
-        if !isKnownUniquelyReferenced(&self._storage) {
-          self._storage = self._storage.copy()
-        }
-      }
-      """,
     ]
   }
 }
@@ -153,7 +146,9 @@ public struct CoWOptimizationTrackedMacro: AccessorMacro, Sendable {
     let modify: AccessorDeclSyntax =
       """
       _modify {
-        copyStorageIfNotUniquelyReferenced()
+        if !isKnownUniquelyReferenced(&self._storage) {
+          self._storage = self._storage.copy()
+        }
         yield &self._storage.\(label)
       }
       """
