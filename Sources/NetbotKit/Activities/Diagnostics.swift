@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 #if os(macOS)
+  import Alamofire
   import Dispatch
   import Foundation
   import Logging
@@ -20,82 +21,128 @@
   import Observation
 
   @available(SwiftStdlib 5.9, *)
-  @MainActor @Observable public class Diagnostics {
+  final public class Diagnostics: Sendable {
 
-    /// DNS latency in ms.
-    public var dnsLatency = "N/Ams"
-
-    /// Router latency in ms.
-    public var routerLatency = "N/Ams"
-
-    /// Internet latency in ms.
-    public var internetLatency = "N/Ams"
-
-    public let coreWLAN = WLANManager()
-
-    private let formatStyle = Duration.UnitsFormatStyle.units(
-      allowed: [.milliseconds],
-      width: .narrow,
-      maximumUnitCount: 1
-    )
-    private let logger = Logger(label: "com.tenbits.CoreWLAN.diagnostics")
-    private let connectivity = Connectivity()
+    private let logger = Logger(label: "com.tenbits.diagnostics")
 
     nonisolated public init() {
     }
 
-    /// Measure TCP connect time to port 53.
-    private func measureRouterLatency() {
-      guard let routerIPString = coreWLAN.networkService.v4.router,
-        let router = IPv4Address(routerIPString)
-      else {
-        return
+    /// Measure latency for Router, DNS and Internet.
+    #if swift(>=6.2)
+      /// Measure TCP connect time to port 53.
+      @concurrent public func testRouterLatency(address: NWEndpoint.Host) async -> Duration {
+        await _testRouterLatency(address: address)
       }
-      let connection = NWConnection(to: .hostPort(host: .ipv4(router), port: 53), using: .tcp)
-      let startTime = Date.now
-      connection.stateUpdateHandler = { state in
-        switch state {
-        case .ready:
-          Task { @MainActor [weak self] in
-            guard let self else { return }
-            routerLatency = Duration.seconds(startTime.distance(to: .now)).formatted(formatStyle)
+
+      /// Measure Internet latency by fetching a tiny known endpoint (defaults to Apple's connectivity check) with a HEAD request.
+      ///
+      /// - Parameters:
+      ///   - connectivityCheckURL: The URL used to measure connectivity.
+      ///   - timeoutInterval: The timeout time interval for measure request.
+      /// - Returns: A tuple of duration of dns request/response circle and duration of TTFB.
+      ///
+      @concurrent public func testDNSLatency(url: URL? = nil, timeoutInterval: Double? = nil) async
+        -> Duration
+      {
+        await _testDNSLatency(url: url, timeoutInterval: timeoutInterval)
+      }
+
+      /// Measure Internet latency by fetching a tiny known endpoint (defaults to Apple's connectivity check) with a HEAD request.
+      ///
+      /// - Parameters:
+      ///   - connectivityCheckURL: The URL used to measure connectivity.
+      ///   - timeoutInterval: The timeout time interval for measure request.
+      /// - Returns: A tuple of duration of dns request/response circle and duration of TTFB.
+      ///
+      @concurrent public func testInternetLatency(url: URL? = nil, timeoutInterval: Double? = nil)
+        async -> Duration
+      {
+        await _testInternetLatency(url: url, timeoutInterval: timeoutInterval)
+      }
+    #else
+      nonisolated public func testRouterLatency(address: NWEndpoint) async -> Duration {
+        await _testRouterLatency(address: address)
+      }
+
+      nonisolated public func testDNSLatency(url: URL? = nil, timeoutInterval: Double? = nil) async
+        -> Duration
+      {
+        await _testDNSLatency(url: url, timeoutInterval: timeoutInterval)
+      }
+
+      nonisolated public func testInternetLatency(url: URL? = nil, timeoutInterval: Double? = nil)
+        async -> Duration
+      {
+        await _testInternetLatency(url: url, timeoutInterval: timeoutInterval)
+      }
+    #endif
+
+    nonisolated private func _testRouterLatency(address: NWEndpoint.Host) async -> Duration {
+      await withUnsafeContinuation { continuation in
+        let connection = NWConnection(to: .hostPort(host: address, port: 53), using: .tcp)
+        let startTime = Date.now
+        connection.stateUpdateHandler = { state in
+          switch state {
+          case .ready:
+            let routerLatency = Duration.seconds(startTime.distance(to: .now))
+            continuation.resume(returning: routerLatency)
+          case .failed:
+            connection.cancel()
+            continuation.resume(returning: .zero)
+          default: break
           }
-        case .failed:
-          connection.cancel()
-        default: break
         }
+        connection.start(queue: .global())
       }
-      connection.start(queue: .global())
     }
 
-    /// Measure latency for Router, DNS and Internet.
-    public func testLatency(connectivityCheckURL: URL? = nil, timeoutInterval: TimeInterval? = nil)
+    nonisolated private func _testDNSLatency(url: URL? = nil, timeoutInterval: Double? = nil) async
+      -> Duration
     {
-      // Router latency test require router address.
-      // To make router latency test available we try
-      // to get router address as possible as we can.
-      var retryAttampts = 3
-      while retryAttampts > 0 {
-        coreWLAN.getWLANInfo()
-        if coreWLAN.networkService.v4.router != nil {
-          break
-        }
-        retryAttampts -= 1
+      let urlConvertible = url?.absoluteString ?? "https://captive.apple.com/hotspot-detect.html"
+
+      let configuration = URLSessionConfiguration.default
+      configuration.proxyConfigurations = []
+      configuration.connectionProxyDictionary = [:]
+      configuration.timeoutIntervalForRequest = timeoutInterval ?? 5.0
+
+      let session = Session(configuration: configuration)
+      let metrics = await session.request(urlConvertible, method: .head).serializingData().response
+        .metrics
+
+      guard let transactionMetrics = metrics?.transactionMetrics.first,
+        let domainLookupStartDate = transactionMetrics.domainLookupStartDate,
+        let domainLookupEndDate = transactionMetrics.domainLookupEndDate
+      else {
+        return .zero
       }
 
-      Task { @MainActor in
-        do {
-          let (dns, ttfb) = try await connectivity.measureInternetLatency(
-            connectivityCheckURL: connectivityCheckURL,
-            timeoutInterval: timeoutInterval
-          )
-          dnsLatency = dns.formatted(formatStyle)
-          internetLatency = ttfb.formatted(formatStyle)
-        } catch {
-          internetLatency = "Failed"
-        }
+      return .seconds(domainLookupStartDate.distance(to: domainLookupEndDate))
+    }
+
+    nonisolated private func _testInternetLatency(url: URL? = nil, timeoutInterval: Double? = nil)
+      async -> Duration
+    {
+      let urlConvertible = url?.absoluteString ?? "https://captive.apple.com/hotspot-detect.html"
+
+      let configuration = URLSessionConfiguration.default
+      configuration.proxyConfigurations = []
+      configuration.connectionProxyDictionary = [:]
+      configuration.timeoutIntervalForRequest = timeoutInterval ?? 5.0
+
+      let session = Session(configuration: configuration)
+      let metrics = await session.request(urlConvertible, method: .head).serializingData().response
+        .metrics
+
+      guard let transactionMetrics = metrics?.transactionMetrics.first,
+        let requestStartDate = transactionMetrics.requestStartDate,
+        let responseStartDate = transactionMetrics.responseStartDate
+      else {
+        return .zero
       }
-      measureRouterLatency()
+
+      return .seconds(requestStartDate.distance(to: responseStartDate))
     }
   }
 #endif

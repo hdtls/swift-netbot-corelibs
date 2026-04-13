@@ -24,9 +24,6 @@
     @Entry public var vpnSession = VPNSession.shared
 
     @available(SwiftStdlib 5.9, *)
-    @Entry public var connectivity = Connectivity()
-
-    @available(SwiftStdlib 5.9, *)
     @Entry public var diagnostics = Diagnostics()
 
     @available(SwiftStdlib 5.9, *)
