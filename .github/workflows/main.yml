@@ -5,6 +5,14 @@ on:
     branches: [main]
 
 jobs:
+  soundness:
+    name: Soundness
+    uses: hdtls/swift-ci/.github/workflows/soundness.yml@main
+    secrets:
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    with:
+      api_breakage_check_enabled: false
+
   unit-tests:
     name: Unit tests
     uses: hdtls/swift-ci/.github/workflows/unit_tests.yml@main
