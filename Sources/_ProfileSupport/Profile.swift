@@ -247,3 +247,64 @@ extension Profile {
     self.url = url
   }
 }
+
+#if canImport(SwiftData)
+  @available(SwiftStdlib 5.9, *)
+  extension Profile {
+
+    public typealias Model = V1._Profile
+
+    public init(persistentModel: Model) {
+      self.init()
+      url = persistentModel.url
+      logLevel = persistentModel.logLevel
+      dnsSettings = persistentModel.dnsSettings
+      exceptions = persistentModel.exceptions
+      httpListenAddress = persistentModel.httpListenAddress
+      httpListenPort = persistentModel.httpListenPort
+      socksListenAddress = persistentModel.socksListenAddress
+      socksListenPort = persistentModel.socksListenPort
+      excludeSimpleHostnames = persistentModel.excludeSimpleHostnames
+      skipCertificateVerification = persistentModel.skipCertificateVerification
+      hostnames = persistentModel.hostnames
+      base64EncodedP12String = persistentModel.base64EncodedP12String
+      passphrase = persistentModel.passphrase
+      contentModificationDate = persistentModel.contentModificationDate
+      testURL = persistentModel.testURL
+      proxyTestURL = persistentModel.proxyTestURL
+      testTimeout = persistentModel.testTimeout
+      dontAlertRejectErrors = persistentModel.dontAlertRejectErrors
+      dontAllowRemoteAccess = persistentModel.dontAllowRemoteAccess
+      creationDate = persistentModel.creationDate
+
+      // Also load the relationships.
+      lazyProxies = persistentModel.lazyProxies
+        .sorted(using: KeyPathComparator(\.creationDate))
+        .map(AnyProxy.init(persistentModel:))
+
+      lazyProxyGroups = persistentModel.lazyProxyGroups
+        .sorted(using: KeyPathComparator(\.creationDate))
+        .map(AnyProxyGroup.init(persistentModel:))
+
+      lazyForwardingRules = persistentModel.lazyForwardingRules
+        .sorted(using: KeyPathComparator(\.order))
+        .map(AnyForwardingRule.init(persistentModel:))
+
+      lazyDNSMappings = persistentModel.lazyDNSMappings
+        .sorted(using: KeyPathComparator(\.creationDate))
+        .map(DNSMapping.init(persistentModel:))
+
+      lazyURLRewrites = persistentModel.lazyURLRewrites
+        .sorted(using: KeyPathComparator(\.creationDate))
+        .map(URLRewrite.init(persistentModel:))
+
+      lazyHTTPFieldsRewrites = persistentModel.lazyHTTPFieldsRewrites
+        .sorted(using: KeyPathComparator(\.creationDate))
+        .map(HTTPFieldsRewrite.init)
+
+      lazyStubbedHTTPResponses = persistentModel.lazyStubbedHTTPResponses
+        .sorted(using: KeyPathComparator(\.creationDate))
+        .map(StubbedHTTPResponse.init)
+    }
+  }
+#endif

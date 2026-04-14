@@ -22,7 +22,7 @@ import NetbotLiteData
 #endif
 
 @available(SwiftStdlib 5.9, *)
-extension Connection.PersistentModel {
+extension Connection.Model {
 
   /// Pretty printed forwarding policy.
   public var forwardingPolicy: String {
@@ -76,7 +76,7 @@ extension HTTPResponse {
 }
 
 @available(SwiftStdlib 5.9, *)
-extension Response.PersistentModel {
+extension Response.Model {
 
   public var isImage: Bool {
     httpResponse?.headerFields[.contentType]?.hasPrefix("image") ?? false

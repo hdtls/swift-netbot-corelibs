@@ -66,9 +66,9 @@ public struct Request: Codable, Hashable, Sendable {
 @available(SwiftStdlib 5.9, *)
 extension Request {
 
-  public typealias PersistentModel = V1._Request
+  public typealias Model = V1._Request
 
-  public init(persistentModel: PersistentModel) {
+  public init(persistentModel: Model) {
     httpRequest = persistentModel.httpRequest
     address = persistentModel.address
     body = persistentModel.body

@@ -54,27 +54,9 @@
       /// Relationship with `_Profile`.
       public var lazyProfile: _Profile?
 
-      /// Create a `HTTPFieldsRewrite.PersistentModel` with default values.
+      /// Create a `HTTPFieldsRewrite.Model` with default values.
       public init() {
       }
-    }
-  }
-
-  @available(SwiftStdlib 5.9, *)
-  extension HTTPFieldsRewrite {
-
-    public typealias PersistentModel = V1._HTTPFieldsRewrite
-
-    public init(persistentModel: PersistentModel) {
-      self.init()
-      isEnabled = persistentModel.isEnabled
-      direction = persistentModel.direction
-      pattern = persistentModel.pattern
-      action = persistentModel.action
-      name = persistentModel.name
-      replacement = persistentModel.replacement
-      value = persistentModel.value
-      creationDate = persistentModel.creationDate
     }
   }
 

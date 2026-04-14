@@ -198,7 +198,7 @@ import Testing
 
   @available(SwiftStdlib 5.9, *)
   @Test func persistentModel() {
-    let source = EstablishmentReport.PersistentModel.self
+    let source = EstablishmentReport.Model.self
     #expect(source == V1._EstablishmentReport.self)
   }
 

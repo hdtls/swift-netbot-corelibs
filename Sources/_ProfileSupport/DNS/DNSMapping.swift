@@ -68,3 +68,21 @@ public struct DNSMapping: Equatable, Hashable, Sendable {
     }
   }
 }
+
+#if canImport(SwiftData)
+  @available(SwiftStdlib 5.9, *)
+  extension DNSMapping {
+
+    public typealias Model = V1._DNSMapping
+
+    public init(persistentModel: Model) {
+      self.init()
+      isEnabled = persistentModel.isEnabled
+      kind = persistentModel.kind
+      domainName = persistentModel.domainName
+      value = persistentModel.value
+      note = persistentModel.note
+      creationDate = persistentModel.creationDate
+    }
+  }
+#endif

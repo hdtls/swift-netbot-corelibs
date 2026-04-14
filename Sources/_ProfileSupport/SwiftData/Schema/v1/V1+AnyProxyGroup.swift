@@ -62,24 +62,6 @@
   }
 
   @available(SwiftStdlib 5.9, *)
-  extension AnyProxyGroup {
-
-    public typealias PersistentModel = V1._AnyProxyGroup
-
-    public init(persistentModel: PersistentModel) {
-      self.init()
-      name = persistentModel.name
-      kind = persistentModel.kind
-      resource = persistentModel.resource
-      measurement = persistentModel.measurement
-      creationDate = persistentModel.creationDate
-
-      lazyProxies = persistentModel.lazyProxies.sorted(using: KeyPathComparator(\.creationDate))
-        .map(\.name)
-    }
-  }
-
-  @available(SwiftStdlib 5.9, *)
   extension V1._AnyProxyGroup {
     public func mergeValues(_ data: AnyProxyGroup) {
       self.name = data.name

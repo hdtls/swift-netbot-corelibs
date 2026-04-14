@@ -47,21 +47,6 @@
   }
 
   @available(SwiftStdlib 5.9, *)
-  extension URLRewrite {
-
-    public typealias PersistentModel = V1._URLRewrite
-
-    public init(persistentModel: PersistentModel) {
-      self.init()
-      isEnabled = persistentModel.isEnabled
-      type = persistentModel.type
-      pattern = persistentModel.pattern
-      destination = persistentModel.destination
-      creationDate = persistentModel.creationDate
-    }
-  }
-
-  @available(SwiftStdlib 5.9, *)
   extension V1._URLRewrite {
 
     public func mergeValues(_ data: URLRewrite) {

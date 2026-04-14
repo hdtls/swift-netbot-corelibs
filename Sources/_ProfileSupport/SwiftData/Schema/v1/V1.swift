@@ -16,12 +16,20 @@
   import SwiftData
 
   @available(SwiftStdlib 5.9, *)
-  public enum V1: VersionedSchema {
+  public enum V1 {}
+
+  @available(SwiftStdlib 5.9, *)
+  extension V1: VersionedSchema {
     public static var models: [any PersistentModel.Type] {
       [
-        _Profile.self, _AnyProxy.self, _AnyProxyGroup.self, _AnyForwardingRule.self,
+        _Profile.self,
+        _AnyProxy.self,
+        _AnyProxyGroup.self,
+        _AnyForwardingRule.self,
         _DNSMapping.self,
-        _HTTPFieldsRewrite.self, _StubbedHTTPResponse.self, _URLRewrite.self,
+        _HTTPFieldsRewrite.self,
+        _StubbedHTTPResponse.self,
+        _URLRewrite.self,
       ]
     }
 

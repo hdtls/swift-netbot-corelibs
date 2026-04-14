@@ -83,3 +83,23 @@ extension AnyProxyGroup._Storage: Hashable {
 
 @available(SwiftStdlib 5.3, *)
 extension AnyProxyGroup._Storage: @unchecked Sendable {}
+
+#if canImport(SwiftData)
+  @available(SwiftStdlib 5.9, *)
+  extension AnyProxyGroup {
+
+    public typealias Model = V1._AnyProxyGroup
+
+    public init(persistentModel: Model) {
+      self.init()
+      name = persistentModel.name
+      kind = persistentModel.kind
+      resource = persistentModel.resource
+      measurement = persistentModel.measurement
+      creationDate = persistentModel.creationDate
+
+      lazyProxies = persistentModel.lazyProxies.sorted(using: KeyPathComparator(\.creationDate))
+        .map(\.name)
+    }
+  }
+#endif

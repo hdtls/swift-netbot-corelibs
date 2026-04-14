@@ -147,7 +147,7 @@
   @available(SwiftStdlib 5.9, *)
   @MainActor @Observable public class RecentConnectionsStore {
 
-    public typealias Data = Connection.PersistentModel
+    public typealias Data = Connection.Model
 
     nonisolated public static let shared = RecentConnectionsStore()
 
@@ -163,12 +163,11 @@
       private var _indexes: [Data.ID: Data] = [:]
       @ObservationIgnored private var _activeIndexes: [Data.ID: Data] = [:]
 
-      public var programs: [Program.PersistentModel] {
+      public var programs: [Program.Model] {
         _programs
       }
-      public var _programs: [Program.PersistentModel] = []
-      @ObservationIgnored private var _indexesForPrograms:
-        [Program.PersistentModel.ID: Program.PersistentModel] = [:]
+      public var _programs: [Program.Model] = []
+      @ObservationIgnored private var _indexesForPrograms: [Program.Model.ID: Program.Model] = [:]
 
       public func fetch(_ id: Data.ID) -> [Data] {
         guard let persistentModel = self._indexes[id] else {
@@ -177,7 +176,7 @@
         return [persistentModel]
       }
 
-      public func fetch(_ id: Program.PersistentModel.ID) -> [Program.PersistentModel] {
+      public func fetch(_ id: Program.Model.ID) -> [Program.Model] {
         guard let persistentModel = self._indexesForPrograms[id] else {
           return []
         }
@@ -194,10 +193,10 @@
     }
     private var _fetchError: LocalizedError?
 
-    public var pathReportFormatted: DataTransferReport.PersistentModel.PathReportFormatted {
+    public var pathReportFormatted: DataTransferReport.Model.PathReportFormatted {
       _pathReportFormatted
     }
-    private var _pathReportFormatted = DataTransferReport.PersistentModel.PathReportFormatted()
+    private var _pathReportFormatted = DataTransferReport.Model.PathReportFormatted()
 
     nonisolated private let logger = Logger(label: "com.tenbits.netbot.dashboard")
     nonisolated private let dependency: any ConnectionsDependency
@@ -327,7 +326,7 @@
 
         Task {
           let pathReport = models.reduce(DataTransferReport.PathReport()) { $0 &+ $1 }
-          let pathReportFormatted = DataTransferReport.PersistentModel.PathReportFormatted(
+          let pathReportFormatted = DataTransferReport.Model.PathReportFormatted(
             sentApplicationByteCount: pathReport.sentApplicationByteCount
               .formatted(.byteCount(style: .binary, spellsOutZero: false)),
             receivedApplicationByteCount: pathReport.receivedApplicationByteCount
@@ -340,7 +339,7 @@
       }
       self.timerSource?.setCancelHandler {
         Task {
-          let pathReportFormatted = DataTransferReport.PersistentModel.PathReportFormatted(
+          let pathReportFormatted = DataTransferReport.Model.PathReportFormatted(
             sentApplicationByteCount: 0.formatted(.byteCount(style: .binary, spellsOutZero: false)),
             receivedApplicationByteCount: 0.formatted(
               .byteCount(style: .binary, spellsOutZero: false))
@@ -360,7 +359,7 @@
     }
 
     public func aggregatePathReportFormatted(forwardProtocol: String? = nil)
-      -> DataTransferReport.PersistentModel.PathReportFormatted
+      -> DataTransferReport.Model.PathReportFormatted
     {
       var aggregatePathReport: DataTransferReport.PathReport
 
@@ -444,7 +443,7 @@
         // reflected in the persistent layer.
         if let backingData = model.originalRequest {
           if persistentModel.originalRequest == nil {
-            let originalRequest = Request.PersistentModel()
+            let originalRequest = Request.Model()
             originalRequest.mergeValues(backingData)
             #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
               modelContext.insert(originalRequest)
@@ -462,7 +461,7 @@
         // reflected in the persistent layer.
         if let backingData = model.currentRequest {
           if persistentModel.currentRequest == nil {
-            let currentRequest = Request.PersistentModel()
+            let currentRequest = Request.Model()
             currentRequest.mergeValues(backingData)
             #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
               modelContext.insert(currentRequest)
@@ -479,7 +478,7 @@
         // reflected in the persistent layer.
         if let backingData = model.response {
           if persistentModel.response == nil {
-            let response = Response.PersistentModel()
+            let response = Response.Model()
             response.mergeValues(backingData)
             #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
               modelContext.insert(response)
@@ -497,7 +496,7 @@
         // accurately reflected in the persistent layer.
         if let backingData = model.dnsResolutionReport {
           if persistentModel.dnsResolutionReport == nil {
-            let dnsResolutionReport = DNSResolutionReport.PersistentModel()
+            let dnsResolutionReport = DNSResolutionReport.Model()
             dnsResolutionReport.mergeValues(backingData)
             #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
               modelContext.insert(dnsResolutionReport)
@@ -515,7 +514,7 @@
         // accurately reflected in the persistent layer.
         if let backingData = model.forwardingReport {
           if persistentModel.forwardingReport == nil {
-            let forwardingReport = ForwardingReport.PersistentModel()
+            let forwardingReport = ForwardingReport.Model()
             forwardingReport.mergeValues(backingData)
             #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
               modelContext.insert(forwardingReport)
@@ -533,7 +532,7 @@
         // accurately reflected in the persistent layer.
         if let backingData = model.establishmentReport {
           if persistentModel.establishmentReport == nil {
-            let establishmentReport = EstablishmentReport.PersistentModel()
+            let establishmentReport = EstablishmentReport.Model()
             establishmentReport.mergeValues(backingData)
             #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
               modelContext.insert(establishmentReport)
@@ -557,7 +556,7 @@
             // Insert these new objects into the model context if applicable.
             // This initializes the data structure necessary to track transfer
             // metrics.
-            let dataTransferReport = DataTransferReport.PersistentModel()
+            let dataTransferReport = DataTransferReport.Model()
             dataTransferReport.mergeValues(backingData)
             #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
               modelContext.insert(dataTransferReport)
@@ -618,7 +617,7 @@
         // programs is maintained and up-to-date.
         if let backingData = model.processReport {
           if persistentModel.processReport == nil {
-            let processReport = ProcessReport.PersistentModel()
+            let processReport = ProcessReport.Model()
             processReport.mergeValues(backingData)
             #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
               modelContext.insert(processReport)
@@ -634,7 +633,7 @@
           if let backingData = backingData.program {
             // Prevents duplicate Process objects from being created for the
             // same underlying process.
-            var program: Program.PersistentModel
+            var program: Program.Model
             #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
               let _program = try modelContext.fetch(
                 FetchDescriptor<V1._Program>(
@@ -663,7 +662,7 @@
                 #endif
               }
             } else {
-              program = Program.PersistentModel()
+              program = Program.Model()
               program.mergeValues(backingData)
               #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
                 modelContext.insert(program)

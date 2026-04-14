@@ -175,9 +175,9 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
 @available(SwiftStdlib 5.9, *)
 extension EstablishmentReport {
 
-  public typealias PersistentModel = V1._EstablishmentReport
+  public typealias Model = V1._EstablishmentReport
 
-  public init(persistentModel: PersistentModel) {
+  public init(persistentModel: Model) {
     _duration = persistentModel.duration.seconds
     attemptStartedAfterInterval = persistentModel.attemptStartedAfterInterval
     previousAttemptCount = persistentModel.previousAttemptCount

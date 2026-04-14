@@ -29,7 +29,7 @@ extension Profile {
 
 #if canImport(SwiftData)
   @available(SwiftStdlib 5.9, *)
-  extension Profile.PersistentModel {
+  extension Profile.Model {
     public var name: String {
       url.deletingPathExtension().lastPathComponent
     }

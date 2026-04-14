@@ -137,7 +137,7 @@ public actor ProfileAssistant {
   public func erase() throws {
     #if canImport(SwiftData)
       // Remove expired data.
-      var fd = FetchDescriptor<Profile.PersistentModel>()
+      var fd = FetchDescriptor<Profile.Model>()
       fd.relationshipKeyPathsForPrefetching = [
         \.lazyProxies,
         \.lazyProxyGroups,
@@ -284,28 +284,28 @@ public actor ProfileAssistant {
       try modelContext.transaction {
         try erase()
 
-        let persistentModel = Profile.PersistentModel()
+        let persistentModel = Profile.Model()
         persistentModel.mergeValues(profile)
         modelContext.insert(persistentModel)
 
         // Load built-in proxies at the beginning.
         let lazyProxies = profile.lazyProxies.sorted(using: KeyPathComparator(\.creationDate))
         let earliestDate = lazyProxies.first?.creationDate ?? .now
-        var proxy = AnyProxy.PersistentModel()
+        var proxy = AnyProxy.Model()
         proxy.name = "DIRECT"
         proxy.kind = .direct
         proxy.source = AnyProxy.Source.builtin.rawValue
         proxy.creationDate = earliestDate.advanced(by: -3)
         persistentModel.lazyProxies.append(proxy)
 
-        proxy = AnyProxy.PersistentModel()
+        proxy = AnyProxy.Model()
         proxy.name = "REJECT"
         proxy.kind = .reject
         proxy.source = AnyProxy.Source.builtin.rawValue
         proxy.creationDate = earliestDate.advanced(by: -2)
         persistentModel.lazyProxies.append(proxy)
 
-        proxy = AnyProxy.PersistentModel()
+        proxy = AnyProxy.Model()
         proxy.name = "REJECT-TINYGIF"
         proxy.kind = .rejectTinyGIF
         proxy.source = AnyProxy.Source.builtin.rawValue
@@ -313,13 +313,13 @@ public actor ProfileAssistant {
         persistentModel.lazyProxies.append(proxy)
 
         for data in lazyProxies {
-          let model = AnyProxy.PersistentModel()
+          let model = AnyProxy.Model()
           model.mergeValues(data)
           persistentModel.lazyProxies.append(model)
         }
 
         for data in profile.lazyProxyGroups {
-          let model = AnyProxyGroup.PersistentModel()
+          let model = AnyProxyGroup.Model()
           model.mergeValues(data)
           model.lazyProxies = persistentModel.lazyProxies.filter {
             data.lazyProxies.contains($0.name)
@@ -328,7 +328,7 @@ public actor ProfileAssistant {
         }
 
         for (order, data) in profile.lazyForwardingRules.enumerated() {
-          let model = AnyForwardingRule.PersistentModel()
+          let model = AnyForwardingRule.Model()
           model.mergeValues(data)
           model.order = order
           model.lazyProxy = persistentModel.lazyProxies.first { $0.name == data.foreignKey }
@@ -339,25 +339,25 @@ public actor ProfileAssistant {
         }
 
         for data in profile.lazyDNSMappings {
-          let model = DNSMapping.PersistentModel()
+          let model = DNSMapping.Model()
           model.mergeValues(data)
           persistentModel.lazyDNSMappings.append(model)
         }
 
         for data in profile.lazyHTTPFieldsRewrites {
-          let model = HTTPFieldsRewrite.PersistentModel()
+          let model = HTTPFieldsRewrite.Model()
           model.mergeValues(data)
           persistentModel.lazyHTTPFieldsRewrites.append(model)
         }
 
         for data in profile.lazyURLRewrites {
-          let model = URLRewrite.PersistentModel()
+          let model = URLRewrite.Model()
           model.mergeValues(data)
           persistentModel.lazyURLRewrites.append(model)
         }
 
         for data in profile.lazyStubbedHTTPResponses {
-          let model = StubbedHTTPResponse.PersistentModel()
+          let model = StubbedHTTPResponse.Model()
           model.mergeValues(data)
           persistentModel.lazyStubbedHTTPResponses.append(model)
         }

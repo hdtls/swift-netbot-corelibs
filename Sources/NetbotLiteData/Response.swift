@@ -39,9 +39,9 @@ public struct Response: Codable, Hashable, Sendable {
 @available(SwiftStdlib 5.9, *)
 extension Response {
 
-  public typealias PersistentModel = V1._Response
+  public typealias Model = V1._Response
 
-  public init(persistentModel: PersistentModel) {
+  public init(persistentModel: Model) {
     httpResponse = persistentModel.httpResponse
     body = persistentModel.body
   }

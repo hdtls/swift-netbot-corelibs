@@ -177,9 +177,9 @@ extension Connection: Codable {
 @available(SwiftStdlib 5.9, *)
 extension Connection {
 
-  public typealias PersistentModel = V1._Connection
+  public typealias Model = V1._Connection
 
-  public convenience init(persistentModel: PersistentModel) {
+  public convenience init(persistentModel: Model) {
     self.init(taskIdentifier: persistentModel.taskIdentifier)
     self.earliestBeginDate = persistentModel.earliestBeginDate
     self._duration = persistentModel.duration.seconds

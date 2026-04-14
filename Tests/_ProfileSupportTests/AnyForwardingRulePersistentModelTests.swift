@@ -46,7 +46,7 @@
     @Test("AnyForwardingRule.init(persistentModel:)")
     func initWithPersistentModel() {
       let modelContext = ModelContext(modelContainer as! ModelContainer)
-      let profile = Profile.PersistentModel()
+      let profile = Profile.Model()
       modelContext.insert(profile)
 
       let persistentModel = V1._AnyForwardingRule()
@@ -62,7 +62,7 @@
       #expect(AnyForwardingRule(persistentModel: persistentModel) == expected)
 
       expected.foreignKey = "DIRECT"
-      let proxy = AnyProxy.PersistentModel()
+      let proxy = AnyProxy.Model()
       proxy.name = "DIRECT"
       modelContext.insert(proxy)
       persistentModel.lazyProxy = proxy
@@ -71,7 +71,7 @@
       persistentModel.lazyProxy = nil
 
       expected.foreignKey = "DIRECT_GROUP"
-      let proxyGroup = AnyProxyGroup.PersistentModel()
+      let proxyGroup = AnyProxyGroup.Model()
       proxyGroup.name = "DIRECT_GROUP"
       modelContext.insert(proxyGroup)
       persistentModel.lazyProxyGroup = proxyGroup

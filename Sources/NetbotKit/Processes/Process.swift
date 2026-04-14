@@ -18,7 +18,7 @@
   import Foundation
 
   @available(SwiftStdlib 5.9, *)
-  extension Program.PersistentModel {
+  extension Program.Model {
 
     public enum CompareOptions: CaseIterable, Hashable, Sendable {
 
@@ -57,9 +57,9 @@
   }
 
   @available(SwiftStdlib 5.9, *)
-  extension Array where Element == Program.PersistentModel {
+  extension Array where Element == Program.Model {
 
-    @MainActor public func sorted(using options: Program.PersistentModel.CompareOptions)
+    @MainActor public func sorted(using options: Program.Model.CompareOptions)
       -> [Element]
     {
       switch options {

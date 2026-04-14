@@ -21,7 +21,7 @@ import Testing
 
   @available(SwiftStdlib 5.9, *)
   @Test func persistentModelTypealias() {
-    #expect(ForwardingReport.PersistentModel.self == V1._ForwardingReport.self)
+    #expect(ForwardingReport.Model.self == V1._ForwardingReport.self)
   }
 
   @available(SwiftStdlib 5.9, *)

@@ -76,9 +76,9 @@ public struct ForwardingReport: Codable, Hashable, Sendable {
 @available(SwiftStdlib 5.9, *)
 extension ForwardingReport {
 
-  public typealias PersistentModel = V1._ForwardingReport
+  public typealias Model = V1._ForwardingReport
 
-  public init(persistentModel: PersistentModel) {
+  public init(persistentModel: Model) {
     self._duration = persistentModel._duration
     self.forwardingRule = persistentModel.forwardingRule
     self.forwardProtocol = persistentModel.forwardProtocol

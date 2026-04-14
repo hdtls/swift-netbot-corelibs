@@ -59,9 +59,9 @@ extension Program: Identifiable {
 @available(SwiftStdlib 5.9, *)
 extension Program {
 
-  public typealias PersistentModel = V1._Program
+  public typealias Model = V1._Program
 
-  public init(persistentModel: PersistentModel) {
+  public init(persistentModel: Model) {
     localizedName = persistentModel.localizedName
     bundleURL = persistentModel.bundleURL
     executableURL = persistentModel.executableURL

@@ -157,9 +157,9 @@
   @available(SwiftStdlib 5.9, *)
   extension HTTPRequest {
 
-    public typealias PersistentModel = V1._HTTPRequest
+    public typealias Model = V1._HTTPRequest
 
-    public init(persistentModel: PersistentModel) {
+    public init(persistentModel: Model) {
       self.init(
         method: persistentModel.method,
         scheme: persistentModel.scheme,
@@ -174,9 +174,9 @@
   @available(SwiftStdlib 5.9, *)
   extension HTTPResponse {
 
-    public typealias PersistentModel = V1._HTTPResponse
+    public typealias Model = V1._HTTPResponse
 
-    public init(persistentModel: PersistentModel) {
+    public init(persistentModel: Model) {
       self.init(
         status: .init(
           code: Int(persistentModel.pseudoHeaderFields.first!.value)!,

@@ -29,9 +29,9 @@ public struct ProcessReport: Codable, Hashable, Sendable {
 @available(SwiftStdlib 5.9, *)
 extension ProcessReport {
 
-  public typealias PersistentModel = V1._ProcessReport
+  public typealias Model = V1._ProcessReport
 
-  public init(persistentModel: PersistentModel) {
+  public init(persistentModel: Model) {
     processIdentifier = persistentModel.processIdentifier
   }
 }

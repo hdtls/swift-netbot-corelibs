@@ -54,9 +54,9 @@
   @available(SwiftStdlib 5.9, *)
   extension StubbedHTTPResponse {
 
-    public typealias PersistentModel = V1._StubbedHTTPResponse
+    public typealias Model = V1._StubbedHTTPResponse
 
-    public init(persistentModel: PersistentModel) {
+    public init(persistentModel: Model) {
       self.init()
       isEnabled = persistentModel.isEnabled
       pattern = persistentModel.pattern

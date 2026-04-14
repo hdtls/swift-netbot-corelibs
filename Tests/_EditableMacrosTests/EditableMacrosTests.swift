@@ -59,9 +59,9 @@ import Testing
 
           @State private var data: Data
 
-          private let persistentModel: Data.PersistentModel?
+          private let persistentModel: Data.Model?
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -79,7 +79,7 @@ import Testing
                   try await profileAssistant.replace(outdated, with: data)
                 }
               } else {
-                var fd = FetchDescriptor<Profile.PersistentModel>()
+                var fd = FetchDescriptor<Profile.Model>()
                 fd.predicate = #Predicate {
                   $0.url == profileURL
                 }
@@ -89,7 +89,7 @@ import Testing
                 Task(priority: .background) {
                   try await profileAssistant.insert(data)
                 }
-                let persistentModel = Data.PersistentModel()
+                let persistentModel = Data.Model()
                 persistentModel.mergeValues(data)
                 persistentModel.lazyProfile = profile
               }
@@ -143,9 +143,9 @@ import Testing
 
           @State private var data: Data
 
-          private let persistentModel: Data.PersistentModel?
+          private let persistentModel: Data.Model?
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -163,7 +163,7 @@ import Testing
                   try await profileAssistant.replace(outdated, with: data)
                 }
               } else {
-                var fd = FetchDescriptor<Profile.PersistentModel>()
+                var fd = FetchDescriptor<Profile.Model>()
                 fd.predicate = #Predicate {
                   $0.url == profileURL
                 }
@@ -173,7 +173,7 @@ import Testing
                 Task(priority: .background) {
                   try await profileAssistant.insert(data)
                 }
-                let persistentModel = Data.PersistentModel()
+                let persistentModel = Data.Model()
                 persistentModel.mergeValues(data)
                 persistentModel.lazyProfile = profile
               }
@@ -226,9 +226,9 @@ import Testing
 
           @State private var data: Data
 
-          private let persistentModel: Data.PersistentModel?
+          private let persistentModel: Data.Model?
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -246,7 +246,7 @@ import Testing
                   try await profileAssistant.replace(outdated, with: data)
                 }
               } else {
-                var fd = FetchDescriptor<Profile.PersistentModel>()
+                var fd = FetchDescriptor<Profile.Model>()
                 fd.predicate = #Predicate {
                   $0.url == profileURL
                 }
@@ -256,7 +256,7 @@ import Testing
                 Task(priority: .background) {
                   try await profileAssistant.insert(data)
                 }
-                let persistentModel = Data.PersistentModel()
+                let persistentModel = Data.Model()
                 persistentModel.mergeValues(data)
                 persistentModel.lazyProfile = profile
               }
@@ -309,9 +309,9 @@ import Testing
 
           @State private var data: Data
 
-          private let persistentModel: Data.PersistentModel?
+          private let persistentModel: Data.Model?
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -329,7 +329,7 @@ import Testing
                   try await profileAssistant.replace(outdated, with: data)
                 }
               } else {
-                var fd = FetchDescriptor<Profile.PersistentModel>()
+                var fd = FetchDescriptor<Profile.Model>()
                 fd.predicate = #Predicate {
                   $0.url == profileURL
                 }
@@ -339,7 +339,7 @@ import Testing
                 Task(priority: .background) {
                   try await profileAssistant.insert(data)
                 }
-                let persistentModel = Data.PersistentModel()
+                let persistentModel = Data.Model()
                 persistentModel.mergeValues(data)
                 persistentModel.lazyProfile = profile
               }
@@ -392,9 +392,9 @@ import Testing
 
           @State private var data: Data
 
-          private let persistentModel: Data.PersistentModel?
+          private let persistentModel: Data.Model?
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -412,7 +412,7 @@ import Testing
                   try await profileAssistant.replace(outdated, with: data)
                 }
               } else {
-                var fd = FetchDescriptor<Profile.PersistentModel>()
+                var fd = FetchDescriptor<Profile.Model>()
                 fd.predicate = #Predicate {
                   $0.url == profileURL
                 }
@@ -422,7 +422,7 @@ import Testing
                 Task(priority: .background) {
                   try await profileAssistant.insert(data)
                 }
-                let persistentModel = Data.PersistentModel()
+                let persistentModel = Data.Model()
                 persistentModel.mergeValues(data)
                 persistentModel.lazyProfile = profile
               }
@@ -475,9 +475,9 @@ import Testing
 
           @Environment(\\.profileAssistant) private var profileAssistant
 
-          private let persistentModel: Data.PersistentModel?
+          private let persistentModel: Data.Model?
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -495,7 +495,7 @@ import Testing
                   try await profileAssistant.replace(outdated, with: data)
                 }
               } else {
-                var fd = FetchDescriptor<Profile.PersistentModel>()
+                var fd = FetchDescriptor<Profile.Model>()
                 fd.predicate = #Predicate {
                   $0.url == profileURL
                 }
@@ -505,7 +505,7 @@ import Testing
                 Task(priority: .background) {
                   try await profileAssistant.insert(data)
                 }
-                let persistentModel = Data.PersistentModel()
+                let persistentModel = Data.Model()
                 persistentModel.mergeValues(data)
                 persistentModel.lazyProfile = profile
               }
@@ -541,14 +541,14 @@ import Testing
         """
         @Editable<Data> struct Presentation {
 
-          private let persistentModel: Data.PersistentModel?
+          private let persistentModel: Data.Model?
         }
         """
 
       let expectedExpandedSource = """
         struct Presentation {
 
-          private let persistentModel: Data.PersistentModel?
+          private let persistentModel: Data.Model?
 
           @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
 
@@ -560,7 +560,7 @@ import Testing
 
           @State private var data: Data
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -578,7 +578,7 @@ import Testing
                   try await profileAssistant.replace(outdated, with: data)
                 }
               } else {
-                var fd = FetchDescriptor<Profile.PersistentModel>()
+                var fd = FetchDescriptor<Profile.Model>()
                 fd.predicate = #Predicate {
                   $0.url == profileURL
                 }
@@ -588,7 +588,7 @@ import Testing
                 Task(priority: .background) {
                   try await profileAssistant.insert(data)
                 }
-                let persistentModel = Data.PersistentModel()
+                let persistentModel = Data.Model()
                 persistentModel.mergeValues(data)
                 persistentModel.lazyProfile = profile
               }
@@ -624,7 +624,7 @@ import Testing
         """
         @Editable<Data> struct Presentation {
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -638,7 +638,7 @@ import Testing
       let expectedExpandedSource = """
         struct Presentation {
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -657,7 +657,7 @@ import Testing
 
           @State private var data: Data
 
-          private let persistentModel: Data.PersistentModel?
+          private let persistentModel: Data.Model?
 
           private func save() {
             do {
@@ -668,7 +668,7 @@ import Testing
                   try await profileAssistant.replace(outdated, with: data)
                 }
               } else {
-                var fd = FetchDescriptor<Profile.PersistentModel>()
+                var fd = FetchDescriptor<Profile.Model>()
                 fd.predicate = #Predicate {
                   $0.url == profileURL
                 }
@@ -678,7 +678,7 @@ import Testing
                 Task(priority: .background) {
                   try await profileAssistant.insert(data)
                 }
-                let persistentModel = Data.PersistentModel()
+                let persistentModel = Data.Model()
                 persistentModel.mergeValues(data)
                 persistentModel.lazyProfile = profile
               }
@@ -714,7 +714,7 @@ import Testing
         """
         @Editable<Data> struct Presentation {
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -730,7 +730,7 @@ import Testing
       let expectedExpandedSource = """
         struct Presentation {
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -751,7 +751,7 @@ import Testing
 
           @State private var data: Data
 
-          private let persistentModel: Data.PersistentModel?
+          private let persistentModel: Data.Model?
 
           private func save() {
             do {
@@ -762,7 +762,7 @@ import Testing
                   try await profileAssistant.replace(outdated, with: data)
                 }
               } else {
-                var fd = FetchDescriptor<Profile.PersistentModel>()
+                var fd = FetchDescriptor<Profile.Model>()
                 fd.predicate = #Predicate {
                   $0.url == profileURL
                 }
@@ -772,7 +772,7 @@ import Testing
                 Task(priority: .background) {
                   try await profileAssistant.insert(data)
                 }
-                let persistentModel = Data.PersistentModel()
+                let persistentModel = Data.Model()
                 persistentModel.mergeValues(data)
                 persistentModel.lazyProfile = profile
               }
@@ -808,7 +808,7 @@ import Testing
         """
         @Editable<Data> struct Presentation {
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -822,7 +822,7 @@ import Testing
       let expectedExpandedSource = """
         struct Presentation {
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -841,7 +841,7 @@ import Testing
 
           @State private var data: Data
 
-          private let persistentModel: Data.PersistentModel?
+          private let persistentModel: Data.Model?
 
           private func save() {
             do {
@@ -852,7 +852,7 @@ import Testing
                   try await profileAssistant.replace(outdated, with: data)
                 }
               } else {
-                var fd = FetchDescriptor<Profile.PersistentModel>()
+                var fd = FetchDescriptor<Profile.Model>()
                 fd.predicate = #Predicate {
                   $0.url == profileURL
                 }
@@ -862,7 +862,7 @@ import Testing
                 Task(priority: .background) {
                   try await profileAssistant.insert(data)
                 }
-                let persistentModel = Data.PersistentModel()
+                let persistentModel = Data.Model()
                 persistentModel.mergeValues(data)
                 persistentModel.lazyProfile = profile
               }
@@ -898,7 +898,7 @@ import Testing
         """
         @Editable<Data> struct Presentation {
 
-          init(_data: Data.PersistentModel?) {
+          init(_data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -912,7 +912,7 @@ import Testing
       let expectedExpandedSource = """
         struct Presentation {
 
-          init(_data: Data.PersistentModel?) {
+          init(_data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -931,9 +931,9 @@ import Testing
 
           @State private var data: Data
 
-          private let persistentModel: Data.PersistentModel?
+          private let persistentModel: Data.Model?
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -951,7 +951,7 @@ import Testing
                   try await profileAssistant.replace(outdated, with: data)
                 }
               } else {
-                var fd = FetchDescriptor<Profile.PersistentModel>()
+                var fd = FetchDescriptor<Profile.Model>()
                 fd.predicate = #Predicate {
                   $0.url == profileURL
                 }
@@ -961,7 +961,7 @@ import Testing
                 Task(priority: .background) {
                   try await profileAssistant.insert(data)
                 }
-                let persistentModel = Data.PersistentModel()
+                let persistentModel = Data.Model()
                 persistentModel.mergeValues(data)
                 persistentModel.lazyProfile = profile
               }
@@ -1018,9 +1018,9 @@ import Testing
 
           @State private var data: Data
 
-          private let persistentModel: Data.PersistentModel?
+          private let persistentModel: Data.Model?
 
-          init(data: Data.PersistentModel?) {
+          init(data: Data.Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))

@@ -63,7 +63,7 @@ import Testing
 
   @available(SwiftStdlib 5.9, *)
   @Test func persistentModel() {
-    let source = Response.PersistentModel.self
+    let source = Response.Model.self
     #expect(source == V1._Response.self)
   }
 

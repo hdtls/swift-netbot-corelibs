@@ -146,7 +146,7 @@ import Testing
 
   @available(SwiftStdlib 5.9, *)
   @Test func persistentModel() {
-    let source = Connection.PersistentModel.self
+    let source = Connection.Model.self
     #expect(source == V1._Connection.self)
   }
 

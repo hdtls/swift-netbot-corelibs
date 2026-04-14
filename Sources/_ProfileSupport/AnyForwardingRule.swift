@@ -97,3 +97,23 @@ public struct AnyForwardingRule: Equatable, Hashable, Sendable {
     self.comment = comment
   }
 }
+
+#if canImport(SwiftData)
+  @available(SwiftStdlib 5.9, *)
+  extension AnyForwardingRule {
+
+    public typealias Model = V1._AnyForwardingRule
+
+    public init(persistentModel: Model) {
+      self.init()
+      isEnabled = persistentModel.isEnabled
+      kind = persistentModel.kind
+      value = persistentModel.value
+      comment = persistentModel.comment
+      let lazyProxy = persistentModel.lazyProxy?.name
+      let lazyProxyGroup = persistentModel.lazyProxyGroup?.name
+      foreignKey = lazyProxy ?? lazyProxyGroup ?? "DIRECT"
+      notification = persistentModel.notification
+    }
+  }
+#endif

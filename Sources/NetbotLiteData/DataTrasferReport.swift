@@ -130,9 +130,9 @@ public struct DataTransferReport: Codable, Hashable, Sendable {
 @available(SwiftStdlib 5.9, *)
 extension DataTransferReport {
 
-  public typealias PersistentModel = V1._DataTransferReport
+  public typealias Model = V1._DataTransferReport
 
-  public init(persistentModel: PersistentModel) {
+  public init(persistentModel: Model) {
     self._duration = persistentModel.duration.seconds
     self.aggregatePathReport = .init()
     self.pathReport = .init()
@@ -142,7 +142,7 @@ extension DataTransferReport {
 @available(SwiftStdlib 5.9, *)
 extension DataTransferReport.PathReport {
 
-  public typealias PersistentModel = V1._PathReport
+  public typealias Model = V1._PathReport
 
   public init(persistentModel: V1._PathReport) {
     self.receivedIPPacketCount = persistentModel.receivedIPPacketCount

@@ -81,9 +81,9 @@ public struct DNSResolutionReport: Codable, Hashable, Sendable {
 @available(SwiftStdlib 5.9, *)
 extension DNSResolutionReport {
 
-  public typealias PersistentModel = V1._DNSResolutionReport
+  public typealias Model = V1._DNSResolutionReport
 
-  public init(persistentModel: PersistentModel) {
+  public init(persistentModel: Model) {
     self._duration = persistentModel._duration
     self.resolutions = persistentModel.resolutions.map {
       Resolution(

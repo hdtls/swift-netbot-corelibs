@@ -25,7 +25,7 @@ import Testing
 
   @available(SwiftStdlib 5.9, *)
   @Test func persistentModelTypealias() {
-    #expect(DNSResolutionReport.PersistentModel.self == V1._DNSResolutionReport.self)
+    #expect(DNSResolutionReport.Model.self == V1._DNSResolutionReport.self)
   }
 
   @available(SwiftStdlib 5.9, *)

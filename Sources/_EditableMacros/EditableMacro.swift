@@ -91,7 +91,7 @@ public struct EditableMacro: MemberMacro, Sendable {
     }
 
     if !properties.contains("persistentModel") {
-      declarations.append("private let persistentModel: \(data).PersistentModel?")
+      declarations.append("private let persistentModel: \(data).Model?")
     }
 
     let initializers = declaration.memberBlock.members.compactMap {
@@ -104,7 +104,7 @@ public struct EditableMacro: MemberMacro, Sendable {
         if parameters.count == 1 && parameters.first?.firstName.text == "_data" {
           declarations.append(
             """
-            init(data: \(data).PersistentModel?) {
+            init(data: \(data).Model?) {
               self.persistentModel = data
               if let data {
                 self._data = .init(initialValue: .init(persistentModel: data))
@@ -117,7 +117,7 @@ public struct EditableMacro: MemberMacro, Sendable {
       } else {
         declarations.append(
           """
-          init(data: \(data).PersistentModel?) {
+          init(data: \(data).Model?) {
             self.persistentModel = data
             if let data {
               self._data = .init(initialValue: .init(persistentModel: data))
@@ -145,7 +145,7 @@ public struct EditableMacro: MemberMacro, Sendable {
                 try await profileAssistant.replace(outdated, with: data)
               }
             } else {
-              var fd = FetchDescriptor<Profile.PersistentModel>()
+              var fd = FetchDescriptor<Profile.Model>()
               fd.predicate = #Predicate {  $0.url == profileURL }
               guard let profile = try modelContext.fetch(fd).first else {
                 return
@@ -153,7 +153,7 @@ public struct EditableMacro: MemberMacro, Sendable {
               Task(priority: .background) {
                 try await profileAssistant.insert(data)
               }
-              let persistentModel = \(data).PersistentModel()
+              let persistentModel = \(data).Model()
               persistentModel.mergeValues(data)
               persistentModel.lazyProfile = profile
             }

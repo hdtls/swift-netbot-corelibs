@@ -107,11 +107,11 @@
       /// The policy's creation date.
       public var creationDate = Date.now
 
-      /// Relationship with `AnyProxyGroup.PersistentModel`.
+      /// Relationship with `AnyProxyGroup.Model`.
       @Relationship(inverse: \_AnyProxyGroup.lazyProxies)
       public var lazyProxyGroups: [_AnyProxyGroup] = []
 
-      /// Relationship with `AnyForwardingRule.PersistentModel`.
+      /// Relationship with `AnyForwardingRule.Model`.
       @Relationship(inverse: \_AnyForwardingRule.lazyProxy)
       public var lazyForwardingRules: [_AnyForwardingRule] = []
 
@@ -125,36 +125,6 @@
       public var isEditable: Bool {
         kind.isProxyable
       }
-    }
-  }
-
-  @available(SwiftStdlib 5.9, *)
-  extension AnyProxy {
-
-    public typealias PersistentModel = V1._AnyProxy
-
-    public init(persistentModel: PersistentModel) {
-      self.init()
-      name = persistentModel.name
-      source = .init(rawValue: persistentModel.source) ?? .userDefined
-      kind = persistentModel.kind
-      serverAddress = persistentModel.serverAddress
-      port = persistentModel.port
-      username = persistentModel.username ?? ""
-      passwordReference = persistentModel.passwordReference ?? ""
-      alpn = persistentModel.alpn ?? ""
-      authenticationRequired = persistentModel.authenticationRequired
-      algorithm = persistentModel.algorithm
-      obfuscation = persistentModel.obfuscation
-      measurement = persistentModel.measurement
-      tls = persistentModel.tls
-      ws = persistentModel.ws
-      engress = persistentModel.engress
-      allowUDPRelay = persistentModel.allowUDPRelay
-      isTFOEnabled = persistentModel.isTFOEnabled
-      forceHTTPTunneling = persistentModel.forceHTTPTunneling
-      dontAlertError = persistentModel.dontAlertError
-      creationDate = persistentModel.creationDate
     }
   }
 

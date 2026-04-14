@@ -55,22 +55,6 @@
   }
 
   @available(SwiftStdlib 5.9, *)
-  extension DNSMapping {
-
-    public typealias PersistentModel = V1._DNSMapping
-
-    public init(persistentModel: PersistentModel) {
-      self.init()
-      isEnabled = persistentModel.isEnabled
-      kind = persistentModel.kind
-      domainName = persistentModel.domainName
-      value = persistentModel.value
-      note = persistentModel.note
-      creationDate = persistentModel.creationDate
-    }
-  }
-
-  @available(SwiftStdlib 5.9, *)
   extension V1._DNSMapping {
 
     public func mergeValues(_ data: DNSMapping) {

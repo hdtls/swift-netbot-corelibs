@@ -37,17 +37,17 @@ struct ProfileAssistantTests {
       let modelContainer = try! ModelContainer(for: schema, configurations: configuration)
       let profileAssistant = ProfileAssistant(modelContainer: modelContainer)
       let modelContext = ModelContext(profileAssistant.modelContainer)
-      var numberOfItems = try modelContext.fetchCount(FetchDescriptor<Profile.PersistentModel>())
+      var numberOfItems = try modelContext.fetchCount(FetchDescriptor<Profile.Model>())
       #expect(numberOfItems == 0)
 
       numberOfItems = try modelContext.fetchCount(
-        FetchDescriptor<AnyForwardingRule.PersistentModel>())
+        FetchDescriptor<AnyForwardingRule.Model>())
       #expect(numberOfItems == 0)
 
-      numberOfItems = try modelContext.fetchCount(FetchDescriptor<AnyProxy.PersistentModel>())
+      numberOfItems = try modelContext.fetchCount(FetchDescriptor<AnyProxy.Model>())
       #expect(numberOfItems == 0)
 
-      numberOfItems = try modelContext.fetchCount(FetchDescriptor<AnyProxyGroup.PersistentModel>())
+      numberOfItems = try modelContext.fetchCount(FetchDescriptor<AnyProxyGroup.Model>())
       #expect(numberOfItems == 0)
     #endif
   }
@@ -118,18 +118,18 @@ struct ProfileAssistantTests {
       #if canImport(SwiftData)
         let modelContext = ModelContext(profileAssistant.modelContainer)
 
-        let profiles = try modelContext.fetchCount(FetchDescriptor<Profile.PersistentModel>())
+        let profiles = try modelContext.fetchCount(FetchDescriptor<Profile.Model>())
         #expect(profiles == 1)
 
         let rules = try modelContext.fetchCount(
-          FetchDescriptor<AnyForwardingRule.PersistentModel>())
+          FetchDescriptor<AnyForwardingRule.Model>())
         #expect(rules == 1)
 
-        let proxies = try modelContext.fetchCount(FetchDescriptor<AnyProxy.PersistentModel>())
+        let proxies = try modelContext.fetchCount(FetchDescriptor<AnyProxy.Model>())
         #expect(proxies == 4)
 
         let policyGroups = try modelContext.fetchCount(
-          FetchDescriptor<AnyProxyGroup.PersistentModel>())
+          FetchDescriptor<AnyProxyGroup.Model>())
         #expect(policyGroups == 1)
       #endif
     }

@@ -233,7 +233,7 @@ import Testing
   }
 
   @available(SwiftStdlib 5.9, *)
-  @Test("Initialization from PersistentModel copies all properties")
+  @Test("Initialization from Model copies all properties")
   func initFromPersistentModel() throws {
     let pathReport = V1._DataTransferReport.PathReport()
     pathReport.receivedIPPacketCount = 10
