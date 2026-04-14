@@ -1,4 +1,4 @@
 version: 1
 builder:
   configs:
-    - documentation_targets: [_DNSSupport, _PreferenceSupport, _PrivilegeSupport, _ProfileSupport, AnlzrReports, Dashboard, Netbot, Networking]
+    - documentation_targets: [_DNSSupport, _PreferenceSupport, _PrivilegeSupport, _ProfileSupport, Dashboard, Netbot, NetbotDaemons, NetbotKit, NetbotLite, NetbotLiteData]
