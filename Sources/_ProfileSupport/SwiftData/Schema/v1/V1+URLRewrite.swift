@@ -15,39 +15,25 @@
 #if canImport(SwiftData)
   import Foundation
   import SwiftData
-  import _ProfileSupport
 
   @available(SwiftStdlib 5.9, *)
   extension V1 {
-
-    @Model public class _HTTPFieldsRewrite {
+    @Model public class _URLRewrite {
 
       /// A boolean value determinse whether this rule is enabled or disabled.
       public var isEnabled = true
 
-      /// An enum define HTTP directions.
-      public typealias Direction = HTTPFieldsRewrite.Direction
+      /// A redirection type representation object, define type of URLRewrite.
+      public typealias RewriteType = URLRewrite.RewriteType
 
-      /// Direction of HTTP communication.
-      public var direction = Direction.request
+      /// Response status for this redirection.
+      public var type = RewriteType.found
 
       /// Incoming request URL matching pattern.
       public var pattern = ""
 
-      /// An enum define modification actions.
-      public typealias Action = HTTPFieldsRewrite.Action
-
-      /// Action for modification.
-      public var action = Action.add
-
-      /// HTTP header field name.
-      public var name = ""
-
-      /// A regex describing the field value to replace.
-      public var replacement = ""
-
-      /// HTTP header field value.
-      public var value = ""
+      /// URL redirect destination.
+      public var destination = ""
 
       /// The time the resource was created.
       public var creationDate = Date.now
@@ -55,40 +41,34 @@
       /// Relationship with `_Profile`.
       public var lazyProfile: _Profile?
 
-      /// Create a `HTTPFieldsRewrite.PersistentModel` with default values.
       public init() {
       }
     }
   }
 
   @available(SwiftStdlib 5.9, *)
-  extension HTTPFieldsRewrite {
+  extension URLRewrite {
 
-    public typealias PersistentModel = V1._HTTPFieldsRewrite
+    public typealias PersistentModel = V1._URLRewrite
 
     public init(persistentModel: PersistentModel) {
       self.init()
       isEnabled = persistentModel.isEnabled
-      direction = persistentModel.direction
+      type = persistentModel.type
       pattern = persistentModel.pattern
-      action = persistentModel.action
-      name = persistentModel.name
-      replacement = persistentModel.replacement
-      value = persistentModel.value
+      destination = persistentModel.destination
       creationDate = persistentModel.creationDate
     }
   }
 
   @available(SwiftStdlib 5.9, *)
-  extension V1._HTTPFieldsRewrite {
-    public func mergeValues(_ data: HTTPFieldsRewrite) {
+  extension V1._URLRewrite {
+
+    public func mergeValues(_ data: URLRewrite) {
       isEnabled = data.isEnabled
-      direction = data.direction
+      type = data.type
       pattern = data.pattern
-      action = data.action
-      name = data.name
-      replacement = data.replacement
-      value = data.value
+      destination = data.destination
       creationDate = data.creationDate
     }
   }

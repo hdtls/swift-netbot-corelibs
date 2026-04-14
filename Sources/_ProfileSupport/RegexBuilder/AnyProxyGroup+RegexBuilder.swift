@@ -17,10 +17,20 @@ import RegexBuilder
 @available(SwiftStdlib 5.3, *)
 extension AnyProxyGroup {
 
-  public static let sectionName = "[Proxy Group]"
+  package static let sectionName = "[Proxy Group]"
 
   @available(SwiftStdlib 5.7, *)
-  public static var regex: Regex<(Substring, Substring, AnyProxyGroup.Kind, Substring)> {
+  package static var sectionRegex: some RegexComponent {
+    Regex {
+      ZeroOrMore(.whitespace)
+      sectionName
+      ZeroOrMore(.whitespace)
+      ZeroOrMore(.newlineSequence)
+    }
+  }
+
+  @available(SwiftStdlib 5.7, *)
+  package static var regex: Regex<(Substring, Substring, AnyProxyGroup.Kind, Substring)> {
     Regex {
       /([^=\n]+) *= */
       TryCapture {
@@ -32,6 +42,36 @@ extension AnyProxyGroup {
 
       // Capture policy resource.
       /\, *(.+) */
+    }
+  }
+
+  @available(SwiftStdlib 5.7, *)
+  package var regex: some RegexComponent {
+    Regex {
+      ZeroOrMore(.whitespace)
+      name
+      /\ *= */
+      kind.rawValue
+      ","
+      ZeroOrMore(.whitespace)
+      "proxies"
+      /\ *= */
+      OneOrMore {
+        CharacterClass.anyNonNewline
+        Optionally(",")
+      }
+    }
+  }
+
+  @available(SwiftStdlib 5.7, *)
+  package var rulesRegex: some RegexComponent {
+    Regex {
+      ZeroOrMore(.whitespace)
+      try! Regex<Substring>(
+        AnyForwardingRule.Kind.allCases.map({ $0.rawValue }).joined(separator: "|"))
+      /\, *(?:.+, *)?/
+      name
+      ZeroOrMore(.whitespace)
     }
   }
 }

@@ -19,10 +19,20 @@ extension URLRewrite {
 
   static let delimiter = ","
 
-  public static let sectionName = "[URL Rewrite]"
+  package static let sectionName = "[URL Rewrite]"
 
   @available(SwiftStdlib 5.7, *)
-  public static var regex: Regex<(Substring, Bool, RewriteType, Substring, Substring)> {
+  package static var sectionRegex: some RegexComponent {
+    Regex {
+      ZeroOrMore(.whitespace)
+      sectionName
+      ZeroOrMore(.whitespace)
+      ZeroOrMore(.newlineSequence)
+    }
+  }
+
+  @available(SwiftStdlib 5.7, *)
+  package static var regex: Regex<(Substring, Bool, RewriteType, Substring, Substring)> {
     Regex {
       TryCapture(Optionally(/\ *# +/)) { $0.isEmpty }
       TryCapture {
@@ -38,6 +48,20 @@ extension URLRewrite {
       delimiter
       ZeroOrMore(.whitespace)
       Capture(OneOrMore(.anyNonNewline))
+    }
+  }
+
+  @available(SwiftStdlib 5.7, *)
+  package var regex: some RegexComponent {
+    Regex {
+      isEnabled ? "" : "# "
+      type.rawValue
+      URLRewrite.delimiter
+      ZeroOrMore(.whitespace)
+      pattern
+      URLRewrite.delimiter
+      ZeroOrMore(.whitespace)
+      destination
     }
   }
 }

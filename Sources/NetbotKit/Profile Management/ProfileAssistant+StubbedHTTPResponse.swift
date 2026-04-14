@@ -61,7 +61,7 @@ extension ProfileAssistant {
         string
         .split(separator: .newlineSequence, omittingEmptySubsequences: false)
         .lazy.compactMap { line in
-          guard !line.matches(of: stubbedHTTPResponse.buildAsRegex()).isEmpty else {
+          guard !line.matches(of: stubbedHTTPResponse.regex).isEmpty else {
             return line
           }
           return Substring(newStubbedHTTPResponse.formatted())
@@ -121,7 +121,7 @@ extension ProfileAssistant {
       let string = try String(contentsOf: readIntent.url, encoding: .utf8)
       var lines = string.split(separator: .newlineSequence, omittingEmptySubsequences: false)
       lines.removeAll {
-        !$0.matches(of: stubbedHTTPResponse.buildAsRegex()).isEmpty
+        !$0.matches(of: stubbedHTTPResponse.regex).isEmpty
       }
       let contents = lines.joined(separator: "\n")
       try contents.write(to: writeIntent.url, atomically: true, encoding: .utf8)

@@ -16,8 +16,7 @@
   import SwiftData
   import Testing
 
-  @testable import NetbotKit
-  import _ProfileSupport
+  @testable import _ProfileSupport
 
   @Suite("V1._DNSMappingTests", .tags(.swiftData, .schema, .dnsMapping))
   struct DNSMappingPersistentModelTests {

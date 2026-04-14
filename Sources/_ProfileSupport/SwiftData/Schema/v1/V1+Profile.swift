@@ -16,7 +16,6 @@
   import Foundation
   import Logging
   import SwiftData
-  import _ProfileSupport
 
   @available(SwiftStdlib 5.9, *)
   extension V1 {

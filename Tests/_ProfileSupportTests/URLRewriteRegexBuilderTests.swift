@@ -14,9 +14,8 @@
 
 import RegexBuilder
 import Testing
-import _ProfileSupport
 
-@testable import NetbotKit
+@testable import _ProfileSupport
 
 @Suite struct URLRewriteRegexBuilderTests {
 
@@ -52,7 +51,7 @@ import _ProfileSupport
     urlRewrite.pattern = "http://swift.org"
     urlRewrite.destination = "https://swift.org"
 
-    let regex = urlRewrite.buildAsRegex()
+    let regex = urlRewrite.regex
     #expect(!"found, http://swift.org, https://swift.org".matches(of: regex).isEmpty)
     #expect("reject, http://swift.org, https://swift.org".matches(of: regex).isEmpty)
     #expect("found, https://swift.org, https://swift.org".matches(of: regex).isEmpty)

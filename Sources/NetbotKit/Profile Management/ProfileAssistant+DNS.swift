@@ -82,7 +82,7 @@ extension ProfileAssistant {
       let file = try String(contentsOf: readIntent.url, encoding: .utf8)
       let lines = file.split(separator: .newlineSequence, omittingEmptySubsequences: false)
         .lazy.compactMap { line in
-          guard !line.matches(of: dnsMapping.buildAsRegex()).isEmpty else {
+          guard !line.matches(of: dnsMapping.regex).isEmpty else {
             return line
           }
           return Substring(newDNSMapping.formatted())
@@ -100,7 +100,7 @@ extension ProfileAssistant {
       let file = try String(contentsOf: readIntent.url, encoding: .utf8)
       var lines = file.split(separator: .newlineSequence, omittingEmptySubsequences: false)
       lines.removeAll {
-        !$0.matches(of: dnsMapping.buildAsRegex()).isEmpty
+        !$0.matches(of: dnsMapping.regex).isEmpty
       }
       let contents = lines.joined(separator: "\n")
       try contents.write(to: writeIntent.url, atomically: true, encoding: .utf8)

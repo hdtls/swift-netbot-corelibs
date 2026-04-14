@@ -15,8 +15,8 @@
 #if canImport(SwiftData)
   import SwiftData
   import Testing
-  @testable import NetbotKit
-  import _ProfileSupport
+
+  @testable import _ProfileSupport
 
   @Suite("V1._AnyForwardingRuleTests", .tags(.swiftData, .schema, .forwardingRule))
   struct AnyRulePersistentModelTests {

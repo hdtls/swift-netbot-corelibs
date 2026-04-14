@@ -16,8 +16,7 @@
   import SwiftData
   import Testing
 
-  @testable import NetbotKit
-  import _ProfileSupport
+  @testable import _ProfileSupport
 
   @Suite("v1.HTTPFieldsRewriteTests", .tags(.httpFieldsRewrite))
   struct V1_HTTPFieldsRewriteTests {

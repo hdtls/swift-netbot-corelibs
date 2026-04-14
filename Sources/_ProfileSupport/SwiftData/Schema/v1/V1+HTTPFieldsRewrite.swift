@@ -13,33 +13,40 @@
 //===----------------------------------------------------------------------===//
 
 #if canImport(SwiftData)
-  import HTTPTypes
   import Foundation
   import SwiftData
-  import _ProfileSupport
 
   @available(SwiftStdlib 5.9, *)
   extension V1 {
 
-    @Model public class _StubbedHTTPResponse {
+    @Model public class _HTTPFieldsRewrite {
 
       /// A boolean value determinse whether this rule is enabled or disabled.
       public var isEnabled = true
 
+      /// An enum define HTTP directions.
+      public typealias Direction = HTTPFieldsRewrite.Direction
+
+      /// Direction of HTTP communication.
+      public var direction = Direction.request
+
       /// Incoming request URL matching pattern.
       public var pattern = ""
 
-      /// Response body content URL.
-      public var bodyContentsURL: URL?
+      /// An enum define modification actions.
+      public typealias Action = HTTPFieldsRewrite.Action
 
-      /// Response status code.
-      public var statusCode = 200
+      /// Action for modification.
+      public var action = Action.add
 
-      /// Response status reason phrase.
-      public var reasonPhrase = ""
+      /// HTTP header field name.
+      public var name = ""
 
-      /// Additional HTTP fields for stubbed response.
-      public var additionalHTTPFields = HTTPFields()
+      /// A regex describing the field value to replace.
+      public var replacement = ""
+
+      /// HTTP header field value.
+      public var value = ""
 
       /// The time the resource was created.
       public var creationDate = Date.now
@@ -47,39 +54,40 @@
       /// Relationship with `_Profile`.
       public var lazyProfile: _Profile?
 
+      /// Create a `HTTPFieldsRewrite.PersistentModel` with default values.
       public init() {
       }
     }
   }
 
   @available(SwiftStdlib 5.9, *)
-  extension StubbedHTTPResponse {
+  extension HTTPFieldsRewrite {
 
-    public typealias PersistentModel = V1._StubbedHTTPResponse
+    public typealias PersistentModel = V1._HTTPFieldsRewrite
 
     public init(persistentModel: PersistentModel) {
       self.init()
       isEnabled = persistentModel.isEnabled
+      direction = persistentModel.direction
       pattern = persistentModel.pattern
-      bodyContentsURL = persistentModel.bodyContentsURL
-      status = .init(
-        code: persistentModel.statusCode,
-        reasonPhrase: persistentModel.reasonPhrase
-      )
-      additionalHTTPFields = persistentModel.additionalHTTPFields
+      action = persistentModel.action
+      name = persistentModel.name
+      replacement = persistentModel.replacement
+      value = persistentModel.value
       creationDate = persistentModel.creationDate
     }
   }
 
   @available(SwiftStdlib 5.9, *)
-  extension V1._StubbedHTTPResponse {
-    public func mergeValues(_ data: StubbedHTTPResponse) {
+  extension V1._HTTPFieldsRewrite {
+    public func mergeValues(_ data: HTTPFieldsRewrite) {
       isEnabled = data.isEnabled
+      direction = data.direction
       pattern = data.pattern
-      bodyContentsURL = data.bodyContentsURL
-      statusCode = data.status.code
-      reasonPhrase = data.status.reasonPhrase
-      additionalHTTPFields = data.additionalHTTPFields
+      action = data.action
+      name = data.name
+      replacement = data.replacement
+      value = data.value
       creationDate = data.creationDate
     }
   }

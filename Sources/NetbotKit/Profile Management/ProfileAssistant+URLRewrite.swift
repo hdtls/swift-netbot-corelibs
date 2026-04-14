@@ -59,7 +59,7 @@ extension ProfileAssistant {
         string
         .split(separator: .newlineSequence, omittingEmptySubsequences: false)
         .lazy.compactMap { line in
-          guard !line.matches(of: urlRewrite.buildAsRegex()).isEmpty else {
+          guard !line.matches(of: urlRewrite.regex).isEmpty else {
             return line
           }
           return Substring(newURLRewrite.formatted())
@@ -112,7 +112,7 @@ extension ProfileAssistant {
       let string = try String(contentsOf: readIntent.url, encoding: .utf8)
       var lines = string.split(separator: .newlineSequence, omittingEmptySubsequences: false)
       lines.removeAll {
-        !$0.matches(of: urlRewrite.buildAsRegex()).isEmpty
+        !$0.matches(of: urlRewrite.regex).isEmpty
       }
       let contents = lines.joined(separator: "\n")
       try contents.write(to: writeIntent.url, atomically: true, encoding: .utf8)

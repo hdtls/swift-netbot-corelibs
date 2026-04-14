@@ -19,10 +19,20 @@ extension HTTPFieldsRewrite {
 
   static let delimiter: Character = " "
 
-  public static let sectionName = "[HTTP Fields Rewrite]"
+  package static let sectionName = "[HTTP Fields Rewrite]"
 
   @available(SwiftStdlib 5.7, *)
-  public static var regex:
+  package static var sectionRegex: some RegexComponent {
+    Regex {
+      ZeroOrMore(.whitespace)
+      sectionName
+      ZeroOrMore(.whitespace)
+      ZeroOrMore(.newlineSequence)
+    }
+  }
+
+  @available(SwiftStdlib 5.7, *)
+  package static var regex:
     Regex<(Substring, Bool, Direction, Substring, Action, Substring, Substring?, Substring?)>
   {
     Regex {
@@ -51,6 +61,61 @@ extension HTTPFieldsRewrite {
         Capture(OneOrMore(/[^ ]/))
       }
       ZeroOrMore(.whitespace)
+    }
+  }
+
+  @available(SwiftStdlib 5.7, *)
+  package var regex: some RegexComponent {
+    switch action {
+    case .add:
+      return Regex {
+        isEnabled ? "" : "# "
+        direction.rawValue
+        OneOrMore(.whitespace)
+        pattern
+        OneOrMore(.whitespace)
+        action.rawValue
+        OneOrMore(.whitespace)
+        name
+        OneOrMore(.whitespace)
+        value
+        ZeroOrMore(.whitespace)
+      }
+    case .remove:
+      return Regex {
+        isEnabled ? "" : "# "
+        direction.rawValue
+        OneOrMore(.whitespace)
+        pattern
+        OneOrMore(.whitespace)
+        action.rawValue
+        OneOrMore(.whitespace)
+        name
+        ZeroOrMore(.whitespace)
+      }
+    case .replace:
+      return Regex {
+        isEnabled ? "" : "# "
+        direction.rawValue
+        OneOrMore(.whitespace)
+        pattern
+        OneOrMore(.whitespace)
+        action.rawValue
+        OneOrMore(.whitespace)
+        name
+        OneOrMore(.whitespace)
+        value.isEmpty
+          ? Regex {
+            replacement
+            OneOrMore(.whitespace)
+          }
+          : Regex {
+            value
+            OneOrMore(.whitespace)
+            replacement
+            ZeroOrMore(.whitespace)
+          }
+      }
     }
   }
 }

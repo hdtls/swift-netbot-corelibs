@@ -58,7 +58,7 @@ extension ProfileAssistant {
       let string = try String(contentsOf: readIntent.url, encoding: .utf8)
       var lines = string.split(separator: .newlineSequence, omittingEmptySubsequences: false)
       lines = lines.compactMap { line in
-        if !line.matches(of: group.buildAsRegex()).isEmpty {
+        if !line.matches(of: group.regex).isEmpty {
           return Substring(newPolicyGroup.formatted())
         }
 
@@ -67,7 +67,7 @@ extension ProfileAssistant {
         }
 
         // Replace group name of owned rules.
-        if !line.matches(of: group.ownedRulesRegex).isEmpty {
+        if !line.matches(of: group.rulesRegex).isEmpty {
           return line.replacing(group.name, with: newPolicyGroup.name)
         }
 
@@ -117,7 +117,7 @@ extension ProfileAssistant {
       lines = lines.compactMap { parseInput in
         for group in groups {
           // Remove owned rules.
-          if !parseInput.matches(of: group.ownedRulesRegex).isEmpty {
+          if !parseInput.matches(of: group.rulesRegex).isEmpty {
             return nil
           }
         }
@@ -137,11 +137,11 @@ extension ProfileAssistant {
       var lines = string.split(separator: .newlineSequence, omittingEmptySubsequences: false)
       lines = lines.compactMap { parseInput in
         // Remove policy group from `contents`.
-        if !parseInput.matches(of: policyGroup.buildAsRegex()).isEmpty {
+        if !parseInput.matches(of: policyGroup.regex).isEmpty {
           return nil
         }
         // Remove associated rules.
-        if !parseInput.matches(of: policyGroup.ownedRulesRegex).isEmpty {
+        if !parseInput.matches(of: policyGroup.rulesRegex).isEmpty {
           return nil
         }
         return parseInput

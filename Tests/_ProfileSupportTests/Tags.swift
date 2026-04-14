@@ -33,5 +33,9 @@ extension Tag {
 
   @Tag static var httpFieldsRewrite: Tag
 
+  @Tag static var swiftData: Tag
+
+  @Tag static var schema: Tag
+
   @Tag static var formatting: Tag
 }

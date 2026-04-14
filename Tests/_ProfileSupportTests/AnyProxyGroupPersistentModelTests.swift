@@ -16,8 +16,7 @@
   import SwiftData
   import Testing
 
-  @testable import NetbotKit
-  import _ProfileSupport
+  @testable import _ProfileSupport
 
   @Suite("V1._AnyProxyGroupTests", .tags(.swiftData, .schema, .proxyGroup))
   struct V1_AnyProxyGroupTests {

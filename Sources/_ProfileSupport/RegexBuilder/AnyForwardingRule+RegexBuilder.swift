@@ -19,11 +19,21 @@ extension AnyForwardingRule {
 
   static let delimiter = ","
 
-  public static let sectionName = "[Rule]"
+  package static let sectionName = "[Rule]"
+
+  @available(SwiftStdlib 5.7, *)
+  package static var sectionRegex: some RegexComponent {
+    Regex {
+      ZeroOrMore(.whitespace)
+      sectionName
+      ZeroOrMore(.whitespace)
+      ZeroOrMore(.newlineSequence)
+    }
+  }
 
   /// Regular expression for match all forwarding rule with specified pattern.
   @available(SwiftStdlib 5.7, *)
-  public static var regex:
+  package static var regex:
     Regex<(Substring, Bool, AnyForwardingRule.Kind, Substring, Substring, Substring?)>
   {
     Regex {
@@ -52,6 +62,33 @@ extension AnyForwardingRule {
         ZeroOrMore(.whitespace)
         Capture(ZeroOrMore(.anyNonNewline))
       }
+      /$/
+    }
+  }
+
+  @available(SwiftStdlib 5.7, *)
+  package var regex: some RegexComponent {
+    Regex {
+      /^/
+      ZeroOrMore(.whitespace)
+      isEnabled ? "" : "#"
+      ZeroOrMore(.whitespace)
+      kind.rawValue
+      AnyForwardingRule.delimiter
+      ZeroOrMore(.whitespace)
+      value
+      AnyForwardingRule.delimiter
+      ZeroOrMore(.whitespace)
+      foreignKey
+      ZeroOrMore(.whitespace)
+      comment.isEmpty
+        ? Regex {}
+        : Regex {
+          "//"
+          ZeroOrMore(.whitespace)
+          comment
+          ZeroOrMore(.whitespace)
+        }
       /$/
     }
   }

@@ -14,5 +14,5 @@
 
 #if canImport(SwiftData)
   @available(SwiftStdlib 5.9, *)
-  typealias _VersionedSchema = V1
+  public typealias _VersionedSchema = V1
 #endif

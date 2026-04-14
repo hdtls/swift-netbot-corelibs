@@ -58,7 +58,7 @@ extension ProfileAssistant {
       let string = try String(contentsOf: readIntent.url, encoding: .utf8)
       var lines = string.split(separator: .newlineSequence, omittingEmptySubsequences: false)
       lines = lines.compactMap { line in
-        if !line.matches(of: proxy.buildAsRegex()).isEmpty {
+        if !line.matches(of: proxy.regex).isEmpty {
           return Substring(newProxy.formatted())
         }
         // If name changed, we need also update associated rules and groups.
@@ -67,7 +67,7 @@ extension ProfileAssistant {
         }
 
         // Replace policy name of owned rules.
-        if !line.matches(of: proxy.ownedRulesRegex).isEmpty {
+        if !line.matches(of: proxy.rulesRegex).isEmpty {
           return line.replacing(proxy.name, with: newProxy.name)
         }
 
@@ -133,7 +133,7 @@ extension ProfileAssistant {
       lines = lines.compactMap { parseInput in
         for policy in policies {
           // Remove associated rules.
-          if parseInput.firstMatch(of: policy.ownedRulesRegex) != nil {
+          if parseInput.firstMatch(of: policy.rulesRegex) != nil {
             return nil
           }
           guard let g = parseInput.firstMatch(of: AnyProxyGroup.regex) else {
@@ -167,12 +167,12 @@ extension ProfileAssistant {
       var lines = string.split(separator: .newlineSequence, omittingEmptySubsequences: false)
       lines = lines.compactMap { parseInput in
         // Remove policy from `contents`.
-        if parseInput.firstMatch(of: proxy.buildAsRegex()) != nil {
+        if parseInput.firstMatch(of: proxy.regex) != nil {
           return nil
         }
 
         // Remove associated rules.
-        if parseInput.firstMatch(of: proxy.ownedRulesRegex) != nil {
+        if parseInput.firstMatch(of: proxy.rulesRegex) != nil {
           return nil
         }
 
