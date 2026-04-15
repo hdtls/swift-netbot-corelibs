@@ -57,7 +57,7 @@ extension ProfileAssistant {
         numberOfProxies: profile.lazyProxies.count
       )
       profileResource.profiles.append(profileInfo)
-      profileResource.profiles.sort(using: KeyPathComparator(\.name))
+      profileResource.profiles.sort(by: { $0.name < $1.name })
     }
   }
 
@@ -249,7 +249,7 @@ extension ProfileAssistant {
       }
 
       profileResource.profiles.replace(other, with: replacement)
-      profileResource.profiles.sort(using: KeyPathComparator(\.name))
+      profileResource.profiles.sort(by: { $0.name < $1.name })
     }
   }
 

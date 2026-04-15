@@ -127,7 +127,7 @@ public actor ProfileAssistant {
         url: $0.url, numberOfRules: $0.lazyForwardingRules.count,
         numberOfProxies: $0.lazyProxies.count)
     }
-    profiles.sort(using: KeyPathComparator(\.name))
+    profiles.sort(by: { $0.name < $1.name })
     await MainActor.run {
       profileResource.profiles = profiles
     }
@@ -289,7 +289,7 @@ public actor ProfileAssistant {
         modelContext.insert(persistentModel)
 
         // Load built-in proxies at the beginning.
-        let lazyProxies = profile.lazyProxies.sorted(using: KeyPathComparator(\.creationDate))
+        let lazyProxies = profile.lazyProxies.sorted(by: { $0.creationDate < $1.creationDate })
         let earliestDate = lazyProxies.first?.creationDate ?? .now
         var proxy = AnyProxy.Model()
         proxy.name = "DIRECT"

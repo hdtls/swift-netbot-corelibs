@@ -97,7 +97,8 @@ extension AnyProxyGroup {
     measurement = persistentModel.measurement
     creationDate = persistentModel.creationDate
 
-    lazyProxies = persistentModel.lazyProxies.sorted(using: KeyPathComparator(\.creationDate))
+    lazyProxies = persistentModel.lazyProxies
+      .sorted(by: { $0.creationDate < $1.creationDate })
       .map(\.name)
   }
 }

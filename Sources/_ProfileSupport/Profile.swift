@@ -278,31 +278,31 @@ extension Profile {
 
     // Also load the relationships.
     lazyProxies = persistentModel.lazyProxies
-      .sorted(using: KeyPathComparator(\.creationDate))
+      .sorted(by: { $0.creationDate < $1.creationDate })
       .map(AnyProxy.init(persistentModel:))
 
     lazyProxyGroups = persistentModel.lazyProxyGroups
-      .sorted(using: KeyPathComparator(\.creationDate))
+      .sorted(by: { $0.creationDate < $1.creationDate })
       .map(AnyProxyGroup.init(persistentModel:))
 
     lazyForwardingRules = persistentModel.lazyForwardingRules
-      .sorted(using: KeyPathComparator(\.order))
+      .sorted(by: { $0.order < $1.order })
       .map(AnyForwardingRule.init(persistentModel:))
 
     lazyDNSMappings = persistentModel.lazyDNSMappings
-      .sorted(using: KeyPathComparator(\.creationDate))
+      .sorted(by: { $0.creationDate < $1.creationDate })
       .map(DNSMapping.init(persistentModel:))
 
     lazyURLRewrites = persistentModel.lazyURLRewrites
-      .sorted(using: KeyPathComparator(\.creationDate))
+      .sorted(by: { $0.creationDate < $1.creationDate })
       .map(URLRewrite.init(persistentModel:))
 
     lazyHTTPFieldsRewrites = persistentModel.lazyHTTPFieldsRewrites
-      .sorted(using: KeyPathComparator(\.creationDate))
+      .sorted(by: { $0.creationDate < $1.creationDate })
       .map(HTTPFieldsRewrite.init)
 
     lazyStubbedHTTPResponses = persistentModel.lazyStubbedHTTPResponses
-      .sorted(using: KeyPathComparator(\.creationDate))
+      .sorted(by: { $0.creationDate < $1.creationDate })
       .map(StubbedHTTPResponse.init)
   }
 }
