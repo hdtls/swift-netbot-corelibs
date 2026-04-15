@@ -200,6 +200,7 @@ let package = Package(
         .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
       ]
     ),
+    .testTarget(name: "DashboardTests", dependencies: ["Dashboard"]),
     .testTarget(
       name: "NetbotTests",
       dependencies: [
