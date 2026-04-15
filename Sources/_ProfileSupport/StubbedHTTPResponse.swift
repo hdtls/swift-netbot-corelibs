@@ -63,22 +63,21 @@ public struct StubbedHTTPResponse: Equatable, Hashable, Sendable {
   }
 }
 
-#if canImport(SwiftData)
-  @available(SwiftStdlib 5.9, *)
-  extension HTTPFieldsRewrite {
+@available(SwiftStdlib 5.9, *)
+extension StubbedHTTPResponse {
 
-    public typealias Model = V1._HTTPFieldsRewrite
+  public typealias Model = V1._StubbedHTTPResponse
 
-    public init(persistentModel: Model) {
-      self.init()
-      isEnabled = persistentModel.isEnabled
-      direction = persistentModel.direction
-      pattern = persistentModel.pattern
-      action = persistentModel.action
-      name = persistentModel.name
-      replacement = persistentModel.replacement
-      value = persistentModel.value
-      creationDate = persistentModel.creationDate
-    }
+  public init(persistentModel: Model) {
+    self.init()
+    isEnabled = persistentModel.isEnabled
+    pattern = persistentModel.pattern
+    bodyContentsURL = persistentModel.bodyContentsURL
+    status = .init(
+      code: persistentModel.statusCode,
+      reasonPhrase: persistentModel.reasonPhrase
+    )
+    additionalHTTPFields = persistentModel.additionalHTTPFields
+    creationDate = persistentModel.creationDate
   }
-#endif
+}

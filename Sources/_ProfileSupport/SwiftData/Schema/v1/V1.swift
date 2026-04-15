@@ -12,11 +12,11 @@
 //
 //===----------------------------------------------------------------------===//
 
+@available(SwiftStdlib 5.9, *)
+public enum V1 {}
+
 #if canImport(SwiftData)
   import SwiftData
-
-  @available(SwiftStdlib 5.9, *)
-  public enum V1 {}
 
   @available(SwiftStdlib 5.9, *)
   extension V1: VersionedSchema {

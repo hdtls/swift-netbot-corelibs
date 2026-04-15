@@ -12,58 +12,74 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if canImport(SwiftData)
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
   import Foundation
-  import SwiftData
-
-  @available(SwiftStdlib 5.9, *)
-  extension V1 {
-
-    /// An Object declaring DNS mapping rules.
-    @Model public class _DNSMapping {
-
-      /// A boolean value determinse whether this mapping is enabled.
-      public var isEnabled = true
-
-      public typealias Kind = DNSMapping.Kind
-
-      /// The kind of the mapping.
-      public var kind = Kind.mapping
-
-      /// The domain to perform local DNS mapping.
-      public var domainName = ""
-
-      /// The mapped value.
-      ///
-      /// When the `kind` value is `mapping`, the value represents the mapped IP address.
-      /// When the `kind` value is `cname`, the value represents the mapped new domain name.
-      /// When the `kind` value is `dns`, the value represents the new domain name resolution server.
-      public var value = ""
-
-      /// The note on this DNS mapping.
-      public var note = ""
-
-      /// The date when the mapping created.
-      public var creationDate = Date.now
-
-      /// Relationship with `_Profile`.
-      public var lazyProfile: _Profile?
-
-      public init() {
-      }
-    }
-  }
-
-  @available(SwiftStdlib 5.9, *)
-  extension V1._DNSMapping {
-
-    public func mergeValues(_ data: DNSMapping) {
-      isEnabled = data.isEnabled
-      kind = data.kind
-      domainName = data.domainName
-      value = data.value
-      note = data.note
-      creationDate = data.creationDate
-    }
-  }
 #endif
+
+#if canImport(SwiftData)
+  import SwiftData
+#endif
+
+#if swift(>=6.3)
+  import Observation
+#endif
+
+@available(SwiftStdlib 5.9, *)
+extension V1 {
+
+  /// An Object declaring DNS mapping rules.
+  #if canImport(SwiftData)
+    @Model
+  #else
+    #if swift(>=6.3)
+      @Observable
+    #endif
+  #endif
+  public class _DNSMapping {
+
+    /// A boolean value determinse whether this mapping is enabled.
+    public var isEnabled = true
+
+    public typealias Kind = DNSMapping.Kind
+
+    /// The kind of the mapping.
+    public var kind = Kind.mapping
+
+    /// The domain to perform local DNS mapping.
+    public var domainName = ""
+
+    /// The mapped value.
+    ///
+    /// When the `kind` value is `mapping`, the value represents the mapped IP address.
+    /// When the `kind` value is `cname`, the value represents the mapped new domain name.
+    /// When the `kind` value is `dns`, the value represents the new domain name resolution server.
+    public var value = ""
+
+    /// The note on this DNS mapping.
+    public var note = ""
+
+    /// The date when the mapping created.
+    public var creationDate = Date.now
+
+    /// Relationship with `_Profile`.
+    public var lazyProfile: _Profile?
+
+    public init() {
+    }
+  }
+}
+
+@available(SwiftStdlib 5.9, *)
+extension V1._DNSMapping {
+
+  public func mergeValues(_ data: DNSMapping) {
+    isEnabled = data.isEnabled
+    kind = data.kind
+    domainName = data.domainName
+    value = data.value
+    note = data.note
+    creationDate = data.creationDate
+  }
+}

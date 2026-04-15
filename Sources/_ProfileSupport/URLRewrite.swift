@@ -86,19 +86,17 @@ public struct URLRewrite: Equatable, Hashable, Sendable {
   }
 }
 
-#if canImport(SwiftData)
-  @available(SwiftStdlib 5.9, *)
-  extension URLRewrite {
+@available(SwiftStdlib 5.9, *)
+extension URLRewrite {
 
-    public typealias Model = V1._URLRewrite
+  public typealias Model = V1._URLRewrite
 
-    public init(persistentModel: Model) {
-      self.init()
-      isEnabled = persistentModel.isEnabled
-      type = persistentModel.type
-      pattern = persistentModel.pattern
-      destination = persistentModel.destination
-      creationDate = persistentModel.creationDate
-    }
+  public init(persistentModel: Model) {
+    self.init()
+    isEnabled = persistentModel.isEnabled
+    type = persistentModel.type
+    pattern = persistentModel.pattern
+    destination = persistentModel.destination
+    creationDate = persistentModel.creationDate
   }
-#endif
+}
