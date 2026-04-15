@@ -67,14 +67,14 @@
   @available(SwiftStdlib 5.3, *)
   public protocol ConnectionsDependency: Sendable {
 
-    var messages: AsyncStream<Result<[Connection], LocalizedError>> { get }
+    var messages: AsyncThrowingStream<[Connection], any Error> { get }
   }
 
   @available(SwiftStdlib 5.3, *)
   final private class DefaultConnectionsDependency: ConnectionsDependency {
 
-    public var messages: AsyncStream<Result<[Connection], LocalizedError>> {
-      AsyncStream { [logger] continuation in
+    public var messages: AsyncThrowingStream<[Connection], any Error> {
+      AsyncThrowingStream { [logger] continuation in
         let parameters = NWParameters.tcp
         let options = NWProtocolWebSocket.Options()
         parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
@@ -89,13 +89,7 @@
 
         connection.stateUpdateHandler = { state in
           switch state {
-          case .setup:
-            break
-          case .waiting(let error):
-            logger.error("\(error.localizedDescription)")
-            continuation.yield(.failure(.nw(error)))
-            continuation.finish()
-          case .preparing:
+          case .setup, .waiting, .preparing:
             break
           case .ready:
             @Sendable func runReadLoop() {
@@ -110,7 +104,7 @@
 
                 do {
                   let models = try JSONDecoder().decode([Connection].self, from: data)
-                  continuation.yield(.success(models))
+                  continuation.yield(models)
                 } catch {
                   assertionFailure(
                     "BUG IN NETBOT CORE, please report: illegal data format \(error)")
@@ -123,16 +117,12 @@
 
             runReadLoop()
           case .failed(let error):
-            logger.error("\(error.localizedDescription)")
-            continuation.yield(.failure(.nw(error)))
-            continuation.finish()
+            continuation.finish(throwing: LocalizedError.nw(error))
           case .cancelled:
             // We have finished continuation immediately when shutdown, so there we do nothing.
-            continuation.yield(.failure(.nw(.posix(.ECANCELED))))
-            continuation.finish()
+            continuation.finish(throwing: LocalizedError.nw(.posix(.ECANCELED)))
           @unknown default:
-            continuation.yield(.failure(.operationUnsupported))
-            continuation.finish()
+            continuation.finish(throwing: LocalizedError.operationUnsupported)
           }
         }
         connection.start(queue: .global())
@@ -282,21 +272,18 @@
       self.fetchTask = Task { [weak self] in
         guard let self else { return }
 
-        for await message in dependency.messages {
-          do {
-            let models = try message.get()
-            performBatchUpdates(models)
-          } catch let error as LocalizedError {
-            self._fetchError = error
-            self.fetchTask?.cancel()
-            self.fetchTask = nil
-            logger.error("\(error)")
-          } catch {
-            logger.error("\(error)")
+        do {
+          for try await message in dependency.messages {
+            performBatchUpdates(message)
           }
+        } catch let error as LocalizedError {
+          self._fetchError = error
+          self.fetchTask?.cancel()
+          self.fetchTask = nil
+          logger.error("\(error)")
+        } catch {
+          logger.error("\(error)")
         }
-
-        logger.trace("Fetch operation finished...")
       }
 
       self._fetchError = nil
