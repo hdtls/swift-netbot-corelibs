@@ -16,6 +16,7 @@ import HTTPTypes
 import NetbotLiteData
 
 #if canImport(FoundationEssentials)
+  import FoundationEssentials
   import FoundationInternationalization
 #else
   import Foundation
@@ -25,7 +26,7 @@ import NetbotLiteData
 extension Connection.Model {
 
   /// Pretty printed forwarding policy.
-  public var forwardingPolicy: String {
+  public var forwardProtocolFormatted: String {
     "\(forwardingReport?.forwardProtocol ?? "FINAL") (\(forwardingReport?.forwardingRule ?? "*"))"
   }
 
@@ -50,7 +51,8 @@ extension Connection.Model {
 @available(SwiftStdlib 5.3, *)
 extension Data {
   public func formatted() -> String {
-    String(data: self, encoding: .utf8) ?? "No Data".localizedCapitalized
+    guard !isEmpty else { return "No Data".localizedCapitalized }
+    return String(data: self, encoding: .utf8) ?? "No Data".localizedCapitalized
   }
 }
 
