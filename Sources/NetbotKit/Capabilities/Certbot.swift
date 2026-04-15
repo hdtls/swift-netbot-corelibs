@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 #if canImport(Darwin)
+  import CryptoExtras
   import Foundation
   import NIOCore
   import Logging
@@ -20,7 +21,6 @@
   import Security
   import SwiftASN1
   import X509
-  import _CryptoExtras
   import NIOSSL
 
   @available(SwiftStdlib 5.3, *)

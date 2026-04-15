@@ -17,9 +17,14 @@ import NIOSSL
 import NetbotLite
 import SwiftASN1
 import X509
-import _CryptoExtras
 import _PreferenceSupport
 import _ProfileSupport
+
+#if canImport(CryptoKit)
+  import CryptoExtras
+#else
+  import _CryptoExtras
+#endif
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
