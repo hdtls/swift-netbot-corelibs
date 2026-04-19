@@ -230,6 +230,11 @@ import Tracing
 
   /// Run analyze services.
   public func run() async throws {
+    Task { try await run0() }
+  }
+
+  /// Run analyze services and block IO until closed.
+  public func run0() async throws {
     try await withSpan("run") { span in
       do {
         guard !isActive else {
@@ -238,30 +243,39 @@ import Tracing
         _isActive.store(true, ordering: .relaxed)
         _closePromise.withLock { $0 = eventLoopGroup.any().makePromise() }
 
-        // Run and wait until all server channels closed.
-        try await withThrowingTaskGroup(of: Void.self) { g in
-          g.addTask {
-            try await withSpan("HTTP") { _ in
-              if #available(SwiftStdlib 5.9, *) {
-                try await self.startVPNTunnel0(protocol: .http, address: self.webProxyListenAddress)
-              } else {
+        if #available(SwiftStdlib 5.9, *) {
+          try await withThrowingDiscardingTaskGroup { g in
+            g.addTask {
+              try await withSpan("HTTP") { _ in
                 try await self.startVPNTunnel(protocol: .http, address: self.webProxyListenAddress)
               }
             }
-          }
 
-          g.addTask {
-            try await withSpan("SOCKS5") { _ in
-              if #available(SwiftStdlib 5.9, *) {
-                try await self.startVPNTunnel0(
-                  protocol: .socks5, address: self.socksProxyListenAddress)
-              } else {
+            g.addTask {
+              try await withSpan("SOCKS5") { _ in
                 try await self.startVPNTunnel(
                   protocol: .socks5, address: self.socksProxyListenAddress)
               }
             }
           }
-          try await g.waitForAll()
+        } else {
+          // Run and wait until all server channels closed.
+          try await withThrowingTaskGroup(of: Void.self) { g in
+            g.addTask {
+              try await withSpan("HTTP") { _ in
+                try await self.startVPNTunnelLegacy(
+                  protocol: .http, address: self.webProxyListenAddress)
+              }
+            }
+
+            g.addTask {
+              try await withSpan("SOCKS5") { _ in
+                try await self.startVPNTunnelLegacy(
+                  protocol: .socks5, address: self.socksProxyListenAddress)
+              }
+            }
+            try await g.waitForAll()
+          }
         }
       } catch {
         _isActive.store(false, ordering: .relaxed)
@@ -319,7 +333,8 @@ import Tracing
   ///   - protocol: The VPN protocol.
   ///   - address: The server for VPN tunnel to bind.
   /// - Returns: Started VPN tunnel and server quiescing helper pair.
-  private func startVPNTunnel(protocol: Proxy.`Protocol`, address: SocketAddress) async throws {
+  private func startVPNTunnelLegacy(protocol: Proxy.`Protocol`, address: SocketAddress) async throws
+  {
     let quiescing = ServerQuiescingHelper(group: eventLoopGroup)
 
     let bootstrap = ServerBootstrap(group: eventLoopGroup)
@@ -360,23 +375,25 @@ import Tracing
 
     let channel = try await bootstrap.bind(to: address).get()
 
-    guard let localAddress = channel.localAddress else {
+    guard let localAddress = try? channel.localAddress?.asAddress() else {
       fatalError(
         "Address was unable to bind. Please check that the socket was not closed or that the address family was understood."
       )
     }
 
     self.logger.info(
-      "\(processName) \(`protocol`.rawValue.uppercased()) server started and listening on \(localAddress)"
+      "\(processName) \(`protocol`.rawValue.uppercased()) started and listening on \(localAddress)"
     )
 
     self._quiescing.withLock {
       $0.append(quiescing)
     }
+
+    try await channel.closeFuture.get()
   }
 
   @available(SwiftStdlib 5.9, *)
-  private func startVPNTunnel0(protocol: Proxy.`Protocol`, address: SocketAddress) async throws {
+  private func startVPNTunnel(protocol: Proxy.`Protocol`, address: SocketAddress) async throws {
     let quiescing = ServerQuiescingHelper(group: eventLoopGroup)
 
     let channel = try await ServerBootstrap(group: eventLoopGroup)
@@ -772,8 +789,141 @@ import Tracing
           } while !session.state.isFinished
         }
 
+        // Setup HTTP capabilities pipeline
         try await inputStream.eventLoop.submit {
-          self.handleNewFlow((inputStream, outputStream, session))
+          // Because the capabilities may change, we need temporary variables to maintain
+          // capabilities consistency.
+          let capabilities = self.capabilities
+          let decryptionDNSNames = self.decryptionDNSNames
+          let decryptionSSLPKCS12Bundle = self.decryptionSSLPKCS12Bundle
+
+          inputStream.eventLoop.assertInEventLoop()
+
+          try? inputStream.pipeline.syncOperations.addHandler(
+            CharacteristicIdentificationHandler(recognizer: .tls) { result in
+              var mayBeTLS = false
+              if case .identified(let proto) = result {
+                mayBeTLS = proto == "TLS"
+              }
+              session.tls = mayBeTLS
+
+              // To continue the TLS decryption pipeline setup, we need to confirm that the
+              // current session contains a clear host name and is transmitted through TLS.
+              // At the same time, we must ensure that https decryption has been enabled and
+              // the relevant certificates used for decryption are valid.
+              guard mayBeTLS,
+                capabilities.contains(.httpsDecryption),
+                let decryptionSSLPKCS12Bundle,
+                let host = session.originalRequest?.host(percentEncoded: false)
+              else {
+                return inputStream.eventLoop.makeSucceededVoidFuture()
+              }
+
+              // Check whether the hostname should support TLS decryption.
+              let decryptionRequired = decryptionDNSNames.contains {
+                guard $0.hasPrefix("*.") else { return host == $0 }
+                return host.hasSuffix(String($0.dropFirst()))
+              }
+              guard decryptionRequired else {
+                return inputStream.eventLoop.makeSucceededVoidFuture()
+              }
+
+              return EventLoopFuture.andAllComplete(
+                [
+                  SSLContextCache.shared.sslContext(
+                    configuration: .makeServerConfiguration(
+                      certificateChain: decryptionSSLPKCS12Bundle.certificateChain.map {
+                        .certificate($0)
+                      },
+                      privateKey: .privateKey(decryptionSSLPKCS12Bundle.privateKey)
+                    ),
+                    eventLoop: inputStream.eventLoop,
+                    logger: self.logger
+                  )
+                  .flatMap { sslContext in
+                    inputStream.eventLoop.makeCompletedFuture {
+                      let position = try inputStream.pipeline.syncOperations.context(
+                        name: "_.capabilities.TLS"
+                      ).handler
+                      try inputStream.pipeline.syncOperations.addHandler(
+                        NIOSSLServerHandler(context: sslContext), position: .after(position)
+                      )
+                    }
+                  },
+
+                  // Because we have decrypted HTTPS stream, so we need set up client channel to encode decrypted
+                  // plain HTTP request to HTTPS request.
+                  SSLContextCache.shared.sslContext(
+                    configuration: .makeClientConfiguration(),
+                    eventLoop: outputStream.eventLoop,
+                    logger: self.logger
+                  )
+                  .flatMap { sslContext in
+                    outputStream.eventLoop.makeCompletedFuture {
+                      let handler = try NIOSSLClientHandler(
+                        context: sslContext, serverHostname: host)
+                      try outputStream.pipeline.syncOperations.addHandler(handler)
+                    }
+                  },
+                ], on: inputStream.eventLoop)
+            },
+            name: "_.capabilities.chk-TLS"
+          )
+
+          try? inputStream.pipeline.syncOperations.addHandler(
+            CharacteristicIdentificationHandler(recognizer: .http) { result in
+              var mayBeHTTP = false
+              if case .identified(let proto) = result {
+                mayBeHTTP = proto == "HTTP"
+              }
+
+              // Try to setup TLS decryption if current connection is over TLS and enabled
+              // capabilities contains httpsDecryption.
+              guard mayBeHTTP,
+                capabilities.contains(.httpCapture) || capabilities.contains(.rewrite)
+              else { return inputStream.eventLoop.makeSucceededVoidFuture() }
+
+              return EventLoopFuture.andAllComplete(
+                [
+                  inputStream.eventLoop.makeCompletedFuture {
+                    let position = try inputStream.pipeline.syncOperations.context(
+                      name: "_.capabilities.HTTP"
+                    ).handler
+                    try inputStream.pipeline.syncOperations.addHandlers(
+                      [
+                        HTTPResponseEncoder(),
+                        ByteToMessageHandler(HTTPRequestDecoder()),
+                        HTTPResponseCompressor(),
+                        __CapabilitiesProcessingHandler<HTTPRequestHead>(
+                          application: self,
+                          connection: session,
+                          enabledHTTPCapabilities: capabilities
+                        ),
+                      ], position: .after(position))
+                  },
+
+                  outputStream.eventLoop.makeCompletedFuture {
+                    try outputStream.pipeline.syncOperations.addHandlers([
+                      HTTPRequestEncoder(),
+                      ByteToMessageHandler(HTTPResponseDecoder()),
+                      NIOHTTPResponseDecompressor(limit: .none),
+                      __CapabilitiesProcessingHandler<HTTPResponseHead>(
+                        application: self,
+                        connection: session,
+                        enabledHTTPCapabilities: capabilities
+                      ),
+                    ])
+                  },
+                ], on: inputStream.eventLoop)
+            },
+            name: "_.capabilities.chk-HTTP"
+          )
+
+          // Exchange server and client data over GlueHandler.
+          let (localGlue, peerGlue) = GlueHandler.matchedPair()
+
+          try? inputStream.pipeline.syncOperations.addHandler(localGlue)
+          try? outputStream.pipeline.syncOperations.addHandlers(peerGlue)
         }.get()
         return (inputStream, outputStream, session)
       } catch {
@@ -786,142 +936,6 @@ import Tracing
         throw error
       }
     }
-  }
-
-  private func handleNewFlow(_ flow: Flow) {
-    // Because the capabilities may change, we need temporary variables to maintain
-    // capabilities consistency.
-    let capabilities = self.capabilities
-    let decryptionDNSNames = self.decryptionDNSNames
-    let decryptionSSLPKCS12Bundle = self.decryptionSSLPKCS12Bundle
-
-    flow.inputStream.eventLoop.assertInEventLoop()
-
-    let inputStream = flow.inputStream
-    let outputStream = flow.outputStream
-    let session = flow.session
-
-    try? inputStream.pipeline.syncOperations.addHandler(
-      CharacteristicIdentificationHandler(recognizer: .tls) { result in
-        var mayBeTLS = false
-        if case .identified(let proto) = result {
-          mayBeTLS = proto == "TLS"
-        }
-        session.tls = mayBeTLS
-
-        // To continue the TLS decryption pipeline setup, we need to confirm that the
-        // current session contains a clear host name and is transmitted through TLS.
-        // At the same time, we must ensure that https decryption has been enabled and
-        // the relevant certificates used for decryption are valid.
-        guard mayBeTLS,
-          capabilities.contains(.httpsDecryption),
-          let decryptionSSLPKCS12Bundle,
-          let host = session.originalRequest?.host(percentEncoded: false)
-        else {
-          return inputStream.eventLoop.makeSucceededVoidFuture()
-        }
-
-        // Check whether the hostname should support TLS decryption.
-        let decryptionRequired = decryptionDNSNames.contains {
-          guard $0.hasPrefix("*.") else { return host == $0 }
-          return host.hasSuffix(String($0.dropFirst()))
-        }
-        guard decryptionRequired else { return inputStream.eventLoop.makeSucceededVoidFuture() }
-
-        return EventLoopFuture.andAllComplete(
-          [
-            SSLContextCache.shared.sslContext(
-              configuration: .makeServerConfiguration(
-                certificateChain: decryptionSSLPKCS12Bundle.certificateChain.map {
-                  .certificate($0)
-                },
-                privateKey: .privateKey(decryptionSSLPKCS12Bundle.privateKey)
-              ),
-              eventLoop: inputStream.eventLoop,
-              logger: self.logger
-            )
-            .flatMap { sslContext in
-              inputStream.eventLoop.makeCompletedFuture {
-                let position = try inputStream.pipeline.syncOperations.context(
-                  name: "_.capabilities.TLS"
-                ).handler
-                try inputStream.pipeline.syncOperations.addHandler(
-                  NIOSSLServerHandler(context: sslContext), position: .after(position)
-                )
-              }
-            },
-
-            // Because we have decrypted HTTPS stream, so we need set up client channel to encode decrypted
-            // plain HTTP request to HTTPS request.
-            SSLContextCache.shared.sslContext(
-              configuration: .makeClientConfiguration(),
-              eventLoop: outputStream.eventLoop,
-              logger: self.logger
-            )
-            .flatMap { sslContext in
-              outputStream.eventLoop.makeCompletedFuture {
-                let handler = try NIOSSLClientHandler(context: sslContext, serverHostname: host)
-                try outputStream.pipeline.syncOperations.addHandler(handler)
-              }
-            },
-          ], on: inputStream.eventLoop)
-      },
-      name: "_.capabilities.chk-TLS"
-    )
-
-    try? inputStream.pipeline.syncOperations.addHandler(
-      CharacteristicIdentificationHandler(recognizer: .http) { result in
-        var mayBeHTTP = false
-        if case .identified(let proto) = result {
-          mayBeHTTP = proto == "HTTP"
-        }
-
-        // Try to setup TLS decryption if current connection is over TLS and enabled
-        // capabilities contains httpsDecryption.
-        guard mayBeHTTP, capabilities.contains(.httpCapture) || capabilities.contains(.rewrite)
-        else { return inputStream.eventLoop.makeSucceededVoidFuture() }
-
-        return EventLoopFuture.andAllComplete(
-          [
-            inputStream.eventLoop.makeCompletedFuture {
-              let position = try inputStream.pipeline.syncOperations.context(
-                name: "_.capabilities.HTTP"
-              ).handler
-              try inputStream.pipeline.syncOperations.addHandlers(
-                [
-                  HTTPResponseEncoder(),
-                  ByteToMessageHandler(HTTPRequestDecoder()),
-                  HTTPResponseCompressor(),
-                  __CapabilitiesProcessingHandler<HTTPRequestHead>(
-                    application: self,
-                    connection: session,
-                    enabledHTTPCapabilities: capabilities
-                  ),
-                ], position: .after(position))
-            },
-
-            outputStream.eventLoop.makeCompletedFuture {
-              try outputStream.pipeline.syncOperations.addHandlers([
-                HTTPRequestEncoder(),
-                ByteToMessageHandler(HTTPResponseDecoder()),
-                NIOHTTPResponseDecompressor(limit: .none),
-                __CapabilitiesProcessingHandler<HTTPResponseHead>(
-                  application: self,
-                  connection: session,
-                  enabledHTTPCapabilities: capabilities
-                ),
-              ])
-            },
-          ], on: inputStream.eventLoop)
-      },
-      name: "_.capabilities.chk-HTTP"
-    )
-
-    // Exchange server and client data over GlueHandler.
-    let (localGlue, peerGlue) = GlueHandler.matchedPair()
-
-    try? inputStream.pipeline.syncOperations.addHandler(localGlue)
-    try? outputStream.pipeline.syncOperations.addHandlers(peerGlue)
   }
 
   deinit {
