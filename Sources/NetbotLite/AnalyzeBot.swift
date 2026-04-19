@@ -238,7 +238,31 @@ import Tracing
         _isActive.store(true, ordering: .relaxed)
         _closePromise.withLock { $0 = eventLoopGroup.any().makePromise() }
 
-        try await startVPNTunnel()
+        // Run and wait until all server channels closed.
+        try await withThrowingTaskGroup(of: Void.self) { g in
+          g.addTask {
+            try await withSpan("HTTP") { _ in
+              if #available(SwiftStdlib 5.9, *) {
+                try await self.startVPNTunnel0(protocol: .http, address: self.webProxyListenAddress)
+              } else {
+                try await self.startVPNTunnel(protocol: .http, address: self.webProxyListenAddress)
+              }
+            }
+          }
+
+          g.addTask {
+            try await withSpan("SOCKS5") { _ in
+              if #available(SwiftStdlib 5.9, *) {
+                try await self.startVPNTunnel0(
+                  protocol: .socks5, address: self.socksProxyListenAddress)
+              } else {
+                try await self.startVPNTunnel(
+                  protocol: .socks5, address: self.socksProxyListenAddress)
+              }
+            }
+          }
+          try await g.waitForAll()
+        }
       } catch {
         _isActive.store(false, ordering: .relaxed)
         _closePromise.withLock { $0?.fail(error) }
@@ -286,26 +310,6 @@ import Tracing
     logger.trace("\(processName) fully shutdown complete.")
   }
 
-  private func startVPNTunnel() async throws {
-    assert(isActive, "\(processName) VPN tunnel already started.")
-
-    // Run and wait until all server channels closed.
-    try await withThrowingTaskGroup(of: Void.self) { g in
-      g.addTask {
-        try await withSpan("HTTP") { _ in
-          try await self.startVPNTunnel(protocol: .http, address: self.webProxyListenAddress)
-        }
-      }
-
-      g.addTask {
-        try await withSpan("SOCKS5") { _ in
-          try await self.startVPNTunnel(protocol: .socks5, address: self.socksProxyListenAddress)
-        }
-      }
-      try await g.waitForAll()
-    }
-  }
-
   private typealias Flow = (
     inputStream: any Channel, outputStream: any Channel, session: Connection
   )
@@ -330,82 +334,27 @@ import Tracing
       }
       .childChannelOption(ChannelOptions.tcpOption(.tcp_nodelay), value: 1)
       .childChannelInitializer { serverChildChannel in
-        let eventLoop = serverChildChannel.eventLoop
-
-        let task: @Sendable (Request) async throws -> Flow = { originalRequest in
-          try await withSpan("initialize VPN request") { span in
-            let session = Connection()
-            do {
-              session.originalRequest = originalRequest
-              guard let sourceEndpoint = try serverChildChannel.remoteAddress?.asAddress() else {
-                throw AnalyzeError.inputStreamEndpointInvalid
-              }
-              session.establishmentReport = EstablishmentReport(
-                duration: 0,
-                attemptStartedAfterInterval: 0,
-                previousAttemptCount: 0,
-                sourceEndpoint: sourceEndpoint,
-                usedProxy: false,
-                proxyEndpoint: nil,
-                resolutions: []
-              )
-
-              Task {
-                // Publish initial state of session.
-                await self.connectionPublisher.send(session)
-
-                repeat {
-                  try await Task.sleep(nanoseconds: 1_000_000_000)
-                  session._duration += 1
-
-                  // Publish session changes.
-                  await self.connectionPublisher.send(session)
-                } while !session.state.isFinished
-
-                // Reset the data transfer report metrics and publish changes.
-                session._dataTransferReport.withLock { $0?.pathReport = .init() }
-                await self.connectionPublisher.send(session)
-              }
-
-              try await self.forwardProtocolLookup(session: session)
-
-              return try await self.initializeVPNTunnel(
-                forTarget: session,
-                eventLoop: eventLoop,
-                inputStream: serverChildChannel
-              )
-            } catch {
-              session._duration = -session.earliestBeginDate.timeIntervalSinceNow
-              session.state = .failed
-              self.logger.error(
-                "Connection failure with error: \(error)",
-                metadata: session.metadata
-              )
-              throw error
-            }
-          }
-        }
-
-        let future: EventLoopFuture<EventLoopFuture<Flow>>
         switch `protocol` {
         case .http:
-          future = serverChildChannel.configureHTTPTunnelPipeline { version, req in
-            eventLoop.makeFutureWithTask {
-              try await task(.init(httpRequest: req))
+          return serverChildChannel.configureHTTPTunnelPipeline { version, req in
+            serverChildChannel.eventLoop.makeFutureWithTask {
+              try await self.initializeFlow(
+                serverChildChannel, originalRequest: .init(httpRequest: req))
             }
+          }
+          .flatMap { _ in
+            serverChildChannel.eventLoop.makeSucceededVoidFuture()
           }
         case .socks5:
-          future = serverChildChannel.configureSOCKS5Pipeline { address in
-            eventLoop.makeFutureWithTask {
-              try await task(.init(address: address))
+          return serverChildChannel.configureSOCKS5Pipeline { address in
+            serverChildChannel.eventLoop.makeFutureWithTask {
+              try await self.initializeFlow(
+                serverChildChannel, originalRequest: .init(address: address))
             }
           }
-        }
-
-        return future.flatMap { flow in
-          self.handleNewFlow(flow)
-          // Return succeeded void future to non blocking channel initializing.
-          return eventLoop.makeSucceededVoidFuture()
+          .flatMap { _ in
+            serverChildChannel.eventLoop.makeSucceededVoidFuture()
+          }
         }
       }
 
@@ -423,6 +372,63 @@ import Tracing
 
     self._quiescing.withLock {
       $0.append(quiescing)
+    }
+  }
+
+  @available(SwiftStdlib 5.9, *)
+  private func startVPNTunnel0(protocol: Proxy.`Protocol`, address: SocketAddress) async throws {
+    let quiescing = ServerQuiescingHelper(group: eventLoopGroup)
+
+    let channel = try await ServerBootstrap(group: eventLoopGroup)
+      .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
+      .serverChannelOption(ChannelOptions.socketOption(.init(rawValue: SO_REUSEPORT)), value: 1)
+      .serverChannelInitializer { channel in
+        channel.eventLoop.makeCompletedFuture {
+          try channel.pipeline.syncOperations.addHandler(
+            quiescing.makeServerChannelHandler(channel: channel)
+          )
+        }
+      }
+      .childChannelOption(ChannelOptions.tcpOption(.tcp_nodelay), value: 1)
+      .bind(to: address) { channel in
+        switch `protocol` {
+        case .http:
+          return channel.configureHTTPTunnelPipeline { version, req in
+            channel.eventLoop.makeFutureWithTask {
+              try await self.initializeFlow(channel, originalRequest: .init(httpRequest: req))
+            }
+          }
+        case .socks5:
+          return channel.configureSOCKS5Pipeline { address in
+            channel.eventLoop.makeFutureWithTask {
+              try await self.initializeFlow(channel, originalRequest: .init(address: address))
+            }
+          }
+        }
+      }
+
+    guard let localAddress = try? channel.channel.localAddress?.asAddress() else {
+      fatalError(
+        "Address was unable to bind. Please check that the socket was not closed or that the address family was understood."
+      )
+    }
+
+    self.logger.info(
+      "\(processName) \(`protocol`.rawValue.uppercased()) started and listening on \(localAddress)"
+    )
+
+    self._quiescing.withLock {
+      $0.append(quiescing)
+    }
+
+    try await withThrowingDiscardingTaskGroup { g in
+      try await channel.executeThenClose { inbound in
+        for try await flowFuture in inbound {
+          g.addTask {
+
+          }
+        }
+      }
     }
   }
 
@@ -659,192 +665,263 @@ import Tracing
     }
   }
 
-  /// Initialize client channel for target on eventLoop.
-  private func initializeVPNTunnel(
-    forTarget session: Connection,
-    eventLoop: some EventLoop,
-    inputStream: any Channel
-  ) async throws -> Flow {
-    try await withSpan("initialize VPN tunnel") { span in
-      // Create peer channel.
-      let forwardProtocol =
-        session.forwardingReport?._forwardProtocol as? ForwardProtocol ?? .direct
+  private func initializeFlow(_ inputStream: any Channel, originalRequest: Request) async throws
+    -> Flow
+  {
+    try await withSpan("initialize Proxy Flow") { span in
+      let session = Connection()
+      do {
+        session.originalRequest = originalRequest
+        guard let sourceEndpoint = try inputStream.remoteAddress?.asAddress() else {
+          throw AnalyzeError.inputStreamEndpointInvalid
+        }
+        session.establishmentReport = EstablishmentReport(
+          duration: 0,
+          attemptStartedAfterInterval: 0,
+          previousAttemptCount: 0,
+          sourceEndpoint: sourceEndpoint,
+          usedProxy: false,
+          proxyEndpoint: nil,
+          resolutions: []
+        )
 
-      let outputStream = try await forwardProtocol.makeConnection(
-        logger: logger, connection: session, on: eventLoop
-      )
+        Task {
+          // Publish initial state of session.
+          await self.connectionPublisher.send(session)
 
-      session.state = .active
+          repeat {
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            session._duration += 1
 
-      await withSpan("establishment-report gen") { _ in
-        // Once channel connected, we can request establishment report.
-        // Error will be ignored, we don't want connection closed by establishment report
-        // generation error.
-        let establishmentReport = try? await outputStream.establishmentReport().get()
-        if let establishmentReport {
-          session._establishmentReport.withLock {
-            assert($0 != nil)
+            // Publish session changes.
+            await self.connectionPublisher.send(session)
+          } while !session.state.isFinished
 
-            // `EstablishmentReport.sourceEndpoint` is requested from server channel, but
-            // establishment report is requested from client channel, so we need update sourceEndpoint
-            // to use original value.
-            let usedProxy = $0?.usedProxy ?? false
+          // Reset the data transfer report metrics and publish changes.
+          session._dataTransferReport.withLock { $0?.pathReport = .init() }
+          await self.connectionPublisher.send(session)
+        }
 
-            $0?._duration = establishmentReport._duration
-            $0?.attemptStartedAfterInterval = establishmentReport.attemptStartedAfterInterval
-            $0?.previousAttemptCount = establishmentReport.previousAttemptCount
-            $0?.proxyEndpoint = usedProxy ? (try? outputStream.remoteAddress?.asAddress()) : nil
-            $0?.resolutions = establishmentReport.resolutions
+        try await self.forwardProtocolLookup(session: session)
+
+        // Create peer channel.
+        let forwardProtocol =
+          session.forwardingReport?._forwardProtocol as? ForwardProtocol ?? .direct
+
+        let outputStream = try await forwardProtocol.makeConnection(
+          logger: logger, connection: session, on: inputStream.eventLoop.any()
+        )
+
+        session.state = .active
+
+        await withSpan("establishment-report gen") { _ in
+          // Once channel connected, we can request establishment report.
+          // Error will be ignored, we don't want connection closed by establishment report
+          // generation error.
+          let establishmentReport = try? await outputStream.establishmentReport().get()
+          if let establishmentReport {
+            session._establishmentReport.withLock {
+              assert($0 != nil)
+
+              // `EstablishmentReport.sourceEndpoint` is requested from server channel, but
+              // establishment report is requested from client channel, so we need update sourceEndpoint
+              // to use original value.
+              let usedProxy = $0?.usedProxy ?? false
+
+              $0?._duration = establishmentReport._duration
+              $0?.attemptStartedAfterInterval = establishmentReport.attemptStartedAfterInterval
+              $0?.previousAttemptCount = establishmentReport.previousAttemptCount
+              $0?.proxyEndpoint = usedProxy ? (try? outputStream.remoteAddress?.asAddress()) : nil
+              $0?.resolutions = establishmentReport.resolutions
+            }
           }
         }
+
+        Task {
+          assert(session.dataTransferReport == nil)
+
+          repeat {
+            guard let collector = try? await outputStream.pendingDataTransferReport().get() else {
+              // There are two situations that prevent us from geting the pending
+              // data transfer report, The first is that the channel has been closed,
+              // and the second is that the channel.connection is missing. Both
+              // situations indicate that the connection has ended, so we mark it
+              // `completed` here.
+              session._duration = -session.earliestBeginDate.timeIntervalSinceNow
+              session.state = .completed
+              break
+            }
+
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            let currentDataTransferReport = try await outputStream.dataTransferReport(collector)
+              .get()
+            if let dataTransferReport = session.dataTransferReport {
+              session.dataTransferReport = .init(
+                duration: dataTransferReport._duration + currentDataTransferReport._duration,
+                aggregatePathReport: dataTransferReport.aggregatePathReport
+                  &+ currentDataTransferReport.aggregatePathReport,
+                pathReport: currentDataTransferReport.aggregatePathReport
+              )
+            } else {
+              session.dataTransferReport = .init(
+                duration: currentDataTransferReport._duration,
+                aggregatePathReport: currentDataTransferReport.aggregatePathReport,
+                pathReport: currentDataTransferReport.aggregatePathReport
+              )
+            }
+          } while !session.state.isFinished
+        }
+
+        try await inputStream.eventLoop.submit {
+          self.handleNewFlow((inputStream, outputStream, session))
+        }.get()
+        return (inputStream, outputStream, session)
+      } catch {
+        session._duration = -session.earliestBeginDate.timeIntervalSinceNow
+        session.state = .failed
+        self.logger.error(
+          "Connection failure with error: \(error)",
+          metadata: session.metadata
+        )
+        throw error
       }
-
-      Task {
-        assert(session.dataTransferReport == nil)
-
-        repeat {
-          guard let collector = try? await outputStream.pendingDataTransferReport().get() else {
-            // There are two situations that prevent us from geting the pending
-            // data transfer report, The first is that the channel has been closed,
-            // and the second is that the channel.connection is missing. Both
-            // situations indicate that the connection has ended, so we mark it
-            // `completed` here.
-            session._duration = -session.earliestBeginDate.timeIntervalSinceNow
-            session.state = .completed
-            break
-          }
-
-          try await Task.sleep(nanoseconds: 1_000_000_000)
-          let currentDataTransferReport = try await outputStream.dataTransferReport(collector).get()
-          if let dataTransferReport = session.dataTransferReport {
-            session.dataTransferReport = .init(
-              duration: dataTransferReport._duration + currentDataTransferReport._duration,
-              aggregatePathReport: dataTransferReport.aggregatePathReport
-                &+ currentDataTransferReport.aggregatePathReport,
-              pathReport: currentDataTransferReport.aggregatePathReport
-            )
-          } else {
-            session.dataTransferReport = .init(
-              duration: currentDataTransferReport._duration,
-              aggregatePathReport: currentDataTransferReport.aggregatePathReport,
-              pathReport: currentDataTransferReport.aggregatePathReport
-            )
-          }
-        } while !session.state.isFinished
-      }
-
-      return (inputStream, outputStream, session)
     }
   }
 
-  private func handleNewFlow(_ flowFuture: EventLoopFuture<Flow>) {
-    flowFuture.whenSuccess { flow in
-      // Because the capabilities may change, we need temporary variables to maintain
-      // capabilities consistency.
-      let capabilities = self.capabilities
+  private func handleNewFlow(_ flow: Flow) {
+    // Because the capabilities may change, we need temporary variables to maintain
+    // capabilities consistency.
+    let capabilities = self.capabilities
+    let decryptionDNSNames = self.decryptionDNSNames
+    let decryptionSSLPKCS12Bundle = self.decryptionSSLPKCS12Bundle
 
-      flow.inputStream.eventLoop.assertInEventLoop()
+    flow.inputStream.eventLoop.assertInEventLoop()
 
-      // Detect whether current connection is a TLS connection.
-      try? flow.inputStream.pipeline.syncOperations.addHandler(
-        CharacteristicIdentificationHandler(recognizer: .tls) { result in
-          flow.inputStream.eventLoop.makeFutureWithTask {
-            var mayBeTLS = false
-            if case .identified(let proto) = result {
-              mayBeTLS = proto == "TLS"
-              flow.session.tls = mayBeTLS
-            }
+    let inputStream = flow.inputStream
+    let outputStream = flow.outputStream
+    let session = flow.session
 
-            // Try to setup TLS decryption if current connection is over TLS and enabled
-            // capabilities contains httpsDecryption.
-            if mayBeTLS && capabilities.contains(.httpsDecryption),
-              let decryptionSSLPKCS12Bundle = self.decryptionSSLPKCS12Bundle
-            {
-              try await flow.inputStream.configureTLSMitMPipeline(
-                logger: self.logger,
-                connection: flow.session,
-                decryptionDNSNames: self.decryptionDNSNames,
-                decryptionSSLPKCS12Bundle: decryptionSSLPKCS12Bundle
-              ).get()
-
-              try await flow.outputStream.configureTLSMitMPipeline(
-                logger: self.logger,
-                connection: flow.session,
-                decryptionDNSNames: self.decryptionDNSNames
-              ).get()
-            }
-
-            // Detect whether current connection is a HTTP connection.
-            try await flow.inputStream.eventLoop.submit {
-              try flow.inputStream.pipeline.syncOperations.addHandler(
-                CharacteristicIdentificationHandler(recognizer: .http) { result in
-                  flow.inputStream.eventLoop.makeFutureWithTask {
-                    let mayBeHTTP: Bool
-                    if case .identified(let proto) = result {
-                      mayBeHTTP = proto == "HTTP"
-                    } else {
-                      mayBeHTTP = false
-                    }
-
-                    // Exchange server and client data over GlueHandler.
-                    let (localGlue, peerGlue) = GlueHandler.matchedPair()
-
-                    // Configure pipeline to parse HTTP request/response.
-                    try await flow.inputStream.eventLoop.submit {
-                      var handlers: [any ChannelHandler] = []
-
-                      if mayBeHTTP {
-                        handlers = [
-                          HTTPResponseEncoder(),
-                          ByteToMessageHandler(HTTPRequestDecoder()),
-                          HTTPResponseCompressor(),
-                          __CapabilitiesProcessingHandler<HTTPRequestHead>(
-                            application: self,
-                            connection: flow.session,
-                            enabledHTTPCapabilities: capabilities
-                          ),
-                        ]
-                      }
-
-                      handlers.append(localGlue)
-
-                      for handler in handlers {
-                        try flow.inputStream.pipeline.syncOperations.addHandler(
-                          handler, name: "LRS -")
-                      }
-                    }.get()
-
-                    try await flow.outputStream.eventLoop.submit {
-                      var handlers: [any ChannelHandler] = []
-
-                      if mayBeHTTP {
-                        handlers = [
-                          HTTPRequestEncoder(),
-                          ByteToMessageHandler(HTTPResponseDecoder()),
-                          NIOHTTPResponseDecompressor(limit: .none),
-                          __CapabilitiesProcessingHandler<HTTPResponseHead>(
-                            application: self,
-                            connection: flow.session,
-                            enabledHTTPCapabilities: capabilities
-                          ),
-                        ]
-                      }
-
-                      handlers.append(peerGlue)
-
-                      for handler in handlers {
-                        try flow.outputStream.pipeline.syncOperations.addHandler(
-                          handler, name: "LRC -")
-                      }
-                    }.get()
-                  }
-                }
-              )
-            }.get()
-          }
+    try? inputStream.pipeline.syncOperations.addHandler(
+      CharacteristicIdentificationHandler(recognizer: .tls) { result in
+        var mayBeTLS = false
+        if case .identified(let proto) = result {
+          mayBeTLS = proto == "TLS"
         }
-      )
-    }
+        session.tls = mayBeTLS
+
+        // To continue the TLS decryption pipeline setup, we need to confirm that the
+        // current session contains a clear host name and is transmitted through TLS.
+        // At the same time, we must ensure that https decryption has been enabled and
+        // the relevant certificates used for decryption are valid.
+        guard mayBeTLS,
+          capabilities.contains(.httpsDecryption),
+          let decryptionSSLPKCS12Bundle,
+          let host = session.originalRequest?.host(percentEncoded: false)
+        else {
+          return inputStream.eventLoop.makeSucceededVoidFuture()
+        }
+
+        // Check whether the hostname should support TLS decryption.
+        let decryptionRequired = decryptionDNSNames.contains {
+          guard $0.hasPrefix("*.") else { return host == $0 }
+          return host.hasSuffix(String($0.dropFirst()))
+        }
+        guard decryptionRequired else { return inputStream.eventLoop.makeSucceededVoidFuture() }
+
+        return EventLoopFuture.andAllComplete(
+          [
+            SSLContextCache.shared.sslContext(
+              configuration: .makeServerConfiguration(
+                certificateChain: decryptionSSLPKCS12Bundle.certificateChain.map {
+                  .certificate($0)
+                },
+                privateKey: .privateKey(decryptionSSLPKCS12Bundle.privateKey)
+              ),
+              eventLoop: inputStream.eventLoop,
+              logger: self.logger
+            )
+            .flatMap { sslContext in
+              inputStream.eventLoop.makeCompletedFuture {
+                let position = try inputStream.pipeline.syncOperations.context(
+                  name: "_.capabilities.TLS"
+                ).handler
+                try inputStream.pipeline.syncOperations.addHandler(
+                  NIOSSLServerHandler(context: sslContext), position: .after(position)
+                )
+              }
+            },
+
+            // Because we have decrypted HTTPS stream, so we need set up client channel to encode decrypted
+            // plain HTTP request to HTTPS request.
+            SSLContextCache.shared.sslContext(
+              configuration: .makeClientConfiguration(),
+              eventLoop: outputStream.eventLoop,
+              logger: self.logger
+            )
+            .flatMap { sslContext in
+              outputStream.eventLoop.makeCompletedFuture {
+                let handler = try NIOSSLClientHandler(context: sslContext, serverHostname: host)
+                try outputStream.pipeline.syncOperations.addHandler(handler)
+              }
+            },
+          ], on: inputStream.eventLoop)
+      },
+      name: "_.capabilities.chk-TLS"
+    )
+
+    try? inputStream.pipeline.syncOperations.addHandler(
+      CharacteristicIdentificationHandler(recognizer: .http) { result in
+        var mayBeHTTP = false
+        if case .identified(let proto) = result {
+          mayBeHTTP = proto == "HTTP"
+        }
+
+        // Try to setup TLS decryption if current connection is over TLS and enabled
+        // capabilities contains httpsDecryption.
+        guard mayBeHTTP, capabilities.contains(.httpCapture) || capabilities.contains(.rewrite)
+        else { return inputStream.eventLoop.makeSucceededVoidFuture() }
+
+        return EventLoopFuture.andAllComplete(
+          [
+            inputStream.eventLoop.makeCompletedFuture {
+              let position = try inputStream.pipeline.syncOperations.context(
+                name: "_.capabilities.HTTP"
+              ).handler
+              try inputStream.pipeline.syncOperations.addHandlers(
+                [
+                  HTTPResponseEncoder(),
+                  ByteToMessageHandler(HTTPRequestDecoder()),
+                  HTTPResponseCompressor(),
+                  __CapabilitiesProcessingHandler<HTTPRequestHead>(
+                    application: self,
+                    connection: session,
+                    enabledHTTPCapabilities: capabilities
+                  ),
+                ], position: .after(position))
+            },
+
+            outputStream.eventLoop.makeCompletedFuture {
+              try outputStream.pipeline.syncOperations.addHandlers([
+                HTTPRequestEncoder(),
+                ByteToMessageHandler(HTTPResponseDecoder()),
+                NIOHTTPResponseDecompressor(limit: .none),
+                __CapabilitiesProcessingHandler<HTTPResponseHead>(
+                  application: self,
+                  connection: session,
+                  enabledHTTPCapabilities: capabilities
+                ),
+              ])
+            },
+          ], on: inputStream.eventLoop)
+      },
+      name: "_.capabilities.chk-HTTP"
+    )
+
+    // Exchange server and client data over GlueHandler.
+    let (localGlue, peerGlue) = GlueHandler.matchedPair()
+
+    try? inputStream.pipeline.syncOperations.addHandler(localGlue)
+    try? outputStream.pipeline.syncOperations.addHandlers(peerGlue)
   }
 
   deinit {
