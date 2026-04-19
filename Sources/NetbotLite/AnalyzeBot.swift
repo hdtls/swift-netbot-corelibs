@@ -64,7 +64,7 @@ import Tracing
 
   /// Forward protocol used in global proxy outbound mode.
   @LockableTracked(accessors: .get)
-  final public var forwardProtocol: (any ForwardProtocolConvertible)
+  final public var forwardProtocol: any ForwardProtocolConvertible
 
   /// The rules used to make outbound stream.
   final public var forwardingRules: [any ForwardingRuleConvertible] {
@@ -77,19 +77,19 @@ import Tracing
 
   /// The dns resolver.
   @LockableTracked(accessors: .get)
-  final public var resolver: Resolver
+  final public var resolver: any Resolver
 
   /// The RulesEngine evaluates the Rules.
   @LockableTracked(accessors: .get)
-  final public var rulesEngine: RulesEngine
+  final public var rulesEngine: any RulesEngine
 
   /// A service help detect the process that the current connection is created.
   @LockableTracked(accessors: .get)
-  final public var processInfo: ProcessReporting
+  final public var processInfo: any ProcessReporting
 
   /// A publisher publish connection states.
   @LockableTracked(accessors: .get)
-  final public var connectionPublisher: ConnectionPublisher
+  final public var connectionPublisher: any ConnectionPublisher
 
   /// DNS names that allow HTTPS decryption.
   @LockableTracked(accessors: .get)
@@ -197,7 +197,7 @@ import Tracing
 
   /// Modify default connection publisher.
   public func setConnectionPublisher(_ publisher: ConnectionPublisher) async {
-    self._connectionPublisher.withLock { $0 = connectionPublisher }
+    self._connectionPublisher.withLock { $0 = publisher }
   }
 
   /// Modify HTTPS decryption PKCS#12 bundle.
