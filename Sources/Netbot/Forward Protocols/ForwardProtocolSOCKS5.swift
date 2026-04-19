@@ -153,7 +153,7 @@ extension ForwardProtocolSOCKS5: ProxiableForwardProtocol {
 
     switch alpn {
     case .negotiated("http/1.1"), .fallback:
-      finalize = try await channel.configureSOCKS5Pipeline(
+      finalize = try await channel.configureSOCKSConnectionPipeline(
         username: username,
         passwordReference: passwordReference,
         authenticationRequired: authenticationRequired,

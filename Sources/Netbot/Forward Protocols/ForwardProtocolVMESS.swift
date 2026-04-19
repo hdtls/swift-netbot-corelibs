@@ -187,7 +187,7 @@ extension ForwardProtocolVMESS: ProxiableForwardProtocol {
         _ = try await finalize.get()
       }
 
-      finalize = try await channel.configureVMESSPipeline(
+      finalize = try await channel.configureVMESSConnectionPipeline(
         contentSecurity: .aes128Gcm,
         user: userID,
         destinationAddress: destinationAddress

@@ -146,7 +146,9 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
               to: .hostPort(host: "127.0.0.1", port: .init(rawValue: UInt16(source.port ?? 0)))
             )
 
-            try await channel.configureSOCKS5Pipeline(destinationAddress: destinationAddress) {
+            try await channel.configureSOCKSConnectionPipeline(
+              destinationAddress: destinationAddress
+            ) {
               channel.pipeline.addHandler(ResponseHandler(connection: connection))
             }
             .get()

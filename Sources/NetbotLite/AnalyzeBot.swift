@@ -351,7 +351,7 @@ import Tracing
       .childChannelInitializer { serverChildChannel in
         switch `protocol` {
         case .http:
-          return serverChildChannel.configureHTTPTunnelPipeline { version, req in
+          return serverChildChannel.configureHTTPListenerPipeline { version, req in
             serverChildChannel.eventLoop.makeFutureWithTask {
               try await self.initializeFlow(
                 serverChildChannel, originalRequest: .init(httpRequest: req))
@@ -361,7 +361,7 @@ import Tracing
             serverChildChannel.eventLoop.makeSucceededVoidFuture()
           }
         case .socks5:
-          return serverChildChannel.configureSOCKS5Pipeline { address in
+          return serverChildChannel.configureSOCKSListenerPipeline { address in
             serverChildChannel.eventLoop.makeFutureWithTask {
               try await self.initializeFlow(
                 serverChildChannel, originalRequest: .init(address: address))
@@ -410,13 +410,13 @@ import Tracing
       .bind(to: address) { channel in
         switch `protocol` {
         case .http:
-          return channel.configureHTTPTunnelPipeline { version, req in
+          return channel.configureHTTPListenerPipeline { version, req in
             channel.eventLoop.makeFutureWithTask {
               try await self.initializeFlow(channel, originalRequest: .init(httpRequest: req))
             }
           }
         case .socks5:
-          return channel.configureSOCKS5Pipeline { address in
+          return channel.configureSOCKSListenerPipeline { address in
             channel.eventLoop.makeFutureWithTask {
               try await self.initializeFlow(channel, originalRequest: .init(address: address))
             }

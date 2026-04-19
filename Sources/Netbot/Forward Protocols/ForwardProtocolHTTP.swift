@@ -145,7 +145,7 @@ extension ForwardProtocolHTTP: ProxiableForwardProtocol {
 
     switch alpn {
     case .negotiated("http/1.1"), .fallback:
-      finalize = try await channel.configureHTTPTunnelPipeline(
+      finalize = try await channel.configureHTTPConnectionPipeline(
         authenticationRequired: authenticationRequired,
         passwordReference: passwordReference,
         destinationAddress: destinationAddress

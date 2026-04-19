@@ -102,7 +102,7 @@ extension ForwardProtocolSS: ProxiableForwardProtocol {
       }
     #endif
     return try await bootstrap.connect(to: destination) { channel in
-      channel.configureSSPipeline(
+      channel.configureSSConnectionPipeline(
         algorithm: algorithm,
         passwordReference: passwordReference,
         destinationAddress: destinationAddress
