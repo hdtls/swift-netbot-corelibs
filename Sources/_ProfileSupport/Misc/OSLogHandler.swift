@@ -56,10 +56,10 @@
 
     public func log(event: LogEvent) {
       let effectiveMetadata = OSLogHandler.prepareMetadata(
-        base: self.metadata, provider: self.metadataProvider, explicit: metadata)
+        base: self.metadata, provider: self.metadataProvider, explicit: event.metadata)
 
       let prettyMetadata: String?
-      if let effectiveMetadata = effectiveMetadata {
+      if let effectiveMetadata {
         prettyMetadata = self.prettify(effectiveMetadata)
       } else {
         prettyMetadata = self.prettyMetadata
