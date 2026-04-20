@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Logging
 import NIOCore
@@ -38,7 +38,7 @@ import Testing
       logger: .init(label: "")
     )
 
-    #expect(application.processInfo as? DefaultProcessReporting != nil)
+    #expect(application.processInfo is DefaultProcessReporting)
     let p = try await application.processInfo.processInfo(connection: .init())
     #expect(p == .init())
   }

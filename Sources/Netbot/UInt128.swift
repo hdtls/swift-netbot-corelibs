@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,9 +10,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
@@ -22,7 +22,7 @@
 // See https://swift.org/LICENSE.txt for license information
 // See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 // swift-format-ignore-file
 
@@ -297,17 +297,15 @@
     internal func index(before i: Int) -> Int { i - 1 }
 
     internal subscript(position: Int) -> UInt {
-      get {
-        _precondition(
-          position >= 0 && position < endIndex,
-          "Word index out of range")
-        let shift = position &* UInt.bitWidth
-        _internalInvariant(shift < _UInt128.bitWidth)
+      _precondition(
+        position >= 0 && position < endIndex,
+        "Word index out of range")
+      let shift = position &* UInt.bitWidth
+      _internalInvariant(shift < _UInt128.bitWidth)
 
-        let r = _wideMaskedShiftRight(
-          _value.components, UInt64(truncatingIfNeeded: shift))
-        return r.low._lowWord
-      }
+      let r = _wideMaskedShiftRight(
+        _value.components, UInt64(truncatingIfNeeded: shift))
+      return r.low._lowWord
     }
   }
 
@@ -854,17 +852,15 @@
     internal func index(before i: Int) -> Int { i - 1 }
 
     internal subscript(position: Int) -> UInt {
-      get {
-        _precondition(
-          position >= 0 && position < endIndex,
-          "Word index out of range")
-        let shift = position &* UInt.bitWidth
-        _internalInvariant(shift < _Int128.bitWidth)
+      _precondition(
+        position >= 0 && position < endIndex,
+        "Word index out of range")
+      let shift = position &* UInt.bitWidth
+      _internalInvariant(shift < _Int128.bitWidth)
 
-        let r = _wideMaskedShiftRight(
-          _value.components, UInt64(truncatingIfNeeded: shift))
-        return r.low._lowWord
-      }
+      let r = _wideMaskedShiftRight(
+        _value.components, UInt64(truncatingIfNeeded: shift))
+      return r.low._lowWord
     }
   }
 

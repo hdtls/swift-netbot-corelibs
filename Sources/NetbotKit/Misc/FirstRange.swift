@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import _ProfileSupport
 
@@ -39,7 +39,7 @@ extension Array where Element == Substring {
       guard self[end - 1]._trimmingWhitespaces().isEmpty else {
         break
       }
-      end = end - 1
+      end -= 1
     }
 
     return start...end

@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import NEAddressProcessing
 import NIOCore
@@ -854,10 +854,10 @@ public struct Question: Hashable, Sendable {
   }
 }
 
-/// All communications inside of the domain protocol are carried in a single
-/// format called a message.  The top level format of message is divided
-/// into 5 sections (some of which are empty in certain cases) shown below:
-///
+// All communications inside of the domain protocol are carried in a single
+// format called a message.  The top level format of message is divided
+// into 5 sections (some of which are empty in certain cases) shown below:
+//
 //  +---------------------+
 //  |        Header       |
 //  +---------------------+
@@ -874,10 +874,10 @@ public struct Question: Hashable, Sendable {
 @available(SwiftStdlib 5.3, *)
 public struct Message: Sendable {
 
-  /// The header includes fields that specify which of the remaining sections are
-  /// present, and also specify whether the message is a query or a response, a
-  /// standard query or some other opcode, etc. The format of header shown below:
-  ///
+  // The header includes fields that specify which of the remaining sections are
+  // present, and also specify whether the message is a query or a response, a
+  // standard query or some other opcode, etc. The format of header shown below:
+  //
   //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
   //  |                      ID                       |
   //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -891,8 +891,8 @@ public struct Message: Sendable {
   //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
   //  |                    ARCOUNT                    |
   //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  /// For more information see [Header section format](https://datatracker.ietf.org/doc/html/rfc1035#section-4.1.1)
-  ///
+  // For more information see [Header section format](https://datatracker.ietf.org/doc/html/rfc1035#section-4.1.1)
+  //
   public struct HeaderFields: Hashable, Sendable {
 
     public struct Flags: Hashable, Sendable, RawRepresentable, CustomReflectable {

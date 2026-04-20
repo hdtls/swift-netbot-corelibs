@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Testing
 
@@ -82,7 +82,8 @@ import Testing
     #expect(decoded == expected)
 
     // Decoding from JSON dictionary with non-default values
-    let json: Data = """
+    let json = Data(
+      """
       {
         "receivedApplicationByteCount": 5,
         "receivedIPPacketCount": 6,
@@ -97,7 +98,8 @@ import Testing
         "transportRTTVariance": 2,
         "transportSmoothedRTT": 3
       }
-      """.data(using: .utf8)!
+      """.utf8
+    )
     let decodedNonDefault = try JSONDecoder().decode(DataTransferReport.PathReport.self, from: json)
     let expectedNonDefault = DataTransferReport.PathReport(
       receivedIPPacketCount: 6,

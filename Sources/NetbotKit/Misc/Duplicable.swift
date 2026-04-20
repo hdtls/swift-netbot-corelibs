@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,15 +10,15 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-//#if canImport(FoundationEssentials)
+// #if canImport(FoundationEssentials)
 //  import FoundationEssentials
-//#else
+// #else
 import Foundation
 import RegexBuilder
 
-//#endif
+// #endif
 
 /// Duplicate a new object.
 @available(SwiftStdlib 5.3, *)

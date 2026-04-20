@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Dispatch
 import Logging
@@ -113,7 +113,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
                 return
               }
 
-              connection.receiveMessage { content, contentContext, isComplete, error in
+              connection.receiveMessage { content, _, _, error in
                 guard let data = content else {
                   return
                 }

@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import RegexBuilder
 import _ProfileSupport
@@ -115,14 +115,9 @@ extension ProfileAssistant {
       }
       lines.remove(atOffsets: offsets)
       lines = lines.compactMap { parseInput in
-        for group in groups {
-          // Remove owned rules.
-          if !parseInput.matches(of: group.rulesRegex).isEmpty {
-            return nil
-          }
-        }
-        return parseInput
+        groups.contains { !parseInput.matches(of: $0.rulesRegex).isEmpty } ? nil : parseInput
       }
+
       let contents = lines.joined(separator: "\n")
       try contents.write(to: writeIntent.url, atomically: true, encoding: .utf8)
     }

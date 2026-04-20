@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Atomics
 import Dispatch
@@ -220,7 +220,7 @@ import Tracing
           guard $0.nameType == .dnsName else {
             return nil
           }
-          return String(decoding: $0.contents, as: UTF8.self)
+          return String(bytes: $0.contents, encoding: .utf8)
         }
       }
 
@@ -235,7 +235,7 @@ import Tracing
 
   /// Run analyze services and block IO until closed.
   public func run0() async throws {
-    try await withSpan("run") { span in
+    try await withSpan("run") { _ in
       do {
         guard !isActive else {
           return
@@ -353,7 +353,7 @@ import Tracing
     > {
       switch `protocol` {
       case .http:
-        return channel.configureHTTPListenerPipeline { version, req in
+        return channel.configureHTTPListenerPipeline { _, req in
           channel.eventLoop.makeFutureWithTask {
             try await self.initializeFlow(channel, originalRequest: .init(httpRequest: req))
           }
@@ -392,7 +392,7 @@ import Tracing
 
       try await withThrowingDiscardingTaskGroup { g in
         try await channel.executeThenClose { inbound in
-          for try await flowFuture in inbound {
+          for try await _ in inbound {
             g.addTask {
 
             }
@@ -416,7 +416,7 @@ import Tracing
   private func initializeFlow(_ inputStream: any Channel, originalRequest: Request) async throws
     -> Flow
   {
-    try await withSpan("initialize Proxy Flow") { span in
+    try await withSpan("initialize Proxy Flow") { _ in
       let session = Connection()
       do {
         session.originalRequest = originalRequest

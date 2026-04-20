@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Atomics
 import Logging
@@ -60,7 +60,7 @@ import Testing
       logger: .init(label: "")
     )
 
-    #expect(application.resolver as? DefaultResolver != nil)
+    #expect(application.resolver is DefaultResolver)
     var a = try await application.resolver.initiateAQuery(host: "", port: 0).get()
     #expect(a == [])
 

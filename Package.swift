@@ -1,6 +1,6 @@
 // swift-tools-version: 6.3
 // The swift-tools-version declares the minimum version of Swift required to build this package.
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -12,7 +12,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import CompilerPluginSupport
 import PackageDescription

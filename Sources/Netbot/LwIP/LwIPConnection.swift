@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import CNELwIP
 import NIOConcurrencyHelpers
@@ -213,7 +213,7 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
       tcp_recved(connectionPtr, totalLength)
       return ERR_OK
     }
-    tcp_sent(self.socket.descriptor) { contextPtr, connectionPtr, _ in
+    tcp_sent(self.socket.descriptor) { contextPtr, _, _ in
       guard let contextPtr else {
         return ERR_ABRT
       }

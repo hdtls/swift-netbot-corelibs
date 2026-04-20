@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import NIOCore
 import NetbotLiteData
@@ -56,7 +56,6 @@ extension Channel {
                 case .expiredCache: source = .expiredCache
                 @unknown default:
                   assertionFailure()
-                  break
                 }
 
                 var dnsProtocol = EstablishmentReport.Resolution.DNSProtocol.unknown
@@ -69,7 +68,6 @@ extension Channel {
                   case .https: dnsProtocol = .https
                   @unknown default:
                     assertionFailure()
-                    break
                   }
                 }
                 return try EstablishmentReport.Resolution(

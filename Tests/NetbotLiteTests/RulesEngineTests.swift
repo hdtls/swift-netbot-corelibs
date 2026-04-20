@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Logging
 import NEAddressProcessing
@@ -45,7 +45,7 @@ import Testing
 
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "198.51.100.1", port: 80))
-    let _ = await service.executeAllRules(connection: connection)
+    _ = await service.executeAllRules(connection: connection)
     #expect(service.forwardingRules.count == 1)
     #expect(!service.cache.isEmpty)
 
@@ -62,7 +62,7 @@ import Testing
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "198.51.100.1", port: 80))
     let result = await service.executeAllRules(connection: connection)
-    #expect(result._forwardingRule as? _FinalForwardingRule != nil)
+    #expect(result._forwardingRule is _FinalForwardingRule)
     #expect(result.forwardingRule == "FINAL")
     #expect(result.forwardProtocol == "DIRECT")
   }
@@ -74,12 +74,12 @@ import Testing
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "198.51.100.1", port: 80))
     // We need cache lookup for first request.
-    let _ = await service.executeAllRules(connection: connection)
+    _ = await service.executeAllRules(connection: connection)
 
     // The seconds lookup should use cache directly.
     let result = await service.executeAllRules(connection: connection)
 
-    #expect(result._forwardingRule as? _FinalForwardingRule != nil)
+    #expect(result._forwardingRule is _FinalForwardingRule)
     #expect(result.forwardingRule == "FINAL")
     #expect(result.forwardProtocol == "DIRECT")
   }
@@ -92,7 +92,7 @@ import Testing
     #expect(connection.originalRequest == nil)
     let result = await service.executeAllRules(connection: connection)
 
-    #expect(result._forwardingRule as? _FinalForwardingRule != nil)
+    #expect(result._forwardingRule is _FinalForwardingRule)
     #expect(result.duration == .zero)
     #expect(result.forwardingRule == "FINAL")
     #expect(result.forwardProtocol == "DIRECT")
@@ -107,7 +107,7 @@ import Testing
     async let r1 = await service.executeAllRules(connection: connection)
     async let r2 = await service.executeAllRules(connection: connection)
 
-    let _ = await [r1, r2]
+    _ = await [r1, r2]
   }
 
   @Test func ruleLookupFallbackWorks() async throws {
@@ -129,7 +129,7 @@ import Testing
     connection.originalRequest = .init(address: .hostPort(host: "198.51.100.1", port: 80))
 
     let result = await service.executeAllRules(connection: connection)
-    #expect(result._forwardingRule as? FinalForwardingRule != nil)
+    #expect(result._forwardingRule is FinalForwardingRule)
     #expect(result.forwardingRule == "FINAL")
     #expect(result.forwardProtocol == "DIRECT")
   }
@@ -146,7 +146,7 @@ import Testing
     connection.originalRequest = .init(address: .hostPort(host: "198.51.100.1", port: 80))
 
     let result = await service.executeAllRules(connection: connection)
-    #expect(result._forwardingRule as? MockForwardingRule != nil)
+    #expect(result._forwardingRule is MockForwardingRule)
     #expect(result.forwardingRule == "FINAL")
     #expect(result.forwardProtocol == "REJECT")
   }
@@ -170,7 +170,7 @@ import Testing
     connection.originalRequest = .init(address: .hostPort(host: "198.51.100.1", port: 80))
 
     let result = await service.executeAllRules(connection: connection)
-    #expect(result._forwardingRule as? FinalForwardingRule != nil)
+    #expect(result._forwardingRule is FinalForwardingRule)
     #expect(result.forwardingRule == "FINAL")
     #expect(result.forwardProtocol == "DIRECT")
   }

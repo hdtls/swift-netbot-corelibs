@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Testing
 
@@ -28,7 +28,7 @@ import Testing
   @Test func programInitFromPersistentModel() async throws {
     let bundleURL = URL(string: "file:///Applications/FakeApp.app")
     let execURL = URL(string: "file:///Applications/FakeApp.app/Contents/MacOS/FakeApp")
-    let iconData = "icondata".data(using: .utf8)
+    let iconData = Data("icondata".utf8)
     let persistent = V1._Program()
     persistent.localizedName = "FakeApp"
     persistent.bundleURL = bundleURL

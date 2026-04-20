@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import CNELwIP
 import NIOConcurrencyHelpers
@@ -86,7 +86,7 @@ final class LwIPListener: BaseSocketChannel<ServerSocket>, @unchecked Sendable {
       // register0(promise:) is execute before bind0 called, so if we
       // register tcp_accept in register0(promise:) the handler will
       // be reset by socket.listen().
-      tcp_accept(self.socket.descriptor) { contextPtr, connection, error in
+      tcp_accept(self.socket.descriptor) { contextPtr, connection, _ in
         guard let contextPtr, let connection else {
           return ERR_ARG
         }
