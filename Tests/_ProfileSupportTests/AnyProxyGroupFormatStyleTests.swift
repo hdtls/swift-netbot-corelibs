@@ -25,6 +25,11 @@ import Testing
 @Suite(.tags(.proxyGroup, .formatting))
 struct AnyProxyGroupFormatStyleTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func formatGroupWithIntervalPolicies() {
     var formatInput = AnyProxyGroup(name: "example")
     var expected = "example = select, proxies = "
@@ -39,6 +44,11 @@ struct AnyProxyGroupFormatStyleTests {
     #expect(formatInput.formatted() == expected)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func formatGroupWithExternalPolicies() {
     var formatInput = AnyProxyGroup(name: "example")
     formatInput.resource.source = .query
@@ -55,7 +65,11 @@ struct AnyProxyGroupFormatStyleTests {
     #expect(formatInput.formatted() == expected)
   }
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     AnyProxyGroup.FormatStyle(),
     AnyProxyGroup.FormatStyle().parseStrategy,
@@ -72,7 +86,11 @@ struct AnyProxyGroupFormatStyleTests {
     #expect(parseOutput.resource.source == .cache)
   }
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseGroupWithExternalPolicies() throws {
     var parseInput = "example = select, proxies-url = https://example.com"
     var parseOutput = try AnyProxyGroup.FormatStyle().parse(parseInput)
@@ -93,7 +111,11 @@ struct AnyProxyGroupFormatStyleTests {
     #expect(parseOutput.resource.source == .query)
   }
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     "example = select",
     "example = select, proxies = ",
@@ -108,6 +130,11 @@ struct AnyProxyGroupFormatStyleTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseGroupContainsMultipleProxies() {
     let parseInput = "example = select, proxies = DIRECT, REJECT, REJECT-TINYGIF"
     #expect(throws: Never.self) {
@@ -117,14 +144,22 @@ struct AnyProxyGroupFormatStyleTests {
     }
   }
 
-  @available(SwiftStdlib 5.5, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.5, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func formatStyleConformance() {
     var formatInput = AnyProxyGroup(name: "example")
     formatInput.lazyProxies.append("direct")
     #expect(formatInput.formatted(.proxyGroup) == "example = select, proxies = direct")
   }
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseStrategyConformance() {
     #expect(throws: Never.self) {
       try AnyProxyGroup("example = select, proxies = direct", strategy: .proxyGroup)

@@ -19,6 +19,11 @@ import Testing
 
 @Suite struct OutboundModeTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       OutboundMode.allCases,
@@ -30,6 +35,11 @@ import Testing
     #expect(mode.localizedDescription == description)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: zip(OutboundMode.allCases, ["direct-outbound", "global-proxy", "rule-based"]))
   func rawRepresentableConformance(_ mode: OutboundMode, _ rawValue: String) {
     #expect(mode.rawValue == rawValue)
@@ -37,10 +47,20 @@ import Testing
     #expect(OutboundMode(rawValue: "unknown") == nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func caseIterableConformance() {
     #expect(OutboundMode.allCases == [.direct, .globalProxy, .ruleBased])
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: zip(OutboundMode.allCases, ["direct-outbound", "global-proxy", "rule-based"]))
   func preferenceRepresentableConformance(_ mode: OutboundMode, _ preferenceValue: String) {
     #expect(mode.preferenceValue as? String == preferenceValue)

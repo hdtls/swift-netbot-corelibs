@@ -24,7 +24,11 @@ import Testing
 
 @Suite struct DataTransferReportTests {
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func pathReportPropertyInitialValues() async throws {
     let report = DataTransferReport.PathReport()
     #expect(report.receivedIPPacketCount == 0)
@@ -41,7 +45,11 @@ import Testing
     #expect(report.sentApplicationByteCount == 0)
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func pathReportHashableConformance() async throws {
     let report = DataTransferReport.PathReport()
     #expect(report == .init())
@@ -50,7 +58,11 @@ import Testing
     #expect(reports == [report])
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func pathReportCodableConformance() async throws {
     // Test encoding of default values
     let defaultReport = DataTransferReport.PathReport()
@@ -125,7 +137,11 @@ import Testing
     #expect(roundTripDecoded == roundTripOriginal)
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValues() async throws {
     let report = DataTransferReport()
     #expect(report._duration == 0)
@@ -134,7 +150,11 @@ import Testing
     #expect(report.pathReport == .init())
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func hashableConformance() async throws {
     let report = DataTransferReport()
     let expected = DataTransferReport()
@@ -145,7 +165,11 @@ import Testing
     #expect(reports == [report])
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func codableConformance() async throws {
     let report = DataTransferReport()
 
@@ -161,7 +185,11 @@ import Testing
     #expect(result == report)
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func pathReportOperatorTests() async throws {
     let lhs = DataTransferReport.PathReport(
       receivedIPPacketCount: 10,
@@ -234,7 +262,11 @@ import Testing
     #expect(mut == minus)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("Initialization from Model copies all properties")
   func initFromPersistentModel() throws {
     let pathReport = V1._DataTransferReport.PathReport()

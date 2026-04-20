@@ -15,7 +15,11 @@
 #if canImport(SwiftUI)
   import SwiftUI
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @_spi(SwiftUI) extension EnvironmentValues {
 
     @Entry public var recentConnections = RecentConnectionsStore.shared

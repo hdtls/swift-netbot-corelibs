@@ -16,7 +16,11 @@ import CNELwIP
 import NIOConcurrencyHelpers
 import NIOCore
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
 
   private var recvBuffer: [(context: ContentContext, data: ByteBuffer?)] = []

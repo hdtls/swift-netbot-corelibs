@@ -20,7 +20,11 @@ import NIOCore
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 enum RecognizedResult: Equatable, Sendable {
 
   case identified(String)
@@ -28,16 +32,28 @@ enum RecognizedResult: Equatable, Sendable {
   case fallback
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 protocol Recognition {
 
   static func recognize(_ data: ByteBuffer) -> RecognizedResult
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 enum Recognizer {}
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Recognizer {
 
   final class Handler<R: Recognition>: ChannelInboundHandler, RemovableChannelHandler {
@@ -114,10 +130,18 @@ extension Recognizer {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Recognizer {
   /// This handler can be used in channels that are acting as the server to recognize whether channel is communicating with SSL/TLS protocol.
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   struct TLS: Recognition {
     static let name = "_.recognizer.chk-TLS"
     static func recognize(_ data: ByteBuffer) -> RecognizedResult {
@@ -166,11 +190,19 @@ extension Recognizer {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Recognizer {
 
   /// This handler can be used in channels that are acting as the server to recognize whether channel is communicating with HTTP protocol.
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   struct HTTP: Recognition {
     static let name = "_.recognizer.chk-HTTP"
     static func recognize(_ data: ByteBuffer) -> RecognizedResult {

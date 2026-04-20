@@ -34,6 +34,11 @@ import Testing
 
 @Suite struct RulesEngineTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func setForwardingRules() async throws {
     let service = DefaultRulesEngine(logger: .init(label: ""))
     #expect(service.forwardingRules.isEmpty)
@@ -55,6 +60,11 @@ import Testing
     #expect(service.cache.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func ruleLookupWithoutCache() async throws {
     let service = DefaultRulesEngine(logger: .init(label: ""))
     service.setForwardingRules([_FinalForwardingRule()])
@@ -67,6 +77,11 @@ import Testing
     #expect(result.forwardProtocol == "DIRECT")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func ruleLookupWithCache() async throws {
     let service = DefaultRulesEngine(logger: .init(label: ""))
     service.setForwardingRules([_FinalForwardingRule()])
@@ -84,6 +99,11 @@ import Testing
     #expect(result.forwardProtocol == "DIRECT")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func ruleLookupForConnectionThatOriginalRequestIsNil() async throws {
     let service = DefaultRulesEngine(logger: .init(label: ""))
     service.setForwardingRules([_FinalForwardingRule()])
@@ -98,6 +118,11 @@ import Testing
     #expect(result.forwardProtocol == "DIRECT")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func inFlightTaskWorks() async throws {
     let service = DefaultRulesEngine(logger: .init(label: ""))
     service.setForwardingRules([_FinalForwardingRule()])
@@ -110,6 +135,11 @@ import Testing
     _ = await [r1, r2]
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func ruleLookupFallbackWorks() async throws {
     struct MockForwardingRule: ForwardingRule, ForwardingRuleConvertible {
 
@@ -134,6 +164,11 @@ import Testing
     #expect(result.forwardProtocol == "DIRECT")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func replaceBuiltinFinalRuleWithCustomizedFinalRule() async throws {
     struct MockForwardingRule: FinalForwardingRule, ForwardingRuleConvertible {
       var forwardProtocol: any ForwardProtocolConvertible { .reject }
@@ -151,6 +186,11 @@ import Testing
     #expect(result.forwardProtocol == "REJECT")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func ruleMatchingFailedWhenRuleLookup() async throws {
     struct MockForwardingRule: ForwardingRule, ForwardingRuleConvertible {
 

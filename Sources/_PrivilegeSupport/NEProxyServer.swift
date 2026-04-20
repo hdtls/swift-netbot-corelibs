@@ -15,7 +15,11 @@
 #if os(macOS)
   import Foundation
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   public class NEProxyServer: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
@@ -85,6 +89,10 @@
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension NEProxyServer: @unchecked Sendable {}
 #endif

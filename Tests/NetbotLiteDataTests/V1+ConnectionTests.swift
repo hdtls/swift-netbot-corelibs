@@ -30,7 +30,11 @@ import Testing
 
 @Suite struct V1_ConnectionTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValues() {
     let connection = V1._Connection()
     #expect(connection.taskIdentifier == 0)
@@ -47,7 +51,11 @@ import Testing
     #expect(connection.processReport == nil)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func connectionIdentifiable() {
     #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
       let connection = V1._Connection()
@@ -59,7 +67,11 @@ import Testing
     #endif
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mergeValues() {
     let date = Date()
     let data = Connection(taskIdentifier: 55)

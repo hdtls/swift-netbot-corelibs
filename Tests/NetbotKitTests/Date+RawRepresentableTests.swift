@@ -24,15 +24,30 @@ import Testing
 
 @Suite struct DateRawRepresentableTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func create() {
     let expected = Date()
     #expect(Date(rawValue: expected.rawValue) == expected)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func createWithInvalidRawValue() {
     #expect(Date(rawValue: "") == nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func rawValue() {
     let date = Date()
     #expect(date.rawValue == date.timeIntervalSinceReferenceDate.description)

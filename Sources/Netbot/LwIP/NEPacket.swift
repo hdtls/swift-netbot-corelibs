@@ -15,7 +15,11 @@
 import NIOCore
 
 /// An `NEPacket` object represents the data, protocol family associated with an IP packet.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct NEPacket: Hashable, Sendable {
 
   public typealias Data = ByteBuffer

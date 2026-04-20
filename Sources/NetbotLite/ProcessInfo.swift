@@ -16,7 +16,11 @@ import NEAddressProcessing
 import NetbotLiteData
 
 /// Protocol for process report generator
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public protocol ProcessReporting: Sendable {
 
   /// Request process info with socket address.
@@ -29,7 +33,11 @@ public protocol ProcessReporting: Sendable {
 /// A default `ProcessReporting` object.
 ///
 /// Return an empty report entity for process info report request by default.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 struct DefaultProcessReporting: ProcessReporting {
 
   func processInfo(connection: Connection) async throws -> ProcessReport {

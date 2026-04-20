@@ -19,7 +19,11 @@ import Testing
 @Suite("V1._URLRewriteTests", .tags(.swiftData, .schema, .urlRewrite))
 struct V1_URLRewriteTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() async throws {
     let data = V1._URLRewrite()
     #expect(data.isEnabled)
@@ -28,7 +32,11 @@ struct V1_URLRewriteTests {
     #expect(data.destination == "")
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("URLRewrite.init(persistentModel:)") func initWithPersistentModel() {
     let persistentModel = V1._URLRewrite()
     let urlRewrite = URLRewrite(persistentModel: persistentModel)
@@ -38,7 +46,11 @@ struct V1_URLRewriteTests {
     #expect(urlRewrite.destination == persistentModel.destination)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mergeValues() {
     let urlRewrite = URLRewrite()
     let persistentModel = V1._URLRewrite()
@@ -54,7 +66,11 @@ struct V1_URLRewriteTests {
 @Suite("V1._URLRewrite.RewriteTypeTests", .tags(.swiftData, .schema, .urlRewrite))
 struct V1_URLRewriteRewriteTypeTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       V1._URLRewrite.RewriteType.allCases,
@@ -67,13 +83,21 @@ struct V1_URLRewriteRewriteTypeTests {
     #expect(V1._URLRewrite.RewriteType(rawValue: "unknown") == nil)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func caseIterableConformance() {
     #expect(
       V1._URLRewrite.RewriteType.allCases == [.httpFields, .found, .temporaryRedirect, .reject])
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       V1._URLRewrite.RewriteType.allCases, ["HTTP Fields", "HTTP 302", "HTTP 307", "Reject"]

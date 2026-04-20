@@ -19,6 +19,11 @@ import Testing
 @Suite(.tags(.httpFieldsRewrite))
 struct HTTPFieldsRewriteTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() async throws {
     let data = HTTPFieldsRewrite()
     #expect(data.isEnabled)
@@ -34,6 +39,11 @@ struct HTTPFieldsRewriteTests {
 @Suite("HTTPFieldsRewrite.DirectionTests", .tags(.httpFieldsRewrite))
 struct HTTPFieldsRewriteDirectionTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       HTTPFieldsRewrite.Direction.allCases, ["request", "response"]
@@ -45,6 +55,11 @@ struct HTTPFieldsRewriteDirectionTests {
     #expect(HTTPFieldsRewrite.Direction(rawValue: "unknown") == nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func caseIterableConformance() {
     #expect(HTTPFieldsRewrite.Direction.allCases == [.request, .response])
   }
@@ -53,6 +68,11 @@ struct HTTPFieldsRewriteDirectionTests {
 @Suite("HTTPFieldsRewrite.Action", .tags(.urlRewrite))
 struct HTTPFieldsRewriteActionTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       HTTPFieldsRewrite.Action.allCases, ["add", "remove", "replace"]
@@ -64,6 +84,11 @@ struct HTTPFieldsRewriteActionTests {
     #expect(HTTPFieldsRewrite.Action(rawValue: "unknown") == nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func caseIterableConformance() {
     #expect(HTTPFieldsRewrite.Action.allCases == [.add, .remove, .replace])
   }

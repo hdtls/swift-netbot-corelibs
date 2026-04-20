@@ -19,6 +19,11 @@ import Testing
 @Suite(.tags(.urlRewrite))
 struct URLRewriteTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() async throws {
     let data = URLRewrite()
     #expect(data.isEnabled)
@@ -31,6 +36,11 @@ struct URLRewriteTests {
 @Suite("URLRewrite.RewriteTypeTests", .tags(.urlRewrite))
 struct URLRewriteRewriteTypeTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       URLRewrite.RewriteType.allCases, ["http-fields", "found", "temporary-redirect", "reject"]
@@ -42,10 +52,20 @@ struct URLRewriteRewriteTypeTests {
     #expect(URLRewrite.RewriteType(rawValue: "unknown") == nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func caseIterableConformance() {
     #expect(URLRewrite.RewriteType.allCases == [.httpFields, .found, .temporaryRedirect, .reject])
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       URLRewrite.RewriteType.allCases, ["HTTP Fields", "HTTP 302", "HTTP 307", "Reject"]

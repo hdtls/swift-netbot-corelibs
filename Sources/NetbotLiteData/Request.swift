@@ -17,7 +17,11 @@ import HTTPTypes
 import NEAddressProcessing
 
 /// A `Request` object represents a proxy load request.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct Request: Codable, Hashable, Sendable {
 
   /// The HTTP request object if present. otherwise returns `nil`.
@@ -63,7 +67,11 @@ public struct Request: Codable, Hashable, Sendable {
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Request {
 
   public typealias Model = V1._Request
@@ -75,7 +83,11 @@ extension Request {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPRequest {
 
   /// Returns the host component of the HTTPRequest if present, otherwise returns `nil`.

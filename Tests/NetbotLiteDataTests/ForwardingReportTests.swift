@@ -24,7 +24,11 @@ import Testing
 
 @Suite struct ForwardingReportTests {
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValues() async throws {
     let report = ForwardingReport()
     #expect(report._duration == 0)
@@ -33,7 +37,11 @@ import Testing
     #expect(report.forwardingRule == nil)
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func hashableConformance() async throws {
     let report = ForwardingReport(forwardingRule: "FINAL")
     let expected = ForwardingReport(forwardingRule: "FINAL")
@@ -44,7 +52,11 @@ import Testing
     #expect(reports == [report])
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func codableConformance() async throws {
     let report = ForwardingReport(forwardingRule: "FINAL")
 

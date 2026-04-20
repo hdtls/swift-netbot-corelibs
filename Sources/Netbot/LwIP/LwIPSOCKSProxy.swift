@@ -25,7 +25,11 @@ import _DNSSupport
   import NIOPosix
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
 
   private let group: any EventLoopGroup
@@ -173,11 +177,15 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
                     return
                   }
 
-                  if #available(SwiftStdlib 5.7, *) {
+                  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+                    if #available(SwiftStdlib 5.7, *) {
+                      try await Task.sleep(for: .seconds(0.1))
+                    } else {
+                      try await Task.sleep(nanoseconds: 100_000_000)
+                    }
+                  #else
                     try await Task.sleep(for: .seconds(0.1))
-                  } else {
-                    try await Task.sleep(nanoseconds: 100_000_000)
-                  }
+                  #endif
                   read()
                 }
               }
@@ -199,7 +207,11 @@ final class LwIPSOCKSProxy: PacketHandleProtocol, @unchecked Sendable {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 final private class ResponseHandler: ChannelInboundHandler, Sendable {
   typealias InboundIn = ByteBuffer
 

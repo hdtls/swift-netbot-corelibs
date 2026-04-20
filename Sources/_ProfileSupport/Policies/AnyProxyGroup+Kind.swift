@@ -16,7 +16,11 @@
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxyGroup {
   public enum Kind: String, CaseIterable, Codable, Hashable, Sendable {
     case select
@@ -25,7 +29,9 @@ extension AnyProxyGroup {
     case ssid
     case loadBalance = "load-balance"
 
-    @available(SwiftStdlib 5.5, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.5, *)
+    #endif
     public var localizedName: String {
       switch self {
       #if canImport(Darwin)
@@ -44,7 +50,9 @@ extension AnyProxyGroup {
       }
     }
 
-    @available(SwiftStdlib 5.5, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.5, *)
+    #endif
     public var localizedDescription: String {
       switch self {
       #if canImport(Darwin)

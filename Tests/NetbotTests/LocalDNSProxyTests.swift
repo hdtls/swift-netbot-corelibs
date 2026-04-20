@@ -27,6 +27,11 @@ import _DNSSupport
 @Suite(.tags(.dns))
 struct LocalDNSProxyTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   final class MockTunnelFlow: PacketTunnelFlow {
     let writePacketObjects = NIOLockedValueBox<[NEPacket]>([])
 
@@ -42,6 +47,11 @@ struct LocalDNSProxyTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   final class MockDNSServer: @unchecked Sendable {
     let queryCalls: ManagedAtomic<Int> = .init(0)
     let response: [any ResourceRecord]
@@ -97,6 +107,11 @@ struct LocalDNSProxyTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func handleInput() async throws {
     let packetFlow = MockTunnelFlow()
     let p = LocalDNSProxy()
@@ -215,6 +230,11 @@ struct LocalDNSProxyTests {
     p.close(promise: nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func queryA() async throws {
     let server = MockDNSServer(
       response: [
@@ -244,6 +264,11 @@ struct LocalDNSProxyTests {
     p.close(promise: nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func handleExpiredARecord() async throws {
     let server = MockDNSServer(
       response: [
@@ -273,6 +298,11 @@ struct LocalDNSProxyTests {
     p.close(promise: nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func queryAAAA() async throws {
     let server = MockDNSServer(
       response: [
@@ -300,6 +330,11 @@ struct LocalDNSProxyTests {
     p.close(promise: nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func handleExpiredAAAARecord() async throws {
     let server = MockDNSServer(
       response: [AAAARecord(domainName: "example.com", ttl: 1, data: .init("::1")!)]
@@ -325,6 +360,11 @@ struct LocalDNSProxyTests {
     p.close(promise: nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func queryNS() async throws {
     let server = MockDNSServer(
       response: [
@@ -351,6 +391,11 @@ struct LocalDNSProxyTests {
     p.close(promise: nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func queryCNAME() async throws {
     let server = MockDNSServer(
       response: [
@@ -378,6 +423,11 @@ struct LocalDNSProxyTests {
     p.close(promise: nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func querySOA() async throws {
     let server = MockDNSServer(
       response: [
@@ -409,6 +459,11 @@ struct LocalDNSProxyTests {
     p.close(promise: nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func queryPTR() async throws {
     let server = MockDNSServer(
       response: [
@@ -436,6 +491,11 @@ struct LocalDNSProxyTests {
     p.close(promise: nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func queryMX() async throws {
     let server = MockDNSServer(
       response: [
@@ -470,6 +530,11 @@ struct LocalDNSProxyTests {
     p.close(promise: nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func queryTXT() async throws {
     let server = MockDNSServer(
       response: [
@@ -497,6 +562,11 @@ struct LocalDNSProxyTests {
     p.close(promise: nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func querySRV() async throws {
     let server = MockDNSServer(
       response: [

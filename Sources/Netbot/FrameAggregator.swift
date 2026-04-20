@@ -17,7 +17,11 @@ import NIOWebSocket
 
 /// A handler that unmask inbound `WebSocketFrame` to `ByteBuffer` and response to control codes, it also mask all outbound
 /// `IOData` to `WebSocketFrame` with `.binary` opcode.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 final class WebSocketFrameAggregator: ChannelInboundHandler, ChannelOutboundHandler {
 
   typealias InboundIn = WebSocketFrame
@@ -115,5 +119,9 @@ final class WebSocketFrameAggregator: ChannelInboundHandler, ChannelOutboundHand
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension WebSocketFrameAggregator: @unchecked Sendable {}

@@ -18,6 +18,11 @@ import Testing
 
 @Suite struct FirstRangeTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: [
       (["[A]"], 1...1),

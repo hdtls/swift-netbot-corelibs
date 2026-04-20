@@ -21,7 +21,11 @@ import NetbotLiteData
   import NetbotDaemons
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 final class ProcessResolver: ProcessReporting {
 
   @LockableTracked(accessors: .get)

@@ -17,7 +17,11 @@
   import Dashboard
   import Foundation
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension Program.Model {
 
     public enum CompareOptions: CaseIterable, Hashable, Sendable {
@@ -56,7 +60,11 @@
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension Array where Element == Program.Model {
 
     @MainActor public func sorted(using options: Program.Model.CompareOptions)

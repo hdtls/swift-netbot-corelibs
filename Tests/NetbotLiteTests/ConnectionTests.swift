@@ -21,6 +21,11 @@ import Testing
 
 @Suite struct ConnectionTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func metadata() async throws {
     var connection = Connection(taskIdentifier: 0)
     connection.originalRequest = .init(address: .hostPort(host: "192.168.0.2", port: 45345))
@@ -33,6 +38,11 @@ import Testing
     #expect(connection.metadata["Request"] == "#0 unknown host")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func satisfy() {
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "192.168.0.2", port: 45345))
@@ -42,6 +52,11 @@ import Testing
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func isFinished() async throws {
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "192.168.0.2", port: 45345))

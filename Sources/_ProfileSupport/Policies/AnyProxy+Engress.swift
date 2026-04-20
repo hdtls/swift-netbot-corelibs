@@ -12,7 +12,11 @@
 //
 // ===----------------------------------------------------------------------===//
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxy {
   /// Engress IP settings
   public struct Engress: Codable, Hashable, Sendable {

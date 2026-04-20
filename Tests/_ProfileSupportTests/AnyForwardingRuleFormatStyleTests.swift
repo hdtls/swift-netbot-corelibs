@@ -25,7 +25,11 @@ import Testing
 @Suite(.tags(.formatting, .forwardingRule))
 struct AnyForwardingRuleFormatStyleTests {
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -35,11 +39,16 @@ struct AnyForwardingRuleFormatStyleTests {
     let parseInput = "DOMAIN,www.swift.org,Auto URL Test"
 
     let parseFunctions: [(String) throws -> AnyForwardingRule]
-    if #available(SwiftStdlib 5.5, *) {
+
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.5, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -51,7 +60,11 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -61,11 +74,15 @@ struct AnyForwardingRuleFormatStyleTests {
     let parseInput = "DOMAIN,www.swift.org,Auto URL Test // note..."
 
     let parseFunctions: [(String) throws -> AnyForwardingRule]
-    if #available(SwiftStdlib 5.5, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.5, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -77,7 +94,11 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -87,11 +108,15 @@ struct AnyForwardingRuleFormatStyleTests {
     let parseInput = "# DOMAIN,www.swift.org,Auto URL Test"
 
     let parseFunctions: [(String) throws -> AnyForwardingRule]
-    if #available(SwiftStdlib 5.5, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.5, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -103,7 +128,11 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -113,11 +142,15 @@ struct AnyForwardingRuleFormatStyleTests {
     let parseInput = "# DOMAIN,www.swift.org,Auto URL Test // note..."
 
     let parseFunctions: [(String) throws -> AnyForwardingRule]
-    if #available(SwiftStdlib 5.5, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.7, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -129,7 +162,11 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -142,11 +179,15 @@ struct AnyForwardingRuleFormatStyleTests {
     ]
 
     let parseFunctions: [(String) throws -> AnyForwardingRule]
-    if #available(SwiftStdlib 5.5, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.7, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for (offset, parseInput) in parseInputs.enumerated() {
       for parse in parseFunctions {
@@ -160,7 +201,11 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -173,11 +218,15 @@ struct AnyForwardingRuleFormatStyleTests {
     ]
 
     let parseFunctions: [(String) throws -> AnyForwardingRule]
-    if #available(SwiftStdlib 5.5, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.7, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for (offset, parseInput) in parseInputs.enumerated() {
       for parse in parseFunctions {
@@ -191,7 +240,11 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -204,11 +257,15 @@ struct AnyForwardingRuleFormatStyleTests {
     ]
 
     let parseFunctions: [(String) throws -> AnyForwardingRule]
-    if #available(SwiftStdlib 5.5, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.5, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for (offset, parseInput) in parseInputs.enumerated() {
       for parse in parseFunctions {
@@ -222,7 +279,11 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -235,12 +296,15 @@ struct AnyForwardingRuleFormatStyleTests {
     ]
 
     let parseFunctions: [(String) throws -> AnyForwardingRule]
-    if #available(SwiftStdlib 5.5, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.5, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
-
+    #endif
     for (offset, parseInput) in parseInputs.enumerated() {
       for parse in parseFunctions {
         let parseOutput = try parse(parseInput)
@@ -253,7 +317,11 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -268,11 +336,15 @@ struct AnyForwardingRuleFormatStyleTests {
     ]
 
     let parseFunctions: [(String) throws -> AnyForwardingRule]
-    if #available(SwiftStdlib 5.5, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.5, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for (offset, parseInput) in collection.enumerated() {
       for parse in parseFunctions {
@@ -295,7 +367,11 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -303,11 +379,15 @@ struct AnyForwardingRuleFormatStyleTests {
   ])
   func parseRuleContainsUnknownTypes(_ parser: AnyForwardingRule.FormatStyle) {
     let parseFunctions: [(String) throws -> AnyForwardingRule]
-    if #available(SwiftStdlib 5.5, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.5, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       #expect(throws: CocoaError.self) {
@@ -320,13 +400,22 @@ struct AnyForwardingRuleFormatStyleTests {
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseStrategyConformance() {
     #expect(throws: Never.self) {
       try AnyForwardingRule("GEOIP, CN, direct", strategy: .forwardingRule)
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle.forwardingRule,
@@ -405,6 +494,11 @@ struct AnyForwardingRuleFormatStyleTests {
     #expect(formatOutput == "# FINAL, Auto URL Test // test note")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func formatStyleConformance() {
     var formatInput = AnyForwardingRule()
     formatInput.kind = .geoip

@@ -35,7 +35,11 @@
     import Network
   #endif
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   public protocol AutoreloadDelegate: AnyObject, Sendable {
     func autoReloadEnabledHTTPCapabilities(_ capabilities: CapabilityFlags) async
     func autoReloadForwardProtocol(_ forwardProtocol: any ForwardProtocolConvertible) async
@@ -45,7 +49,11 @@
     func autoReloadDecryptionPKCS12Bundle(_ bundle: NIOSSLPKCS12Bundle?) async
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   final public class AutoreloadSubscription: @unchecked Sendable {
 
     @Preference(Prefs.Name.profileURL, store: .__shared)
@@ -98,12 +106,17 @@
     private var maxminddbFile: String {
       let filename = "GeoLite2-Country.mmdb"
       let filePath: String
-      if #available(SwiftStdlib 5.7, *) {
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.7, *) {
+          filePath = URL.maxmind.appending(path: filename, directoryHint: .notDirectory).path(
+            percentEncoded: false)
+        } else {
+          filePath = URL.maxmind.appendingPathComponent(filename, isDirectory: false).path
+        }
+      #else
         filePath = URL.maxmind.appending(path: filename, directoryHint: .notDirectory).path(
           percentEncoded: false)
-      } else {
-        filePath = URL.maxmind.appendingPathComponent(filename, isDirectory: false).path
-      }
+      #endif
       return filePath
     }
 
@@ -167,18 +180,25 @@
           if let httpListenPort = profile.httpListenPort,
             let port = NWEndpoint.Port(rawValue: UInt16(httpListenPort))
           {
-            if #available(SwiftStdlib 5.9, *) {
+            #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+              if #available(SwiftStdlib 5.9, *) {
+                configuration.proxyConfigurations = [
+                  .init(
+                    httpCONNECTProxy: .hostPort(host: .init(profile.httpListenAddress), port: port))
+                ]
+              } else {
+                configuration.connectionProxyDictionary = [
+                  kCFNetworkProxiesHTTPEnable as String: 1,
+                  kCFNetworkProxiesHTTPProxy as String: profile.httpListenAddress,
+                  kCFNetworkProxiesHTTPPort as String: port.rawValue,
+                ]
+              }
+            #else
               configuration.proxyConfigurations = [
                 .init(
                   httpCONNECTProxy: .hostPort(host: .init(profile.httpListenAddress), port: port))
               ]
-            } else {
-              configuration.connectionProxyDictionary = [
-                kCFNetworkProxiesHTTPEnable as String: 1,
-                kCFNetworkProxiesHTTPProxy as String: profile.httpListenAddress,
-                kCFNetworkProxiesHTTPPort as String: port.rawValue,
-              ]
-            }
+            #endif
           }
         #endif
         return Session(configuration: configuration)
@@ -239,7 +259,12 @@
             existingGeoLite2AutoUpdateTask?.cancel()
             return
           }
-          let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+
+          #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+            let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+          #else
+            let now = Date.now
+          #endif
           let timeIntervalPast = date > now ? 86400 * 7 : Int64(now.timeIntervalSince(date))
           let initialDelay = TimeAmount.seconds(max(0, 86400 * 7 - timeIntervalPast))
           let delay = TimeAmount.hours(24 * 7)
@@ -258,7 +283,11 @@
           .removeDuplicates()
           .sink { [weak self] date in
             guard let self else { return }
-            let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+            #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+              let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+            #else
+              let now = Date.now
+            #endif
             let timeIntervalPast = date > now ? 24 * 3600 : Int64(now.timeIntervalSince(date))
             let initialDelay = TimeAmount.seconds(max(0, 24 * 60 * 60 - timeIntervalPast))
             let delay = TimeAmount.hours(24)
@@ -286,7 +315,11 @@
           .serializingDownloadedFileURL()
           .value
 
-        let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+          let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+        #else
+          let now = Date.now
+        #endif
         maxminddbLastUpdatedDate =
           (try? fileURL.resourceValues(forKeys: [.contentModificationDateKey])
             .contentModificationDate)
@@ -338,8 +371,12 @@
           try await g.waitForAll()
         }
 
-        forwardingRuleResourcesLastUpdatedDate =
-          if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+          forwardingRuleResourcesLastUpdatedDate =
+            if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+        #else
+          forwardingRuleResourcesLastUpdatedDate = Date.now
+        #endif
 
         profile = try Profile(contentsOf: profileURL)
         await setForwardingRules(profile.asForwardingRules())
@@ -395,6 +432,10 @@
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension CapabilityFlags: PreferenceRepresentable {}
 #endif

@@ -25,6 +25,11 @@ import Testing
 @Suite(.tags(.httpFieldsRewrite, .formatting))
 struct HTTPFieldsRewriteFormatStyleTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle.httpFieldsRewrite,
@@ -44,6 +49,11 @@ struct HTTPFieldsRewriteFormatStyleTests {
     #expect(httpFieldsRewrite.formatted(formatter) == expected)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle.httpFieldsRewrite,
@@ -63,6 +73,11 @@ struct HTTPFieldsRewriteFormatStyleTests {
     #expect(httpFieldsRewrite.formatted(formatter) == expected)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle.httpFieldsRewrite,
@@ -82,6 +97,11 @@ struct HTTPFieldsRewriteFormatStyleTests {
     #expect(httpFieldsRewrite.formatted(formatter) == expected)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle.httpFieldsRewrite,
@@ -101,6 +121,11 @@ struct HTTPFieldsRewriteFormatStyleTests {
     #expect(httpFieldsRewrite.formatted(formatter) == expected)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle().parseStrategy,
@@ -110,11 +135,15 @@ struct HTTPFieldsRewriteFormatStyleTests {
     let parseInput = "request (?:http://)?swift.org add Proxy-Connection keep-alive"
 
     let parseFunctions: [(String) throws -> HTTPFieldsRewrite]
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.5, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -129,6 +158,11 @@ struct HTTPFieldsRewriteFormatStyleTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle().parseStrategy,
@@ -138,11 +172,15 @@ struct HTTPFieldsRewriteFormatStyleTests {
     let parseInput = "request (?:http://)?swift.org replace Proxy-Connection keep-alive"
 
     let parseFunctions: [(String) throws -> HTTPFieldsRewrite]
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.5, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -157,6 +195,11 @@ struct HTTPFieldsRewriteFormatStyleTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle().parseStrategy,
@@ -166,11 +209,15 @@ struct HTTPFieldsRewriteFormatStyleTests {
     let parseInput = "request (?:http://)?swift.org replace Set-Cookie 2592000 2590000"
 
     let parseFunctions: [(String) throws -> HTTPFieldsRewrite]
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.5, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -185,6 +232,11 @@ struct HTTPFieldsRewriteFormatStyleTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     "abc (?:http://)?example.com add Proxy-Connection keep-alive",
     "request (?:http://)?example.com plus Proxy-Connection keep-alive",
@@ -194,12 +246,15 @@ struct HTTPFieldsRewriteFormatStyleTests {
     let parser = HTTPFieldsRewrite.FormatStyle()
 
     let parseFunctions: [(String) throws -> HTTPFieldsRewrite]
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.5, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
-
+    #endif
     for parse in parseFunctions {
       #expect(throws: CocoaError.self) {
         try parse(parseInput)
@@ -207,6 +262,11 @@ struct HTTPFieldsRewriteFormatStyleTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func formatStyleConformance() {
     var httpFieldsRewrite = HTTPFieldsRewrite()
     httpFieldsRewrite.direction = .request
@@ -220,6 +280,11 @@ struct HTTPFieldsRewriteFormatStyleTests {
     #expect(httpFieldsRewrite.formatted(.httpFieldsRewrite) == expected)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseStrategyConformance() {
     #expect(throws: Never.self) {
       try HTTPFieldsRewrite(

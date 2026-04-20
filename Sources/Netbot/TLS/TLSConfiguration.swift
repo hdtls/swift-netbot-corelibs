@@ -20,7 +20,11 @@
 #endif
 
 #if canImport(Network)
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   enum TLSVersion: Sendable {
     case tlsv1
     case tlsv11
@@ -30,17 +34,25 @@
     internal var supportedTLSVersion: tls_protocol_version_t {
       switch self {
       case .tlsv1:
-        if #available(macOS 12.0, *) {
+        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+          if #available(macOS 12.0, *) {
+            return .TLSv12
+          } else {
+            return .TLSv10
+          }
+        #else
           return .TLSv12
-        } else {
-          return .TLSv10
-        }
+        #endif
       case .tlsv11:
-        if #available(macOS 12.0, *) {
+        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+          if #available(macOS 12.0, *) {
+            return .TLSv12
+          } else {
+            return .TLSv11
+          }
+        #else
           return .TLSv12
-        } else {
-          return .TLSv11
-        }
+        #endif
       case .tlsv12:
         return .TLSv12
       case .tlsv13:
@@ -50,7 +62,11 @@
   }
 
   /// Certificate verification modes.
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   enum CertificateVerification: Sendable {
     /// All certificate verification disabled.
     case none
@@ -65,7 +81,11 @@
   }
 
   /// Places NIOSSL can obtain a trust store from.
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   enum NIOSSLTrustRoots: Hashable, Sendable {
     /// Path to either a file of CA certificates in PEM format, or a directory containing CA certificates in PEM format.
     ///
@@ -98,7 +118,11 @@
   }
 
   /// Places NIOSSL can obtain additional trust roots from.
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   enum NIOSSLAdditionalTrustRoots: Hashable, Sendable {
     /// See ``SSLTrustRoots/file(_:)``
     case file(String)
@@ -107,7 +131,11 @@
     case certificates([Certificate])
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   struct TLSConfiguration: Sendable {
 
     static let clientDefault = TLSConfiguration.makeClientConfiguration()

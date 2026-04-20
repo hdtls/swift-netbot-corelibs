@@ -13,7 +13,11 @@
 // ===----------------------------------------------------------------------===//
 
 #if canImport(FoundationEssentials)
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension String {
 
     enum _CompareOptions: Sendable {

@@ -26,7 +26,11 @@ import _ProfileSupport
   import SwiftData
 #endif
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 func withManagedProfile(body: (ProfileAssistant) async throws -> Void) async throws {
   #if canImport(SwiftData)
     let schema: Schema = Schema(versionedSchema: _VersionedSchema.self)

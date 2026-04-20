@@ -20,7 +20,11 @@ import NetbotLiteData
   import NIOTransportServices
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Channel {
 
   /// Asynchronously request the establishment report for this connection. If called
@@ -58,8 +62,21 @@ extension Channel {
                   assertionFailure()
                 }
 
-                var dnsProtocol = EstablishmentReport.Resolution.DNSProtocol.unknown
-                if #available(SwiftStdlib 5.3, *) {
+                #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+                  var dnsProtocol = EstablishmentReport.Resolution.DNSProtocol.unknown
+                  if #available(SwiftStdlib 5.3, *) {
+                    switch $0.dnsProtocol {
+                    case .unknown: break
+                    case .udp: dnsProtocol = .udp
+                    case .tcp: dnsProtocol = .tcp
+                    case .tls: dnsProtocol = .tls
+                    case .https: dnsProtocol = .https
+                    @unknown default:
+                      assertionFailure()
+                    }
+                  }
+                #else
+                  var dnsProtocol = EstablishmentReport.Resolution.DNSProtocol.unknown
                   switch $0.dnsProtocol {
                   case .unknown: break
                   case .udp: dnsProtocol = .udp
@@ -69,7 +86,8 @@ extension Channel {
                   @unknown default:
                     assertionFailure()
                   }
-                }
+                #endif
+
                 return try EstablishmentReport.Resolution(
                   source: source,
                   duration: $0.duration,

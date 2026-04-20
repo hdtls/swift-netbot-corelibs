@@ -12,17 +12,15 @@
 //
 // ===----------------------------------------------------------------------===//
 
-// swift-format-ignore-file
-
-import NetbotLite
-import NetbotLiteData
 import NEAddressProcessing
 import NIOCore
+import NetbotLite
+import NetbotLiteData
 
 #if canImport(FoundationEssentials)
-import FoundationEssentials
+  import FoundationEssentials
 #else
-import Foundation
+  import Foundation
 #endif
 
 #if os(Windows)
@@ -50,9 +48,16 @@ import Foundation
 
   import typealias WinSDK.u_short
 
+  // swift-format-ignore: TypeNamesShouldBeCapitalized
   private typealias in_addr = WinSDK.IN_ADDR
+
+  // swift-format-ignore: TypeNamesShouldBeCapitalized
   private typealias in6_addr = WinSDK.IN6_ADDR
+
+  // swift-format-ignore: TypeNamesShouldBeCapitalized
   private typealias in_port_t = WinSDK.u_short
+
+  // swift-format-ignore: TypeNamesShouldBeCapitalized
   private typealias sa_family_t = WinSDK.ADDRESS_FAMILY
 #elseif canImport(Darwin)
   import Darwin
@@ -67,7 +72,11 @@ import Foundation
   #error("The Socket Addresses module was unable to identify your C library.")
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
   @usableFromInline final class _Storage {
@@ -75,7 +84,10 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
     @usableFromInline var addresses: Addresses?
     @usableFromInline var forwardProtocol: any ForwardProtocolConvertible
 
-    @inlinable init(classlessInterDomainRouting: String, addresses: Addresses?, forwardProtocol: any ForwardProtocolConvertible) {
+    @inlinable init(
+      classlessInterDomainRouting: String, addresses: Addresses?,
+      forwardProtocol: any ForwardProtocolConvertible
+    ) {
       self.classlessInterDomainRouting = classlessInterDomainRouting
       self.addresses = Addresses(uncheckedBounds: classlessInterDomainRouting)
       self.forwardProtocol = forwardProtocol
@@ -120,7 +132,9 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
     _storage.addresses
   }
 
-  @inlinable init(classlessInterDomainRouting: String, forwardProtocol: any ForwardProtocolConvertible) {
+  @inlinable init(
+    classlessInterDomainRouting: String, forwardProtocol: any ForwardProtocolConvertible
+  ) {
     let addresses = Addresses(uncheckedBounds: classlessInterDomainRouting)
     self._storage = _Storage(
       classlessInterDomainRouting: classlessInterDomainRouting,
@@ -155,12 +169,17 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension IPCIDRForwardingRule._Storage: Hashable {
   static func == (lhs: IPCIDRForwardingRule._Storage, rhs: IPCIDRForwardingRule._Storage) -> Bool {
     lhs.classlessInterDomainRouting == rhs.classlessInterDomainRouting
-    && lhs.addresses == rhs.addresses
-    && lhs.forwardProtocol.asForwardProtocol().name == rhs.forwardProtocol.asForwardProtocol().name
+      && lhs.addresses == rhs.addresses
+      && lhs.forwardProtocol.asForwardProtocol().name
+        == rhs.forwardProtocol.asForwardProtocol().name
   }
 
   func hash(into hasher: inout Hasher) {
@@ -170,10 +189,18 @@ extension IPCIDRForwardingRule._Storage: Hashable {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension IPCIDRForwardingRule._Storage: @unchecked Sendable {}
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension IPCIDRForwardingRule {
 
   struct Addresses: Hashable, Sendable {
@@ -250,8 +277,8 @@ extension IPCIDRForwardingRule {
         upperBound = .init(packedAddress: packedAddress.bigEndian)
       case .v6(let iPv6Address):
         var bitWidth = 128
-        #if canImport(Darwin)
-          if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+        #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+          if #available(SwiftStdlib 6.0, *) {
             bitWidth = UInt128.bitWidth
           } else {
             bitWidth = _UInt128.bitWidth
@@ -284,8 +311,8 @@ extension IPCIDRForwardingRule {
         let bitsToMove = bitWidth - prefix
         var s6addr = iPv6Address.address.sin6_addr
 
-        #if canImport(Darwin)
-          if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
+        #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+          if #available(SwiftStdlib 6.0, *) {
             var packedAddress = withUnsafeBytes(of: &s6addr) {
               $0.loadUnaligned(as: UInt128.self).bigEndian
             }
@@ -351,7 +378,11 @@ extension IPCIDRForwardingRule {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension SocketAddress {
 
   fileprivate init(packedAddress: UInt32) {
@@ -364,7 +395,7 @@ extension SocketAddress {
     self.init(ipv4Addr)
   }
 
-  #if canImport(Darwin)
+  #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
     @available(iOS, deprecated: 18.0)
     @available(macOS, deprecated: 15.0)
     @available(tvOS, deprecated: 18.0)
@@ -381,7 +412,9 @@ extension SocketAddress {
     }
   #endif
 
-  @available(SwiftStdlib 6.0, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 6.0, *)
+  #endif
   fileprivate init(packedAddress: UInt128) {
     var ipv6Addr = sockaddr_in6()
     ipv6Addr.sin6_family = sa_family_t(AF_INET6)

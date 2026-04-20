@@ -23,6 +23,11 @@ import Testing
 #if canImport(CoWOptimizationMacros)
   import CoWOptimizationMacros
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   let testMacros: [String: (Macro & Sendable).Type] = [
     "_cowOptimization": CoWOptimizationMacro.self,
     "_cowOptimizationIgnored": CoWOptimizationIgnoredMacro.self,
@@ -33,6 +38,11 @@ import Testing
 @Suite struct CopyonWriteMacrosTests {
 
   #if canImport(CoWOptimizationMacros)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func coWOptimizationMacro() throws {
       let originalSource =
         """
@@ -112,6 +122,11 @@ import Testing
       }
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func coWOptimizationIgnoredMacro() throws {
       let originalSource =
         """
@@ -176,6 +191,11 @@ import Testing
       }
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func coWOptimizationTrackedMacro() throws {
       let originalSource =
         """

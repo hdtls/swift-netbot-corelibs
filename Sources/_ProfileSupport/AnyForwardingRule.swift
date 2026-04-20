@@ -12,7 +12,11 @@
 //
 // ===----------------------------------------------------------------------===//
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct AnyForwardingRule: Equatable, Hashable, Sendable {
 
   /// The kind of the proxy rules.
@@ -98,7 +102,11 @@ public struct AnyForwardingRule: Equatable, Hashable, Sendable {
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyForwardingRule {
 
   public typealias Model = V1._AnyForwardingRule

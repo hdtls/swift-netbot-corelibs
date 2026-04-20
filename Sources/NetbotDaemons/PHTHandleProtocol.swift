@@ -18,7 +18,11 @@
 
   /// PHTHandleProtocol is the NSXPCConnection-based protocol implemented by the helper tool
   /// and called by the app.
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @objc public protocol PHTHandleProtocol: Sendable {
 
     /// Not used by the standard app (it's part of the sandboxed XPC service support).

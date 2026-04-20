@@ -21,7 +21,11 @@ import Logging
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 @_cowOptimization public struct Profile: Equatable, Hashable, Sendable {
 
   /// The url the resource was storaged..
@@ -135,13 +139,18 @@ import Logging
   ) {
     let creationDate: Date
     let contentModificationDate: Date
-    if #available(SwiftStdlib 5.5, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.5, *) {
+        creationDate = .now
+        contentModificationDate = .now
+      } else {
+        creationDate = .init()
+        contentModificationDate = .init()
+      }
+    #else
       creationDate = .now
       contentModificationDate = .now
-    } else {
-      creationDate = .init()
-      contentModificationDate = .init()
-    }
+    #endif
     _storage = _Storage(
       url: url,
       logLevel: logLevel,
@@ -174,7 +183,11 @@ import Logging
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Profile._Storage: Hashable {
   @inlinable static func == (lhs: Profile._Storage, rhs: Profile._Storage) -> Bool {
     lhs.url == rhs.url
@@ -230,25 +243,41 @@ extension Profile._Storage: Hashable {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Profile._Storage: @unchecked Sendable {}
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Profile {
 
   public init(contentsOf url: URL) throws {
     let parseInput: String
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.7, *) {
+        parseInput = try String(contentsOf: url, encoding: .utf8)
+      } else {
+        parseInput = try String(contentsOfFile: url.path, encoding: .utf8)
+      }
+    #else
       parseInput = try String(contentsOf: url, encoding: .utf8)
-    } else {
-      parseInput = try String(contentsOfFile: url.path, encoding: .utf8)
-    }
+    #endif
     self = try Profile.FormatStyle().parse(parseInput)
     self.url = url
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Profile {
 
   public typealias Model = V1._Profile

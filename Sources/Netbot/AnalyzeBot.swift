@@ -40,7 +40,11 @@ import _ProfileSupport
 #endif
 
 /// Assistant to manage PacketTunnelProvider and NIO proxy servers backend.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public actor AnalyzeBot: Actor {
 
   nonisolated private let core: NetbotLite.AnalyzeBot

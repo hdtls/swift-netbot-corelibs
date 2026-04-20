@@ -12,7 +12,11 @@
 //
 // ===----------------------------------------------------------------------===//
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 enum PacketHandleResult: Hashable, Sendable {
 
   /// The handler processed packet.
@@ -22,7 +26,11 @@ enum PacketHandleResult: Hashable, Sendable {
   case discarded
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 protocol PacketHandleProtocol {
 
   func run() async throws

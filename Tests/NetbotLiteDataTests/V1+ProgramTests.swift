@@ -28,7 +28,11 @@ import Testing
 
 @Suite struct V1_ProgramTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValues() async throws {
     let report = V1._Program()
     #expect(report.localizedName == "Unknown")
@@ -37,7 +41,11 @@ import Testing
     #expect(report.iconTIFFRepresentation == nil)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func programIdentifiable() async throws {
     #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
       let program = Program()
@@ -57,7 +65,11 @@ import Testing
     #endif
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mergeValues() async throws {
     let oldIcon = Data("oldicon".utf8)
     let persistent = V1._Program()

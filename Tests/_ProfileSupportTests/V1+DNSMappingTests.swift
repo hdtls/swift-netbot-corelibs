@@ -19,7 +19,11 @@ import Testing
 @Suite("V1._DNSMappingTests", .tags(.swiftData, .schema, .dnsMapping))
 struct DNSMappingPersistentModelTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() {
     let data = V1._DNSMapping()
     #expect(data.kind == .mapping)
@@ -29,7 +33,11 @@ struct DNSMappingPersistentModelTests {
     #expect(data.note == "")
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("DNSMapping.init(persistentModel:)")
   func initWithPersistentModel() {
     let persistentModel = V1._DNSMapping()
@@ -41,7 +49,11 @@ struct DNSMappingPersistentModelTests {
     #expect(data.note == persistentModel.note)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mergeValues() {
     let persistentModel = V1._DNSMapping()
     let data = DNSMapping()
@@ -57,7 +69,11 @@ struct DNSMappingPersistentModelTests {
 @Suite("V1._DNSMapping.KindTests", .tags(.swiftData, .schema, .dnsMapping))
 struct V1_DNSMappingKindTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: zip(V1._DNSMapping.Kind.allCases, [0, 1, 2]))
   func rawRepresentableConformance(_ kind: V1._DNSMapping.Kind, _ rawValue: Int) {
     #expect(V1._DNSMapping.Kind(rawValue: rawValue) == kind)
@@ -65,7 +81,11 @@ struct V1_DNSMappingKindTests {
     #expect(V1._DNSMapping.Kind(rawValue: 9) == nil)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func caseIterableConformance() {
     #expect(V1._DNSMapping.Kind.allCases == [.mapping, .cname, .dns])
   }

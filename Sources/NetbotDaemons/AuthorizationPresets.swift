@@ -16,6 +16,11 @@
   import Foundation
   import Security
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   enum AuthorizationPresets: CaseIterable, Sendable {
 
     case systemProtocolProxiesModification
@@ -37,11 +42,7 @@
     private var description: String {
       switch self {
       case .systemProtocolProxiesModification:
-        if #available(SwiftStdlib 5.5, *) {
-          return String(localized: "Netbot is trying to modify the system network configuration.")
-        } else {
-          return "Netbot is trying to modify the system network configuration."
-        }
+        return "Netbot is trying to modify the system network configuration."
       }
     }
 

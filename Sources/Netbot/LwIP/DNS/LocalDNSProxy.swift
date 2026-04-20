@@ -28,7 +28,11 @@ import _DNSSupport
   import NIOPosix
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 @Lockable final public class LocalDNSProxy: Sendable {
 
   private let parser = PrettyDNSParser()
@@ -301,7 +305,11 @@ import _DNSSupport
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension LocalDNSProxy: PacketHandleProtocol {
 
   func run() async throws {}
@@ -420,7 +428,11 @@ extension LocalDNSProxy: PacketHandleProtocol {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension LocalDNSProxy: _DNSSupport.Resolver {
 
   public func queryA(name: String) async throws -> [ARecord] {
@@ -543,7 +555,11 @@ extension LocalDNSProxy: _DNSSupport.Resolver {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension LocalDNSProxy: NetbotLite.Resolver {
 
   public func initiateAQuery(host: String, port: Int) -> EventLoopFuture<[SocketAddress]> {
@@ -566,11 +582,19 @@ extension LocalDNSProxy: NetbotLite.Resolver {
 }
 
 #if !canImport(Network)
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension LocalDNSProxy: NIOPosix.Resolver {}
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 private struct Expirable<Record: ResourceRecord>: Sendable {
 
   var record: Record
@@ -587,7 +611,11 @@ private struct Expirable<Record: ResourceRecord>: Sendable {
 }
 
 #if canImport(Network)
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   final private class AddressedEnvelopeSuite: ChannelDuplexHandler, Sendable {
     typealias InboundIn = ByteBuffer
     typealias InboundOut = AddressedEnvelope<ByteBuffer>

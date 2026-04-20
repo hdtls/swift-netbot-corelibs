@@ -21,8 +21,18 @@ import Testing
 @Suite(.tags(.dns))
 struct PrettyDNSTests {
 
-  private let parser = PrettyDNSParser()
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  private var parser: PrettyDNSParser { PrettyDNSParser() }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseAResponse() async throws {
     let answerRRs = [
       ARecord(
@@ -65,6 +75,11 @@ struct PrettyDNSTests {
     #expect(parseOutput.additionalRRs.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func serializeAResponse() async throws {
     let answerRRs = [
       ARecord(
@@ -105,6 +120,11 @@ struct PrettyDNSTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseNSResponse() async throws {
     let answerRRs = [
       NSRecord(
@@ -149,6 +169,11 @@ struct PrettyDNSTests {
     #expect(parseOutput.additionalRRs.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func serializeNSResponse() async throws {
     let answerRRs = [
       NSRecord(domainName: "swift.org", ttl: 3251, data: "c.ns.apple.com"),
@@ -192,6 +217,11 @@ struct PrettyDNSTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseCNAMEResponse() async throws {
     let answerRRs = [
       CNAMERecord(
@@ -234,6 +264,11 @@ struct PrettyDNSTests {
     #expect(parseOutput.additionalRRs.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func serializeCNAMEResponse() async throws {
     let answerRRs = [
       CNAMERecord(
@@ -274,6 +309,11 @@ struct PrettyDNSTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseSOAResponse() async throws {
     let answerRRs = [
       SOARecord(
@@ -324,6 +364,11 @@ struct PrettyDNSTests {
     #expect(parseOutput.additionalRRs.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func serializeSOAResponse() async throws {
     let answerRRs = [
       SOARecord(
@@ -371,6 +416,11 @@ struct PrettyDNSTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parsePTRResponse() async throws {
     let answerRRs = [
       PTRRecord(
@@ -413,6 +463,11 @@ struct PrettyDNSTests {
     #expect(parseOutput.additionalRRs.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func serializePTRResponse() async throws {
     let answerRRs = [
       PTRRecord(
@@ -452,6 +507,11 @@ struct PrettyDNSTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseMXResponse() async throws {
     let answerRRs = [
       MXRecord(
@@ -524,6 +584,11 @@ struct PrettyDNSTests {
     #expect(parseOutput.additionalRRs.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func serializeMXResponse() async throws {
     let answerRRs = [
       MXRecord(
@@ -588,6 +653,11 @@ struct PrettyDNSTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseTXTResponse() async throws {
     let answerRRs = [
       TXTRecord(
@@ -642,6 +712,11 @@ struct PrettyDNSTests {
     #expect(parseOutput.additionalRRs.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func serializeTXTResponse() async throws {
     let answerRRs = [
       TXTRecord(
@@ -691,6 +766,11 @@ struct PrettyDNSTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseAAAAResponse() async throws {
     let answerRRs: [any ResourceRecord] = [
       CNAMERecord(
@@ -755,6 +835,11 @@ struct PrettyDNSTests {
     #expect(parseOutput.additionalRRs.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func serializeAAAAResponse() async throws {
     let answerRRs: [any ResourceRecord] = [
       CNAMERecord(
@@ -809,6 +894,11 @@ struct PrettyDNSTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseSRVResponse() async throws {
     let answerRRs = [
       SRVRecord(
@@ -851,6 +941,11 @@ struct PrettyDNSTests {
     #expect(parseOutput.additionalRRs.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func serializeSRVResponse() async throws {
     let answerRRs = [
       SRVRecord(
@@ -890,6 +985,11 @@ struct PrettyDNSTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseNAPTRResponse() async throws {
     let answerRRs = [
       NAPTRRecord(
@@ -934,6 +1034,11 @@ struct PrettyDNSTests {
     #expect(parseOutput.additionalRRs.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func serializeNAPTRResponse() async throws {
     let answerRRs = [
       NAPTRRecord(
@@ -976,6 +1081,11 @@ struct PrettyDNSTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func serializeEmptyDomainInRR() async throws {
     let answerRRs = [
       CNAMERecord(

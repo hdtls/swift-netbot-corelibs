@@ -16,17 +16,25 @@
   import Alamofire
   import SwiftUI
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @_spi(SwiftUI) extension EnvironmentValues {
 
     @Entry public var urlSession = Session.default
 
     @Entry public var vpnSession = VPNSession.shared
 
-    @available(SwiftStdlib 5.9, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.9, *)
+    #endif
     @Entry public var diagnostics = Diagnostics()
 
-    @available(SwiftStdlib 5.9, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.9, *)
+    #endif
     @Entry public var profileAssistant = ProfileAssistant.shared
   }
 #endif

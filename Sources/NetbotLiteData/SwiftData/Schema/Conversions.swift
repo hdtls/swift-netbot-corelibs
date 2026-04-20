@@ -22,7 +22,11 @@
     import Foundation
   #endif
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension V1 {
 
     public struct _HTTPRequest: Codable, Equatable, Hashable {
@@ -96,7 +100,11 @@
       }
     }
 
-    @available(SwiftStdlib 5.9, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     public struct _HTTPResponse: Codable, Equatable {
 
       public var headerFields: [HTTPField]
@@ -154,7 +162,11 @@
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension HTTPRequest {
 
     public typealias Model = V1._HTTPRequest
@@ -171,7 +183,11 @@
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension HTTPResponse {
 
     public typealias Model = V1._HTTPResponse
@@ -187,7 +203,11 @@
   }
 #endif
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Duration {
   var seconds: Double {
     let (seconds, attoseconds) = components

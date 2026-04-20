@@ -19,14 +19,22 @@ import Testing
 @Suite("V1._AnyProxyGroupTests", .tags(.swiftData, .schema, .proxyGroup))
 struct V1_AnyProxyGroupTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() {
     let persistentModel = V1._AnyProxyGroup()
     #expect(persistentModel.kind == .select)
     #expect(persistentModel.resource == .init())
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("AnyProxyGroup.init(persistentModel:)")
   func initWithPersistentModel() {
     let persistentModel = V1._AnyProxyGroup()
@@ -39,7 +47,11 @@ struct V1_AnyProxyGroupTests {
     #expect(group.creationDate == persistentModel.creationDate)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mergeValues() {
     let persistentModel = V1._AnyProxyGroup()
     let group = AnyProxyGroup()
@@ -56,7 +68,11 @@ struct V1_AnyProxyGroupTests {
 @Suite("V1._AnyProxyGroup.KindTests", .tags(.swiftData, .schema, .proxyGroup))
 struct V1_AnyProxyGroupKindTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       V1._AnyProxyGroup.Kind.allCases,
@@ -70,7 +86,11 @@ struct V1_AnyProxyGroupKindTests {
     #expect(kind.localizedName == localizedName)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       V1._AnyProxyGroup.Kind.allCases,
@@ -87,13 +107,21 @@ struct V1_AnyProxyGroupKindTests {
     #expect(kind.localizedDescription == description)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func caseIterableConformance() {
     #expect(
       V1._AnyProxyGroup.Kind.allCases == [.select, .urlTest, .fallback, .ssid, .loadBalance])
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       V1._AnyProxyGroup.Kind.allCases,
@@ -110,7 +138,11 @@ struct V1_AnyProxyGroupKindTests {
 @Suite("V1_AnyProxyGroup.MeasurementTests", .tags(.swiftData, .schema, .proxyGroup))
 struct V1_AnyProxyGroupMeasurementTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() {
     let transactionMetrics = TransactionMetrics()
     let measurement = V1._AnyProxyGroup.Measurement(transactionMetrics: transactionMetrics)
@@ -125,7 +157,11 @@ struct V1_AnyProxyGroupMeasurementTests {
 @Suite("V1._AnyProxyGroup.ResourceTests", .tags(.swiftData, .schema, .proxyGroup))
 struct V1_AnyProxyGroupResourceTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() {
     let resource = V1._AnyProxyGroup.Resource()
     #expect(resource.source == .cache)
@@ -137,7 +173,11 @@ struct V1_AnyProxyGroupResourceTests {
 @Suite("V1._AnyProxyGroup.Resource.SourceTests", .tags(.swiftData, .schema, .proxyGroup))
 struct V1_AnyProxyGroupResourceSourceTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func caseIterableConformance() {
     #expect(V1._AnyProxyGroup.Resource.Source.allCases == [.cache, .query])
   }

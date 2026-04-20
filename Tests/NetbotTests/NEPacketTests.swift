@@ -20,6 +20,11 @@ import Testing
 
 @Suite struct NEPacketTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func getValues() async throws {
     let data = try ByteBuffer(
       plainHexEncodedBytes:
@@ -51,6 +56,11 @@ import Testing
     #expect(packet.payload.readableBytes == 32)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func unsupportedAddressFamily() async throws {
     #expect(NEPacket(data: .init(bytes: [0x55]), protocolFamily: .inet) == nil)
   }

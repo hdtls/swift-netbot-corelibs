@@ -25,6 +25,11 @@ import Testing
 @Suite(.tags(.urlRewrite, .formatting))
 struct URLRewriteFormatStyleTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     URLRewrite.FormatStyle(),
     URLRewrite.FormatStyle.urlRewrite,
@@ -41,6 +46,11 @@ struct URLRewriteFormatStyleTests {
     #expect(urlRewrite.formatted(formatter) == expected)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     URLRewrite.FormatStyle(),
     URLRewrite.FormatStyle().parseStrategy,
@@ -50,11 +60,15 @@ struct URLRewriteFormatStyleTests {
     let parseInput = "found, (?:http://)?swift.org, https://swift.org"
 
     let parseFunctions: [(String) throws -> URLRewrite]
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.7, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -66,6 +80,11 @@ struct URLRewriteFormatStyleTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     "abc, (?:http://)?swift.org, https://swift.org",
     "found, (?:http://)?swift.org",
@@ -74,11 +93,15 @@ struct URLRewriteFormatStyleTests {
     let parser = URLRewrite.FormatStyle()
 
     let parseFunctions: [(String) throws -> URLRewrite]
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.7, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       #expect(throws: CocoaError.self) {
@@ -87,6 +110,11 @@ struct URLRewriteFormatStyleTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func formatStyleConformance() {
     var urlRewrite = URLRewrite()
     urlRewrite.type = .found
@@ -96,6 +124,11 @@ struct URLRewriteFormatStyleTests {
     #expect(urlRewrite.formatted(.urlRewrite) == "found, (?:http://)?swift.org, https://swift.org")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parseStrategyConformance() {
     #expect(throws: Never.self) {
       try URLRewrite("found, (?:http://)?swift.org, https://swift.org", strategy: .urlRewrite)

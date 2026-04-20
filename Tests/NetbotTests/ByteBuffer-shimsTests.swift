@@ -19,11 +19,21 @@ import Testing
 
 struct ByteBufferShimsTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func count() async throws {
     let bf = ByteBuffer(bytes: [0, 1])
     #expect(bf.count == 2)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func isEmpty() async throws {
     let bf1 = ByteBuffer(bytes: [0, 1])
     #expect(!bf1.isEmpty)
@@ -32,36 +42,71 @@ struct ByteBufferShimsTests {
     #expect(bf2.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func startIndex() async throws {
     let bf = ByteBuffer(bytes: [1, 0, 1])
     #expect(bf.startIndex == 0)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func endIndex() async throws {
     let bf = ByteBuffer(bytes: [1, 0, 1])
     #expect(bf.endIndex == 3)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func indexAfter() async throws {
     let bf = ByteBuffer(bytes: [1, 0, 1])
     #expect(bf.index(after: bf.startIndex) == 1)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func indexBefore() async throws {
     let bf = ByteBuffer(bytes: [1, 0, 1])
     #expect(bf.index(before: bf.endIndex) == 2)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func indexOffsetBy() async throws {
     let bf = ByteBuffer()
     #expect(bf.index(bf.startIndex, offsetBy: 2) == 2)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func distanceFromTo() async throws {
     let bf = ByteBuffer(bytes: [0, 1])
     #expect(bf.distance(from: bf.startIndex, to: bf.endIndex) == 2)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func prefixMaxLength() async throws {
     let bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     #expect(bf.prefix(0) == ByteBuffer())
@@ -69,18 +114,33 @@ struct ByteBufferShimsTests {
     #expect(bf.prefix(7) == bf)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func prefixUpTo() async throws {
     let bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     #expect(bf.prefix(upTo: 0) == ByteBuffer())
     #expect(bf.prefix(upTo: 3) == ByteBuffer(bytes: [0, 1, 2]))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func prefixThrough() async throws {
     let bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     #expect(bf.prefix(through: 0) == ByteBuffer(bytes: [0]))
     #expect(bf.prefix(through: 3) == ByteBuffer(bytes: [0, 1, 2, 3]))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func suffixFrom() async throws {
     let bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     #expect(bf.suffix(from: 0) == bf)
@@ -88,6 +148,11 @@ struct ByteBufferShimsTests {
     #expect(bf.suffix(from: 6) == ByteBuffer())
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func subscriptElementAtIndex() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     #expect(bf[0] == 0)
@@ -99,6 +164,11 @@ struct ByteBufferShimsTests {
     #expect(bf[3] == 1)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func subscriptElementsWithRange() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     #expect(bf[0..<0] == ByteBuffer())
@@ -116,6 +186,11 @@ struct ByteBufferShimsTests {
     #expect(bf[0..<2] == [0, 2])
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func subscriptElementsWithClosedRange() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     #expect(bf[0...0] == ByteBuffer(bytes: [0]))
@@ -134,6 +209,11 @@ struct ByteBufferShimsTests {
     #expect(bf[0...2] == [0, 1, 2])
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func subscriptElementsWithPartialRangeFrom() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     #expect(bf[0...] == bf)
@@ -152,6 +232,11 @@ struct ByteBufferShimsTests {
     #expect(bf[0...] == [1, 2])
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func subscriptElementsWithPartialRangeThrough() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     #expect(bf[...1] == ByteBuffer(bytes: [0, 1]))
@@ -169,6 +254,11 @@ struct ByteBufferShimsTests {
     #expect(bf[...1] == [1, 4])
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func subscriptElementsWithPartialRangeUpTo() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     #expect(bf[..<6] == bf)
@@ -188,12 +278,22 @@ struct ByteBufferShimsTests {
     #expect(bf[..<3] == [0, 1, 2])
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func append() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     bf.append(6)
     #expect(bf == ByteBuffer(bytes: [0, 1, 2, 3, 4, 5, 6]))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func appendContentsOf() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     bf.append(contentsOf: ByteBuffer(bytes: [6, 7]))
@@ -203,6 +303,11 @@ struct ByteBufferShimsTests {
     #expect(bf == ByteBuffer(bytes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func insert() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     bf.insert(6, at: 6)
@@ -212,6 +317,11 @@ struct ByteBufferShimsTests {
     #expect(bf == ByteBuffer(bytes: [0, 1, 2, 7, 3, 4, 5, 6]))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func insertContentsOf() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     bf.insert(contentsOf: [6, 7], at: 6)
@@ -224,6 +334,11 @@ struct ByteBufferShimsTests {
     #expect(bf == ByteBuffer(bytes: [0, 1, 2, 8, 9, 3, 4, 5, 6, 7, 10, 11]))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func removeElementAtIndex() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     #expect(bf.remove(at: 1) == 1)
@@ -232,6 +347,11 @@ struct ByteBufferShimsTests {
     #expect(bf == ByteBuffer(bytes: [0, 2, 3, 4]))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func removeSubrange() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     bf.removeSubrange(1..<3)
@@ -254,6 +374,11 @@ struct ByteBufferShimsTests {
     #expect(bf == ByteBuffer(bytes: [3]))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func replaceSubrange() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     bf.replaceSubrange(1..<3, with: [6, 7, 8])
@@ -286,6 +411,11 @@ struct ByteBufferShimsTests {
     #expect(bf == ByteBuffer(bytes: [7, 4]))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func removeAllKeepCapacity() async throws {
     var bf = ByteBuffer(bytes: [0, 1, 2, 3, 4, 5])
     bf.removeAll()

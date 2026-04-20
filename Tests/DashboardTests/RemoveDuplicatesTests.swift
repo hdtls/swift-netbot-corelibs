@@ -16,6 +16,11 @@ import Testing
 
 @testable import Dashboard
 
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 @Test func removeDuplicates() {
   #expect([1, 2, 3, 1, 2].removeDuplicates() == [1, 2, 3])
 }

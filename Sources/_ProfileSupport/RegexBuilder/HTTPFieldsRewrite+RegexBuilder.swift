@@ -14,14 +14,20 @@
 
 import RegexBuilder
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPFieldsRewrite {
 
   static let delimiter: Character = " "
 
   package static let sectionName = "[HTTP Fields Rewrite]"
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   package static var sectionRegex: some RegexComponent {
     Regex {
       ZeroOrMore(.whitespace)
@@ -31,7 +37,9 @@ extension HTTPFieldsRewrite {
     }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   package static var regex:
     Regex<(Substring, Bool, Direction, Substring, Action, Substring, Substring?, Substring?)>
   {
@@ -64,7 +72,9 @@ extension HTTPFieldsRewrite {
     }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   package var regex: some RegexComponent {
     switch action {
     case .add:

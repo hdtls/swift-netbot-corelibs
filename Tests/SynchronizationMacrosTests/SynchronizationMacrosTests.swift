@@ -23,6 +23,11 @@ import Testing
 #if canImport(SynchronizationMacros)
   import SynchronizationMacros
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   let testMacros: [String: (Macro & Sendable).Type] = [
     "Lockable": LockableMacro.self,
     "LockableTracked": LockableTrackedMacro.self,
@@ -33,6 +38,11 @@ import Testing
 @Suite struct SynchronizationMacrosTests {
 
   #if canImport(SynchronizationMacros)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func trackedMacro() throws {
       let originalSource =
         """
@@ -78,6 +88,11 @@ import Testing
       }
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func trackedWithAccessMode() throws {
       let originalSource =
         """
@@ -143,6 +158,11 @@ import Testing
       }
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func trackedWithAccessLevel() throws {
       let originalSource =
         """
@@ -263,6 +283,11 @@ import Testing
       }
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func ignoredMacro() throws {
       let originalSource =
         """
@@ -295,6 +320,11 @@ import Testing
       }
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func lockableMacro() throws {
       let originalSource =
         """
@@ -355,6 +385,11 @@ import Testing
       }
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func ignoreUnderLockable() throws {
       let originalSource =
         """
@@ -402,6 +437,11 @@ import Testing
       }
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func trackedUnderLockable() throws {
       let originalSource =
         """
@@ -462,6 +502,11 @@ import Testing
       }
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func trackedWithAccessModeUnderLockable() throws {
       let originalSource =
         """
@@ -517,6 +562,11 @@ import Testing
       }
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func lockableWithDefaultAccessControl() throws {
       let originalSource =
         """

@@ -18,7 +18,11 @@ import Testing
 
 @Suite struct V1_DataTransferReportTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValues() async throws {
     let source = V1._DataTransferReport()
     #expect(source._duration == 0)
@@ -30,7 +34,11 @@ import Testing
     #expect(source.aggregatePathReportFormatted == .init())
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mergeValues() throws {
     let model = V1._DataTransferReport()
     model._duration = 1

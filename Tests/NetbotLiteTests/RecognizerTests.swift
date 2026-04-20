@@ -20,6 +20,11 @@ import Testing
 
 @Suite struct RecognizerTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func tlsSSLRecognitionThatFirstPacketLengthIsLessThanSix() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
@@ -37,6 +42,11 @@ import Testing
   }
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func tlsSSLRecognitionThatRecordTypeIsNotSSL3_RT_HANDSHAKE() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
@@ -52,6 +62,11 @@ import Testing
     #expect(inbound == data)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func tlsSSLRecognitionThatHandshakeTypeIsNotUnknowned() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
@@ -67,6 +82,11 @@ import Testing
     #expect(inbound == data)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func tlsSSLRecognition() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
@@ -82,6 +102,11 @@ import Testing
     #expect(inbound == data)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func httpRecognitionThatFirstPacketDoseNotContainCRLF() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
@@ -97,6 +122,11 @@ import Testing
     #expect(inbound == data)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func httpRecognitionWhereTheFirstLineOfPacketContainsAnIncorrectNumberOfSpaces() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
@@ -136,6 +166,11 @@ import Testing
     #expect(inbound == data)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func httpRecognitionWhereTheLastComponentOfFirstLineOfPacketDoesNotHasHTTPPrefix() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
@@ -151,6 +186,11 @@ import Testing
     #expect(inbound == data)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func httpRecognition() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(

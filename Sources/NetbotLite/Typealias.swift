@@ -19,16 +19,32 @@ import NIOCore
   import Network
   import NIOTransportServices
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   public typealias ClientBootstrap = NIOTransportServices.NIOTSConnectionBootstrap
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   public typealias ServerBootstrap = NIOTransportServices.NIOTSListenerBootstrap
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   public typealias MultiThreadedEventLoopGroup = NIOTransportServices.NIOTSEventLoopGroup
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension MultiThreadedEventLoopGroup {
 
     public convenience init(numberOfThreads: Int) {
@@ -45,7 +61,11 @@ import NIOCore
   public typealias MultiThreadedEventLoopGroup = NIOPosix.MultiThreadedEventLoopGroup
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ClientBootstrap {
 
   public func connect<Output>(

@@ -16,7 +16,11 @@ import NEAddressProcessing
 import NIOCore
 
 /// Pseudo fields for datagram.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct PseudoFields: Hashable, Sendable {
 
   /// The IPv4 address of the sender of the packet.

@@ -24,7 +24,11 @@
   import OpenCombine
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct ProfileInfo: Equatable, Hashable, Identifiable, Sendable {
 
   public var id: URL { url }
@@ -40,7 +44,11 @@ public struct ProfileInfo: Equatable, Hashable, Identifiable, Sendable {
   public var numberOfProxies: Int
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 @MainActor final public class ProfileResource: ObservableObject {
 
   @Published public var profiles: [ProfileInfo] = []

@@ -42,7 +42,11 @@ import Tracing
 /// A `AnalyzeBot` is an easy way to create network proxy servers.
 ///
 /// For current version we support start HTTP and SOCKS as local proxy servers if possible.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 @Lockable public class AnalyzeBot: @unchecked Sendable {
 
   /// Logger object used to log messages.
@@ -243,7 +247,43 @@ import Tracing
         _isActive.store(true, ordering: .relaxed)
         _closePromise.withLock { $0 = eventLoopGroup.any().makePromise() }
 
-        if #available(SwiftStdlib 5.9, *) {
+        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+          if #available(SwiftStdlib 5.9, *) {
+            try await withThrowingDiscardingTaskGroup { g in
+              g.addTask {
+                try await withSpan("HTTP") { _ in
+                  try await self.startVPNTunnel(
+                    protocol: .http, address: self.webProxyListenAddress)
+                }
+              }
+
+              g.addTask {
+                try await withSpan("SOCKS5") { _ in
+                  try await self.startVPNTunnel(
+                    protocol: .socks5, address: self.socksProxyListenAddress)
+                }
+              }
+            }
+          } else {
+            // Run and wait until all server channels closed.
+            try await withThrowingTaskGroup(of: Void.self) { g in
+              g.addTask {
+                try await withSpan("HTTP") { _ in
+                  try await self.startVPNTunnel(
+                    protocol: .http, address: self.webProxyListenAddress)
+                }
+              }
+
+              g.addTask {
+                try await withSpan("SOCKS5") { _ in
+                  try await self.startVPNTunnel(
+                    protocol: .socks5, address: self.socksProxyListenAddress)
+                }
+              }
+              try await g.waitForAll()
+            }
+          }
+        #else
           try await withThrowingDiscardingTaskGroup { g in
             g.addTask {
               try await withSpan("HTTP") { _ in
@@ -258,24 +298,7 @@ import Tracing
               }
             }
           }
-        } else {
-          // Run and wait until all server channels closed.
-          try await withThrowingTaskGroup(of: Void.self) { g in
-            g.addTask {
-              try await withSpan("HTTP") { _ in
-                try await self.startVPNTunnel(protocol: .http, address: self.webProxyListenAddress)
-              }
-            }
-
-            g.addTask {
-              try await withSpan("SOCKS5") { _ in
-                try await self.startVPNTunnel(
-                  protocol: .socks5, address: self.socksProxyListenAddress)
-              }
-            }
-            try await g.waitForAll()
-          }
-        }
+        #endif
       } catch {
         _isActive.store(false, ordering: .relaxed)
         _closePromise.withLock { $0?.fail(error) }
@@ -384,7 +407,35 @@ import Tracing
       }
     }
 
-    if #available(SwiftStdlib 5.9, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.9, *) {
+        let channel = try await bootstrap.bind(
+          to: address, childChannelInitializer: channelInitializer)
+
+        postBind(channel: channel.channel)
+
+        try await withThrowingDiscardingTaskGroup { g in
+          try await channel.executeThenClose { inbound in
+            for try await _ in inbound {
+              g.addTask {
+
+              }
+            }
+          }
+        }
+      } else {
+        let channel = try await bootstrap.childChannelInitializer { channel in
+          channelInitializer(channel).flatMap { _ in
+            channel.eventLoop.makeSucceededVoidFuture()
+          }
+        }
+        .bind(to: address).get()
+
+        postBind(channel: channel)
+
+        try await channel.closeFuture.get()
+      }
+    #else
       let channel = try await bootstrap.bind(
         to: address, childChannelInitializer: channelInitializer)
 
@@ -399,18 +450,7 @@ import Tracing
           }
         }
       }
-    } else {
-      let channel = try await bootstrap.childChannelInitializer { channel in
-        channelInitializer(channel).flatMap { _ in
-          channel.eventLoop.makeSucceededVoidFuture()
-        }
-      }
-      .bind(to: address).get()
-
-      postBind(channel: channel)
-
-      try await channel.closeFuture.get()
-    }
+    #endif
   }
 
   private func initializeFlow(_ inputStream: any Channel, originalRequest: Request) async throws

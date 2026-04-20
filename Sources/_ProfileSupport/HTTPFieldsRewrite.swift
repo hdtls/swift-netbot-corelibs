@@ -19,7 +19,11 @@
 #endif
 
 /// A HTTP fields modification representation object, define how to modify mached request header fields.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct HTTPFieldsRewrite: Equatable, Hashable, Sendable {
 
   /// An enum define HTTP directions.
@@ -34,7 +38,9 @@ public struct HTTPFieldsRewrite: Equatable, Hashable, Sendable {
     case remove
     case replace
 
-    @available(SwiftStdlib 5.5, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.5, *)
+    #endif
     public var localizedName: String {
       switch self {
       #if canImport(Darwin)
@@ -91,15 +97,19 @@ public struct HTTPFieldsRewrite: Equatable, Hashable, Sendable {
     self.name = name
     self.replacement = replacement
     self.value = value
-    if #available(SwiftStdlib 5.5, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      self.creationDate = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+    #else
       self.creationDate = .now
-    } else {
-      self.creationDate = .init()
-    }
+    #endif
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPFieldsRewrite {
 
   public typealias Model = V1._HTTPFieldsRewrite

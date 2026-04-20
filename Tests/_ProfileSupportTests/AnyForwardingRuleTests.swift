@@ -19,6 +19,11 @@ import Testing
 @Suite(.tags(.forwardingRule))
 struct AnyForwardingRuleTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() {
     let data = AnyForwardingRule()
     #expect(data.isEnabled)
@@ -33,6 +38,11 @@ struct AnyForwardingRuleTests {
 @Suite("AnyForwardingRule.KindTests", .tags(.forwardingRule))
 struct AnyForwardingRuleKindTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       AnyForwardingRule.Kind.allCases,
@@ -47,6 +57,11 @@ struct AnyForwardingRuleKindTests {
     #expect(AnyForwardingRule.Kind(rawValue: "unknown") == nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       AnyForwardingRule.Kind.allCases,
@@ -62,6 +77,12 @@ struct AnyForwardingRuleKindTests {
 
 @Suite("AnyForwardingRule.NotificationTests", .tags(.forwardingRule))
 struct AnyForwardingRuleNotificationTests {
+
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() {
     let notification = AnyForwardingRule.Notification()
     #expect(notification.message == "")
@@ -69,6 +90,11 @@ struct AnyForwardingRuleNotificationTests {
     #expect(notification.timeInterval == 300)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func equatableConformance() {
     let lhs = AnyForwardingRule.Notification()
     let rhs = AnyForwardingRule.Notification()

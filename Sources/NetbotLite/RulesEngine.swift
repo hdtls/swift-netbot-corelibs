@@ -20,7 +20,11 @@ import NIOCore
 import NetbotLiteData
 import Tracing
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public protocol RulesEngine: Sendable {
 
   var forwardingRules: [any ForwardingRuleConvertible] { get }
@@ -30,7 +34,11 @@ public protocol RulesEngine: Sendable {
   func executeAllRules(connection: Connection) async -> ForwardingReport
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 @Lockable final class DefaultRulesEngine: RulesEngine {
 
   let logger: Logger
@@ -108,7 +116,11 @@ public protocol RulesEngine: Sendable {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardingReport {
   init(duration: Double = 0, forwardingRule: any ForwardingRule) {
     let forwardProtocol = forwardingRule.forwardProtocol.asForwardProtocol()

@@ -21,6 +21,11 @@ import Testing
 
   let iterations = 1000
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func removeValue() {
     let cache = LRUCache<Int, Int>(capacity: 5)
     #expect(cache.isEmpty)
@@ -43,6 +48,11 @@ import Testing
     #expect(cache1.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func removeAllValues() {
     let cache = LRUCache<Int, Int>(capacity: 2)
     cache.setValue(0, forKey: 0)
@@ -60,6 +70,11 @@ import Testing
     #expect(cache.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func getValue() {
     let cache = LRUCache<Int, Int>(capacity: 2)
     cache.setValue(0, forKey: 0)
@@ -69,6 +84,11 @@ import Testing
     #expect(cache.value(forKey: 2) == nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func setValueForKey() {
     let cache = LRUCache<Int, Int>(capacity: 2)
     cache.setValue(0, forKey: 0)
@@ -91,6 +111,11 @@ import Testing
     #expect(cache1.count == iterations)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func loopEntries() {
     let cache = LRUCache<Int, Int>(capacity: 2)
     cache.setValue(0, forKey: 0)
@@ -124,6 +149,11 @@ import Testing
     #expect(results == [2, 2, 1, 0])
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func filterFirst() throws {
     let cache = LRUCache<Int, Int>(capacity: 3)
     cache.setValue(0, forKey: 0)

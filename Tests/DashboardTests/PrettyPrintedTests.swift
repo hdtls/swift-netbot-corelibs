@@ -25,6 +25,11 @@ import Testing
 
 @Suite struct PrettyPrintedTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func forwardProtocolFormatted() {
     let model = Connection.Model()
     #expect(model.forwardingReport == nil)
@@ -37,6 +42,11 @@ import Testing
     #expect(model.forwardProtocolFormatted == "DIRECT (DOMAIN-SUFFIX test.com)")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func protocolName() {
     let model = Connection.Model()
     #expect(model.protocolName == "TCP")
@@ -50,6 +60,11 @@ import Testing
     #expect(model.protocolName == "TCP")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func isActive() {
     let model = Connection.Model()
     #expect(model.isActive)
@@ -70,6 +85,11 @@ import Testing
     #expect(!model.isActive)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func dataFormatted() {
     let data = Data()
     #expect(data.formatted() == "No Data".localizedCapitalized)

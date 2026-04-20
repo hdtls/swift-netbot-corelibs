@@ -20,7 +20,11 @@ import _ProfileSupport
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Profile {
   public var name: String {
     url.deletingPathExtension().lastPathComponent
@@ -28,7 +32,11 @@ extension Profile {
 }
 
 #if canImport(SwiftData)
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension Profile.Model {
     public var name: String {
       url.deletingPathExtension().lastPathComponent

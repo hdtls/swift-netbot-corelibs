@@ -19,23 +19,36 @@ import Preference
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension OutboundMode {
   var localizedName: String {
     #if canImport(Darwin)
-      if #available(SwiftStdlib 5.5, *) {
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.5, *) {
+          switch self {
+          case .direct: return String(localized: "Direct Outbound", comment: "")
+          case .globalProxy: return String(localized: "Global Proxy", comment: "")
+          case .ruleBased: return String(localized: "Rule-based Proxy", comment: "")
+          }
+        } else {
+          switch self {
+          case .direct: return NSLocalizedString("Direct Outbound", comment: "")
+          case .globalProxy: return NSLocalizedString("Global Proxy", comment: "")
+          case .ruleBased: return NSLocalizedString("Rule-based Proxy", comment: "")
+          }
+        }
+      #else
         switch self {
         case .direct: return String(localized: "Direct Outbound", comment: "")
         case .globalProxy: return String(localized: "Global Proxy", comment: "")
         case .ruleBased: return String(localized: "Rule-based Proxy", comment: "")
         }
-      } else {
-        switch self {
-        case .direct: return NSLocalizedString("Direct Outbound", comment: "")
-        case .globalProxy: return NSLocalizedString("Global Proxy", comment: "")
-        case .ruleBased: return NSLocalizedString("Rule-based Proxy", comment: "")
-        }
-      }
+      #endif
+
     #else
       switch self {
       case .direct:
@@ -49,5 +62,9 @@ extension OutboundMode {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension OutboundMode: PreferenceRepresentable {}

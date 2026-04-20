@@ -24,7 +24,11 @@ import _ProfileSupport
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
   @usableFromInline final class _Storage {
@@ -37,11 +41,15 @@ struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashabl
       let digest = Insecure.MD5.hash(data: Array(originalURLString.utf8))
       let filename = ByteBuffer(bytes: digest).hexDump(format: .compact)
 
-      if #available(SwiftStdlib 5.7, *) {
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.7, *) {
+          return fileURL.appending(path: filename)
+        } else {
+          return fileURL.appendingPathComponent(filename)
+        }
+      #else
         return fileURL.appending(path: filename)
-      } else {
-        return fileURL.appendingPathComponent(filename)
-      }
+      #endif
     }
 
     @inlinable init(
@@ -165,7 +173,11 @@ struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashabl
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension RulesetForwardingRule._Storage: Hashable {
   static func == (lhs: RulesetForwardingRule._Storage, rhs: RulesetForwardingRule._Storage) -> Bool
   {
@@ -182,5 +194,9 @@ extension RulesetForwardingRule._Storage: Hashable {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension RulesetForwardingRule._Storage: @unchecked Sendable {}

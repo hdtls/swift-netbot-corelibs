@@ -19,7 +19,11 @@
 #endif
 
 /// An Object declaring DNS mapping rules.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct DNSMapping: Equatable, Hashable, Sendable {
 
   /// Kind of the mDNS apping.
@@ -61,15 +65,19 @@ public struct DNSMapping: Equatable, Hashable, Sendable {
   {
     self.domainName = domainName
     self.value = value
-    if #available(SwiftStdlib 5.5, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      self.creationDate = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+    #else
       self.creationDate = .now
-    } else {
-      self.creationDate = .init()
-    }
+    #endif
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DNSMapping {
 
   public typealias Model = V1._DNSMapping

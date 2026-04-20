@@ -33,7 +33,11 @@ import _ProfileSupport
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Profile {
 
   func asForwardingRules() -> [any ForwardingRuleConvertible] {
@@ -134,12 +138,13 @@ extension Profile {
     let extensions = try Certificate.Extensions {
       SubjectAlternativeNames(hostnames.map { .dnsName($0) })
     }
-    let notValidBefore: Date
-    if #available(SwiftStdlib 5.5, *) {
-      notValidBefore = .now
-    } else {
-      notValidBefore = .init()
-    }
+
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      let notValidBefore: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+    #else
+      let notValidBefore = Date.now
+    #endif
+
     let leafCert = try Certificate(
       version: .v3,
       serialNumber: .init(),
@@ -163,7 +168,11 @@ extension Profile {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxy {
 
   func asForwardProtocol() -> any ForwardProtocolConvertible {
@@ -226,7 +235,21 @@ extension AnyProxy {
         passwordReference: passwordReference
       )
     case .vmess:
-      if #available(SwiftStdlib 5.7, *) {
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.7, *) {
+          forwardProtocol = ForwardProtocolVMESS(
+            name: name,
+            serverAddress: serverAddress,
+            port: port,
+            userID: UUID(uuidString: username)!,
+            ws: ws,
+            tls: tls
+          )
+        } else {
+          // TODO: ForwardProtocolVMESS BackDeploy
+          forwardProtocol = .direct
+        }
+      #else
         forwardProtocol = ForwardProtocolVMESS(
           name: name,
           serverAddress: serverAddress,
@@ -235,16 +258,17 @@ extension AnyProxy {
           ws: ws,
           tls: tls
         )
-      } else {
-        // TODO: Fallback to SwiftStdlib 5.3
-        forwardProtocol = .direct
-      }
+      #endif
     }
     return forwardProtocol
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyForwardingRule {
 
   func asForwardingRule(_ forwardProtocol: any ForwardProtocolConvertible)

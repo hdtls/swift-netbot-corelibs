@@ -19,13 +19,19 @@
 /// a connection. A report may be created prior to a connection moving into
 /// the .ready state, but measurements will not be collected until after the
 /// connection is ready.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct DataTransferReport: Codable, Hashable, Sendable {
 
   /// Length of time in duration over which the report collected
   /// information. This can be used to calculate throughput for
   /// application and transport bytes counts.
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   public var duration: Duration {
     .seconds(_duration)
   }
@@ -127,7 +133,11 @@ public struct DataTransferReport: Codable, Hashable, Sendable {
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DataTransferReport {
 
   public typealias Model = V1._DataTransferReport
@@ -139,7 +149,11 @@ extension DataTransferReport {
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DataTransferReport.PathReport {
 
   public typealias Model = V1._PathReport
@@ -161,7 +175,11 @@ extension DataTransferReport.PathReport {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DataTransferReport.PathReport {
 
   public static func &+ (lhs: DataTransferReport.PathReport, rhs: DataTransferReport.PathReport)

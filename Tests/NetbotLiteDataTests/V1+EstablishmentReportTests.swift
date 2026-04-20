@@ -25,7 +25,11 @@ import Testing
 
 @Suite struct V1_EstablishmentReportTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func resolutionPropertyInitialValues() async throws {
     let resolution = V1._EstablishmentReport.Resolution.init(
       source: .query, duration: 1.0, endpointCount: 1,
@@ -40,7 +44,11 @@ import Testing
     #expect(resolution.dnsProtocol == .tcp)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func resolutionHashableConformance() async throws {
     let resolution = V1._EstablishmentReport.Resolution.init(
       source: .query, duration: 1.0, endpointCount: 1,
@@ -54,7 +62,11 @@ import Testing
     #expect(resolutions == [resolution])
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func resolutionCodableConformance() async throws {
     let resolution = V1._EstablishmentReport.Resolution.init(
       source: .query, duration: 1.0, endpointCount: 1,
@@ -66,7 +78,11 @@ import Testing
     #expect(result == resolution)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mutateResolutionSuccessfulEndpoint() async throws {
     let address = Address.hostPort(host: "1.1.1.1", port: 443)
     var resolution = V1._EstablishmentReport.Resolution(
@@ -77,7 +93,11 @@ import Testing
     #expect(resolution.successfulEndpoint == address)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mutateResolutionPreferredEndpoint() async throws {
     let address = Address.hostPort(host: "1.1.1.1", port: 443)
     var resolution = V1._EstablishmentReport.Resolution(
@@ -88,7 +108,11 @@ import Testing
     #expect(resolution.preferredEndpoint == address)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValues() async throws {
     let report = V1._EstablishmentReport()
 
@@ -102,7 +126,11 @@ import Testing
     #expect(report.resolutions == [])
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func destinationEndpoint() async throws {
     let report = V1._EstablishmentReport()
     #expect(report.destinationEndpoint == nil)
@@ -126,7 +154,11 @@ import Testing
     #expect(report.destinationEndpoint == .hostPort(host: "127.0.0.1", port: 443))
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func destinationEndpointWhenUseProxyIsEnabled() async throws {
     let report = V1._EstablishmentReport()
     #expect(report.destinationEndpoint == nil)
@@ -136,7 +168,11 @@ import Testing
     #expect(report.destinationEndpoint == report.proxyEndpoint)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mutateSourceEndpoint() async throws {
     let address = Address.hostPort(host: "example.com", port: 443)
     let establishmentReport = V1._EstablishmentReport()
@@ -147,7 +183,11 @@ import Testing
     #expect(establishmentReport.sourceEndpoint == nil)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mutateProxyEndpoint() async throws {
     let address = Address.hostPort(host: "example.com", port: 443)
     let establishmentReport = V1._EstablishmentReport()
@@ -158,7 +198,11 @@ import Testing
     #expect(establishmentReport.proxyEndpoint == nil)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mergeValues() async throws {
     let data = EstablishmentReport(
       duration: 1,

@@ -26,7 +26,11 @@ import Testing
 
 @Suite struct ConnectionTests {
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValues() {
     let connection = Connection()
     #expect(connection.originalRequest == nil)
@@ -40,7 +44,11 @@ import Testing
     #expect(connection.processReport == nil)
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func incrementTaskIdentifier() {
     let c1 = Connection()
 
@@ -48,7 +56,11 @@ import Testing
     #expect(c2.taskIdentifier > c1.taskIdentifier)
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func setOriginalRequest() {
     let originalRequest = Request(address: .hostPort(host: "example.com", port: 443))
     let connection = Connection()
@@ -61,13 +73,21 @@ import Testing
     #expect(connection.currentRequest == originalRequest)
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func identifiableConformance() async throws {
     let c = Connection()
     #expect(c.id == c.taskIdentifier)
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func codableConformance() throws {
     let connection = Connection(taskIdentifier: 6)
     connection.originalRequest = .init(address: .hostPort(host: "192.168.1.2", port: 63532))
@@ -144,13 +164,21 @@ import Testing
     #expect(result.earliestBeginDate == connection.earliestBeginDate)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func persistentModel() {
     let source = Connection.Model.self
     #expect(source == V1._Connection.self)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func initializeConnectionFromPersistentModel() {
     let data = V1._Connection()
     data.taskIdentifier = 123

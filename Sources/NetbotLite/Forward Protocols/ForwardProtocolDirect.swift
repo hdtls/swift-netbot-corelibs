@@ -24,7 +24,11 @@ import NetbotLiteData
 #endif
 
 /// `ForwardProtocolDirect` will send proxied rerquest to the endpoint derectly.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct ForwardProtocolDirect: Equatable, Hashable, Sendable {
 
   public var name: String
@@ -34,7 +38,11 @@ public struct ForwardProtocolDirect: Equatable, Hashable, Sendable {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocolDirect: ForwardProtocol {
 
   public func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
@@ -59,10 +67,18 @@ extension ForwardProtocolDirect: ForwardProtocol {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocolDirect: ForwardProtocolConvertible {}
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocol where Self == ForwardProtocolDirect {
 
   /// Return the default `ForwardProtocolDirect`.
@@ -71,7 +87,11 @@ extension ForwardProtocol where Self == ForwardProtocolDirect {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocolConvertible where Self == ForwardProtocolDirect {
 
   /// Return the default `ForwardProtocolDirect`.

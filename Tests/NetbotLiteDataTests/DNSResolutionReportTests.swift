@@ -19,6 +19,11 @@ import Testing
 
 @Suite struct DNSResolutionReportTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValues() {
     let report = DNSResolutionReport(duration: 0, resolutions: [])
     #expect(report.duration == .zero)
@@ -26,6 +31,11 @@ import Testing
     #expect(report.duration.seconds == report._duration)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func resolutionComputedProperties() {
     let addresses = [
       Address.hostPort(host: "1.1.1.1", port: 53),
@@ -43,6 +53,11 @@ import Testing
     #expect(resolution.endpoints == addresses)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func codableRoundTrip() throws {
     let resolutions = [
       DNSResolutionReport.Resolution(
@@ -81,7 +96,11 @@ import Testing
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func dnsResolutionReportFromPersistentModel() throws {
     let persistent = V1._DNSResolutionReport()
     persistent._duration = 12.5

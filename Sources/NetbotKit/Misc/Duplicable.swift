@@ -21,14 +21,22 @@ import RegexBuilder
 // #endif
 
 /// Duplicate a new object.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public protocol Duplicable {
 
   /// Make a copy.
   func copy() -> Self
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Sequence where Element: Duplicable {
 
   /// Make a duplicate element.
@@ -73,7 +81,11 @@ extension Sequence where Element: Duplicable {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Sequence where Element == String {
 
   /// Make a duplicate element.

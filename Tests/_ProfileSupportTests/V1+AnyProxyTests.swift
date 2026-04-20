@@ -19,7 +19,11 @@ import Testing
 @Suite("V1._AnyProxyTests", .tags(.swiftData, .schema, .proxy))
 struct V1_AnyProxyTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() async throws {
     let proxy = V1._AnyProxy()
     //      #expect(proxy.name == "sample")
@@ -43,7 +47,11 @@ struct V1_AnyProxyTests {
     #expect(!proxy.dontAlertError)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("AnyProxy.init(persistentModel:)")
   func initWithPersistentModel() {
     let persistentModel = V1._AnyProxy()
@@ -71,7 +79,11 @@ struct V1_AnyProxyTests {
     #expect(proxy.creationDate == persistentModel.creationDate)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mergeValues() async throws {
     let persistentModel = V1._AnyProxy()
     let proxy = AnyProxy()
@@ -102,7 +114,11 @@ struct V1_AnyProxyTests {
 @Suite("V1._AnyProxy.KindTests", .tags(.swiftData, .schema, .proxy))
 struct V1_AnyProxyKindTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       V1._AnyProxy.Kind.allCases,
@@ -115,7 +131,11 @@ struct V1_AnyProxyKindTests {
     #expect(kind.localizedName == localizedName)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       V1._AnyProxy.Kind.allCases,
@@ -130,7 +150,11 @@ struct V1_AnyProxyKindTests {
     #expect(V1._AnyProxy.Kind(rawValue: "unknown") == nil)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       V1._AnyProxy.Kind.allCases, [false, false, false, true, true, true, true, true, true]
@@ -140,7 +164,11 @@ struct V1_AnyProxyKindTests {
     #expect(kind.isProxyable == isProxy)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       V1._AnyProxy.Kind.allCases, [false, false, false, true, false, true, false, false, true]
@@ -154,7 +182,11 @@ struct V1_AnyProxyKindTests {
 @Suite("V1._AnyProxy.ObfuscationTests", .tags(.swiftData, .schema, .proxy))
 struct V1_AnyProxyObfuscationTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() async throws {
     let obfuscation = V1._AnyProxy.Obfuscation()
     #expect(!obfuscation.isEnabled)
@@ -166,20 +198,32 @@ struct V1_AnyProxyObfuscationTests {
 @Suite("V1._AnyProxy.Obfuscation.StrategyTests", .tags(.swiftData, .schema, .proxy))
 struct V1_AnyProxyObfuscationStrategyTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: zip(V1._AnyProxy.Obfuscation.Strategy.allCases, [1, 2]))
   func optionSetConformance(_ strategy: V1._AnyProxy.Obfuscation.Strategy, _ rawValue: Int) {
     #expect(strategy.rawValue == rawValue)
     #expect(V1._AnyProxy.Obfuscation.Strategy(rawValue: rawValue) == strategy)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: zip(V1._AnyProxy.Obfuscation.Strategy.allCases, ["HTTP", "TLS"]))
   func localizedName(_ strategy: V1._AnyProxy.Obfuscation.Strategy, _ localizedName: String) {
     #expect(strategy.localizedName == localizedName)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func caseIterableConformance() async throws {
     #expect(V1._AnyProxy.Obfuscation.Strategy.allCases == [.http, .tls])
   }
@@ -188,7 +232,11 @@ struct V1_AnyProxyObfuscationStrategyTests {
 @Suite("V1._AnyProxy.MeasurementTests", .tags(.swiftData, .schema, .proxy))
 struct V1_AnyProxyMeasurementTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() async throws {
     let transactionMetrics = TransactionMetrics()
     let measurement = V1._AnyProxy.Measurement(transactionMetrics: transactionMetrics)
@@ -200,7 +248,11 @@ struct V1_AnyProxyMeasurementTests {
 @Suite("V1._AnyProxy.TLSTests", .tags(.swiftData, .schema, .proxy))
 struct V1_AnyProxyTLSTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() async throws {
     let tls = V1._AnyProxy.TLS()
     #expect(!tls.isEnabled)
@@ -213,7 +265,11 @@ struct V1_AnyProxyTLSTests {
 @Suite("V1._AnyProxy.WebSocketTests", .tags(.swiftData, .schema, .proxy))
 struct V1_AnyProxyWebSocketTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() async throws {
     let ws = V1._AnyProxy.WebSocket()
     #expect(!ws.isEnabled)
@@ -225,7 +281,11 @@ struct V1_AnyProxyWebSocketTests {
 @Suite("V1._AnyProxy.EngressTests", .tags(.swiftData, .schema, .proxy))
 struct V1_AnyProxyEngressTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() async throws {
     let engress = V1._AnyProxy.Engress()
     #expect(engress.interfaceName == "")
@@ -234,7 +294,11 @@ struct V1_AnyProxyEngressTests {
     #expect(engress.versionStrategy == .dual)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     "V1._AnyProxy.Engress.VersionStrategy RawRepresentable conformance",
     arguments: zip(V1._AnyProxy.Engress.VersionStrategy.allCases, ["v4", "v6", "dual"]))
@@ -245,7 +309,11 @@ struct V1_AnyProxyEngressTests {
     #expect(V1._AnyProxy.Engress.VersionStrategy(rawValue: rawValue) == strategy)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("V1._AnyProxy.Engress.VersionStrategy CaseIterable conformance")
   func versionStrategyCaseIterableConformance() async throws {
     #expect(V1._AnyProxy.Engress.VersionStrategy.allCases == [.v4, .v6, .dual])
