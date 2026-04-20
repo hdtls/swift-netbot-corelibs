@@ -17,7 +17,6 @@
   import Foundation
   import Logging
   import NIOCore
-  import NIOConcurrencyHelpers
   import NetbotLiteData
   import Network
   import UserNotifications
@@ -26,6 +25,12 @@
     import NetworkExtension
   #else
     import CoreWLAN
+  #endif
+
+  #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    import NIOConcurrencyHelpers
+  #else
+    import Synchronization
   #endif
 
   /// A wrap class for `NWPathMonitor` providing default `pathUpdateHandler`.

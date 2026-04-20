@@ -14,6 +14,7 @@
 
 @_exported import Logging
 @_exported import MaxMindDB
+@_exported import NEAddressProcessing
 @_exported import NIOSSL
 @_exported import NetbotLite
 @_exported import NetbotLiteData

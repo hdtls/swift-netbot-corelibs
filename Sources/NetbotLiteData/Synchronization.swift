@@ -12,27 +12,22 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import NIOConcurrencyHelpers
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  import NIOConcurrencyHelpers
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
   @available(SwiftStdlib 5.3, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
-public typealias Mutex = NIOLockedValueBox
+  public typealias Mutex = NIOLockedValueBox
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
   @available(SwiftStdlib 5.3, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
-extension NIOLockedValueBox {
-
-  /// Add a wrap function to make it easier to migrate to Mutex in the future.
-  public func withLock<Result>(_ body: (inout Value) throws -> Result) rethrows -> Result {
-    try withLockedValue(body)
+  extension NIOLockedValueBox {
+    /// Add a wrap function to make it easier to migrate to Mutex in the future.
+    public func withLock<Result>(_ body: (inout Value) throws -> Result) rethrows -> Result {
+      try withLockedValue(body)
+    }
   }
-}
+#else
+  import Synchronization
+#endif
 
 #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
   @available(SwiftStdlib 5.3, *)

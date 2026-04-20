@@ -16,11 +16,16 @@ import Atomics
 import Dispatch
 import Logging
 import NEAddressProcessing
-import NIOConcurrencyHelpers
 import NIOCore
 import NetbotLite
 import NetbotLiteData
 import _DNSSupport
+
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  import NIOConcurrencyHelpers
+#else
+  import Synchronization
+#endif
 
 #if canImport(Network)
   import NIOTransportServices

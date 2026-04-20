@@ -13,8 +13,13 @@
 // ===----------------------------------------------------------------------===//
 
 import CNELwIP
-import NIOConcurrencyHelpers
 import NIOCore
+
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  import NIOConcurrencyHelpers
+#else
+  import Synchronization
+#endif
 
 #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
   @available(SwiftStdlib 5.3, *)
@@ -30,7 +35,7 @@ final class LwIPListener: BaseSocketChannel<ServerSocket>, @unchecked Sendable {
       if self.eventLoop.inEventLoop {
         return self._newConnectionHandler
       } else {
-        return self._offEventLoopLock.withLock {
+        return self._offEventLoopLock.withLock { _ in
           self._newConnectionHandler
         }
       }

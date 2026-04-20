@@ -15,8 +15,13 @@
 import Atomics
 import Dispatch
 import NEAddressProcessing
-import NIOConcurrencyHelpers
 import NIOCore
+
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  import NIOConcurrencyHelpers
+#else
+  import Synchronization
+#endif
 
 #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
   @available(SwiftStdlib 5.3, *)
@@ -36,7 +41,11 @@ class BaseSocketChannel<SocketType: BaseSocketProtocol>: Channel, ChannelCore, @
   let eventLoop: any EventLoop
   private let closePromise: EventLoopPromise<Void>
 
-  internal let _offEventLoopLock = NIOLock()
+  #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    internal let _offEventLoopLock = NIOLockedValueBox(Void())
+  #else
+    internal let _offEventLoopLock = Mutex(Void())
+  #endif
 
   // please use `self.addressesCached` instead.
   private var _addressCache = AddressCache(local: nil, remote: nil)
@@ -47,14 +56,14 @@ class BaseSocketChannel<SocketType: BaseSocketProtocol>: Channel, ChannelCore, @
       if self.eventLoop.inEventLoop {
         return self._addressCache
       } else {
-        return self._offEventLoopLock.withLock {
+        return self._offEventLoopLock.withLock { _ in
           self._addressCache
         }
       }
     }
     set {
       self.eventLoop.preconditionInEventLoop()
-      self._offEventLoopLock.withLock {
+      self._offEventLoopLock.withLock { _ in
         self._addressCache = newValue
       }
     }
@@ -68,14 +77,14 @@ class BaseSocketChannel<SocketType: BaseSocketProtocol>: Channel, ChannelCore, @
       if self.eventLoop.inEventLoop {
         return self._bufferAllocatorCache
       } else {
-        return self._offEventLoopLock.withLock {
+        return self._offEventLoopLock.withLock { _ in
           self._bufferAllocatorCache
         }
       }
     }
     set {
       self.eventLoop.preconditionInEventLoop()
-      self._offEventLoopLock.withLock {
+      self._offEventLoopLock.withLock { _ in
         self._bufferAllocatorCache = newValue
       }
     }

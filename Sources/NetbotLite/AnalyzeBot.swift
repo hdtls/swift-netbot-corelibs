@@ -18,7 +18,6 @@ import Logging
 import NEAddressProcessing
 import NEHTTP
 import NESOCKS
-import NIOConcurrencyHelpers
 import NIOCore
 import NIOExtras
 import NIOHTTP1
@@ -26,6 +25,12 @@ import NIOHTTPCompression
 import NIOSSL
 import NetbotLiteData
 import Tracing
+
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  import NIOConcurrencyHelpers
+#else
+  import Synchronization
+#endif
 
 #if canImport(Network)
   import NIOTransportServices

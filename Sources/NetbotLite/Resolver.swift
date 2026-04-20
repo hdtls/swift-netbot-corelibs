@@ -26,7 +26,6 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import NIOConcurrencyHelpers
 import NIOCore
 
 /// A protocol that covers an object that does DNS lookups.

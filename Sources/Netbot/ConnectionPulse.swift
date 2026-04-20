@@ -13,10 +13,15 @@
 // ===----------------------------------------------------------------------===//
 
 import NEAddressProcessing
-import NIOConcurrencyHelpers
 import NIOCore
 import NetbotLite
 import NetbotLiteData
+
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
 
 #if canImport(Network)
   import Network
@@ -27,10 +32,10 @@ import NetbotLiteData
   import NIOWebSocket
 #endif
 
-#if canImport(FoundationEssentials)
-  import FoundationEssentials
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  import NIOConcurrencyHelpers
 #else
-  import Foundation
+  import Synchronization
 #endif
 
 #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
