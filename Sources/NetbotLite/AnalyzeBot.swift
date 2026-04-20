@@ -263,14 +263,13 @@ import Tracing
           try await withThrowingTaskGroup(of: Void.self) { g in
             g.addTask {
               try await withSpan("HTTP") { _ in
-                try await self.startVPNTunnelLegacy(
-                  protocol: .http, address: self.webProxyListenAddress)
+                try await self.startVPNTunnel(protocol: .http, address: self.webProxyListenAddress)
               }
             }
 
             g.addTask {
               try await withSpan("SOCKS5") { _ in
-                try await self.startVPNTunnelLegacy(
+                try await self.startVPNTunnel(
                   protocol: .socks5, address: self.socksProxyListenAddress)
               }
             }
@@ -333,8 +332,7 @@ import Tracing
   ///   - protocol: The VPN protocol.
   ///   - address: The server for VPN tunnel to bind.
   /// - Returns: Started VPN tunnel and server quiescing helper pair.
-  private func startVPNTunnelLegacy(protocol: Proxy.`Protocol`, address: SocketAddress) async throws
-  {
+  private func startVPNTunnel(protocol: Proxy.`Protocol`, address: SocketAddress) async throws {
     let quiescing = ServerQuiescingHelper(group: eventLoopGroup)
 
     let bootstrap = ServerBootstrap(group: eventLoopGroup)
@@ -348,337 +346,70 @@ import Tracing
         }
       }
       .childChannelOption(ChannelOptions.tcpOption(.tcp_nodelay), value: 1)
-      .childChannelInitializer { serverChildChannel in
-        switch `protocol` {
-        case .http:
-          return serverChildChannel.configureHTTPListenerPipeline { version, req in
-            serverChildChannel.eventLoop.makeFutureWithTask {
-              try await self.initializeFlow(
-                serverChildChannel, originalRequest: .init(httpRequest: req))
-            }
-          }
-          .flatMap { _ in
-            serverChildChannel.eventLoop.makeSucceededVoidFuture()
-          }
-        case .socks5:
-          return serverChildChannel.configureSOCKSListenerPipeline { address in
-            serverChildChannel.eventLoop.makeFutureWithTask {
-              try await self.initializeFlow(
-                serverChildChannel, originalRequest: .init(address: address))
-            }
-          }
-          .flatMap { _ in
-            serverChildChannel.eventLoop.makeSucceededVoidFuture()
+
+    @inline(__always)
+    @Sendable func channelInitializer(_ channel: any Channel) -> EventLoopFuture<
+      EventLoopFuture<Flow>
+    > {
+      switch `protocol` {
+      case .http:
+        return channel.configureHTTPListenerPipeline { version, req in
+          channel.eventLoop.makeFutureWithTask {
+            try await self.initializeFlow(channel, originalRequest: .init(httpRequest: req))
           }
         }
-      }
-
-    let channel = try await bootstrap.bind(to: address).get()
-
-    guard let localAddress = try? channel.localAddress?.asAddress() else {
-      fatalError(
-        "Address was unable to bind. Please check that the socket was not closed or that the address family was understood."
-      )
-    }
-
-    self.logger.info(
-      "\(processName) \(`protocol`.rawValue.uppercased()) started and listening on \(localAddress)"
-    )
-
-    self._quiescing.withLock {
-      $0.append(quiescing)
-    }
-
-    try await channel.closeFuture.get()
-  }
-
-  @available(SwiftStdlib 5.9, *)
-  private func startVPNTunnel(protocol: Proxy.`Protocol`, address: SocketAddress) async throws {
-    let quiescing = ServerQuiescingHelper(group: eventLoopGroup)
-
-    let channel = try await ServerBootstrap(group: eventLoopGroup)
-      .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
-      .serverChannelOption(ChannelOptions.socketOption(.init(rawValue: SO_REUSEPORT)), value: 1)
-      .serverChannelInitializer { channel in
-        channel.eventLoop.makeCompletedFuture {
-          try channel.pipeline.syncOperations.addHandler(
-            quiescing.makeServerChannelHandler(channel: channel)
-          )
-        }
-      }
-      .childChannelOption(ChannelOptions.tcpOption(.tcp_nodelay), value: 1)
-      .bind(to: address) { channel in
-        switch `protocol` {
-        case .http:
-          return channel.configureHTTPListenerPipeline { version, req in
-            channel.eventLoop.makeFutureWithTask {
-              try await self.initializeFlow(channel, originalRequest: .init(httpRequest: req))
-            }
-          }
-        case .socks5:
-          return channel.configureSOCKSListenerPipeline { address in
-            channel.eventLoop.makeFutureWithTask {
-              try await self.initializeFlow(channel, originalRequest: .init(address: address))
-            }
-          }
-        }
-      }
-
-    guard let localAddress = try? channel.channel.localAddress?.asAddress() else {
-      fatalError(
-        "Address was unable to bind. Please check that the socket was not closed or that the address family was understood."
-      )
-    }
-
-    self.logger.info(
-      "\(processName) \(`protocol`.rawValue.uppercased()) started and listening on \(localAddress)"
-    )
-
-    self._quiescing.withLock {
-      $0.append(quiescing)
-    }
-
-    try await withThrowingDiscardingTaskGroup { g in
-      try await channel.executeThenClose { inbound in
-        for try await flowFuture in inbound {
-          g.addTask {
-
+      case .socks5:
+        return channel.configureSOCKSListenerPipeline { address in
+          channel.eventLoop.makeFutureWithTask {
+            try await self.initializeFlow(channel, originalRequest: .init(address: address))
           }
         }
       }
     }
-  }
 
-  private func processLookup(session: Connection) async throws {
-    // We don't care error of process report generating, so we can use optional try.
-    try? await withSpan("process-report gen") { _ in
-      assert(session.establishmentReport != nil)
-      guard session.establishmentReport?.sourceEndpoint != nil else {
-        return
-      }
-      session.processReport = try await self.processInfo.processInfo(connection: session)
-    }
-  }
-
-  private func forwardProtocolLookup(session: Connection) async throws {
-    try await withSpan("forward-protocol lookup") { _ in
-      try await withThrowingTaskGroup(of: Void.self) { g in
-        g.addTask {
-          try await self.processLookup(session: session)
-        }
-        g.addTask {
-          try await self.dnsLookup(session: session)
-        }
-        try await g.waitForAll()
-      }
-
-      let fallback: any ForwardProtocol
-      let startTime = DispatchTime.now()
-
-      switch self.outboundMode {
-      case .direct:
-        fallback = .direct
-        session.forwardingReport = ForwardingReport(
-          duration: startTime.distance(to: .now()).timeInterval,
-          forwardProtocol: fallback
+    @inline(__always)
+    func postBind(channel: any Channel) {
+      guard let localAddress = try? channel.localAddress?.asAddress() else {
+        fatalError(
+          "Address was unable to bind. Please check that the socket was not closed or that the address family was understood."
         )
-      case .globalProxy:
-        fallback = self.forwardProtocol.asForwardProtocol()
-        session.forwardingReport = ForwardingReport(
-          duration: startTime.distance(to: .now()).timeInterval,
-          forwardProtocol: fallback
-        )
-      case .ruleBased:
-        try await self.ruleLookup(session: session)
-        assert(session.forwardingReport?._forwardProtocol != nil)
-        assert(session.forwardingReport?._forwardingRule != nil)
-        fallback = session.forwardingReport?._forwardProtocol as? any ForwardProtocol ?? .direct
       }
 
-      if fallback is any ProxiableForwardProtocol {
-        session._establishmentReport.withLock {
-          assert($0 != nil)
-          $0?.usedProxy = true
-        }
-      }
-
-      self.logger.debug(
-        "Policy evaluating - \(fallback.name)",
-        metadata: session.metadata
+      self.logger.info(
+        "\(processName) \(`protocol`.rawValue.uppercased()) started and listening on \(localAddress)"
       )
+
+      self._quiescing.withLock {
+        $0.append(quiescing)
+      }
     }
-  }
 
-  /// Performs DNS resolution for the connection's original request and updates the session with a DNSResolutionReport.
-  ///
-  /// This function measures the timing of the DNS resolution process, concurrently queries both AAAA and A DNS records,
-  /// and streams partial results into `session._dnsResolutionReport` as they arrive. It handles special cases where
-  /// the address is already an IP, a unix or URL address, or missing, producing either an empty report or a cache-sourced
-  /// resolution accordingly. Completion is signaled via a promise and the function returns only after at least one query
-  /// path has produced a result (or both have failed). The entire process runs within a tracing span named "dns query".
-  ///
-  /// - Parameters:
-  ///   - session: The `Connection` instance representing the current network session. This function updates
-  ///     `session.dnsResolutionReport` with resolution results.
-  ///
-  /// - Throws: If both `A` and `AAAA` queries fail or if there are errors from upstream DNS services, this function
-  ///   throws the error. Otherwise, it returns after updating the session with partial or full results.
-  ///
-  /// - Note: The function schedules concurrent DNS query tasks using a `ThrowingTaskGroup` and uses the analyzer's
-  ///   `eventLoopGroup` to synchronize completion with a promise. DNS resolution results are pushed to
-  ///   `services.connectionTrasmission` elsewhere, so this function focuses solely on resolution and mutating
-  ///   the session state.
-  ///
-  /// - SeeAlso: `DNSResolutionReport`, `session.dnsResolutionReport`, `services.connectionTrasmission`
-  ///
-  private func dnsLookup(session: Connection) async throws {
-    try await withSpan("dns query") { _ in
-      let startTime = DispatchTime.now()
-      let hostname: String
-      guard let address = session.originalRequest?.address, let port = session.originalRequest?.port
-      else {
-        session.dnsResolutionReport = DNSResolutionReport(
-          duration: startTime.distance(to: .now()).timeInterval,
-          resolutions: []
-        )
-        return
-      }
+    if #available(SwiftStdlib 5.9, *) {
+      let channel = try await bootstrap.bind(
+        to: address, childChannelInitializer: channelInitializer)
 
-      switch address {
-      case .hostPort(let host, _):
-        switch host {
-        case .name(let name):
-          hostname = name
-        case .ipv4, .ipv6:
-          session.dnsResolutionReport = DNSResolutionReport(
-            duration: startTime.distance(to: .now()).timeInterval,
-            resolutions: [
-              DNSResolutionReport.Resolution(
-                source: .cache,
-                duration: startTime.distance(to: .now()).timeInterval,
-                dnsProtocol: .unknown,
-                endpoints: [address]
-              )
-            ]
-          )
-          return
-        }
-      case .unix:
-        session.dnsResolutionReport = DNSResolutionReport(
-          duration: startTime.distance(to: .now()).timeInterval,
-          resolutions: []
-        )
-        return
-      case .url:
-        // Not supported yet.
-        session.dnsResolutionReport = DNSResolutionReport(
-          duration: startTime.distance(to: .now()).timeInterval,
-          resolutions: []
-        )
-        return
-      }
+      postBind(channel: channel.channel)
 
-      // Do actual query in a separated task the promise wait until
-      // first success result received.
-      let promise = eventLoopGroup.any().makePromise(of: Void.self)
-      Task {
-        try await withThrowingTaskGroup(
-          of: Result<[DNSResolutionReport.Resolution], any Error>.self
-        ) { g in
-          g.addTask {
-            do {
-              let startTime = DispatchTime.now()
-              let addresses = try await self.resolver.initiateAAAAQuery(host: hostname, port: port)
-                .get()
+      try await withThrowingDiscardingTaskGroup { g in
+        try await channel.executeThenClose { inbound in
+          for try await flowFuture in inbound {
+            g.addTask {
 
-              return .success([
-                DNSResolutionReport.Resolution(
-                  source: .query,
-                  duration: startTime.distance(to: .now()).timeInterval,
-                  dnsProtocol: .udp,
-                  endpoints: addresses.compactMap { try? $0.asAddress() }
-                )
-              ])
-            } catch {
-              return .failure(error)
-            }
-          }
-
-          g.addTask {
-            do {
-              let startTime = DispatchTime.now()
-              let addresses = try await self.resolver.initiateAQuery(host: hostname, port: port)
-                .get()
-
-              return .success([
-                DNSResolutionReport.Resolution(
-                  source: .query,
-                  duration: startTime.distance(to: .now()).timeInterval,
-                  dnsProtocol: .udp,
-                  endpoints: addresses.compactMap { try? $0.asAddress() }
-                )
-              ])
-            } catch {
-              return .failure(error)
-            }
-          }
-
-          var lastError: (any Error)?
-
-          // There is no error for for-in loop, so we don't need handle this.
-          for try await resolution in g {
-            do {
-              let resolutions: [DNSResolutionReport.Resolution] = try resolution.get()
-              session._dnsResolutionReport.withLock {
-                if $0 == nil {
-                  $0 = DNSResolutionReport(duration: 0, resolutions: resolutions)
-                } else {
-                  $0?.resolutions.append(contentsOf: resolutions)
-                }
-              }
-              promise.succeed()
-            } catch {
-              if lastError != nil {
-                // Failed to query both A and AAAA records.
-                throw error
-              }
-              lastError = error
-            }
-          }
-
-          if let lastError {
-            if session.dnsResolutionReport?.resolutions.isEmpty ?? false {
-              throw lastError
             }
           }
         }
       }
-      try await promise.futureResult.get()
+    } else {
+      let channel = try await bootstrap.childChannelInitializer { channel in
+        channelInitializer(channel).flatMap { _ in
+          channel.eventLoop.makeSucceededVoidFuture()
+        }
+      }
+      .bind(to: address).get()
 
-      logger.debug(
-        "DNS evaluating end with \(startTime.distance(to: .now()).prettyPrinted).",
-        metadata: session.metadata
-      )
-    }
-  }
+      postBind(channel: channel)
 
-  private func ruleLookup(session: Connection) async throws {
-    await withSpan("forwarding-rule lookup") { _ in
-      let startTime = DispatchTime.now()
-
-      var forwardingReport = await self.rulesEngine.executeAllRules(connection: session)
-      let duration = startTime.distance(to: .now())
-      forwardingReport._duration = duration.timeInterval
-      assert(forwardingReport._forwardingRule != nil)
-      assert(forwardingReport._forwardProtocol != nil)
-      session.forwardingReport = forwardingReport
-
-      logger.debug(
-        "Rule evaluating end with \(duration.prettyPrinted).",
-        metadata: session.metadata
-      )
-      logger.debug(
-        "Rule matched - \(forwardingReport.forwardingRule ?? "FINAL")", metadata: session.metadata)
+      try await channel.closeFuture.get()
     }
   }
 
@@ -702,24 +433,17 @@ import Tracing
           resolutions: []
         )
 
-        Task {
-          // Publish initial state of session.
-          await self.connectionPublisher.send(session)
+        await session.publish(with: connectionPublisher)
 
-          repeat {
-            try await Task.sleep(nanoseconds: 1_000_000_000)
-            session._duration += 1
-
-            // Publish session changes.
-            await self.connectionPublisher.send(session)
-          } while !session.state.isFinished
-
-          // Reset the data transfer report metrics and publish changes.
-          session._dataTransferReport.withLock { $0?.pathReport = .init() }
-          await self.connectionPublisher.send(session)
-        }
-
-        try await self.forwardProtocolLookup(session: session)
+        try await session.evalProtocolLookup(
+          logger: logger,
+          outboundMode: outboundMode,
+          forwardProtocol: forwardProtocol,
+          proc: processInfo,
+          resolver: resolver,
+          rules: rulesEngine,
+          on: inputStream.eventLoop
+        )
 
         // Create peer channel.
         let forwardProtocol =
@@ -754,40 +478,7 @@ import Tracing
           }
         }
 
-        Task {
-          assert(session.dataTransferReport == nil)
-
-          repeat {
-            guard let collector = try? await outputStream.pendingDataTransferReport().get() else {
-              // There are two situations that prevent us from geting the pending
-              // data transfer report, The first is that the channel has been closed,
-              // and the second is that the channel.connection is missing. Both
-              // situations indicate that the connection has ended, so we mark it
-              // `completed` here.
-              session._duration = -session.earliestBeginDate.timeIntervalSinceNow
-              session.state = .completed
-              break
-            }
-
-            try await Task.sleep(nanoseconds: 1_000_000_000)
-            let currentDataTransferReport = try await outputStream.dataTransferReport(collector)
-              .get()
-            if let dataTransferReport = session.dataTransferReport {
-              session.dataTransferReport = .init(
-                duration: dataTransferReport._duration + currentDataTransferReport._duration,
-                aggregatePathReport: dataTransferReport.aggregatePathReport
-                  &+ currentDataTransferReport.aggregatePathReport,
-                pathReport: currentDataTransferReport.aggregatePathReport
-              )
-            } else {
-              session.dataTransferReport = .init(
-                duration: currentDataTransferReport._duration,
-                aggregatePathReport: currentDataTransferReport.aggregatePathReport,
-                pathReport: currentDataTransferReport.aggregatePathReport
-              )
-            }
-          } while !session.state.isFinished
-        }
+        await session.collectDataTransferMetrics(on: outputStream)
 
         // Setup HTTP capabilities pipeline
         try await inputStream.eventLoop.submit {
