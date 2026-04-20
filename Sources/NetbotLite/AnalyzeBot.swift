@@ -491,7 +491,7 @@ import Tracing
           inputStream.eventLoop.assertInEventLoop()
 
           try? inputStream.pipeline.syncOperations.addHandler(
-            CharacteristicIdentificationHandler(recognizer: .tls) { result in
+            Recognizer.Handler<Recognizer.TLS> { result in
               var mayBeTLS = false
               if case .identified(let proto) = result {
                 mayBeTLS = proto == "TLS"
@@ -534,7 +534,7 @@ import Tracing
                   .flatMap { sslContext in
                     inputStream.eventLoop.makeCompletedFuture {
                       let position = try inputStream.pipeline.syncOperations.context(
-                        name: "_.capabilities.TLS"
+                        name: Recognizer.TLS.name
                       ).handler
                       try inputStream.pipeline.syncOperations.addHandler(
                         NIOSSLServerHandler(context: sslContext), position: .after(position)
@@ -558,11 +558,11 @@ import Tracing
                   },
                 ], on: inputStream.eventLoop)
             },
-            name: "_.capabilities.chk-TLS"
+            name: Recognizer.TLS.name
           )
 
           try? inputStream.pipeline.syncOperations.addHandler(
-            CharacteristicIdentificationHandler(recognizer: .http) { result in
+            Recognizer.Handler<Recognizer.HTTP> { result in
               var mayBeHTTP = false
               if case .identified(let proto) = result {
                 mayBeHTTP = proto == "HTTP"
@@ -578,7 +578,7 @@ import Tracing
                 [
                   inputStream.eventLoop.makeCompletedFuture {
                     let position = try inputStream.pipeline.syncOperations.context(
-                      name: "_.capabilities.HTTP"
+                      name: Recognizer.HTTP.name
                     ).handler
                     try inputStream.pipeline.syncOperations.addHandlers(
                       [
@@ -607,7 +607,7 @@ import Tracing
                   },
                 ], on: inputStream.eventLoop)
             },
-            name: "_.capabilities.chk-HTTP"
+            name: Recognizer.HTTP.name
           )
 
           // Exchange server and client data over GlueHandler.

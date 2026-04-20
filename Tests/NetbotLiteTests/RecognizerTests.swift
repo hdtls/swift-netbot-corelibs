@@ -23,7 +23,7 @@ import Testing
   @Test func tlsSSLRecognitionThatFirstPacketLengthIsLessThanSix() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
-      CharacteristicIdentificationHandler(recognizer: .tls) { result in
+      Recognizer.Handler<Recognizer.TLS> { result in
         #expect(result == .fallback)
         return channel.eventLoop.makeSucceededVoidFuture()
       }
@@ -40,7 +40,7 @@ import Testing
   @Test func tlsSSLRecognitionThatRecordTypeIsNotSSL3_RT_HANDSHAKE() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
-      CharacteristicIdentificationHandler(recognizer: .tls) { result in
+      Recognizer.Handler<Recognizer.TLS> { result in
         #expect(result == .fallback)
         return channel.eventLoop.makeSucceededVoidFuture()
       }
@@ -55,7 +55,7 @@ import Testing
   @Test func tlsSSLRecognitionThatHandshakeTypeIsNotUnknowned() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
-      CharacteristicIdentificationHandler(recognizer: .tls) { result in
+      Recognizer.Handler<Recognizer.TLS> { result in
         #expect(result == .fallback)
         return channel.eventLoop.makeSucceededVoidFuture()
       }
@@ -70,7 +70,7 @@ import Testing
   @Test func tlsSSLRecognition() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
-      CharacteristicIdentificationHandler(recognizer: .tls) { result in
+      Recognizer.Handler<Recognizer.TLS> { result in
         #expect(result == .identified("TLS"))
         return channel.eventLoop.makeSucceededVoidFuture()
       }
@@ -85,7 +85,7 @@ import Testing
   @Test func httpRecognitionThatFirstPacketDoseNotContainCRLF() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
-      CharacteristicIdentificationHandler(recognizer: .tls) { result in
+      Recognizer.Handler<Recognizer.TLS> { result in
         #expect(result == .fallback)
         return channel.eventLoop.makeSucceededVoidFuture()
       }
@@ -100,7 +100,7 @@ import Testing
   @Test func httpRecognitionWhereTheFirstLineOfPacketContainsAnIncorrectNumberOfSpaces() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
-      CharacteristicIdentificationHandler(recognizer: .tls) { result in
+      Recognizer.Handler<Recognizer.TLS> { result in
         #expect(result == .fallback)
         return channel.eventLoop.makeSucceededVoidFuture()
       }
@@ -112,7 +112,7 @@ import Testing
     #expect(inbound == data)
 
     try channel.pipeline.syncOperations.addHandler(
-      CharacteristicIdentificationHandler(recognizer: .tls) { result in
+      Recognizer.Handler<Recognizer.TLS> { result in
         #expect(result == .fallback)
         return channel.eventLoop.makeSucceededVoidFuture()
       }
@@ -124,7 +124,7 @@ import Testing
     #expect(inbound == data)
 
     try channel.pipeline.syncOperations.addHandler(
-      CharacteristicIdentificationHandler(recognizer: .tls) { result in
+      Recognizer.Handler<Recognizer.TLS> { result in
         #expect(result == .fallback)
         return channel.eventLoop.makeSucceededVoidFuture()
       }
@@ -139,7 +139,7 @@ import Testing
   @Test func httpRecognitionWhereTheLastComponentOfFirstLineOfPacketDoesNotHasHTTPPrefix() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
-      CharacteristicIdentificationHandler(recognizer: .tls) { result in
+      Recognizer.Handler<Recognizer.TLS> { result in
         #expect(result == .fallback)
         return channel.eventLoop.makeSucceededVoidFuture()
       }
@@ -154,7 +154,7 @@ import Testing
   @Test func httpRecognition() throws {
     let channel = EmbeddedChannel()
     try channel.pipeline.syncOperations.addHandler(
-      CharacteristicIdentificationHandler(recognizer: .http) { result in
+      Recognizer.Handler<Recognizer.HTTP> { result in
         #expect(result == .identified("HTTP"))
         return channel.eventLoop.makeSucceededVoidFuture()
       }
