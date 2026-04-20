@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
@@ -285,7 +285,7 @@
   extension NSFileCoordinator: @unchecked Sendable {
   }
 
-  //typealias NSErrorPointer = AutoreleasingUnsafeMutablePointer<NSError?>?
+  // typealias NSErrorPointer = AutoreleasingUnsafeMutablePointer<NSError?>?
   struct NSErrorPointer {}
 
 //  extension URLResourceKey: @retroactive Hashable {

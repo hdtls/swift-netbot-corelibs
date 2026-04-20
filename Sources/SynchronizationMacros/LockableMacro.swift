@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftCompilerPlugin
 import SwiftSyntax
@@ -106,7 +106,7 @@ public struct LockableTrackedMacro: AccessorMacro, Sendable {
       case .get:
         let accessor: AccessorDeclSyntax = """
           get {
-            self.\(raw: LockableMacro.prefixed)\(label).withLock { 
+            self.\(raw: LockableMacro.prefixed)\(label).withLock {
               $0
             }
           }
@@ -114,8 +114,8 @@ public struct LockableTrackedMacro: AccessorMacro, Sendable {
         return accessor
       case .set:
         let accessor: AccessorDeclSyntax = """
-          set { 
-            self.\(raw: LockableMacro.prefixed)\(label).withLock { 
+          set {
+            self.\(raw: LockableMacro.prefixed)\(label).withLock {
               $0 = newValue
             }
           }

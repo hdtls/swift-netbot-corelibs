@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 #if canImport(Darwin)
   import Alamofire
@@ -282,7 +282,7 @@
         let destination: DownloadRequest.Destination = { _, _ in
           (fileURL, [.createIntermediateDirectories, .removePreviousFile])
         }
-        let _ = try await session.download(url, interceptor: .retryPolicy, to: destination)
+        _ = try await session.download(url, interceptor: .retryPolicy, to: destination)
           .serializingDownloadedFileURL()
           .value
 
@@ -328,7 +328,7 @@
                 (dstURL, [.createIntermediateDirectories, .removePreviousFile])
               }
 
-              let _ = try await session.download(
+              _ = try await session.download(
                 resourceURL, interceptor: .retryPolicy, to: destination
               )
               .serializingDownloadedFileURL()

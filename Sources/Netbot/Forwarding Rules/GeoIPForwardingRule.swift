@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import CoWOptimization
 import MaxMindDB
@@ -63,13 +63,7 @@ struct GeoIPForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable,
 
     guard let resolutions = connection.dnsResolutionReport?.resolutions else { return false }
 
-    for resolution in resolutions {
-      for endpoint in resolution.endpoints {
-        if eval(endpoint) { return true }
-      }
-    }
-
-    return false
+    return resolutions.flatMap { $0.endpoints }.contains { eval($0) }
   }
 }
 

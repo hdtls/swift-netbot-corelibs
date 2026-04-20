@@ -1,8 +1,8 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
-// Copyright (c) 2023 Junfeng Zhang and the Netbot project authors
+// Copyright (c) 2024 Junfeng Zhang and the Netbot project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
   import SwiftData

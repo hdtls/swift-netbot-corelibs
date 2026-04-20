@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import CoWOptimization
 import HTTPTypes
@@ -166,7 +166,7 @@ extension ForwardProtocolVMESS: ProxiableForwardProtocol {
                 headers: headers
               ),
               upgraders: [
-                NIOTypedWebSocketClientUpgrader { channel, response in
+                NIOTypedWebSocketClientUpgrader { channel, _ in
                   channel.pipeline.addHandler(WebSocketFrameAggregator())
                     .map { channel }
                 }

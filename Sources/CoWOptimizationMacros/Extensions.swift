@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
@@ -58,7 +58,7 @@ extension VariableDeclSyntax {
   }
 
   var isComputed: Bool {
-    if accessorsMatching({ $0 == .keyword(.get) }).count > 0 {
+    if !accessorsMatching({ $0 == .keyword(.get) }).isEmpty {
       return true
     } else {
       return bindings.contains { binding in

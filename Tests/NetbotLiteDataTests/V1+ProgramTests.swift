@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Testing
 
@@ -59,14 +59,14 @@ import Testing
 
   @available(SwiftStdlib 5.9, *)
   @Test func mergeValues() async throws {
-    let oldIcon = "oldicon".data(using: .utf8)
+    let oldIcon = Data("oldicon".utf8)
     let persistent = V1._Program()
     persistent.localizedName = "OldApp"
     persistent.bundleURL = URL(string: "file:///old.bundle")
     persistent.executableURL = URL(string: "file:///old.exec")
     persistent.iconTIFFRepresentation = oldIcon
 
-    let newIcon = "newicon".data(using: .utf8)
+    let newIcon = Data("newicon".utf8)
     let program = Program(
       localizedName: "NewApp", bundleURL: URL(string: "file:///new.bundle"),
       executableURL: URL(string: "file:///new.exec"), iconTIFFRepresentation: newIcon)

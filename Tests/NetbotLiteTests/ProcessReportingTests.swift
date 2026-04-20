@@ -1,8 +1,8 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
-// Copyright (c) 2023 Junfeng Zhang and the Netbot project authors
+// Copyright (c) 2024 Junfeng Zhang and the Netbot project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Logging
 import NIOCore
@@ -38,7 +38,7 @@ import Testing
       logger: .init(label: "")
     )
 
-    #expect(application.processInfo as? DefaultProcessReporting != nil)
+    #expect(application.processInfo is DefaultProcessReporting)
     let p = try await application.processInfo.processInfo(connection: .init())
     #expect(p == .init())
   }

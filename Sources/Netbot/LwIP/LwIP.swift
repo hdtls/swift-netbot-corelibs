@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import CNELwIP
 import NEAddressProcessing
@@ -51,7 +51,7 @@ class LwIP {
       { contextPtr in
         guard let contextPtr = contextPtr else { return ERR_IF }
         contextPtr.pointee.mtu = 1500
-        contextPtr.pointee.output = { contextPtr, bufferPtr, addressPtr in
+        contextPtr.pointee.output = { contextPtr, bufferPtr, _ in
           guard let data = bufferPtr else {
             return ERR_OK
           }

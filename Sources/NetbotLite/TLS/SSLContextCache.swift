@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,9 +10,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the AsyncHTTPClient open source project
 //
@@ -24,7 +24,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 @preconcurrency import Dispatch
 import Logging
@@ -64,7 +64,7 @@ extension SSLContextCache {
       try NIOSSLContext(configuration: configuration)
     }
 
-    newSSLContext.whenSuccess { (newSSLContext: NIOSSLContext) -> Void in
+    newSSLContext.whenSuccess { (newSSLContext: NIOSSLContext) in
       self.sslContextCache.setValue(newSSLContext, forKey: eqTLSConfiguration)
     }
 

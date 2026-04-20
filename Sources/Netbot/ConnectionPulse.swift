@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Netbot open source project
 //
@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import NEAddressProcessing
 import NIOConcurrencyHelpers
@@ -69,7 +69,7 @@ import NetbotLiteData
       parameters.requiredLocalEndpoint = try address.asEndpoint()
       let options = NWProtocolWebSocket.Options()
       options.autoReplyPing = true
-      options.setClientRequestHandler(.global()) { subprotocols, additionalHeaders in
+      options.setClientRequestHandler(.global()) { _, additionalHeaders in
         self.authorize(additionalHeaders)
       }
       parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
@@ -126,7 +126,7 @@ import NetbotLiteData
                   self.authorize(Array(head.headers))
                 )
             },
-            upgradePipelineHandler: { channel, head in
+            upgradePipelineHandler: { channel, _ in
               channel.pipeline.addHandler(WebSocketAutomator())
                 .flatMapThrowing {
                   try NIOAsyncChannel<ByteBuffer, ByteBuffer>(
