@@ -15,13 +15,21 @@
 import NetbotLiteData
 
 /// `ConnectionPublisher` prtocol define a service to transfer connections.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public protocol ConnectionPublisher: Sendable {
 
   func send(_ connection: Connection) async
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 struct DefaultConnectionPublisher: ConnectionPublisher {
   func send(_ connection: Connection) async {
   }

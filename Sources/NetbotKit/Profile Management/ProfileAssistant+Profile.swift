@@ -24,7 +24,11 @@ import _ProfileSupport
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ProfileAssistant {
 
   public func insert(_ profile: Profile) async throws {

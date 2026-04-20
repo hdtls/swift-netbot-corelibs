@@ -18,6 +18,12 @@ import Testing
 @testable import Netbot
 
 @Suite struct OutboundModeTests {
+
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       [OutboundMode.direct, .globalProxy, .ruleBased],

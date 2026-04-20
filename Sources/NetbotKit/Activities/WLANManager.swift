@@ -23,7 +23,11 @@
 
   private let notApplicable = "N/A"
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @MainActor @Observable final public class WLANManager {
     fileprivate struct NetworkDevice: Equatable, Hashable, Sendable {
       var name: String = "-"
@@ -364,7 +368,11 @@
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension WLANManager: @preconcurrency CWEventDelegate {
 
     public func clientConnectionInterrupted() {

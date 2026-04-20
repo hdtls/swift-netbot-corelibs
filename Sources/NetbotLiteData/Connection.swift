@@ -23,10 +23,18 @@ import NIOConcurrencyHelpers
 #endif
 
 // swift-format-ignore: AlwaysUseLowerCamelCase
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public let SQL_lastInsertedID = ManagedAtomic<UInt64>(0)
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 @Lockable final public class Connection: Identifiable, Sendable {
 
   public var id: UInt64 {
@@ -57,7 +65,9 @@ public let SQL_lastInsertedID = ManagedAtomic<UInt64>(0)
 
   public var earliestBeginDate: Date
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   public var duration: Duration {
     .seconds(_duration)
   }
@@ -93,11 +103,13 @@ public let SQL_lastInsertedID = ManagedAtomic<UInt64>(0)
     self._originalRequest = .init(nil)
     self._currentRequest = .init(nil)
     self._response = .init(nil)
-    if #available(SwiftStdlib 5.5, *) {
-      _earliestBeginDate = .init(.now)
-    } else {
-      _earliestBeginDate = .init(.init())
-    }
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      let earliestBeginDate: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+    #else
+      let earliestBeginDate = Date.now
+    #endif
+    self._earliestBeginDate = .init(earliestBeginDate)
+
     self.__duration = .init(0)
     self._taskDescription = .init("")
     self._tls = .init(false)
@@ -110,7 +122,11 @@ public let SQL_lastInsertedID = ManagedAtomic<UInt64>(0)
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Connection: Codable {
 
   private enum CodingKeys: String, CodingKey {
@@ -174,7 +190,11 @@ extension Connection: Codable {
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Connection {
 
   public typealias Model = V1._Connection

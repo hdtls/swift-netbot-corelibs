@@ -26,7 +26,11 @@ import _ProfileSupport
 
 @Suite(.tags(.profileAssistant)) struct AnyProxyGroupManagementTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func insertAnyProxyGroup() async throws {
     try await withManagedProfile { profileAssistant in
       var proxyGroup = AnyProxyGroup(name: "PROXY")
@@ -46,7 +50,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func insertAnyProxyGroupIntoProfileWhereAnyProxyGroupsSectionExists() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -71,7 +79,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func insertAnyProxyGroupIntoProfileWhereAnyProxyGroupsSectionExistsAndItemsNotEmpty()
     async throws
   {
@@ -100,7 +112,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func insertAnyProxyGroupIntoProfileWhereAnyProxyGroupsSectionAtMiddleOfProfile()
     async throws
   {
@@ -137,7 +153,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func replaceAnyProxyGroup() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -165,7 +185,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func policyGroupReferencedByTheRule() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -198,7 +222,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func moveAnyProxyGroups() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -223,7 +251,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func removeAnyProxyGroups() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -247,7 +279,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func removeSpecifiedAnyProxyGroup() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL

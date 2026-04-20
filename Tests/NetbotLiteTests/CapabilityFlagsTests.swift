@@ -18,6 +18,11 @@ import Testing
 
 @Suite struct CapabilityFlagsTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("Individual flags have correct raw values")
   func individualRawValues() {
     #expect(CapabilityFlags.httpCapture.rawValue == 1)
@@ -25,6 +30,11 @@ import Testing
     #expect(CapabilityFlags.rewrite.rawValue == 4)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("OptionSet contains and union logic")
   func combinations() {
     let all: CapabilityFlags = [.httpCapture, .httpsDecryption, .rewrite]
@@ -39,6 +49,11 @@ import Testing
     #expect(some.contains(.rewrite))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("Hashable and equality")
   func hashableAndEquality() {
     let a: CapabilityFlags = [.httpCapture, .httpsDecryption]
@@ -51,6 +66,11 @@ import Testing
     #expect(set.contains(c))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("Empty flags")
   func emptyFlags() {
     let empty = CapabilityFlags()

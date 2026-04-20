@@ -15,7 +15,11 @@
 import NEAddressProcessing
 import NIOCore
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Message {
 
   /// Returns the bytes serialized in DNS message format.
@@ -57,7 +61,11 @@ extension Message {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Array where Element == UInt8 {
 
   fileprivate mutating func _append(_ newElement: some FixedWidthInteger) {

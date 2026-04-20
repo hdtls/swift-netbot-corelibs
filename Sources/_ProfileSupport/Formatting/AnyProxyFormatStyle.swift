@@ -20,14 +20,22 @@ import HTTPTypes
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxy {
   public struct FormatStyle: Sendable {
     public init() {}
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxy.FormatStyle {
 
   private enum Fields: String {
@@ -238,22 +246,36 @@ extension AnyProxy.FormatStyle {
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxy.FormatStyle: FormatStyle {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxy.FormatStyle {
 
   public func parse(_ value: String) throws -> AnyProxy {
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.7, *) {
+        try _parse(value)
+      } else {
+        try _parse0(value)
+      }
+    #else
       try _parse(value)
-    } else {
-      try _parse0(value)
-    }
+    #endif
   }
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   func _parse(_ value: String) throws -> AnyProxy {
     var parseOutput = ParseOutput()
 
@@ -474,41 +496,73 @@ extension AnyProxy.FormatStyle {
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxy.FormatStyle: ParseStrategy {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxy.FormatStyle {
   public var parseStrategy: AnyProxy.FormatStyle {
     self
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxy.FormatStyle: ParseableFormatStyle {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxy.FormatStyle: Codable, Hashable {}
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension FormatStyle where Self == AnyProxy.FormatStyle {
   public static var proxy: Self { .init() }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ParseableFormatStyle where Self == AnyProxy.FormatStyle {
   public static var proxy: Self { .init() }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ParseStrategy where Self == AnyProxy.FormatStyle {
   @_disfavoredOverload
   public static var proxy: Self { .init() }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxy {
 
   #if canImport(FoundationEssentials)
@@ -517,7 +571,9 @@ extension AnyProxy {
       return v.format(self)
     }
   #else
-    @available(SwiftStdlib 5.5, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.5, *)
+    #endif
     public func formatted<S>(_ v: S) -> S.FormatOutput
     where S: Foundation.FormatStyle, S.FormatInput == AnyProxy {
       v.format(self)
@@ -530,7 +586,9 @@ extension AnyProxy {
     FormatStyle().format(self)
   }
 
-  @available(SwiftStdlib 5.5, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.5, *)
+  #endif
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
   where T.ParseOutput == Self {
     self = try strategy.parse(value)

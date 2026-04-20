@@ -26,7 +26,11 @@ import _ProfileSupport
 
 @Suite(.tags(.profileAssistant)) struct AnyProxyManagementTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func insertProxyIntoProfileFile() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -51,7 +55,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func insertAnyProxyIntoProfileWhereAnyProxiesSectionExists() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -73,7 +81,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func insertAnyProxyIntoProfileWhereAnyProxiesSectionExistsAndItemsNotEmpty() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -96,7 +108,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func insertAnyProxyIntoProfileWhereAnyProxiesSectionAtMiddleOfProfile() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -132,7 +148,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func replaceProxyWithNewProxy() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -164,7 +184,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func replaceProxyWithNewProxyWhichNameAlsoChanged() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -206,7 +230,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func moveProxies() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -248,7 +276,11 @@ import _ProfileSupport
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func removeProxies() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL

@@ -18,14 +18,22 @@
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DNSMapping {
   public struct FormatStyle: Sendable {
     public init() {}
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DNSMapping.FormatStyle {
   public func format(_ value: DNSMapping) -> String {
     var formatOutput = value.isEnabled ? value.domainName : "# \(value.domainName)"
@@ -39,22 +47,36 @@ extension DNSMapping.FormatStyle {
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DNSMapping.FormatStyle: FormatStyle {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DNSMapping.FormatStyle {
 
   public func parse(_ value: String) throws -> DNSMapping {
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.7, *) {
+        try _parse(value)
+      } else {
+        try _parse0(value)
+      }
+    #else
       try _parse(value)
-    } else {
-      try _parse0(value)
-    }
+    #endif
   }
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   func _parse(_ value: String) throws -> DNSMapping {
     let parseInput = value
     let matches = parseInput.matches(of: DNSMapping.regex)
@@ -116,36 +138,64 @@ extension DNSMapping.FormatStyle {
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DNSMapping.FormatStyle: ParseStrategy {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DNSMapping.FormatStyle {
   public var parseStrategy: DNSMapping.FormatStyle {
     self
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DNSMapping.FormatStyle: ParseableFormatStyle {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DNSMapping.FormatStyle: Codable, Hashable {}
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension FormatStyle where Self == DNSMapping.FormatStyle {
   public static var dnsMapping: Self { .init() }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ParseStrategy where Self == DNSMapping.FormatStyle {
   @_disfavoredOverload
   public static var dnsMapping: Self { .init() }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DNSMapping {
 
   #if canImport(FoundationEssentials)
@@ -154,7 +204,9 @@ extension DNSMapping {
       return v.format(self)
     }
   #else
-    @available(SwiftStdlib 5.5, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.5, *)
+    #endif
     public func formatted<S>(_ v: S) -> S.FormatOutput
     where S: Foundation.FormatStyle, S.FormatInput == DNSMapping {
       return v.format(self)
@@ -165,7 +217,9 @@ extension DNSMapping {
     FormatStyle().format(self)
   }
 
-  @available(SwiftStdlib 5.5, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.5, *)
+  #endif
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
   where T.ParseOutput == Self {
     self = try strategy.parse(value)

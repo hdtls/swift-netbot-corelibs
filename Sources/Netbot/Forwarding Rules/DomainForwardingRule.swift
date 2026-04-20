@@ -16,7 +16,11 @@ import CoWOptimization
 import NetbotLite
 import NetbotLiteData
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 @_cowOptimization
 struct DomainForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
@@ -37,7 +41,11 @@ struct DomainForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DomainForwardingRule._Storage: Hashable {
   static func == (lhs: DomainForwardingRule._Storage, rhs: DomainForwardingRule._Storage) -> Bool {
     lhs.domain == rhs.domain
@@ -51,5 +59,9 @@ extension DomainForwardingRule._Storage: Hashable {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DomainForwardingRule._Storage: @unchecked Sendable {}

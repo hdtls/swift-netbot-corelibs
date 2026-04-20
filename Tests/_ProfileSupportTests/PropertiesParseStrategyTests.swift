@@ -25,16 +25,30 @@ import Testing
 @Suite(.tags(.formatting))
 struct PropertiesParseStrategyTests {
 
-  let parser = PropertiesParseStrategy()
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  var parser: PropertiesParseStrategy { .init() }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: ["==", " = = ", "p1, p2 = 1", "p1"])
   func parsePropertiesFromInvalidInput(_ parseInput: String) async throws {
     let parseFunctions: [(String) throws -> [String: [String]]]
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.7, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       #expect(throws: CocoaError.self) {
@@ -43,13 +57,22 @@ struct PropertiesParseStrategyTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parse() async throws {
     let parseFunctions: [(String) throws -> [String: [String]]]
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.7, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       #expect(try parse("p1 = 1") == ["p1": ["1"]])
@@ -63,16 +86,25 @@ struct PropertiesParseStrategyTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parsePropertiesFromInputContainingQuotationMarks() throws {
 
     let parseInput = "p1 = 1, \"p2 = 2\""
 
     let parseFunctions: [(String) throws -> [String: [String]]]
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.7, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -80,15 +112,24 @@ struct PropertiesParseStrategyTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func parsePropertiesFromInputContainingMultipleQuotationMarks() throws {
     let parseInput = "p1 = 1, \"p2 = 2\", p3 = \"a\""
 
     let parseFunctions: [(String) throws -> [String: [String]]]
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.7, *) {
+        parseFunctions = [parser.parse, parser._parse, parser._parse0]
+      } else {
+        parseFunctions = [parser.parse, parser._parse0]
+      }
+    #else
       parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    } else {
-      parseFunctions = [parser.parse, parser._parse0]
-    }
+    #endif
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)

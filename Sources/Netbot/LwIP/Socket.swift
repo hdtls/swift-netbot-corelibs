@@ -15,7 +15,11 @@
 import CNELwIP
 import NIOCore
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 class Socket: BaseSocket {
 
   func write(pointer: UnsafeRawBufferPointer, flags: Int32) throws {

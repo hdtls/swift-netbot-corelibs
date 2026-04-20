@@ -19,7 +19,11 @@
 #endif
 
 // swift-format-ignore: AvoidRetroactiveConformances
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Date: @retroactive RawRepresentable {
 
   public var rawValue: String {

@@ -19,7 +19,11 @@
 
   /// This object implements the protocol which we have defined. It provides the actual behavior for the service. It is 'exported' by the
   /// service to make it available to the process hosting the service over an NSXPCConnection.
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   final public class AppServiceHandle {
 
     private let authorizationExternalForm: Data
@@ -54,7 +58,9 @@
       }
     }
 
-    @available(SwiftStdlib 5.7, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.7, *)
+    #endif
     private func register(plistName: String, service: SMAppService) async throws {
       do {
         let status = service.status
@@ -106,7 +112,9 @@
       }
     }
 
-    @available(SwiftStdlib 5.7, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.7, *)
+    #endif
     private func unregister(plistName: String, service: SMAppService) async throws {
       do {
         try await SMAppService.daemon(plistName: plistName).unregister()
@@ -146,14 +154,43 @@
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension AppServiceHandle: @unchecked Sendable {}
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension AppServiceHandle: AppServiceHandleProtocol {
 
     public func codeSigningRequirement() async -> String {
-      if #available(SwiftStdlib 5.7, *) {
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.7, *) {
+          var codeSigningRequirementParts: [Substring] = []
+
+          codeSigningRequirementParts.append("identifier \"com.tenbits.netbot\"")
+          codeSigningRequirementParts.append("anchor apple generic")
+
+          let propertyList =
+            Bundle.main.object(forInfoDictionaryKey: "SMPrivilegedExecutables") as! [String: String]
+          let team = propertyList.values.first.map {
+            $0.split(separator: /\ and\ /)
+              .filter { $0.starts(with: /^certificate leaf\[subject\./) }
+              .first!
+          }!
+          codeSigningRequirementParts.append(team)
+
+          return codeSigningRequirementParts.joined(separator: " and ")
+        } else {
+          // TODO: Fallback to SwiftStdlib 5.3
+          return ""
+        }
+      #else
         var codeSigningRequirementParts: [Substring] = []
 
         codeSigningRequirementParts.append("identifier \"com.tenbits.netbot\"")
@@ -169,73 +206,108 @@
         codeSigningRequirementParts.append(team)
 
         return codeSigningRequirementParts.joined(separator: " and ")
-      } else {
-        // TODO: Fallback to SwiftStdlib 5.3
-        return ""
-      }
+      #endif
     }
 
     public func register(daemon plistName: String) async throws {
-      if #available(macOS 13.0, *) {
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.7, *) {
+          let daemon = SMAppService.daemon(plistName: plistName)
+          try await register(plistName: plistName, service: daemon)
+        }
+      #else
         let daemon = SMAppService.daemon(plistName: plistName)
         try await register(plistName: plistName, service: daemon)
-      }
+      #endif
     }
 
     public func register(agent plistName: String) async throws {
-      if #available(macOS 13.0, *) {
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.7, *) {
+          let agent = SMAppService.agent(plistName: plistName)
+          try await register(plistName: plistName, service: agent)
+        }
+      #else
         let agent = SMAppService.agent(plistName: plistName)
         try await register(plistName: plistName, service: agent)
-      }
+      #endif
     }
 
     public func register(loginItem identifier: String) async throws {
-      if #available(macOS 13.0, *) {
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.7, *) {
+          let loginItem = SMAppService.loginItem(identifier: identifier)
+          try await register(plistName: identifier, service: loginItem)
+        }
+      #else
         let loginItem = SMAppService.loginItem(identifier: identifier)
         try await register(plistName: identifier, service: loginItem)
-      }
+      #endif
     }
 
     public func unregister(daemon plistName: String) async throws {
-      if #available(macOS 13.0, *) {
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.7, *) {
+          let daemon = SMAppService.daemon(plistName: plistName)
+          try await unregister(plistName: plistName, service: daemon)
+        }
+      #else
         let daemon = SMAppService.daemon(plistName: plistName)
         try await unregister(plistName: plistName, service: daemon)
-      }
+      #endif
     }
 
     public func unregister(agent plistName: String) async throws {
-      if #available(macOS 13.0, *) {
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.7, *) {
+          let agent = SMAppService.agent(plistName: plistName)
+          try await unregister(plistName: plistName, service: agent)
+        }
+      #else
         let agent = SMAppService.agent(plistName: plistName)
         try await unregister(plistName: plistName, service: agent)
-      }
+      #endif
     }
 
     public func unregister(loginItem identifier: String) async throws {
-      if #available(macOS 13.0, *) {
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.7, *) {
+          let loginItem = SMAppService.loginItem(identifier: identifier)
+          try await unregister(plistName: identifier, service: loginItem)
+        }
+      #else
         let loginItem = SMAppService.loginItem(identifier: identifier)
         try await unregister(plistName: identifier, service: loginItem)
-      }
+      #endif
     }
 
-    @available(macOS 13.0, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.7, *)
+    #endif
     public func status(daemon plistName: String) async -> SMAppService.Status {
       let daemon = SMAppService.daemon(plistName: plistName)
       return daemon.status
     }
 
-    @available(macOS 13.0, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.7, *)
+    #endif
     public func status(agent plistName: String) async -> SMAppService.Status {
       let agent = SMAppService.agent(plistName: plistName)
       return agent.status
     }
 
-    @available(macOS 13.0, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.7, *)
+    #endif
     public func status(loginItem identifier: String) async -> SMAppService.Status {
       let loginItem = SMAppService.loginItem(identifier: identifier)
       return loginItem.status
     }
 
-    @available(macOS 13.0, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.7, *)
+    #endif
     public func openSystemSettingsLoginItems() async {
       SMAppService.openSystemSettingsLoginItems()
     }
@@ -264,7 +336,11 @@
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension NSXPCConnection {
 
     /// Convert `remoteObjectProxy` to `any PHTHandleProtocol` if possible.
@@ -291,12 +367,20 @@
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   enum NEXPCServiceError: Error {
     case operationUnsupported
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension Data {
     var authorizationExternalForm: AuthorizationExternalForm {
       get throws {

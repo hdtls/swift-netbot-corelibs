@@ -19,7 +19,11 @@ import NIOCore
 import NetbotLiteData
 import Tracing
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Connection {
 
   internal var metadata: Logger.Metadata {
@@ -31,7 +35,11 @@ extension Connection {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Connection.State {
   var isFinished: Bool {
     switch self {
@@ -43,7 +51,11 @@ extension Connection.State {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Connection {
 
   private func processInfoLookup(logger: Logger, proc: any ProcessReporting) async throws {

@@ -14,14 +14,20 @@
 
 import RegexBuilder
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DNSMapping {
 
   static let delimiter = "="
 
   package static let sectionName = "[DNS Mapping]"
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   package static var sectionRegex: some RegexComponent {
     Regex {
       ZeroOrMore(.whitespace)
@@ -31,7 +37,9 @@ extension DNSMapping {
     }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   package static var regex: Regex<(Substring, Bool, Substring, (DNSMapping.Kind, Substring))> {
     Regex {
       TryCapture(Optionally(/\ *# +/)) { $0.isEmpty }
@@ -65,7 +73,9 @@ extension DNSMapping {
     }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   package var regex: some RegexComponent {
     Regex {
       /^ */

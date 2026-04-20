@@ -20,7 +20,11 @@
   import Network
   import Observation
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   final public class Diagnostics: Sendable {
 
     private let logger = Logger(label: "com.tenbits.diagnostics")

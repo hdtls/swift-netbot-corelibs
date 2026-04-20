@@ -29,7 +29,11 @@ import _ProfileSupport
 @Suite(.tags(.profileAssistant, .swiftData))
 struct ProfileAssistantTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func initialData() throws {
     #if canImport(SwiftData)
       let schema: Schema = Schema(versionedSchema: _VersionedSchema.self)
@@ -52,7 +56,11 @@ struct ProfileAssistantTests {
     #endif
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func setProfileURL() async throws {
     try await withManagedProfile { profileAssistant in
       var profileURL = await profileAssistant.profileURL
@@ -63,7 +71,11 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func setProfilesDirectory() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -77,7 +89,11 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func reloadProfile() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -135,7 +151,11 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func loadProfileFromURLThatCannotBeOpened() async throws {
     try await withManagedProfile { profileAssistant in
       let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
@@ -146,7 +166,11 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func loadProfileContainsInvalidPolicy() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -163,7 +187,11 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func loadProfileContainsInvalidPolicyGroup() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -180,7 +208,11 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func loadProfileContainsInvalidRule() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -197,7 +229,11 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func profileIdentifiedByURL() async throws {
     try await withManagedProfile { profileAssistant in
       await #expect(throws: Never.self) {
@@ -208,7 +244,11 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func profileIdentifiedByURLThatProfileWithURLIsNotExist() async throws {
     try await withManagedProfile { profileAssistant in
       await #expect(throws: ProfileLoadError.self) {
@@ -220,7 +260,11 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func profileIdentifiedByName() async throws {
     try await withManagedProfile { profileAssistant in
       await #expect(throws: Never.self) {
@@ -231,7 +275,11 @@ struct ProfileAssistantTests {
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func profileIdentifiedByNameThatProfileWithNameIsNotExist() async throws {
     try await withManagedProfile { profileAssistant in
       await #expect(throws: ProfileLoadError.self) {

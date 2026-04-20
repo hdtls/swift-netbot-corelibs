@@ -27,12 +27,22 @@ import Testing
 @Suite(.tags(.forwardingRule))
 struct ProcessForwardingRuleTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func processForwardingRulePropertyInitialValue() {
     let data = ProcessForwardingRule(processName: "ssh", forwardProtocol: .direct)
     #expect(data.processName == "ssh")
     #expect(data.description == "PROCESS-NAME ssh")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func processForwardingRuleCopyOnWrite() {
     var a = ProcessForwardingRule(processName: "ssh", forwardProtocol: .direct)
     let b = a
@@ -43,6 +53,11 @@ struct ProcessForwardingRuleTests {
     #expect(c != a)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func processForwardingRulePredicate() {
     let connection = Connection()
     connection.processReport = ProcessReport(
@@ -60,6 +75,11 @@ struct ProcessForwardingRuleTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func processForwardingRuleEquatableConformance() async throws {
     let lhs = ProcessForwardingRule(processName: "trustd", forwardProtocol: .direct)
     let rhs = ProcessForwardingRule(processName: "nsurlsessiond", forwardProtocol: .direct)

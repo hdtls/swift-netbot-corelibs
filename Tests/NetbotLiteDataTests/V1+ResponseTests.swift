@@ -25,7 +25,11 @@ import Testing
 
 @Suite struct V1_ResponseTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValues() async throws {
     let source = V1._Response()
     #expect(source.httpResponse == nil)
@@ -33,7 +37,11 @@ import Testing
   }
 
   #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
-    @available(SwiftStdlib 5.9, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func httpResponseCodableConformance() async throws {
       let httpResponse = HTTPResponse(status: .ok)
       let response = V1._HTTPResponse(httpResponse: httpResponse)
@@ -43,7 +51,11 @@ import Testing
     }
   #endif
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func setHTTPResponse() async throws {
     let httpResponse = HTTPResponse(status: .ok)
 
@@ -55,7 +67,11 @@ import Testing
     #expect(source.httpResponse == nil)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mergeValues() async throws {
     let httpResponse = HTTPResponse(status: .ok)
     var data = Response(httpResponse: httpResponse)

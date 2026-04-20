@@ -20,10 +20,20 @@ import Testing
 
 @Suite struct NEIPFieldsTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func unsupportedProtocolFamily() async throws {
     #expect(NEIPFields(storage: NEIPFields.Data([0x55])) == nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       [
@@ -37,6 +47,11 @@ import Testing
     #expect(headerFields?.protocolFamily == protocolFamily)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func data() async throws {
     let data = try ByteBuffer(
       plainHexEncodedBytes:
@@ -49,6 +64,11 @@ import Testing
 
   @Suite struct NEInFieldsTests {
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func getProperties() async throws {
       let data = try ByteBuffer(
         plainHexEncodedBytes:
@@ -76,6 +96,11 @@ import Testing
 
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func setDSCP() async throws {
       let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
@@ -100,6 +125,11 @@ import Testing
       #expect(headerFields.data == finalize)
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func setECN() async throws {
       let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
@@ -124,6 +154,11 @@ import Testing
       #expect(headerFields.data == finalize)
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func setIdentification() async throws {
       let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
@@ -140,6 +175,11 @@ import Testing
       #expect(headerFields.data == finalize)
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func setFlags() async throws {
       let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
@@ -158,6 +198,11 @@ import Testing
       #expect(headerFields.data == finalize)
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func setFragmentOffsets() async throws {
       let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
@@ -176,6 +221,11 @@ import Testing
       #expect(headerFields.data == finalize)
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func setTTL() async throws {
       let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
@@ -192,6 +242,11 @@ import Testing
       #expect(headerFields.data == finalize)
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func setProtocol() async throws {
       let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
@@ -208,6 +263,11 @@ import Testing
       #expect(headerFields.data == finalize)
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func setSRCAddress() async throws {
       let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
@@ -224,6 +284,11 @@ import Testing
       #expect(headerFields.data == finalize)
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func setDSTAddress() async throws {
       let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
@@ -240,6 +305,11 @@ import Testing
       #expect(headerFields.data == finalize)
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func setOptions() async throws {
       var data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 
@@ -285,6 +355,11 @@ import Testing
       #expect(headerFields.data == finalize)
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func customMirrorConformance() async throws {
       let data = try ByteBuffer(plainHexEncodedBytes: "45000014000040004006aaaac0a80764c0a80765")
 

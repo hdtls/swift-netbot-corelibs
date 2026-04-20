@@ -18,6 +18,11 @@ import Testing
 
 @Suite struct DuplicableTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   class File: Duplicable {
     var name: String
 
@@ -30,6 +35,11 @@ import Testing
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func duplicate() {
     let file = File(named: "info")
     var copyed = file.copy()
@@ -43,6 +53,11 @@ import Testing
     #expect(["info"].duplicate("info") == "info copy")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func duplicateInAnArrayThatAlreadyContainsACopy() {
     let file = File(named: "info")
 
@@ -54,6 +69,11 @@ import Testing
     #expect(["info", "info copy"].duplicate("info") == "info copy 1")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func duplicateInAnArrayThatContainsMultipleCopys() {
     let file = File(named: "info")
 

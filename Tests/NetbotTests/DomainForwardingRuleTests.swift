@@ -22,12 +22,22 @@ import Testing
 @Suite(.tags(.forwardingRule))
 struct DomainForwardingRuleTest {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() {
     let data = DomainForwardingRule(domain: "example.com", forwardProtocol: .direct)
     #expect(data.domain == "example.com")
     #expect(data.description == "DOMAIN example.com")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func copyOnWrite() {
     var a = DomainForwardingRule(domain: "example.com", forwardProtocol: .direct)
     let b = a
@@ -38,6 +48,11 @@ struct DomainForwardingRuleTest {
     #expect(c != a)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: zip(["test1.com:443", "sub.test2.com", "test2.com:443"], [false, false, true]))
   func predicateWorks(_ authority: String, expected: Bool) {
     let connection = Connection()
@@ -51,6 +66,11 @@ struct DomainForwardingRuleTest {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func equatableConformance() async throws {
     let lhs = DomainForwardingRule(domain: "test1.com", forwardProtocol: .direct)
     let rhs = DomainForwardingRule(domain: "test2.com", forwardProtocol: .direct)

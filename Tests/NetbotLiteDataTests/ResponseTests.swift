@@ -25,7 +25,11 @@ import Testing
 
 @Suite struct ResponseTests {
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValues() async throws {
     let httpResponse = HTTPResponse(status: .ok)
     var source = Response(httpResponse: httpResponse)
@@ -37,7 +41,11 @@ import Testing
     #expect(source.body == nil)
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func hashableConformance() async throws {
     let response = Response()
     let expected = response
@@ -47,7 +55,11 @@ import Testing
     #expect(responses == [response])
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func codableConformance() async throws {
     var response = Response()
     var data = try JSONEncoder().encode(response)
@@ -61,13 +73,21 @@ import Testing
     #expect(response == result)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func persistentModel() {
     let source = Response.Model.self
     #expect(source == V1._Response.self)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func initializeResponseFromPersistentModel() async throws {
     let persistentModel = V1._Response()
     persistentModel.httpResponse = .init(status: .ok)

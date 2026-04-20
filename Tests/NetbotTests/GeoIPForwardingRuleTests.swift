@@ -20,6 +20,11 @@ import Testing
 @Suite(.tags(.forwardingRule))
 struct GeoIPForwardingRuleTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() {
     let forwardingRule = GeoIPForwardingRule(
       db: nil, countryCode: "CN", forwardProtocol: .direct)
@@ -27,6 +32,11 @@ struct GeoIPForwardingRuleTests {
     #expect(forwardingRule.description == "GEOIP CN")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func copyOnWrite() {
     var a = GeoIPForwardingRule(db: nil, countryCode: "CN", forwardProtocol: .direct)
     let b = a
@@ -37,6 +47,11 @@ struct GeoIPForwardingRuleTests {
     #expect(c != a)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func equatableConformance() async throws {
     let lhs = GeoIPForwardingRule(db: nil, countryCode: "CN", forwardProtocol: .direct)
     let rhs = GeoIPForwardingRule(db: nil, countryCode: "US", forwardProtocol: .direct)

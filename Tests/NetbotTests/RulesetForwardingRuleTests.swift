@@ -31,6 +31,11 @@ struct RulesetForwardingRuleTests {
   private let externalResourceDirectory: URL = URL(fileURLWithPath: #filePath)
     .deletingLastPathComponent().appending(path: "External Resource")
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() async throws {
     let data = RulesetForwardingRule(
       originalURLString: #filePath, forwardProtocol: .direct)
@@ -39,6 +44,11 @@ struct RulesetForwardingRuleTests {
     #expect(data.description == "RULE-SET RulesetForwardingRuleTests.swift")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func externalResourceDoesNotExists() async throws {
     let data = RulesetForwardingRule(
       originalURLString: #filePath, forwardProtocol: .direct)
@@ -47,6 +57,11 @@ struct RulesetForwardingRuleTests {
     #expect(data.description == "RULE-SET RulesetForwardingRuleTests.swift")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func externalRulesProcessing() async throws {
     let forwardingRule = RulesetForwardingRule(
       externalResourceDirectory: externalResourceDirectory,
@@ -57,6 +72,11 @@ struct RulesetForwardingRuleTests {
     #expect(forwardingRule.description == "RULE-SET forwarding_rules")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func setOriginalURLString() async throws {
     var forwardingRule = RulesetForwardingRule(
       externalResourceDirectory: externalResourceDirectory, originalURLString: #filePath,
@@ -72,6 +92,11 @@ struct RulesetForwardingRuleTests {
     #expect(forwardingRule.description == "RULE-SET forwarding_rules")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func copyOnWrite() async throws {
     var a = RulesetForwardingRule(
       externalResourceDirectory: externalResourceDirectory, originalURLString: #filePath,
@@ -84,6 +109,11 @@ struct RulesetForwardingRuleTests {
     #expect(c != a)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     "www.test.com", "test1.com:443", "sub.test2.com", "test2.com:443", "test2.a.com",
   ])
@@ -101,6 +131,11 @@ struct RulesetForwardingRuleTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func equatableConformance() async throws {
     let lhs = RulesetForwardingRule(
       originalURLString: "https://test1.com/forwarding_rules", forwardProtocol: .direct)

@@ -33,7 +33,11 @@ import NetbotLiteData
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 @Lockable final class ConnectionPulse: ConnectionPublisher, Sendable {
 
   private let group: any EventLoopGroup
@@ -253,7 +257,11 @@ import NetbotLiteData
 }
 
 #if !canImport(Network)
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   final class WebSocketAutomator: ChannelInboundHandler, ChannelOutboundHandler {
     typealias InboundIn = WebSocketFrame
     typealias InboundOut = ByteBuffer
@@ -348,6 +356,10 @@ import NetbotLiteData
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension WebSocketAutomator: @unchecked Sendable {}
 #endif

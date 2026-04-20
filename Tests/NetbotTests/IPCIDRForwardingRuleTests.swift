@@ -23,6 +23,11 @@ import Testing
 @Suite(.tags(.forwardingRule))
 struct IPCIDRForwardingRuleTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func createAddressesWithIPCIDRString() async throws {
     let testVectors = [
       ("192.168.0.1/20", ("192.168.0.0", "192.168.15.255")),
@@ -52,6 +57,11 @@ struct IPCIDRForwardingRuleTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     "192.168/21",
     "192.168.0.1",
@@ -69,6 +79,11 @@ struct IPCIDRForwardingRuleTests {
     #expect(IPCIDRForwardingRule.Addresses(uncheckedBounds: cidr) == nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func createAddressesWithSocketAddressAndPrefix() async throws {
     let testVectors = [
       (("192.168.0.1", 20), ("192.168.0.0", "192.168.15.255")),
@@ -101,11 +116,21 @@ struct IPCIDRForwardingRuleTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func createAddressesWithUnixDomainSocket() async throws {
     let address = try SocketAddress(unixDomainSocketPath: "/var/tmp")
     #expect(IPCIDRForwardingRule.Addresses(address: address, maskBits: 12) == nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       ["127.0.0.0", "127.0.0.1", "127.0.0.2", "127.0.1.0", "127.0.1.1"],
@@ -121,6 +146,11 @@ struct IPCIDRForwardingRuleTests {
     #expect(addresses.contains(address) == expected)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func ipv4AddressesContainsUnixDomainSocket() async throws {
     let addresses = try IPCIDRForwardingRule.Addresses(
       bounds: (
@@ -132,6 +162,11 @@ struct IPCIDRForwardingRuleTests {
     #expect(!addresses.contains(address))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       ["::7f00:0000", "::7f00:0001", "::7f00:0002", "::7f00:0100", "::7f00:0101"],
@@ -147,6 +182,11 @@ struct IPCIDRForwardingRuleTests {
     #expect(addresses.contains(address) == expected)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func ipv6AddressesContainsUnixDomainSocket() async throws {
     let addresses = try IPCIDRForwardingRule.Addresses(
       bounds: (
@@ -158,6 +198,11 @@ struct IPCIDRForwardingRuleTests {
     #expect(!addresses.contains(address))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func ipv4AddressesContainsIPv6Address() async throws {
     let addresses = try IPCIDRForwardingRule.Addresses(
       bounds: (
@@ -169,6 +214,11 @@ struct IPCIDRForwardingRuleTests {
     #expect(!addresses.contains(address))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func ipv6AddressesContainsIPv4Address() async throws {
     let addresses = try IPCIDRForwardingRule.Addresses(
       bounds: (
@@ -180,6 +230,11 @@ struct IPCIDRForwardingRuleTests {
     #expect(!addresses.contains(address))
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() async throws {
     let forwardingRule = FINALForwardingRule("test", forwardProtocol: .direct)
     #expect(forwardingRule.condition == "test")
@@ -190,6 +245,11 @@ struct IPCIDRForwardingRuleTests {
     #expect(forwardingRule1.description == "FINAL")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func copyOnWrite() async throws {
     var a = FINALForwardingRule("test", forwardProtocol: .direct)
     let b = a
@@ -200,6 +260,11 @@ struct IPCIDRForwardingRuleTests {
     #expect(c != a)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       [
@@ -217,6 +282,11 @@ struct IPCIDRForwardingRuleTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       [
@@ -235,6 +305,11 @@ struct IPCIDRForwardingRuleTests {
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func equatableConformance() async throws {
     let lhs = IPCIDRForwardingRule(
       classlessInterDomainRouting: "192.168.0.1/20", forwardProtocol: .direct)

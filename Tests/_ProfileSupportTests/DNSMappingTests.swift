@@ -19,6 +19,11 @@ import Testing
 @Suite(.tags(.dnsMapping))
 struct DNSMappingTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() {
     let data = DNSMapping()
     #expect(data.kind == .mapping)
@@ -32,6 +37,11 @@ struct DNSMappingTests {
 @Suite("DNSMapping.KindTests", .tags(.dnsMapping))
 struct DNSMappingKindTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: zip(DNSMapping.Kind.allCases, [0, 1, 2]))
   func rawRepresentableConformance(_ kind: DNSMapping.Kind, _ rawValue: Int) {
     #expect(DNSMapping.Kind(rawValue: rawValue) == kind)
@@ -39,6 +49,11 @@ struct DNSMappingKindTests {
     #expect(DNSMapping.Kind(rawValue: 9) == nil)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func caseIterableConformance() {
     #expect(DNSMapping.Kind.allCases == [.mapping, .cname, .dns])
   }

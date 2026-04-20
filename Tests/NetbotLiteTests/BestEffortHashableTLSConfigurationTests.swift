@@ -18,6 +18,11 @@ import Testing
 @testable import NetbotLite
 
 @Suite struct BestEffortHashableTLSConfigurationTests {
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("Identical TLSConfiguration should be equal and hash the same")
   func hashableConformance() async throws {
     let cfg1 = NIOSSL.TLSConfiguration.makeClientConfiguration()
@@ -28,6 +33,11 @@ import Testing
     #expect(wr1.hashValue == wr2.hashValue, "Hash values should match for identical configs")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("Different TLSConfiguration should not be equal and should have different hashes")
   func differentConfigurations() async throws {
     let cfg1 = NIOSSL.TLSConfiguration.makeClientConfiguration()
@@ -40,6 +50,11 @@ import Testing
     #expect(wr1.hashValue != wr2.hashValue, "Hash values should differ for different configs")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("BestEffortHashableTLSConfiguration is usable in Set and Dictionary")
   func hashableInSetAndDict() async throws {
     let cfg = NIOSSL.TLSConfiguration.makeClientConfiguration()

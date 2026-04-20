@@ -19,10 +19,18 @@
   import _PrivilegeSupport
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   public var PHT: PrivilegeScope { PrivilegeScope.shared }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @globalActor public actor PrivilegeScope {
 
     public static let shared = PrivilegeScope()
@@ -111,15 +119,24 @@
         try await setAppServiceHandleIfNeeded()
         let proxy = try privileges.remoteAppServiceHandle()
 
-        if #available(SwiftStdlib 5.7, *) {
+        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+          if #available(SwiftStdlib 5.7, *) {
+            if case .enabled = await proxy.status(daemon: plistName) {
+              return
+            }
+            try await proxy.register(daemon: plistName)
+            isActive = true
+          } else {
+            // TODO: Fallback to SwiftStdlib 5.3
+          }
+        #else
           if case .enabled = await proxy.status(daemon: plistName) {
             return
           }
           try await proxy.register(daemon: plistName)
           isActive = true
-        } else {
-          // TODO: Fallback to SwiftStdlib 5.3
-        }
+        #endif
+
       } catch {
         self.logger.error("Launch daemon \(plistName) register failure with error: \(error)")
         throw error
@@ -138,14 +155,21 @@
 
       do {
         let proxy = try privileges.remoteAppServiceHandle()
-        if #available(SwiftStdlib 5.7, *) {
+        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+          if #available(SwiftStdlib 5.7, *) {
+            guard case .enabled = await proxy.status(daemon: plistName) else {
+              return
+            }
+            try await proxy.unregister(daemon: plistName)
+          } else {
+            // TODO: Fallback to SwiftStdlib 5.3
+          }
+        #else
           guard case .enabled = await proxy.status(daemon: plistName) else {
             return
           }
           try await proxy.unregister(daemon: plistName)
-        } else {
-          // TODO: Fallback to SwiftStdlib 5.3
-        }
+        #endif
       } catch {
         self.logger.error("Launch daemon \(plistName) unregister failure with error: \(error)")
         throw error
@@ -202,7 +226,11 @@
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension NSXPCConnection {
 
     /// Convert `remoteObjectProxy` to `any AppServiceHandleProtocol` if possible.

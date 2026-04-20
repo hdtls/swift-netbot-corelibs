@@ -19,7 +19,11 @@ import Testing
 @Suite("V1._PathReport and DataTransferReport.PathReport")
 struct PathReportTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("V1._PathReport default initialization")
   func pathReportDefaultInit() {
     let report = V1._PathReport()
@@ -37,7 +41,11 @@ struct PathReportTests {
     #expect(report.sentApplicationByteCount == 0)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("DataTransferReport.PathReport default initialization")
   func dataTransferPathReportDefaultInit() {
     let report = DataTransferReport.PathReport()
@@ -55,7 +63,11 @@ struct PathReportTests {
     #expect(report.sentApplicationByteCount == 0)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("Init from persistent model copies all values")
   func dataTransferPathReportFromPersistentModel() {
     let persistent = V1._PathReport()
@@ -87,7 +99,11 @@ struct PathReportTests {
     #expect(report.sentApplicationByteCount == 200)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("mergeValues overwrites all values")
   func mergeValues() {
     let persistent = V1._PathReport()

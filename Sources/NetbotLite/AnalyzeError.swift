@@ -13,7 +13,11 @@
 // ===----------------------------------------------------------------------===//
 
 /// An error that can occur on AnalyzeBot operations.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public enum AnalyzeError: Error {
 
   /// Input stream endpoint is invalid and can not be used.

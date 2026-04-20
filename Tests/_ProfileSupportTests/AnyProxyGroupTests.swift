@@ -18,6 +18,11 @@ import Testing
 
 @Suite(.tags(.proxyGroup)) struct AnyProxyGroupTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() async throws {
     let persistentModel = AnyProxyGroup()
     #expect(persistentModel.kind == .select)
@@ -28,6 +33,11 @@ import Testing
 @Suite("AnyProxyGroup.KindTests", .tags(.proxyGroup))
 struct AnyProxyGroupKindTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       AnyProxyGroup.Kind.allCases,
@@ -41,6 +51,11 @@ struct AnyProxyGroupKindTests {
     #expect(kind.localizedName == localizedName)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       AnyProxyGroup.Kind.allCases,
@@ -56,11 +71,21 @@ struct AnyProxyGroupKindTests {
     #expect(kind.localizedDescription == description)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func caseIterableConformance() async throws {
     #expect(
       AnyProxyGroup.Kind.allCases == [.select, .urlTest, .fallback, .ssid, .loadBalance])
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: zip(
       AnyProxyGroup.Kind.allCases, ["select", "url-test", "fallback", "ssid", "load-balance"]
@@ -76,6 +101,11 @@ struct AnyProxyGroupKindTests {
 @Suite("AnyProxyGroup.ResourceTests", .tags(.proxyGroup))
 struct AnyProxyGroupResourceTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() {
     let resource = AnyProxyGroup.Resource()
     #expect(resource.source == .cache)
@@ -87,6 +117,11 @@ struct AnyProxyGroupResourceTests {
 @Suite("AnyProxyGroup.Resource.SourceTests", .tags(.proxyGroup))
 struct AnyProxyGroupResourceSourceTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func caseIterableConformance() {
     #expect(AnyProxyGroup.Resource.Source.allCases == [.cache, .query])
   }
@@ -94,6 +129,12 @@ struct AnyProxyGroupResourceSourceTests {
 
 @Suite("V1_AnyProxyGroup.MeasurementTests", .tags(.proxyGroup))
 struct AnyProxyGroupMeasurementTests {
+
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValue() {
     let transactionMetrics = TransactionMetrics()
     let measurement = AnyProxyGroup.Measurement(transactionMetrics: transactionMetrics)

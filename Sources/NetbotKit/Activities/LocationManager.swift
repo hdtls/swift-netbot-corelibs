@@ -16,7 +16,11 @@
   import CoreLocation
   import Logging
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   final public class LocationManager {
     private let locationManager = CLLocationManager()
     private let delegate = __CLLocationManagerDelegate()
@@ -44,7 +48,11 @@
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension LocationManager {
 
     final private class __CLLocationManagerDelegate: NSObject, CLLocationManagerDelegate {

@@ -15,7 +15,11 @@
 #if os(macOS)
   import Foundation
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   public class ProcessInfo: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
@@ -92,6 +96,10 @@
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension ProcessInfo: @unchecked Sendable {}
 #endif

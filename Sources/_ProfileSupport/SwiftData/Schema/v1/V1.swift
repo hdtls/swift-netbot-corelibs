@@ -12,13 +12,21 @@
 //
 // ===----------------------------------------------------------------------===//
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public enum V1 {}
 
 #if canImport(SwiftData)
   import SwiftData
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension V1: VersionedSchema {
     public static var models: [any PersistentModel.Type] {
       [

@@ -18,7 +18,11 @@ import NEAddressProcessing
 import NIOConcurrencyHelpers
 import NIOCore
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 class BaseSocketChannel<SocketType: BaseSocketProtocol>: Channel, ChannelCore, @unchecked Sendable {
 
   internal let socket: SocketType

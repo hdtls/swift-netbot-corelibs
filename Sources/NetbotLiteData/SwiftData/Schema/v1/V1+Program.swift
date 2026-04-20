@@ -26,13 +26,19 @@
   import SwiftData
 #endif
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension V1 {
 
   #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
     @Model final public class _Program {
 
-      @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, *)
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        @available(SwiftStdlib 6.0, *)
+      #endif
       #Unique<_Program>([\.localizedName])
 
       /// Indicates the name of the program.
@@ -87,7 +93,11 @@ extension V1 {
 }
 
 #if !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension V1._Program: Identifiable {
     public var id: String { persistentModelID }
 
@@ -95,7 +105,11 @@ extension V1 {
   }
 #endif
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension V1._Program {
 
   /// Merge new values from data transfer object.

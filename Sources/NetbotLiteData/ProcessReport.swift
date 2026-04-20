@@ -12,7 +12,11 @@
 //
 // ===----------------------------------------------------------------------===//
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct ProcessReport: Codable, Hashable, Sendable {
 
   /// Indicates the process identifier (pid) of the application.
@@ -26,7 +30,11 @@ public struct ProcessReport: Codable, Hashable, Sendable {
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ProcessReport {
 
   public typealias Model = V1._ProcessReport

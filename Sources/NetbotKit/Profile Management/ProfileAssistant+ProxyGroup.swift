@@ -23,7 +23,11 @@ import _ProfileSupport
 #endif
 
 /// `AnyProxyGroup` management
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ProfileAssistant {
 
   /// Insert new `AnyProxyGroup` item into `ProfileAssistant` managed profile file.

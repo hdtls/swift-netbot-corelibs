@@ -17,7 +17,11 @@
   import SwiftUI
   import UniformTypeIdentifiers
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @_spi(SwiftUI) extension V1._ProcessReport {
 
     nonisolated(unsafe) private static let cache = NSCache<NSString, NSImage>()
@@ -77,7 +81,11 @@
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @_spi(SwiftUI) public struct ProcessImage: View, @MainActor Equatable {
     public static func == (lhs: ProcessImage, rhs: ProcessImage) -> Bool {
       lhs.data.program?.localizedName == rhs.data.program?.localizedName

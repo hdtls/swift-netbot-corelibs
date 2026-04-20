@@ -16,7 +16,11 @@ import CNELwIP
 import NEAddressProcessing
 import NIOCore
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 protocol BaseSocketProtocol {
 
   func close() throws
@@ -28,7 +32,11 @@ protocol BaseSocketProtocol {
   func remoteAddress() throws -> SocketAddress
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 class BaseSocket: BaseSocketProtocol {
 
   var descriptor: UnsafeMutablePointer<tcp_pcb>
@@ -93,7 +101,11 @@ class BaseSocket: BaseSocketProtocol {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension BaseSocket: CustomStringConvertible {
   var description: String {
     "BaseSocket { fd=\(self.descriptor) }"

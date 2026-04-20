@@ -18,7 +18,11 @@
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension URL {
 
   #if !canImport(Darwin)
@@ -37,7 +41,8 @@ extension URL {
       FileManager.default.containerURL(
         forSecurityApplicationGroupIdentifier: "group.com.tenbits.netbot")!
     #else
-      URL.homeDirectory.appending(path: ".local/share/Netbot", directoryHint: .isDirectory)
+      URL.homeDirectory.appending(
+        path: ".local/share/group.com.tenbits.netbot", directoryHint: .isDirectory)
     #endif
   }
 
@@ -45,15 +50,21 @@ extension URL {
   public static var profile: URL {
     #if canImport(Darwin)
       let pathComponent = "Library/Application Support/Netbot/Profiles/Default.netbotcfg"
-      if #available(SwiftStdlib 5.7, *) {
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.7, *) {
+          return
+            securityApplicationGroupDirectory
+            .appending(component: pathComponent, directoryHint: .notDirectory)
+        } else {
+          return
+            securityApplicationGroupDirectory
+            .appendingPathComponent(pathComponent, isDirectory: false)
+        }
+      #else
         return
           securityApplicationGroupDirectory
           .appending(component: pathComponent, directoryHint: .notDirectory)
-      } else {
-        return
-          securityApplicationGroupDirectory
-          .appendingPathComponent(pathComponent, isDirectory: false)
-      }
+      #endif
     #else
       let pathComponent = "Profiles/Default.netbotcfg"
       return
@@ -69,7 +80,7 @@ extension URL {
     #else
       let pathComponent = "com.tenbits.netbot.packet-tunnel.extension/MaxMindDB"
     #endif
-    #if canImport(Darwin)
+    #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
       if #available(SwiftStdlib 5.7, *) {
         return .applicationSupportDirectory
           .appending(component: pathComponent, directoryHint: .isDirectory)
@@ -81,7 +92,8 @@ extension URL {
           appropriateFor: nil,
           create: false
         )
-        return applicationSupportDirectory.appendingPathComponent(pathComponent, isDirectory: true)
+        return applicationSupportDirectory.appendingPathComponent(
+          pathComponent, isDirectory: true)
       }
     #else
       return .applicationSupportDirectory
@@ -96,7 +108,7 @@ extension URL {
     #else
       let pathComponent = "com.tenbits.netbot.packet-tunnel.extension/External Resource"
     #endif
-    #if canImport(Darwin)
+    #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
       if #available(SwiftStdlib 5.7, *) {
         return .applicationSupportDirectory
           .appending(component: pathComponent, directoryHint: .isDirectory)
@@ -108,7 +120,8 @@ extension URL {
           appropriateFor: nil,
           create: false
         )
-        return applicationSupportDirectory.appendingPathComponent(pathComponent, isDirectory: true)
+        return applicationSupportDirectory.appendingPathComponent(
+          pathComponent, isDirectory: true)
       }
     #else
       return .applicationSupportDirectory
@@ -117,7 +130,11 @@ extension URL {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension String {
 
   package static var profilePathExtension: String { "netbotcfg" }

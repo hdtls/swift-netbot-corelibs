@@ -28,7 +28,11 @@ import NIOCore
   import CNIOLinux
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension IPv4Address {
 
   fileprivate var _address: UInt32 {
@@ -48,7 +52,11 @@ extension IPv4Address {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct AvailableIPPool: Sendable {
 
   private let _storage: ManagedAtomic<UInt32>

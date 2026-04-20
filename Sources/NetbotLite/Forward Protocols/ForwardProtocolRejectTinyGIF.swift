@@ -17,7 +17,11 @@ import NIOCore
 import NetbotLiteData
 
 /// `ForwardProtocolRejectTinyGIF` will reject connection and response a tiny gif.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct ForwardProtocolRejectTinyGIF: Equatable, Hashable, Sendable {
 
   public var name: String
@@ -27,7 +31,11 @@ public struct ForwardProtocolRejectTinyGIF: Equatable, Hashable, Sendable {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocolRejectTinyGIF: ForwardProtocol {
 
   public func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
@@ -37,10 +45,18 @@ extension ForwardProtocolRejectTinyGIF: ForwardProtocol {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocolRejectTinyGIF: ForwardProtocolConvertible {}
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocol where Self == ForwardProtocolRejectTinyGIF {
 
   /// Return the default `ForwardProtocolRejectTinyGIF`.
@@ -49,7 +65,11 @@ extension ForwardProtocol where Self == ForwardProtocolRejectTinyGIF {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocolConvertible where Self == ForwardProtocolRejectTinyGIF {
 
   /// Return the default `ForwardProtocolRejectTinyGIF`.

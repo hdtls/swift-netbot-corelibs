@@ -22,12 +22,22 @@ import Testing
   let t1 = DispatchTime(uptimeNanoseconds: 0)
 
   #if os(Linux) || os(Windows) || os(Android) || os(OpenBSD)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     func distanceCalculate() {
       let t2 = DispatchTime(uptimeNanoseconds: 1)
       #expect(t1.distance(to: t2) == .nanoseconds(1))
     }
   #endif
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func prettyPrintSeconds() {
     var t2 = DispatchTimeInterval.seconds(1)
     #expect(t2.prettyPrinted == "1 s")
@@ -36,6 +46,11 @@ import Testing
     #expect(t2.prettyPrinted == "10000 s")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func prettyPrintMilliseconds() {
     var t2 = DispatchTimeInterval.milliseconds(1)
     #expect(t2.prettyPrinted == "1 ms")
@@ -50,6 +65,11 @@ import Testing
     #expect(t2.prettyPrinted == "1 s")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func prettyPrintMicroseconds() {
     var t2 = DispatchTimeInterval.microseconds(1)
     #expect(t2.prettyPrinted == "1 µs")
@@ -70,6 +90,11 @@ import Testing
     #expect(t2.prettyPrinted == "1 s")
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func prettyPrintNanoseconds() {
     var t2 = DispatchTimeInterval.nanoseconds(1)
     #expect(t2.prettyPrinted == "1 ns")

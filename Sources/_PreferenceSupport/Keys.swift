@@ -14,7 +14,11 @@
 
 // swift-format-ignore-file
 
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
 @available(SwiftStdlib 5.3, *)
+#else
+@available(SwiftStdlib 6.0, *)
+#endif
 extension Prefs.Name {
 
   public static let logLevel = "Logging - Logger Level"

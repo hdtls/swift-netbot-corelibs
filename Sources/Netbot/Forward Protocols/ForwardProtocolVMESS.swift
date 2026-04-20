@@ -38,7 +38,11 @@ import _ProfileSupport
   import NIOSSL
 #endif
 
-@available(SwiftStdlib 5.7, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.7, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 @_cowOptimization struct ForwardProtocolVMESS: Hashable, Sendable {
 
   var name: String
@@ -66,7 +70,11 @@ import _ProfileSupport
   }
 }
 
-@available(SwiftStdlib 5.7, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.7, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocolVMESS._Storage: Hashable {
   static func == (lhs: ForwardProtocolVMESS._Storage, rhs: ForwardProtocolVMESS._Storage) -> Bool {
     return lhs.name == rhs.name
@@ -87,10 +95,18 @@ extension ForwardProtocolVMESS._Storage: Hashable {
   }
 }
 
-@available(SwiftStdlib 5.7, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.7, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocolVMESS._Storage: @unchecked Sendable {}
 
-@available(SwiftStdlib 5.7, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.7, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocolVMESS: ProxiableForwardProtocol {
 
   func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
@@ -203,5 +219,9 @@ extension ForwardProtocolVMESS: ProxiableForwardProtocol {
   }
 }
 
-@available(SwiftStdlib 5.7, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.7, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocolVMESS: ForwardProtocolConvertible {}

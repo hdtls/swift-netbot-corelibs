@@ -13,7 +13,11 @@
 // ===----------------------------------------------------------------------===//
 
 /// An OptionSet for all supported capabilities.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct CapabilityFlags: OptionSet, Hashable, Sendable {
 
   public typealias RawValue = Int

@@ -18,14 +18,22 @@
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPFieldsRewrite {
   public struct FormatStyle: Sendable {
     public init() {}
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPFieldsRewrite.FormatStyle {
   public func format(_ formatInput: HTTPFieldsRewrite) -> String {
     var formatOutput =
@@ -50,22 +58,36 @@ extension HTTPFieldsRewrite.FormatStyle {
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPFieldsRewrite.FormatStyle: FormatStyle {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPFieldsRewrite.FormatStyle {
 
   public func parse(_ value: String) throws -> HTTPFieldsRewrite {
-    if #available(SwiftStdlib 5.7, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      if #available(SwiftStdlib 5.7, *) {
+        try _parse(value)
+      } else {
+        try _parse0(value)
+      }
+    #else
       try _parse(value)
-    } else {
-      try _parse0(value)
-    }
+    #endif
   }
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   func _parse(_ value: String) throws -> HTTPFieldsRewrite {
     let parseInput = value
     let matches = parseInput.matches(of: HTTPFieldsRewrite.regex)
@@ -177,36 +199,64 @@ extension HTTPFieldsRewrite.FormatStyle {
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPFieldsRewrite.FormatStyle: ParseStrategy {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPFieldsRewrite.FormatStyle {
   public var parseStrategy: HTTPFieldsRewrite.FormatStyle {
     self
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPFieldsRewrite.FormatStyle: ParseableFormatStyle {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPFieldsRewrite.FormatStyle: Codable, Hashable {}
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension FormatStyle where Self == HTTPFieldsRewrite.FormatStyle {
   public static var httpFieldsRewrite: Self { .init() }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ParseStrategy where Self == HTTPFieldsRewrite.FormatStyle {
   @_disfavoredOverload
   public static var httpFieldsRewrite: Self { .init() }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPFieldsRewrite {
   #if canImport(FoundationEssentials)
     public func formatted<S>(_ v: S) -> S.FormatOutput
@@ -214,7 +264,9 @@ extension HTTPFieldsRewrite {
       return v.format(self)
     }
   #else
-    @available(SwiftStdlib 5.5, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.5, *)
+    #endif
     public func formatted<S>(_ v: S) -> S.FormatOutput
     where S: Foundation.FormatStyle, S.FormatInput == HTTPFieldsRewrite {
       return v.format(self)
@@ -225,7 +277,9 @@ extension HTTPFieldsRewrite {
     FormatStyle().format(self)
   }
 
-  @available(SwiftStdlib 5.5, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.5, *)
+  #endif
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
   where T.ParseOutput == Self {
     self = try strategy.parse(value)

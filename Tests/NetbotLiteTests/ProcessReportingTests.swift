@@ -27,11 +27,11 @@ import Testing
 
 @Suite struct ProcessReportingTests {
 
-  private let application = AnalyzeBot(
-    group: MultiThreadedEventLoopGroup.singleton,
-    logger: .init(label: "")
-  )
-
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func processReportService() async throws {
     let application = AnalyzeBot(
       group: MultiThreadedEventLoopGroup.singleton,

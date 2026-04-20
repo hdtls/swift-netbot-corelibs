@@ -20,7 +20,11 @@ import HTTPTypes
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct Response: Codable, Hashable, Sendable {
 
   /// The HTTP response object if present. otherwise returns `nil`.
@@ -36,7 +40,11 @@ public struct Response: Codable, Hashable, Sendable {
   public init() {}
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Response {
 
   public typealias Model = V1._Response

@@ -13,12 +13,13 @@
 // ===----------------------------------------------------------------------===//
 
 #if canImport(Network)
-  import NetbotLiteData
   import Darwin
+  import Foundation
   import Logging
-  import Network
   import NIOCore
   import NIOConcurrencyHelpers
+  import NetbotLiteData
+  import Network
   import UserNotifications
 
   #if os(iOS)
@@ -28,7 +29,11 @@
   #endif
 
   /// A wrap class for `NWPathMonitor` providing default `pathUpdateHandler`.
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Lockable final public class PathMonitor: Sendable {
 
     private let pathMonitor: NWPathMonitor
@@ -112,14 +117,23 @@
         self.logger.info("Network has been changed to \(ssid), New IP address: \(address)")
 
         let content = UNMutableNotificationContent()
-        if #available(SwiftStdlib 5.5, *) {
+        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+          if #available(SwiftStdlib 5.5, *) {
+            content.title = String(
+              localized: "Network Changed",
+              comment: "Title of network changed notification"
+            )
+          } else {
+            content.title = NSLocalizedString(
+              "Network Changed", comment: "Title of network changed notification")
+          }
+        #else
           content.title = String(
             localized: "Network Changed",
-            comment: "Network changed notification title"
+            comment: "Title of network changed notification"
           )
-        } else {
-          content.title = "Network Changed"
-        }
+        #endif
+
         content.subtitle = ssid
         content.body = address
 

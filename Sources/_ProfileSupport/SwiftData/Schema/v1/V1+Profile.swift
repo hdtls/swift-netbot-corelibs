@@ -28,7 +28,11 @@ import Logging
   import Observation
 #endif
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension V1 {
 
   #if canImport(SwiftData)
@@ -161,7 +165,11 @@ extension V1 {
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension V1._Profile {
 
   public func mergeValues(_ data: Profile) {

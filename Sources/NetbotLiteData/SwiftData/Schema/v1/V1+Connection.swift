@@ -30,15 +30,23 @@ import NEAddressProcessing
 #endif
 
 #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension V1 {
 
     @Model final public class _Connection {
 
-      @available(SwiftStdlib 6.0, *)
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        @available(SwiftStdlib 6.0, *)
+      #endif
       #Unique<_Connection>([\.taskIdentifier])
 
-      @available(SwiftStdlib 6.0, *)
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        @available(SwiftStdlib 6.0, *)
+      #endif
       #Index<_Connection>([\.taskIdentifier])
 
       /// The identifier of the connection.
@@ -106,7 +114,11 @@ import NEAddressProcessing
     }
   }
 #else
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension V1 {
 
     #if canImport(Darwin) || swift(>=6.3)
@@ -171,13 +183,21 @@ import NEAddressProcessing
     }
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension V1._Connection: Identifiable {
     public var id: UInt64 { persistentModelID }
   }
 #endif
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension V1._Connection {
 
   /// Merge new values from data transfer object.

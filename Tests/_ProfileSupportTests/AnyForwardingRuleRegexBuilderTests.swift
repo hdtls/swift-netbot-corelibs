@@ -19,6 +19,11 @@ import Testing
 @Suite(.tags(.forwardingRule))
 struct AnyForwardingRuleRegexBuilderTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     "[Rule]", " [Rule]", "[Rule] ", " [Rule] ",
     "[Rule]   ",
@@ -28,6 +33,11 @@ struct AnyForwardingRuleRegexBuilderTests {
     #expect(!matches.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(arguments: [
     "[forwardingRule ]", "forwardingRule]", "[forwardingRule", " forwardingRule",
     "[ forwardingRule]",
@@ -36,6 +46,11 @@ struct AnyForwardingRuleRegexBuilderTests {
     #expect(parseInput.matches(of: AnyForwardingRule.sectionRegex).isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test(
     arguments: [
       "# DOMAIN-SUFFIX, swift.org, DIRECT", "DOMAIN, https://swift.org, DIRECT",
@@ -49,6 +64,11 @@ struct AnyForwardingRuleRegexBuilderTests {
     #expect(!matches.isEmpty)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func matchSpecifiedRule() {
     var forwardingRule = AnyForwardingRule()
     forwardingRule.kind = .domainSuffix

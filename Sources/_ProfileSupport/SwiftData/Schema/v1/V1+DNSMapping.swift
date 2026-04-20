@@ -26,7 +26,11 @@
   import Observation
 #endif
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension V1 {
 
   /// An Object declaring DNS mapping rules.
@@ -71,7 +75,11 @@ extension V1 {
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension V1._DNSMapping {
 
   public func mergeValues(_ data: DNSMapping) {

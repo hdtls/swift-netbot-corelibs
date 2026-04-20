@@ -30,6 +30,11 @@ import Testing
 
 @Suite struct AddressConversionTests {
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func convertSocketAddressToAddress() throws {
     #expect(throws: Never.self) {
       let sa = try SocketAddress(ipAddress: "::1", port: 0).asAddress()
@@ -47,6 +52,11 @@ import Testing
     }
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func convertAddressToSocketAddress() async throws {
     #expect(throws: Never.self) {
       let sa = try Address.hostPort(host: "::1", port: 0).asAddress()
@@ -72,6 +82,11 @@ import Testing
   }
 
   #if canImport(Network)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func convertNWEndpointToAddress() {
       #expect(throws: Never.self) {
         let sa = try NWEndpoint.hostPort(host: "::1", port: 0).asAddress()
@@ -105,6 +120,11 @@ import Testing
       }
     }
 
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.3, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func convertAddressToNWEndpoint() async throws {
       #expect(throws: Never.self) {
         let sa = try Address.hostPort(host: "::1", port: 0).asEndpoint()

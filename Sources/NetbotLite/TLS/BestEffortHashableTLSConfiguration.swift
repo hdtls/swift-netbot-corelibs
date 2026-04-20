@@ -29,7 +29,11 @@
 import NIOSSL
 
 /// Wrapper around `TLSConfiguration` from NIOSSL to provide a best effort implementation of `Hashable`
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 struct BestEffortHashableTLSConfiguration: Hashable {
   let base: NIOSSL.TLSConfiguration
 

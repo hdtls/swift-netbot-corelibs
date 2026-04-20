@@ -20,12 +20,20 @@
   import Foundation
 #endif
 
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
 @available(SwiftStdlib 5.3, *)
+#else
+@available(SwiftStdlib 6.0, *)
+#endif
 public enum Prefs {
   public enum Name {}
 }
 
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
 @available(SwiftStdlib 5.3, *)
+#else
+@available(SwiftStdlib 6.0, *)
+#endif
 extension UserDefaults {
 
   /// Returns UserDefaults(suiteName: "group.com.tenbits.netbot.testable") when debug with --testable else return a global

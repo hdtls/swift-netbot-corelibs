@@ -24,7 +24,11 @@ import NetbotLiteData
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 private protocol HTTPModifier: Sendable {
 
   /// Predicate for test whether connection is satisfied with the modifier evaluating requires.
@@ -34,7 +38,11 @@ private protocol HTTPModifier: Sendable {
   func predicate(_ connection: Connection) throws -> Bool
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 private protocol HTTPRequestModifier: HTTPModifier {
 
   func modify(_ head: HTTPRequest) -> HTTPRequest
@@ -44,7 +52,11 @@ private protocol HTTPRequestModifier: HTTPModifier {
   func modify(_ end: HTTPFields) -> HTTPFields
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 private protocol HTTPResponseModifier: HTTPModifier {
 
   func modify(_ head: HTTPResponse) -> HTTPResponse
@@ -54,7 +66,11 @@ private protocol HTTPResponseModifier: HTTPModifier {
   func modify(_ end: HTTPFields) -> HTTPFields
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 final class __CapabilitiesProcessingHandler<HeadT: Equatable & Sendable>: ChannelInboundHandler,
   Sendable
 {

@@ -15,14 +15,20 @@
 import NEAddressProcessing
 
 /// DNS resolution report.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct DNSResolutionReport: Codable, Hashable, Sendable {
 
   /// The duration of the connection's establishment.
   /// This is the total time from when the successful connection
   /// attempt began until the connection becomes ready, including
   /// resolution, proxy evaluation, and protocol handshakes.
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   public var duration: Duration {
     .seconds(_duration)
   }
@@ -45,7 +51,9 @@ public struct DNSResolutionReport: Codable, Hashable, Sendable {
     public var source: Source
 
     /// The duration spent on this resolution step.
-    @available(SwiftStdlib 5.7, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.7, *)
+    #endif
     public var duration: Duration {
       .seconds(_duration)
     }
@@ -78,7 +86,11 @@ public struct DNSResolutionReport: Codable, Hashable, Sendable {
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension DNSResolutionReport {
 
   public typealias Model = V1._DNSResolutionReport

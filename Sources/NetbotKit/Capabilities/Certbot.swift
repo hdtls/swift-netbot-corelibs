@@ -23,7 +23,11 @@
   import X509
   import NIOSSL
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   public enum CertbotError: Error {
 
     case dataCorrupted
@@ -38,7 +42,11 @@
   }
 
   /// Certificate managment object.
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @MainActor @Observable final public class Certbot: @unchecked Sendable {
 
     private struct Backing: Sendable {

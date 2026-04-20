@@ -31,7 +31,11 @@ import Logging
 import NIOCore
 import NIOSSL
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 final public class SSLContextCache: Sendable {
   public static let shared: SSLContextCache = SSLContextCache()
 
@@ -40,7 +44,11 @@ final public class SSLContextCache: Sendable {
   private let offloadQueue = DispatchQueue(label: "anlzr-nio.SSLContextCache.offload.queue")
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension SSLContextCache {
   public func sslContext(
     configuration: NIOSSL.TLSConfiguration,

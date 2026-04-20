@@ -23,7 +23,11 @@ import NEAddressProcessing
   import SwiftData
 #endif
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension V1 {
 
   #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
@@ -168,11 +172,14 @@ extension V1 {
   #endif
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension V1._EstablishmentReport {
 
   /// A Resolution report represents one step of endpoint resolution.
-  @available(SwiftStdlib 5.9, *)
   public struct Resolution: Codable, Hashable, Sendable {
 
     /// The source of this resolution.
@@ -216,7 +223,11 @@ extension V1._EstablishmentReport {
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension V1._EstablishmentReport {
 
   /// Merge new values from data transfer object.

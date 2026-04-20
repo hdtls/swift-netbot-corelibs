@@ -14,8 +14,18 @@
 
 import NIOConcurrencyHelpers
 
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public typealias Mutex = NIOLockedValueBox
 
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension NIOLockedValueBox {
 
   /// Add a wrap function to make it easier to migrate to Mutex in the future.
@@ -24,6 +34,11 @@ extension NIOLockedValueBox {
   }
 }
 
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct Lockable {
 
   public enum AccessLevel {
@@ -41,9 +56,19 @@ public struct Lockable {
   }
 }
 
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 @attached(memberAttribute)
 public macro Lockable() = #externalMacro(module: "SynchronizationMacros", type: "LockableMacro")
 
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 @attached(accessor, names: named(get), named(set))
 @attached(peer, names: prefixed(_))
 public macro LockableTracked(
@@ -51,6 +76,11 @@ public macro LockableTracked(
   accessors: Lockable.Accessor...
 ) = #externalMacro(module: "SynchronizationMacros", type: "LockableTrackedMacro")
 
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 @attached(peer)
 public macro LockableIgnored() =
   #externalMacro(module: "SynchronizationMacros", type: "LockableIgnoredMacro")

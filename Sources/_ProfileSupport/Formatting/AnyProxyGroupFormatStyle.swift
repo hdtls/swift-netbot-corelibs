@@ -18,14 +18,22 @@
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxyGroup {
   public struct FormatStyle: Sendable {
     public init() {}
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxyGroup.FormatStyle {
   public func format(_ value: AnyProxyGroup) -> String {
     var formatOutput = "\(value.name) = \(value.kind.rawValue)"
@@ -43,11 +51,19 @@ extension AnyProxyGroup.FormatStyle {
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxyGroup.FormatStyle: FormatStyle {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxyGroup.FormatStyle {
 
   public func parse(_ value: String) throws -> AnyProxyGroup {
@@ -126,41 +142,73 @@ extension AnyProxyGroup.FormatStyle {
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxyGroup.FormatStyle: ParseStrategy {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxyGroup.FormatStyle {
   public var parseStrategy: AnyProxyGroup.FormatStyle {
     self
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxyGroup.FormatStyle: ParseableFormatStyle {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxyGroup.FormatStyle: Codable, Hashable {}
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension FormatStyle where Self == AnyProxyGroup.FormatStyle {
   public static var proxyGroup: Self { .init() }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ParseableFormatStyle where Self == AnyProxyGroup.FormatStyle {
   public static var proxyGroup: Self { .init() }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ParseStrategy where Self == AnyProxyGroup.FormatStyle {
   @_disfavoredOverload
   public static var proxyGroup: Self { .init() }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension AnyProxyGroup {
 
   #if canImport(FoundationEssentials)
@@ -169,7 +217,9 @@ extension AnyProxyGroup {
       return v.format(self)
     }
   #else
-    @available(SwiftStdlib 5.5, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.5, *)
+    #endif
     public func formatted<S>(_ v: S) -> S.FormatOutput
     where S: Foundation.FormatStyle, S.FormatInput == AnyProxyGroup {
       v.format(self)
@@ -182,7 +232,9 @@ extension AnyProxyGroup {
     FormatStyle().format(self)
   }
 
-  @available(SwiftStdlib 5.5, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.5, *)
+  #endif
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
   where T.ParseOutput == Self {
     self = try strategy.parse(value)

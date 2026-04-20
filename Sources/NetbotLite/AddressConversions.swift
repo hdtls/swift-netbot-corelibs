@@ -19,7 +19,11 @@ import NIOCore
   import Network
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension SocketAddress {
 
   public func asAddress() throws -> Address {
@@ -34,7 +38,11 @@ extension SocketAddress {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Address {
 
   public func asAddress() throws -> SocketAddress {
@@ -57,7 +65,11 @@ extension Address {
 }
 
 #if canImport(Network)
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension Address {
     public func asEndpoint() throws -> NWEndpoint {
       switch self {
@@ -80,7 +92,11 @@ extension Address {
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension NWEndpoint {
     public func asAddress() throws -> Address {
       switch self {

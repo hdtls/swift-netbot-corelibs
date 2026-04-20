@@ -15,7 +15,11 @@
 import NIOConcurrencyHelpers
 import NetbotLiteData
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 final public class LRUCache<Key, Value> where Key: Hashable {
 
   private let _represention: Mutex<[Key: Node]>
@@ -102,7 +106,11 @@ final public class LRUCache<Key, Value> where Key: Hashable {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension LRUCache {
 
   fileprivate final class Node {
@@ -154,10 +162,18 @@ extension LRUCache {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension LRUCache: @unchecked Sendable {}
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension LRUCache {
 
   public func forEach(_ body: ((key: Key, value: Value)) throws -> Void) rethrows {

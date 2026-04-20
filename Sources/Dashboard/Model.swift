@@ -42,14 +42,22 @@ import NetbotLiteData
   import NetworkExtension
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public enum DataTransfer: Hashable, Sendable {
   case upload
   case download
 }
 
 #if canImport(Network)
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   public enum LocalizedError: Foundation.LocalizedError, Equatable {
     case nw(NWError)
     case operationUnsupported
@@ -73,19 +81,31 @@ public enum DataTransfer: Hashable, Sendable {
     }
   }
 #else
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   public enum LocalizedError: Error, Equatable {
     case operationUnsupported
   }
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public protocol ConnectionsDependency: Sendable {
 
   var messages: AsyncThrowingStream<[Connection], any Error> { get }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 final class DefaultConnectionsDependency: ConnectionsDependency {
 
   #if canImport(Network)
@@ -158,7 +178,11 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
   public init() {}
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 #if canImport(Darwin) || swift(>=6.3)
   @Observable
 #endif

@@ -20,7 +20,11 @@ import NIOConcurrencyHelpers
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct Program: Hashable, Codable, Sendable {
 
   /// Indicates the name of the program.
@@ -49,14 +53,22 @@ public struct Program: Hashable, Codable, Sendable {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Program: Identifiable {
   public var id: String { persistentModelID }
 
   public var persistentModelID: String { localizedName }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Program {
 
   public typealias Model = V1._Program

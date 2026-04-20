@@ -21,7 +21,11 @@
 #endif
 
 /// A stubbed HTTP response representation object, define how to stub response for request.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct StubbedHTTPResponse: Equatable, Hashable, Sendable {
 
   /// A boolean value determinse whether this rule is enabled or disabled.
@@ -55,15 +59,19 @@ public struct StubbedHTTPResponse: Equatable, Hashable, Sendable {
     self.bodyContentsURL = bodyContentsURL
     self.status = status
     self.additionalHTTPFields = additionalHTTPFields
-    if #available(SwiftStdlib 5.5, *) {
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      self.creationDate = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+    #else
       self.creationDate = .now
-    } else {
-      self.creationDate = .init()
-    }
+    #endif
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension StubbedHTTPResponse {
 
   public typealias Model = V1._StubbedHTTPResponse

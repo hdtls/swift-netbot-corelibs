@@ -13,11 +13,17 @@
 // ===----------------------------------------------------------------------===//
 
 /// A ForwardingReport report represents forwarding rule matching.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct ForwardingReport: Codable, Hashable, Sendable {
 
   /// The length of time duration on this matching step.
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   public var duration: Duration {
     .seconds(_duration)
   }
@@ -73,7 +79,11 @@ public struct ForwardingReport: Codable, Hashable, Sendable {
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardingReport {
 
   public typealias Model = V1._ForwardingReport

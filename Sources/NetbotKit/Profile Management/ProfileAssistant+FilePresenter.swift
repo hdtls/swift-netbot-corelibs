@@ -25,7 +25,11 @@ import _ProfileSupport
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ProfileAssistant {
 
   #if canImport(FoundationEssentials)
@@ -222,7 +226,11 @@ extension ProfileAssistant {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension URL {
   var isProfile: Bool {
     isFileURL && pathExtension == .profilePathExtension

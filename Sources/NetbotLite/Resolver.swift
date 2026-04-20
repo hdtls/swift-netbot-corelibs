@@ -39,7 +39,11 @@ import NIOCore
 /// resolver will need also to implement these sorting rules.
 ///
 /// - SeeAlso: NIOPosix.Resolver for more informations.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public protocol Resolver: Sendable {
 
   func initiateAQuery(host: String, port: Int) -> EventLoopFuture<[SocketAddress]>
@@ -49,7 +53,11 @@ public protocol Resolver: Sendable {
   func cancelQueries()
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 struct DefaultResolver: Resolver, Sendable {
   let eventLoop: any EventLoop
 

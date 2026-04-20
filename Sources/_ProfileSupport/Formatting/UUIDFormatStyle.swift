@@ -19,7 +19,11 @@
 #endif
 
 #if canImport(Darwin)
-  @available(SwiftStdlib 5.3, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   extension UUID {
     public class Formatter: Foundation.Formatter {
       public override func string(for obj: Any?) -> String? {
@@ -57,7 +61,11 @@
   }
 #endif
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension UUID {
   public struct FormatStyle: Sendable {
     public init() {}
@@ -78,40 +86,72 @@ extension UUID {
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension UUID.FormatStyle: FormatStyle {
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension UUID.FormatStyle: ParseStrategy {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension UUID.FormatStyle {
   public var parseStrategy: UUID.FormatStyle {
     self
   }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension UUID.FormatStyle: ParseableFormatStyle {
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension UUID.FormatStyle: Codable, Hashable {}
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension FormatStyle where Self == UUID.FormatStyle {
   public static var uuid: Self { .init() }
 }
 
-@available(SwiftStdlib 5.5, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.5, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ParseStrategy where Self == UUID.FormatStyle {
   @_disfavoredOverload
   public static var uuid: Self { .init() }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension UUID {
 
   #if canImport(FoundationEssentials)
@@ -120,7 +160,9 @@ extension UUID {
       return v.format(self)
     }
   #else
-    @available(SwiftStdlib 5.5, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.5, *)
+    #endif
     public func formatted<S>(_ v: S) -> S.FormatOutput
     where S: Foundation.FormatStyle, S.FormatInput == UUID {
       return v.format(self)
@@ -131,7 +173,9 @@ extension UUID {
     FormatStyle().format(self)
   }
 
-  @available(SwiftStdlib 5.5, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.5, *)
+  #endif
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
   where T.ParseOutput == Self {
     self = try strategy.parse(value)

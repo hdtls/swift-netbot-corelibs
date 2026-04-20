@@ -14,14 +14,20 @@
 
 import RegexBuilder
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension URLRewrite {
 
   static let delimiter = ","
 
   package static let sectionName = "[URL Rewrite]"
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   package static var sectionRegex: some RegexComponent {
     Regex {
       ZeroOrMore(.whitespace)
@@ -31,7 +37,9 @@ extension URLRewrite {
     }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   package static var regex: Regex<(Substring, Bool, RewriteType, Substring, Substring)> {
     Regex {
       TryCapture(Optionally(/\ *# +/)) { $0.isEmpty }
@@ -51,7 +59,9 @@ extension URLRewrite {
     }
   }
 
-  @available(SwiftStdlib 5.7, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.7, *)
+  #endif
   package var regex: some RegexComponent {
     Regex {
       isEnabled ? "" : "# "

@@ -22,7 +22,11 @@ import NetbotLiteData
   import Foundation
 #endif
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Connection.Model {
 
   /// Pretty printed forwarding policy.
@@ -48,7 +52,11 @@ extension Connection.Model {
   public var isActive: Bool { state == .establishing || state == .active }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Data {
   public func formatted() -> String {
     guard !isEmpty else { return "No Data".localizedCapitalized }
@@ -56,7 +64,11 @@ extension Data {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPRequest {
   public func formatted() -> String {
     """
@@ -67,7 +79,11 @@ extension HTTPRequest {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension HTTPResponse {
   public func formatted() -> String {
     """
@@ -77,7 +93,11 @@ extension HTTPResponse {
   }
 }
 
-@available(SwiftStdlib 5.9, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension Response.Model {
 
   public var isImage: Bool {

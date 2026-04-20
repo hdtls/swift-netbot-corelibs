@@ -20,13 +20,21 @@
 
   @Suite struct V1Tests {
 
-    @available(SwiftStdlib 5.9, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func models() async throws {
       let source = V1.models
       #expect(source.count == 10)
     }
 
-    @available(SwiftStdlib 5.9, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func versionIdentifier() async throws {
       #expect(V1.versionIdentifier == .init(1, 0, 0))
     }

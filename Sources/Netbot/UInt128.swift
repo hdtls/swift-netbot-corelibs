@@ -26,7 +26,7 @@
 
 // swift-format-ignore-file
 
-#if canImport(Darwin)
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
   @available(iOS, deprecated: 18.0)
   @available(macOS, deprecated: 15.0)
   @available(tvOS, deprecated: 18.0)

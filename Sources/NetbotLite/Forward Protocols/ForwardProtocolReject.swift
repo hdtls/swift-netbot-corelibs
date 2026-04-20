@@ -17,7 +17,11 @@ import NIOCore
 import NetbotLiteData
 
 /// `ForwardProtocolReject` define protocol that reject all connections forwarded using this protocol.
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 public struct ForwardProtocolReject: Equatable, Hashable, Sendable {
 
   public var name: String
@@ -27,7 +31,11 @@ public struct ForwardProtocolReject: Equatable, Hashable, Sendable {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocolReject: ForwardProtocol {
 
   public func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
@@ -37,10 +45,18 @@ extension ForwardProtocolReject: ForwardProtocol {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocolReject: ForwardProtocolConvertible {}
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocol where Self == ForwardProtocolReject {
 
   /// Return the default `ForwardProtocolReject`.
@@ -49,7 +65,11 @@ extension ForwardProtocol where Self == ForwardProtocolReject {
   }
 }
 
-@available(SwiftStdlib 5.3, *)
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
 extension ForwardProtocolConvertible where Self == ForwardProtocolReject {
 
   /// Return the default `ForwardProtocolReject`.

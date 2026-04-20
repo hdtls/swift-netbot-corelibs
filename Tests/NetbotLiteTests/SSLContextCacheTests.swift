@@ -23,6 +23,11 @@ import Testing
 @Suite struct SSLContextCacheTests {
   private let logger = Logger(label: "sslcontext-cache-tests")
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("syncSSLContext caches and returns the same object for the same config")
   func syncSSLContextCaching() throws {
     let config = NIOSSL.TLSConfiguration.makeClientConfiguration()
@@ -32,6 +37,11 @@ import Testing
     #expect(ctx1 === ctx2)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("sslContext (async) caches the context for same config")
   func asyncSSLContextCaching() async throws {
     let config = NIOSSL.TLSConfiguration.makeClientConfiguration()
@@ -47,6 +57,11 @@ import Testing
     #expect(ctx1 === ctx2)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("cache returns different contexts for different configs")
   func differentConfigsGetDifferentContexts() throws {
     let config1 = NIOSSL.TLSConfiguration.makeClientConfiguration()
@@ -58,6 +73,11 @@ import Testing
     #expect(ctx1 !== ctx2)
   }
 
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test("cache evicts old contexts after capacity is reached")
   func eviction() throws {
     let cache = SSLContextCache()

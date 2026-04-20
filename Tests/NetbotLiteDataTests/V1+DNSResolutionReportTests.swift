@@ -23,12 +23,20 @@ import Testing
 
 @Suite struct V1_DNSResolutionReportTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func persistentModelTypealias() {
     #expect(DNSResolutionReport.Model.self == V1._DNSResolutionReport.self)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mergeValues() {
     let data = DNSResolutionReport(
       duration: 12.5,

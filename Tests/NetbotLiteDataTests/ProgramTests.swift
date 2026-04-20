@@ -24,7 +24,11 @@ import Testing
 
 @Suite struct ProgramTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func programInitFromPersistentModel() async throws {
     let bundleURL = URL(string: "file:///Applications/FakeApp.app")
     let execURL = URL(string: "file:///Applications/FakeApp.app/Contents/MacOS/FakeApp")

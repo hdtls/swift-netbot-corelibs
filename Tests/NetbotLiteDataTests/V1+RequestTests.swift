@@ -26,7 +26,11 @@ import Testing
 
 @Suite struct V1_RequestTests {
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func propertyInitialValues() async throws {
     let source = V1._Request()
     #expect(source.httpRequest == nil)
@@ -37,7 +41,11 @@ import Testing
   }
 
   #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
-    @available(SwiftStdlib 5.9, *)
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
     @Test func httpRequestCodableConformance() async throws {
       let httpRequest = HTTPRequest(
         method: .get, scheme: "https", authority: "swift.org:443", path: nil)
@@ -48,7 +56,11 @@ import Testing
     }
   #endif
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func createRequestWithAddress() async throws {
     let source = V1._Request()
     source.address = .hostPort(host: "swift.org", port: 443)
@@ -57,7 +69,11 @@ import Testing
     #expect(source.body == nil)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func createRequestWithHTTPRequest() async throws {
     let httpRequest = HTTPRequest(
       method: .get, scheme: "https", authority: "swift.org:443", path: nil)
@@ -68,7 +84,11 @@ import Testing
     #expect(source.body == nil)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func setHTTPRequest() async throws {
     let httpRequest = HTTPRequest(
       method: .get, scheme: "https", authority: "swift.org:443", path: nil)
@@ -82,7 +102,11 @@ import Testing
     #expect(source.httpRequest == nil)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func setAddress() async throws {
     let address = Address.hostPort(host: "swift.org", port: 443)
     let source = V1._Request()
@@ -93,7 +117,11 @@ import Testing
     #expect(source.address == nil)
   }
 
-  @available(SwiftStdlib 5.9, *)
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func mergeValues() async throws {
     var httpRequest = HTTPRequest(
       method: .get, scheme: "https", authority: "swift.org:443", path: nil)
