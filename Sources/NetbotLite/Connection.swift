@@ -19,6 +19,12 @@ import NIOCore
 import NetbotLiteData
 import Tracing
 
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  import NIOConcurrencyHelpers
+#else
+  import Synchronization
+#endif
+
 #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
   @available(SwiftStdlib 5.3, *)
 #else

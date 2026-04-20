@@ -12,15 +12,28 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import NIOConcurrencyHelpers
-import NetbotLiteData
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  import NIOConcurrencyHelpers
+
+  private typealias Mutex = NIOLockedValueBox
+
+  extension NIOLockedValueBox {
+
+    /// Add a wrap function to make it easier to migrate to Mutex in the future.
+    fileprivate func withLock<Result>(_ body: (inout Value) throws -> Result) rethrows -> Result {
+      try withLockedValue(body)
+    }
+  }
+#else
+  import Synchronization
+#endif
 
 #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
   @available(SwiftStdlib 5.3, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
-final public class LRUCache<Key, Value> where Key: Hashable {
+final public class LRUCache<Key, Value> where Key: Hashable & Sendable, Value: Sendable {
 
   private let _represention: Mutex<[Key: Node]>
   private var head: Node?

@@ -15,7 +15,6 @@
 import Dispatch
 import Logging
 import NEAddressProcessing
-import NIOConcurrencyHelpers
 import NetbotLiteData
 
 #if canImport(FoundationEssentials)

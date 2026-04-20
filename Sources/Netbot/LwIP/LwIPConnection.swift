@@ -13,7 +13,6 @@
 // ===----------------------------------------------------------------------===//
 
 import CNELwIP
-import NIOConcurrencyHelpers
 import NIOCore
 
 #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS

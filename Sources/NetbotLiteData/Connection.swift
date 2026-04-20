@@ -14,12 +14,17 @@
 
 import Atomics
 import HTTPTypes
-import NIOConcurrencyHelpers
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
 #else
   import Foundation
+#endif
+
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  import NIOConcurrencyHelpers
+#else
+  import Synchronization
 #endif
 
 // swift-format-ignore: AlwaysUseLowerCamelCase

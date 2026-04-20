@@ -12,8 +12,6 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import NIOConcurrencyHelpers
-
 #if canImport(FoundationEssentials)
   import FoundationEssentials
 #else

@@ -12,7 +12,6 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Atomics
 import Logging
 import NEAddressProcessing
 import NIOCore
@@ -24,7 +23,7 @@ import NIOCore
 #endif
 public actor AnalyzeIPBot {
 
-  private nonisolated let isActive = ManagedAtomic<Bool>(false)
+  private var isActive = false
   private nonisolated let packetFlow: PacketTunnelFlow
   private nonisolated let handles: [any PacketHandleProtocol & Sendable]
   private nonisolated let logger: Logger = Logger(label: "AnalyzeIPBot")
@@ -43,7 +42,7 @@ public actor AnalyzeIPBot {
 
   /// Start analyze tunnel.
   public func run() async throws {
-    isActive.store(true, ordering: .relaxed)
+    isActive = true
 
     for handle in handles {
       try await handle.run()
@@ -55,7 +54,7 @@ public actor AnalyzeIPBot {
   }
 
   private func readPacketsIfActive() async throws {
-    guard isActive.load(ordering: .relaxed) else { return }
+    guard isActive else { return }
 
     for packetObject in await packetFlow.readPacketObjects() {
       for handle in handles {
@@ -76,6 +75,6 @@ public actor AnalyzeIPBot {
 
   /// Stop current running analyze tunnel.
   public func shutdownGracefully() async {
-    isActive.store(false, ordering: .relaxed)
+    isActive = false
   }
 }

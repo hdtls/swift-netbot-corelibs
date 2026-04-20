@@ -13,12 +13,17 @@
 // ===----------------------------------------------------------------------===//
 
 import NEAddressProcessing
-import NIOConcurrencyHelpers
 import NetbotLite
 import NetbotLiteData
 
 #if os(macOS)
   import NetbotDaemons
+#endif
+
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  import NIOConcurrencyHelpers
+#else
+  import Synchronization
 #endif
 
 #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS

@@ -12,11 +12,16 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import NIOConcurrencyHelpers
 import NetbotLiteData
 import Preference
 import _PreferenceSupport
 import _ProfileSupport
+
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  import NIOConcurrencyHelpers
+#else
+  import Synchronization
+#endif
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

@@ -14,7 +14,6 @@
 
 import Atomics
 import NEAddressProcessing
-import NIOConcurrencyHelpers
 import NIOCore
 import NIOEmbedded
 import NIOPosix
@@ -23,6 +22,12 @@ import Testing
 import _DNSSupport
 
 @testable import Netbot
+
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  import NIOConcurrencyHelpers
+#else
+  import Synchronization
+#endif
 
 @Suite(.tags(.dns))
 struct LocalDNSProxyTests {
@@ -33,7 +38,7 @@ struct LocalDNSProxyTests {
     @available(SwiftStdlib 6.0, *)
   #endif
   final class MockTunnelFlow: PacketTunnelFlow {
-    let writePacketObjects = NIOLockedValueBox<[NEPacket]>([])
+    let writePacketObjects = Mutex<[NEPacket]>([])
 
     func readPacketObjects() async -> [NEPacket] {
       []
