@@ -59,34 +59,19 @@ extension Channel {
                 case .cache: source = .cache
                 case .expiredCache: source = .expiredCache
                 @unknown default:
-                  assertionFailure()
+                  break
                 }
 
-                #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-                  var dnsProtocol = EstablishmentReport.Resolution.DNSProtocol.unknown
-                  if #available(SwiftStdlib 5.3, *) {
-                    switch $0.dnsProtocol {
-                    case .unknown: break
-                    case .udp: dnsProtocol = .udp
-                    case .tcp: dnsProtocol = .tcp
-                    case .tls: dnsProtocol = .tls
-                    case .https: dnsProtocol = .https
-                    @unknown default:
-                      assertionFailure()
-                    }
-                  }
-                #else
-                  var dnsProtocol = EstablishmentReport.Resolution.DNSProtocol.unknown
-                  switch $0.dnsProtocol {
-                  case .unknown: break
-                  case .udp: dnsProtocol = .udp
-                  case .tcp: dnsProtocol = .tcp
-                  case .tls: dnsProtocol = .tls
-                  case .https: dnsProtocol = .https
-                  @unknown default:
-                    assertionFailure()
-                  }
-                #endif
+                var dnsProtocol = EstablishmentReport.Resolution.DNSProtocol.unknown
+                switch $0.dnsProtocol {
+                case .unknown: break
+                case .udp: dnsProtocol = .udp
+                case .tcp: dnsProtocol = .tcp
+                case .tls: dnsProtocol = .tls
+                case .https: dnsProtocol = .https
+                @unknown default:
+                  break
+                }
 
                 return try EstablishmentReport.Resolution(
                   source: source,

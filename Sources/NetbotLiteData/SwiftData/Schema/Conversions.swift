@@ -115,19 +115,11 @@
 
       init(httpResponse: HTTPResponse) {
         var fieldValue: String {
-          if #available(SwiftStdlib 5.3, *) {
-            return String(unsafeUninitializedCapacity: 3) { buffer in
-              buffer[0] = UInt8(httpResponse.status.code / 100) + 48
-              buffer[1] = UInt8((httpResponse.status.code / 10) % 10) + 48
-              buffer[2] = UInt8(httpResponse.status.code % 10) + 48
-              return 3
-            }
-          } else {
-            return String([
-              Character(Unicode.Scalar(UInt8(httpResponse.status.code / 100) + 48)),
-              Character(Unicode.Scalar(UInt8((httpResponse.status.code / 10) % 10) + 48)),
-              Character(Unicode.Scalar(UInt8(httpResponse.status.code % 10) + 48)),
-            ])
+          return String(unsafeUninitializedCapacity: 3) { buffer in
+            buffer[0] = UInt8(httpResponse.status.code / 100) + 48
+            buffer[1] = UInt8((httpResponse.status.code / 10) % 10) + 48
+            buffer[2] = UInt8(httpResponse.status.code % 10) + 48
+            return 3
           }
         }
 
