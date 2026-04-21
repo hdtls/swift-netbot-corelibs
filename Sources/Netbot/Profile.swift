@@ -294,7 +294,7 @@ extension AnyForwardingRule {
         db: nil, countryCode: value, forwardProtocol: forwardProtocol)
     case .ipcidr:
       return IPCIDRForwardingRule(
-        classlessInterDomainRouting: value, forwardProtocol: forwardProtocol)
+        uncheckedBounds: value, forwardProtocol: forwardProtocol)
     case .processName:
       return ProcessForwardingRule(processName: value, forwardProtocol: forwardProtocol)
     case .final:
