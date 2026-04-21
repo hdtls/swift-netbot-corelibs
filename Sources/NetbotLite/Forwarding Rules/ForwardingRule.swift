@@ -35,9 +35,6 @@ public protocol ForwardingRuleConvertible: Sendable {
 #endif
 public protocol ForwardingRule: Sendable {
 
-  /// A bool flag to determine whether a dns query is required when start rule matching.
-  var requireIPAddress: Bool { get }
-
   /// Forward protocol define how to forward connections using this rule.
   var forwardProtocol: any ForwardProtocolConvertible { get }
 
@@ -49,18 +46,6 @@ public protocol ForwardingRule: Sendable {
   /// - Parameter connection: The test `Connection`.
   /// - Returns: True if connection is satisfied with the rule.
   func predicate(_ connection: Connection) throws -> Bool
-}
-
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
-extension ForwardingRule {
-
-  public var requireIPAddress: Bool {
-    false
-  }
 }
 
 /// A `FinalForwardingRule` specifies the final replacement of rule matching if no other rule matched.
@@ -82,8 +67,6 @@ public protocol FinalForwardingRule: ForwardingRule {
   @available(SwiftStdlib 6.0, *)
 #endif
 extension FinalForwardingRule {
-
-  public var requireIPAddress: Bool { false }
 
   public var forwardProtocol: any ForwardProtocolConvertible { .direct }
 

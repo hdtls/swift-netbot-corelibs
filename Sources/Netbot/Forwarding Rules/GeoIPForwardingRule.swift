@@ -35,8 +35,6 @@ struct GeoIPForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable,
 
   var forwardProtocol: any ForwardProtocolConvertible
 
-  let requireIPAddress = true
-
   var description: String {
     "GEOIP \(countryCode)"
   }
