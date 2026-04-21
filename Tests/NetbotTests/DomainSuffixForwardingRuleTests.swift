@@ -55,9 +55,9 @@ struct DomainSuffixForwardingRuleTests {
   #endif
   @Test(
     arguments: zip(
-      ["test1.com:443", "sub.test2.com", "test2.com:443", "test.com:443"],
-      [false, false, false, true]))
-  func predicateWorks(_ authority: String, expected: Bool) {
+      ["test1.com:443", "sub.test2.com", "test2.com:443", "test.com:443", nil],
+      [false, false, false, true, false]))
+  func predicateWorks(_ authority: String?, expected: Bool) {
     let connection = Connection()
     connection.originalRequest = .init(
       httpRequest: .init(method: .connect, scheme: "https", authority: authority, path: nil))
@@ -85,5 +85,19 @@ struct DomainSuffixForwardingRuleTests {
     let rhs2 = DomainSuffixForwardingRule(
       domainSuffix: "test1.com", forwardProtocol: .reject)
     #expect(lhs != rhs2)
+  }
+
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func hashableConformance() async throws {
+    let r1 = DomainSuffixForwardingRule(domainSuffix: "test1.com", forwardProtocol: .direct)
+    let r2 = r1
+    let r3 = DomainSuffixForwardingRule(domainSuffix: "test2.com", forwardProtocol: .direct)
+
+    let set = Set([r1, r2, r3])
+    #expect(set.count == 2)
   }
 }
