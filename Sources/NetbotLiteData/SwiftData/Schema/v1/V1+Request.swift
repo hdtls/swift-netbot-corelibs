@@ -25,7 +25,7 @@ import NEAddressProcessing
   import Foundation
 #endif
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import SwiftData
 #endif
 
@@ -36,7 +36,7 @@ import NEAddressProcessing
 #endif
 extension V1 {
 
-  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     @Model final public class _Request {
 
       /// The HTTP request object if present. otherwise returns `nil`.
@@ -138,14 +138,14 @@ extension V1._Request {
       }
     }
 
-    #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
       self.httpRequest = data.httpRequest
       self.address = data.address
       self.hostname = data.host(percentEncoded: false)
       self.absoluteURLString = absoluteURLString
       self.body = data.body
     #else
-      #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+      #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
         if let httpRequest = data.httpRequest {
           let _httpRequest = try? JSONEncoder().encode(httpRequest)
           if self._httpRequest != _httpRequest {

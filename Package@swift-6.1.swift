@@ -225,28 +225,20 @@ let package = Package(
   ]
 )
 
-if Context.environment["ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA"] != nil {
-  for target in package.targets {
-    var settings = target.swiftSettings ?? []
-    settings.append(.define("ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA"))
-    target.swiftSettings = settings
-  }
-}
-
-if Context.environment["ENABLE_LOCAL_PACKAGE_DEPENDENCIES"] == nil {
+if Context.environment["NETBOT_REQUIRES_LOCAL_PACKAGE_DEPENDENCIES"] != nil {
+  package.dependencies += [
+    .package(path: "../swift-nio-transport-services"),
+    .package(path: "../swift-netbot-protoimpl"),
+    .package(path: "../swift-maxminddb"),
+    .package(path: "../swift-preference"),
+  ]
+} else {
   package.dependencies += [
     .package(
       url: "https://github.com/hdtls/swift-nio-transport-services.git", branch: "release/2.0"),
     .package(url: "https://github.com/hdtls/swift-netbot-protoimpl.git", branch: "main"),
     .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.3.0"),
     .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
-  ]
-} else {
-  package.dependencies += [
-    .package(path: "../swift-nio-transport-services"),
-    .package(path: "../swift-netbot-protoimpl"),
-    .package(path: "../swift-maxminddb"),
-    .package(path: "../swift-preference"),
   ]
 }
 

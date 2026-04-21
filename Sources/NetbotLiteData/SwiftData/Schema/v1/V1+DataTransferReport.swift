@@ -23,7 +23,7 @@
   import Foundation
 #endif
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import SwiftData
 #endif
 
@@ -34,7 +34,7 @@
 #endif
 extension V1 {
 
-  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     @Model public class _DataTransferReport {
 
       public var duration: Duration {
@@ -157,7 +157,7 @@ extension V1._DataTransferReport {
         )
       )
     }
-    #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
       self._duration = data._duration
     #else
       if self._duration != data._duration {

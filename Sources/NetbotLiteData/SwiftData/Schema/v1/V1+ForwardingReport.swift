@@ -16,7 +16,7 @@
   import Observation
 #endif
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import SwiftData
 #endif
 
@@ -27,7 +27,7 @@
 #endif
 extension V1 {
 
-  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     @Model
   #else
     #if canImport(Darwin) || swift(>=6.3)
@@ -66,7 +66,7 @@ extension V1._ForwardingReport {
   /// Merge new values from data transfer object.
   /// - Parameter data: New `ForwardingReport` to merge.
   public func mergeValues(_ data: ForwardingReport) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
       self._duration = data._duration
       self.forwardingRule = data.forwardingRule
       self.forwardProtocol = data.forwardProtocol
