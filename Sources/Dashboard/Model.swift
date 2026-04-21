@@ -28,7 +28,7 @@ import NetbotLiteData
   import Observation
 #endif
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import CoreData
   import SwiftData
 #endif
@@ -191,7 +191,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
 
   nonisolated public static let shared = RecentConnectionsStore()
 
-  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     /// The ModelContainer for the ModelActor.
     /// The container that manages the app’s schema and model storage configuration.
     nonisolated public let modelContainer: ModelContainer
@@ -264,7 +264,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
   #endif
 
   nonisolated public convenience init() {
-    #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+    #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
       let schema = Schema(versionedSchema: V1.self)
       let configuration: ModelConfiguration = .init(isStoredInMemoryOnly: true)
       let modelContainer = try! ModelContainer(for: schema, configurations: [configuration])
@@ -274,7 +274,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
     #endif
   }
 
-  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     nonisolated public convenience init(
       modelContainer: ModelContainer, dependency: any ConnectionsDependency
     ) {
@@ -288,7 +288,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
 
   nonisolated private init(_modelContainer: Any?, dependency: any ConnectionsDependency) {
     self.dependency = dependency
-    #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+    #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
       self.modelContainer = _modelContainer as! ModelContainer
     #endif
 
@@ -354,7 +354,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
     self.timerSource = DispatchSource.makeTimerSource(queue: .main)
     self.timerSource?.schedule(deadline: .now(), repeating: .seconds(1))
     self.timerSource?.setEventHandler {
-      #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+      #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
         let modelContext = self.modelContainer.mainContext
 
         let term = Connection.State.active.rawValue
@@ -436,7 +436,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
   private func performBatchUpdates(_ models: [Connection]) {
     func doInsert(_ model: Connection) throws {
       var persistentModel: V1._Connection
-      #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+      #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
         let term = model.taskIdentifier
         var fd = FetchDescriptor<V1._Connection>(
           predicate: #Predicate { $0.taskIdentifier == term })
@@ -464,7 +464,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
       } else {
         persistentModel = V1._Connection()
         persistentModel.mergeValues(model)
-        #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+        #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
           modelContext.insert(persistentModel)
         #else
           self._searchResult.append(persistentModel)
@@ -472,7 +472,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
         #endif
       }
 
-      #if !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+      #if !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
         // Track whether this connection is currently active. If so, index
         // for quick access to active connections; otherwise, remove it
         // from the active index.
@@ -492,7 +492,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
         if persistentModel.originalRequest == nil {
           let originalRequest = Request.Model()
           originalRequest.mergeValues(backingData)
-          #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
             modelContext.insert(originalRequest)
           #endif
           persistentModel.originalRequest = originalRequest
@@ -510,7 +510,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
         if persistentModel.currentRequest == nil {
           let currentRequest = Request.Model()
           currentRequest.mergeValues(backingData)
-          #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
             modelContext.insert(currentRequest)
           #endif
           persistentModel.currentRequest = currentRequest
@@ -527,7 +527,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
         if persistentModel.response == nil {
           let response = Response.Model()
           response.mergeValues(backingData)
-          #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
             modelContext.insert(response)
           #endif
           persistentModel.response = response
@@ -545,7 +545,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
         if persistentModel.dnsResolutionReport == nil {
           let dnsResolutionReport = DNSResolutionReport.Model()
           dnsResolutionReport.mergeValues(backingData)
-          #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
             modelContext.insert(dnsResolutionReport)
           #endif
           persistentModel.dnsResolutionReport = dnsResolutionReport
@@ -563,7 +563,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
         if persistentModel.forwardingReport == nil {
           let forwardingReport = ForwardingReport.Model()
           forwardingReport.mergeValues(backingData)
-          #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
             modelContext.insert(forwardingReport)
           #endif
           persistentModel.forwardingReport = forwardingReport
@@ -581,7 +581,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
         if persistentModel.establishmentReport == nil {
           let establishmentReport = EstablishmentReport.Model()
           establishmentReport.mergeValues(backingData)
-          #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
             modelContext.insert(establishmentReport)
           #endif
           persistentModel.establishmentReport = establishmentReport
@@ -605,20 +605,20 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
           // metrics.
           let dataTransferReport = DataTransferReport.Model()
           dataTransferReport.mergeValues(backingData)
-          #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
             modelContext.insert(dataTransferReport)
           #endif
 
           let aggregatePathReport = V1._PathReport()
           aggregatePathReport.mergeValues(backingData.aggregatePathReport)
-          #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
             modelContext.insert(aggregatePathReport)
           #endif
           dataTransferReport.aggregatePathReport = aggregatePathReport
 
           let pathReport = V1._PathReport()
           pathReport.mergeValues(backingData.pathReport)
-          #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
             modelContext.insert(pathReport)
           #endif
           dataTransferReport.pathReport = pathReport
@@ -666,7 +666,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
         if persistentModel.processReport == nil {
           let processReport = ProcessReport.Model()
           processReport.mergeValues(backingData)
-          #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
             modelContext.insert(processReport)
           #else
             // FIXME: Retain Cycle
@@ -681,7 +681,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
           // Prevents duplicate Process objects from being created for the
           // same underlying process.
           var program: Program.Model
-          #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
             let _program = try modelContext.fetch(
               FetchDescriptor<V1._Program>(
                 predicate: #Predicate {
@@ -698,7 +698,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
             program = _program
             if persistentModel.processReport?.program == nil {
               persistentModel.processReport?.program = program
-              #if !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+              #if !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
                 // FIXME: Retain Cycle
                 let inserted = program.processReports.contains {
                   $0.connection?.persistentModelID == persistentModel.persistentModelID
@@ -711,7 +711,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
           } else {
             program = Program.Model()
             program.mergeValues(backingData)
-            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+            #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
               modelContext.insert(program)
             #else
               assert(persistentModel.processReport != nil)
@@ -723,19 +723,19 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
             persistentModel.processReport?.program = program
 
             let dataTransferReport = V1._DataTransferReport()
-            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+            #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
               modelContext.insert(dataTransferReport)
             #endif
             program.dataTransferReport = dataTransferReport
 
             let aggregatePathReport = V1._PathReport()
-            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+            #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
               modelContext.insert(aggregatePathReport)
             #endif
             dataTransferReport.aggregatePathReport = aggregatePathReport
 
             let pathReport = V1._PathReport()
-            #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+            #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
               modelContext.insert(pathReport)
             #endif
             dataTransferReport.pathReport = pathReport
@@ -775,7 +775,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
       }
     }
 
-    #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+    #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
       let modelContext = modelContainer.mainContext
 
       try? modelContext.transaction {

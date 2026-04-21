@@ -19,7 +19,7 @@
 #endif
 public enum V1 {}
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import SwiftData
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS

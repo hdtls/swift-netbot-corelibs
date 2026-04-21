@@ -16,7 +16,7 @@
   import Observation
 #endif
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import SwiftData
 #endif
 
@@ -29,7 +29,7 @@ extension V1 {
 
   /// A path report contains counters and statistics observed
   /// by the connection along a single network path.
-  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     @Model
   #else
     #if canImport(Darwin) || swift(>=6.3)
@@ -88,7 +88,7 @@ extension V1 {
 extension V1._PathReport {
 
   public func mergeValues(_ data: DataTransferReport.PathReport) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
       self.receivedIPPacketCount = data.receivedIPPacketCount
       self.sentIPPacketCount = data.sentIPPacketCount
       self.receivedTransportByteCount = data.receivedTransportByteCount

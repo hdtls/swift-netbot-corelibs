@@ -24,7 +24,7 @@ import Testing
   import Foundation
 #endif
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import SwiftData
 #endif
 
@@ -57,7 +57,7 @@ import Testing
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func connectionIdentifiable() {
-    #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+    #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
       let connection = V1._Connection()
       #expect(connection.id == connection.persistentModelID)
     #else

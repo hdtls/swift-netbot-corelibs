@@ -18,7 +18,7 @@ import NEAddressProcessing
   import Observation
 #endif
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import Foundation
   import SwiftData
 #endif
@@ -30,7 +30,7 @@ import NEAddressProcessing
 #endif
 extension V1 {
 
-  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     @Model final public class _EstablishmentReport {
 
       public var duration: Duration {
@@ -233,7 +233,7 @@ extension V1._EstablishmentReport {
   /// Merge new values from data transfer object.
   /// - Parameter data: New `EstablishmentRepor` to merge.
   public func mergeValues(_ data: EstablishmentReport) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
       self._duration = data._duration
       self.attemptStartedAfterInterval = data.attemptStartedAfterInterval
       self.previousAttemptCount = data.previousAttemptCount

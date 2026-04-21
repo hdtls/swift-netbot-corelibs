@@ -22,7 +22,7 @@ import Testing
   import Foundation
 #endif
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import SwiftData
 #endif
 
@@ -47,7 +47,7 @@ import Testing
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func programIdentifiable() async throws {
-    #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+    #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
       let program = Program()
       #expect(program.id == program.persistentModelID)
 

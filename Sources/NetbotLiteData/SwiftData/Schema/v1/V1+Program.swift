@@ -22,7 +22,7 @@
   import Foundation
 #endif
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import SwiftData
 #endif
 
@@ -33,7 +33,7 @@
 #endif
 extension V1 {
 
-  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     @Model final public class _Program {
 
       #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -92,7 +92,7 @@ extension V1 {
   #endif
 }
 
-#if !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+#if !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
     @available(SwiftStdlib 5.9, *)
   #else
@@ -115,7 +115,7 @@ extension V1._Program {
   /// Merge new values from data transfer object.
   /// - Parameter data: New `Request` to merge.
   public func mergeValues(_ data: Program) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
       localizedName = data.localizedName
       bundleURL = data.bundleURL
       executableURL = data.executableURL

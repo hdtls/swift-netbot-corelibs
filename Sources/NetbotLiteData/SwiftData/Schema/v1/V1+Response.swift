@@ -24,7 +24,7 @@ import HTTPTypes
   import Foundation
 #endif
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import SwiftData
 #endif
 
@@ -35,7 +35,7 @@ import HTTPTypes
 #endif
 extension V1 {
 
-  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     @Model final public class _Response {
 
       /// The HTTP request object if present. otherwise returns `nil`.
@@ -89,7 +89,7 @@ extension V1._Response {
   /// Merge new values from data transfer object.
   /// - Parameter data: New `Response` to merge.
   public func mergeValues(_ data: Response) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
       httpResponse = data.httpResponse
       body = data.body
     #else

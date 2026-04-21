@@ -36,7 +36,7 @@ import Testing
     #expect(source.body == nil)
   }
 
-  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
       @available(SwiftStdlib 5.9, *)
     #else

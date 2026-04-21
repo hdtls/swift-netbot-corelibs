@@ -25,11 +25,11 @@ import NEAddressProcessing
   import Foundation
 #endif
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import SwiftData
 #endif
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
     @available(SwiftStdlib 5.9, *)
   #else
@@ -205,7 +205,7 @@ extension V1._Connection {
   ///
   /// - Parameter data: New `Connection` to merge.
   public func mergeValues(_ data: Connection) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
       self.taskIdentifier = data.taskIdentifier
       if self.earliestBeginDate != data.earliestBeginDate {
         self.earliestBeginDateFormatted = data.earliestBeginDate

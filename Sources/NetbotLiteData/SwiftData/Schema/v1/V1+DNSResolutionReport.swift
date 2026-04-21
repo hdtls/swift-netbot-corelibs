@@ -18,7 +18,7 @@ import NEAddressProcessing
   import Observation
 #endif
 
-#if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import SwiftData
 #endif
 
@@ -29,7 +29,7 @@ import NEAddressProcessing
 #endif
 extension V1 {
 
-  #if canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA
+  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     @Model
   #else
     #if canImport(Darwin) || swift(>=6.3)
@@ -110,7 +110,7 @@ extension V1._DNSResolutionReport {
   /// Merge new values from data transfer object.
   /// - Parameter data: New `DNSResolutionReport` to merge.
   public func mergeValues(_ data: DNSResolutionReport) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && ENABLE_EXPERIMENTAL_FEATURE_SWIFT_DATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
       self._duration = data._duration
       self.resolutions = data.resolutions.map {
         Resolution(
