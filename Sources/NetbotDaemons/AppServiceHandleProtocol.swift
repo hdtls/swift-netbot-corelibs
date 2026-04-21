@@ -27,43 +27,22 @@
   @objc public protocol AppServiceHandleProtocol: Sendable {
 
     /// Connection code signing requirement.
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.7, *)
+    #endif
     func codeSigningRequirement() async -> String
 
     /// Initializes an app service object with a launch daemon with the property list name you provide and register the service.
     func register(daemon plistName: String) async throws
 
-    /// Initializes an app service object with a launch agent with the property list name you provide and register the service.
-    func register(agent plistName: String) async throws
-
-    /// Initializes an app service object for a login item corresponding to the bundle with the identifier you provide and register the service.
-    func register(loginItem identifier: String) async throws
-
     /// Unregister the app service object for a launch daemon initialized with the property list name you provide.
     func unregister(daemon plistName: String) async throws
-
-    /// Unregister the app service object for a launch agent initialized with the property list name you provide.
-    func unregister(agent plistName: String) async throws
-
-    /// Unregister the app service object for a login item initialized with the identifier you provide.
-    func unregister(loginItem identifier: String) async throws
 
     /// Return status of the app service object for a launch daemon initialized with the identifier you provide.
     #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
       @available(SwiftStdlib 5.7, *)
     #endif
     func status(daemon plistName: String) async -> SMAppService.Status
-
-    /// Return status of the app service object for a launch agent initialized with the identifier you provide.
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      @available(SwiftStdlib 5.7, *)
-    #endif
-    func status(agent plistName: String) async -> SMAppService.Status
-
-    /// Return status of the app service object for a login item initialized with the identifier you provide.
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      @available(SwiftStdlib 5.7, *)
-    #endif
-    func status(loginItem identifier: String) async -> SMAppService.Status
 
     /// Opens System Settings to the Login Items control panel.
     #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
