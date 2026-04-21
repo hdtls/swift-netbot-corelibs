@@ -81,8 +81,6 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
 
   @usableFromInline var _storage: _Storage
 
-  let requireIPAddress = true
-
   @inlinable var forwardProtocol: any ForwardProtocolConvertible {
     get { _storage.forwardProtocol }
     set {

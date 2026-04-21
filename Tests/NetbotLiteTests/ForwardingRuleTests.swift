@@ -27,7 +27,6 @@ import Testing
   #endif
   @Test func finalForwardingRule() {
     let r = _FinalForwardingRule()
-    #expect(!r.requireIPAddress)
     #expect((r.forwardProtocol as? ForwardProtocolDirect) != nil)
     #expect(r.description == "FINAL")
     #expect(throws: Never.self) {
