@@ -105,7 +105,7 @@ struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashabl
               db: nil, countryCode: condition, forwardProtocol: forwardProtocol)
           case .ipcidr:
             return IPCIDRForwardingRule(
-              classlessInterDomainRouting: condition, forwardProtocol: forwardProtocol)
+              uncheckedBounds: condition, forwardProtocol: forwardProtocol)
           default:
             return nil
           }

@@ -26,36 +26,11 @@ import NetbotLiteData
 #if os(Windows)
   import ucrt
 
-  import let WinSDK.AF_INET
-  import let WinSDK.AF_INET6
-
-  import let WinSDK.INET_ADDRSTRLEN
-  import let WinSDK.INET6_ADDRSTRLEN
-
-  import func WinSDK.FreeAddrInfoW
-  import func WinSDK.GetAddrInfoW
-
   import struct WinSDK.ADDRESS_FAMILY
-  import struct WinSDK.ADDRINFOW
-  import struct WinSDK.IN_ADDR
   import struct WinSDK.IN6_ADDR
-
-  import struct WinSDK.sockaddr
-  import struct WinSDK.sockaddr_in
-  import struct WinSDK.sockaddr_in6
-  import struct WinSDK.sockaddr_storage
-  import struct WinSDK.sockaddr_un
-
-  import typealias WinSDK.u_short
-
-  // swift-format-ignore: TypeNamesShouldBeCapitalized
-  private typealias in_addr = WinSDK.IN_ADDR
 
   // swift-format-ignore: TypeNamesShouldBeCapitalized
   private typealias in6_addr = WinSDK.IN6_ADDR
-
-  // swift-format-ignore: TypeNamesShouldBeCapitalized
-  private typealias in_port_t = WinSDK.u_short
 
   // swift-format-ignore: TypeNamesShouldBeCapitalized
   private typealias sa_family_t = WinSDK.ADDRESS_FAMILY
@@ -79,26 +54,28 @@ import NetbotLiteData
 #endif
 struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
+  typealias AvailableIPv6Pool = _AvailableIPv6Pool
+
   @usableFromInline final class _Storage {
-    @usableFromInline var classlessInterDomainRouting: String
-    @usableFromInline var addresses: Addresses?
+    @usableFromInline var v4: AvailableIPPool?
+    @usableFromInline var v6: AvailableIPv6Pool?
+    @usableFromInline var uncheckedBounds: String
     @usableFromInline var forwardProtocol: any ForwardProtocolConvertible
 
     @inlinable init(
-      classlessInterDomainRouting: String, addresses: Addresses?,
+      v4: AvailableIPPool?,
+      v6: AvailableIPv6Pool?,
+      uncheckedBounds: String,
       forwardProtocol: any ForwardProtocolConvertible
     ) {
-      self.classlessInterDomainRouting = classlessInterDomainRouting
-      self.addresses = Addresses(uncheckedBounds: classlessInterDomainRouting)
+      self.v4 = v4
+      self.v6 = v6
+      self.uncheckedBounds = uncheckedBounds
       self.forwardProtocol = forwardProtocol
     }
 
     @inlinable func copy() -> _Storage {
-      _Storage(
-        classlessInterDomainRouting: classlessInterDomainRouting,
-        addresses: addresses,
-        forwardProtocol: forwardProtocol
-      )
+      _Storage(v4: v4, v6: v6, uncheckedBounds: uncheckedBounds, forwardProtocol: forwardProtocol)
     }
   }
 
@@ -115,35 +92,31 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
   }
 
   @inlinable var description: String {
-    "IP-CIDR \(classlessInterDomainRouting)"
+    "IP-CIDR \(uncheckedBounds)"
   }
 
   /// IP CIDR string.
-  @inlinable var classlessInterDomainRouting: String {
-    get { _storage.classlessInterDomainRouting }
+  @inlinable var uncheckedBounds: String {
+    get { self._storage.uncheckedBounds }
     set {
       copyStorageIfNotUniquelyReferenced()
-      _storage.classlessInterDomainRouting = newValue
-      _storage.addresses = Addresses(uncheckedBounds: newValue)
+      self._storage.uncheckedBounds = newValue
+      self._storage.v4 = .init(uncheckedBounds: newValue)
+      self._storage.v6 = .init(uncheckedBounds: newValue)
     }
   }
 
-  private var addresses: Addresses? {
-    _storage.addresses
-  }
-
   @inlinable init(
-    classlessInterDomainRouting: String, forwardProtocol: any ForwardProtocolConvertible
+    uncheckedBounds: String,
+    forwardProtocol: any ForwardProtocolConvertible
   ) {
-    let addresses = Addresses(uncheckedBounds: classlessInterDomainRouting)
+    let v6 = AvailableIPv6Pool(uncheckedBounds: uncheckedBounds)
+    let v4 = AvailableIPPool(uncheckedBounds: uncheckedBounds)
     self._storage = _Storage(
-      classlessInterDomainRouting: classlessInterDomainRouting,
-      addresses: addresses,
-      forwardProtocol: forwardProtocol
-    )
+      v4: v4, v6: v6, uncheckedBounds: uncheckedBounds, forwardProtocol: forwardProtocol)
   }
 
-  @usableFromInline mutating func copyStorageIfNotUniquelyReferenced() {
+  @inline(__always) mutating func copyStorageIfNotUniquelyReferenced() {
     if !isKnownUniquelyReferenced(&self._storage) {
       self._storage = self._storage.copy()
     }
@@ -156,7 +129,11 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
       guard case .hostPort(let host, _) = address else { return false }
 
       switch host {
-      case .ipv4, .ipv6: return (try? addresses?.contains(address.asAddress())) ?? false
+      case .ipv4(let address):
+        return self._storage.v4?.contains(address) ?? false
+      case .ipv6:
+        guard case .v6(let address) = try? address.asAddress() else { return false }
+        return self._storage.v6?.contains(address) ?? false
       default: return false
       }
     }
@@ -176,15 +153,13 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
 #endif
 extension IPCIDRForwardingRule._Storage: Hashable {
   static func == (lhs: IPCIDRForwardingRule._Storage, rhs: IPCIDRForwardingRule._Storage) -> Bool {
-    lhs.classlessInterDomainRouting == rhs.classlessInterDomainRouting
-      && lhs.addresses == rhs.addresses
+    lhs.uncheckedBounds == rhs.uncheckedBounds
       && lhs.forwardProtocol.asForwardProtocol().name
         == rhs.forwardProtocol.asForwardProtocol().name
   }
 
   func hash(into hasher: inout Hasher) {
-    hasher.combine(classlessInterDomainRouting)
-    hasher.combine(addresses)
+    hasher.combine(uncheckedBounds)
     hasher.combine(forwardProtocol.asForwardProtocol().name)
   }
 }
@@ -203,13 +178,20 @@ extension IPCIDRForwardingRule._Storage: @unchecked Sendable {}
 #endif
 extension IPCIDRForwardingRule {
 
-  struct Addresses: Hashable, Sendable {
-    let lowerBound: SocketAddress
-    let upperBound: SocketAddress
+  struct _AvailableIPv6Pool: Sendable {
 
-    init(bounds: (lower: SocketAddress, upper: SocketAddress)) {
-      self.lowerBound = bounds.lower
-      self.upperBound = bounds.upper
+    private let bounds: (lower: SocketAddress.IPv6Address, upper: SocketAddress.IPv6Address)
+
+    var lower: SocketAddress.IPv6Address {
+      bounds.lower
+    }
+
+    var upper: SocketAddress.IPv6Address {
+      bounds.upper
+    }
+
+    init(bounds: (lower: SocketAddress.IPv6Address, upper: SocketAddress.IPv6Address)) {
+      self.bounds = bounds
     }
 
     init?(uncheckedBounds desired: String) {
@@ -228,152 +210,108 @@ extension IPCIDRForwardingRule {
         return nil
       }
 
-      switch address {
-      case .v4:
-        guard (0...UInt32.bitWidth).contains(prefix) else {
-          return nil
+      var bitWidth = 128
+      #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 6.0, *) {
+          bitWidth = UInt128.bitWidth
+        } else {
+          bitWidth = _UInt128.bitWidth
         }
-        self.init(address: address, maskBits: prefix)
-      case .v6:
-        guard (0...128).contains(prefix) else {
-          return nil
-        }
-        self.init(address: address, maskBits: prefix)
-      case .unixDomainSocket:
+      #else
+        bitWidth = UInt128.bitWidth
+      #endif
+
+      guard case .v6(let iPv6Address) = address, (0...bitWidth).contains(prefix) else {
         return nil
       }
-    }
 
-    init?(address: SocketAddress, maskBits prefix: Int) {
-      switch address {
-      case .v4(let iPv4Address):
-        precondition((0...UInt32.bitWidth).contains(prefix))
+      guard prefix != 0 else {
+        let lowerBoundIPAddress = "0000:0000:0000:0000:0000:0000:0000:0000"
+        let upperBoundIPAddress = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
 
-        guard prefix != 0 else {
-          do {
-            lowerBound = try SocketAddress(ipAddress: "0.0.0.0", port: 0)
-            upperBound = try SocketAddress(ipAddress: "255.255.255.255", port: 0)
-          } catch { return nil }
-          return
+        guard
+          case .v6(let lowerBound) = try? SocketAddress(ipAddress: lowerBoundIPAddress, port: 0),
+          case .v6(let upperBound) = try? SocketAddress(ipAddress: upperBoundIPAddress, port: 0)
+        else {
+          return nil
         }
+        self.init(bounds: (lower: lowerBound, upper: upperBound))
+        return
+      }
 
-        guard prefix != UInt32.bitWidth else {
-          lowerBound = address
-          upperBound = address
-          return
-        }
+      guard prefix != bitWidth else {
+        self.init(bounds: (lower: iPv6Address, upper: iPv6Address))
+        return
+      }
 
-        let bitsToMove = UInt32.bitWidth - prefix
-        #if os(Windows)
-          var packedAddress = iPv4Address.address.sin_addr.S_un.S_addr.bigEndian
-        #else
-          var packedAddress = iPv4Address.address.sin_addr.s_addr.bigEndian
-        #endif
+      let bitsToMove = bitWidth - prefix
+      var s6addr = iPv6Address.address.sin6_addr
 
-        packedAddress = (packedAddress >> bitsToMove) << bitsToMove
-        lowerBound = .init(packedAddress: packedAddress.bigEndian)
-
-        packedAddress = packedAddress | ~((UInt32.max >> bitsToMove) << bitsToMove)
-        upperBound = .init(packedAddress: packedAddress.bigEndian)
-      case .v6(let iPv6Address):
-        var bitWidth = 128
-        #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-          if #available(SwiftStdlib 6.0, *) {
-            bitWidth = UInt128.bitWidth
-          } else {
-            bitWidth = _UInt128.bitWidth
-          }
-        #else
-          bitWidth = UInt128.bitWidth
-        #endif
-
-        precondition((0...bitWidth).contains(prefix))
-
-        guard prefix != 0 else {
-          let lowerBoundIPAddress = "0000:0000:0000:0000:0000:0000:0000:0000"
-          let upperBoundIPAddress = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
-
-          do {
-            lowerBound = try SocketAddress(ipAddress: lowerBoundIPAddress, port: 0)
-            upperBound = try SocketAddress(ipAddress: upperBoundIPAddress, port: 0)
-          } catch {
-            return nil
-          }
-          return
-        }
-
-        guard prefix != bitWidth else {
-          lowerBound = address
-          upperBound = address
-          return
-        }
-
-        let bitsToMove = bitWidth - prefix
-        var s6addr = iPv6Address.address.sin6_addr
-
-        #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-          if #available(SwiftStdlib 6.0, *) {
-            var packedAddress = withUnsafeBytes(of: &s6addr) {
-              $0.loadUnaligned(as: UInt128.self).bigEndian
-            }
-
-            packedAddress = (packedAddress >> bitsToMove) << bitsToMove
-            lowerBound = .init(packedAddress: packedAddress.bigEndian)
-
-            packedAddress = packedAddress | ~((UInt128.max >> bitsToMove) << bitsToMove)
-            upperBound = .init(packedAddress: packedAddress.bigEndian)
-          } else {
-            var packedAddress = withUnsafeBytes(of: &s6addr) {
-              $0.loadUnaligned(as: _UInt128.self).bigEndian
-            }
-
-            packedAddress = (packedAddress >> bitsToMove) << bitsToMove
-            lowerBound = .init(packedAddress: packedAddress.bigEndian)
-
-            packedAddress = packedAddress | ~((_UInt128.max >> bitsToMove) << bitsToMove)
-            upperBound = .init(packedAddress: packedAddress.bigEndian)
-          }
-        #else
+      #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 6.0, *) {
           var packedAddress = withUnsafeBytes(of: &s6addr) {
             $0.loadUnaligned(as: UInt128.self).bigEndian
           }
 
           packedAddress = (packedAddress >> bitsToMove) << bitsToMove
-          lowerBound = .init(packedAddress: packedAddress.bigEndian)
+          guard case .v6(let lowerBound) = SocketAddress(packedAddress: packedAddress.bigEndian)
+          else {
+            return nil
+          }
 
           packedAddress = packedAddress | ~((UInt128.max >> bitsToMove) << bitsToMove)
-          upperBound = .init(packedAddress: packedAddress.bigEndian)
-        #endif
-      case .unixDomainSocket:
-        return nil
-      }
+          guard case .v6(let upperBound) = SocketAddress(packedAddress: packedAddress.bigEndian)
+          else {
+            return nil
+          }
+          self.init(bounds: (lower: lowerBound, upper: upperBound))
+        } else {
+          var packedAddress = withUnsafeBytes(of: &s6addr) {
+            $0.loadUnaligned(as: _UInt128.self).bigEndian
+          }
+
+          packedAddress = (packedAddress >> bitsToMove) << bitsToMove
+          guard case .v6(let lowerBound) = SocketAddress(packedAddress: packedAddress.bigEndian)
+          else {
+            return nil
+          }
+
+          packedAddress = packedAddress | ~((_UInt128.max >> bitsToMove) << bitsToMove)
+          guard case .v6(let upperBound) = SocketAddress(packedAddress: packedAddress.bigEndian)
+          else {
+            return nil
+          }
+          self.init(bounds: (lower: lowerBound, upper: upperBound))
+        }
+      #else
+        var packedAddress = withUnsafeBytes(of: &s6addr) {
+          $0.loadUnaligned(as: UInt128.self).bigEndian
+        }
+
+        packedAddress = (packedAddress >> bitsToMove) << bitsToMove
+        guard case .v6(let lowerBound) = SocketAddress(packedAddress: packedAddress.bigEndian)
+        else {
+          return nil
+        }
+
+        packedAddress = packedAddress | ~((UInt128.max >> bitsToMove) << bitsToMove)
+        guard case .v6(let upperBound) = SocketAddress(packedAddress: packedAddress.bigEndian)
+        else {
+          return nil
+        }
+        self.init(bounds: (lower: lowerBound, upper: upperBound))
+      #endif
     }
 
-    func contains(_ address: SocketAddress) -> Bool {
-      switch (address, lowerBound, upperBound) {
-      case (.v4(let iPv4Address), .v4(let lowerBoundAddress), .v4(let upperBoundAddress)):
-        #if os(Windows)
-          let target = iPv4Address.address.sin_addr.S_un.S_addr.byteSwapped
-          let lowerBound = lowerBoundAddress.address.sin_addr.S_un.S_addr.byteSwapped
-          let upperBound = upperBoundAddress.address.sin_addr.S_un.S_addr.byteSwapped
-        #else
-          let target = iPv4Address.address.sin_addr.s_addr.byteSwapped
-          let lowerBound = lowerBoundAddress.address.sin_addr.s_addr.byteSwapped
-          let upperBound = upperBoundAddress.address.sin_addr.s_addr.byteSwapped
-        #endif
-        return target >= lowerBound && target <= upperBound
-      case (.v6(let iPv6Address), .v6(let lowerBoundAddress), .v6(let upperBoundAddress)):
-        var s6addr1 = iPv6Address.address.sin6_addr
-        var s6addr2 = lowerBoundAddress.address.sin6_addr
-        var s6addr3 = upperBoundAddress.address.sin6_addr
-        let greatThanOrEqualToLowerBound =
-          memcmp(&s6addr1, &s6addr2, MemoryLayout.size(ofValue: s6addr1)) >= 0
-        let lessThanOrEqualToUpperBound =
-          memcmp(&s6addr1, &s6addr3, MemoryLayout.size(ofValue: s6addr1)) <= 0
-        return greatThanOrEqualToLowerBound && lessThanOrEqualToUpperBound
-      default:
-        return false
-      }
+    func contains(_ address: SocketAddress.IPv6Address) -> Bool {
+      var s6addr1 = address.address.sin6_addr
+      var s6addr2 = lower.address.sin6_addr
+      var s6addr3 = upper.address.sin6_addr
+      let greatThanOrEqualToLowerBound =
+        memcmp(&s6addr1, &s6addr2, MemoryLayout.size(ofValue: s6addr1)) >= 0
+      let lessThanOrEqualToUpperBound =
+        memcmp(&s6addr1, &s6addr3, MemoryLayout.size(ofValue: s6addr1)) <= 0
+      return greatThanOrEqualToLowerBound && lessThanOrEqualToUpperBound
     }
   }
 }
@@ -384,16 +322,6 @@ extension IPCIDRForwardingRule {
   @available(SwiftStdlib 6.0, *)
 #endif
 extension SocketAddress {
-
-  fileprivate init(packedAddress: UInt32) {
-    var ipv4Addr = sockaddr_in()
-    ipv4Addr.sin_family = sa_family_t(AF_INET)
-    ipv4Addr.sin_port = 0
-    withUnsafeMutableBytes(of: &ipv4Addr.sin_addr) {
-      $0.storeBytes(of: packedAddress, as: UInt32.self)
-    }
-    self.init(ipv4Addr)
-  }
 
   #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
     @available(iOS, deprecated: 18.0)
