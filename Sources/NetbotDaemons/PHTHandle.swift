@@ -39,61 +39,33 @@
     }
 
     /// Connection code signing requirement.
+    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      @available(SwiftStdlib 5.7, *)
+    #endif
     public func codeSigningRequirement() -> String {
-      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-        if #available(SwiftStdlib 5.7, *) {
-          var codeSigningRequirementParts: [Substring] = []
+      var codeSigningRequirementParts: [Substring] = []
 
-          let propertyList =
-            Bundle.main.object(forInfoDictionaryKey: "SMAuthorizedClients") as! [String]
-          let authorizedClients =
-            propertyList
-            .map {
-              $0.split(separator: /\ and\ /)
-                .filter { $0.starts(with: /^identifier\ /) }
-            }
-            .joined()
-          codeSigningRequirementParts.append(contentsOf: authorizedClients)
-
-          codeSigningRequirementParts.append("anchor apple generic")
-
-          let team = propertyList.first.map {
-            $0.split(separator: /\ and\ /)
-              .filter { $0.starts(with: /^certificate leaf\[subject\./) }
-              .first!
-          }!
-          codeSigningRequirementParts.append(team)
-
-          return codeSigningRequirementParts.joined(separator: " and ")
-        } else {
-          // TODO: Fallback to SwiftStdlib 5.3
-          return ""
-        }
-      #else
-        var codeSigningRequirementParts: [Substring] = []
-
-        let propertyList =
-          Bundle.main.object(forInfoDictionaryKey: "SMAuthorizedClients") as! [String]
-        let authorizedClients =
-          propertyList
-          .map {
-            $0.split(separator: /\ and\ /)
-              .filter { $0.starts(with: /^identifier\ /) }
-          }
-          .joined()
-        codeSigningRequirementParts.append(contentsOf: authorizedClients)
-
-        codeSigningRequirementParts.append("anchor apple generic")
-
-        let team = propertyList.first.map {
+      let propertyList =
+        Bundle.main.object(forInfoDictionaryKey: "SMAuthorizedClients") as! [String]
+      let authorizedClients =
+        propertyList
+        .map {
           $0.split(separator: /\ and\ /)
-            .filter { $0.starts(with: /^certificate leaf\[subject\./) }
-            .first!
-        }!
-        codeSigningRequirementParts.append(team)
+            .filter { $0.starts(with: /^identifier\ /) }
+        }
+        .joined()
+      codeSigningRequirementParts.append(contentsOf: authorizedClients)
 
-        return codeSigningRequirementParts.joined(separator: " and ")
-      #endif
+      codeSigningRequirementParts.append("anchor apple generic")
+
+      let team = propertyList.first.map {
+        $0.split(separator: /\ and\ /)
+          .filter { $0.starts(with: /^certificate leaf\[subject\./) }
+          .first!
+      }!
+      codeSigningRequirementParts.append(team)
+
+      return codeSigningRequirementParts.joined(separator: " and ")
     }
 
     /// Check that the client denoted by authorization is allowed to run the specified command.
