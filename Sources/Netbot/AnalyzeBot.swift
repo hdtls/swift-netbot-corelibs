@@ -45,17 +45,17 @@ import _ProfileSupport
 #endif
 public actor AnalyzeBot: Actor {
 
-  nonisolated private let core: NetbotLite.AnalyzeBot
   nonisolated private let dns: LocalDNSProxy
+  nonisolated private let core: NetbotLite.AnalyzeBot
+  private var coreLwIP: LwIP?
 
-  nonisolated public let eventLoopGroup: any EventLoopGroup
-
+  nonisolated public let group: any EventLoopGroup
   public var logger: Logger = Logger(label: "AnalyzeBot")
 
-  public init(group: any EventLoopGroup = .shared, dns: LocalDNSProxy) {
-    self.eventLoopGroup = group
-    self.core = .init(group: eventLoopGroup, logger: logger)
-    self.dns = dns
+  public init(group: any EventLoopGroup = .shared) {
+    self.group = group
+    self.dns = .init(group: group)
+    self.core = .init(group: group, logger: logger)
   }
 
   /// Start analyze tunnel.
@@ -67,13 +67,10 @@ public actor AnalyzeBot: Actor {
       await self.core.setProcessInfo(ProcessResolver.shared)
     #endif
 
-    let connectionPublisher = ConnectionPulse(
-      group: eventLoopGroup,
-      address: .hostPort(host: "127.0.0.1", port: 6170)
-    )
-    await self.core.setConnectionPublisher(connectionPublisher)
+    let publisher = ConnectionPulse(group: group, address: .hostPort(host: "127.0.0.1", port: 6170))
+    await self.core.setConnectionPublisher(publisher)
     await self.core.setResolver(dns)
-    try await connectionPublisher.run()
+    try await publisher.run()
     try await self.core.run()
   }
 
@@ -82,13 +79,23 @@ public actor AnalyzeBot: Actor {
     #if os(macOS)
       try? await self.setNWProtocolProxiesOptions(.init())
     #endif
-    let connectionPublisher = self.core.connectionPublisher as! ConnectionPulse
-    try? await connectionPublisher.shutdownGracefully()
+    let publisher = self.core.connectionPublisher as! ConnectionPulse
+    try? await publisher.shutdownGracefully()
     try? await self.core.shutdownGracefully()
   }
 
   public func setLogger(_ logger: Logger) async {
     self.logger = logger
+  }
+
+  public func setLwIPEnabled(_ enabled: Bool, packetFlow: (any PacketTunnelFlow)? = nil) async {
+    if enabled, let packetFlow {
+      self.coreLwIP = LwIP(group: group, packetFlow: packetFlow, dns: dns)
+      try? await self.coreLwIP?.run()
+    } else {
+      try? await self.coreLwIP?.shutdownGracefully()
+      self.coreLwIP = nil
+    }
   }
 
   /// Modify outbound mode.
@@ -142,5 +149,12 @@ public actor AnalyzeBot: Actor {
         SocketAddress(
           ipAddress: newProfile.socksListenAddress, port: newProfile.socksListenPort ?? 6153)
       ))
+
+    var additionalServers = [Address.hostPort(host: "192.168.124.1", port: 53)]
+    additionalServers.append(
+      contentsOf: newProfile.dnsSettings.servers.map {
+        Address.hostPort(host: .init($0), port: 53)
+      })
+    dns.additionalServers = additionalServers
   }
 }
