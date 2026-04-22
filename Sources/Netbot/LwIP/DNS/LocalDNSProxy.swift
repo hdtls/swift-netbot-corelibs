@@ -320,6 +320,8 @@ extension LocalDNSProxy: PacketHandleProtocol {
   func run() async throws {}
 
   func handleInput(_ packetObject: NEPacket) async throws -> PacketHandleResult {
+    assert(packetFlow != nil, "PacketFlow is required to process NEPacket.")
+
     // Make it mutable, so we don't need alloc new packet for response.
     guard case .v4(var iphdr) = packetObject.headerFields else {
       // IPv4 only now.
