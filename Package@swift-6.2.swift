@@ -23,6 +23,8 @@ let package = Package(
     .iOS(.v13),
     .macOS(.v10_15),
     .tvOS(.v13),
+    .watchOS(.v6),
+    .macCatalyst(.v13),
   ],
   products: [
     .library(name: "Dashboard", targets: ["Dashboard"]),
