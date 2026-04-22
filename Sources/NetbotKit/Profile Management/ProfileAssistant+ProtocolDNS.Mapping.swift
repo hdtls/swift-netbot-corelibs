@@ -54,21 +54,21 @@ extension ProfileAssistant {
     }
   }
 
-  /// Insert new `DNSMapping` item into `ProfileAssistant` managed profile file.
+  /// Insert new `ProtocolDNS.Mapping` item into `ProfileAssistant` managed profile file.
   ///
-  /// - Parameter dnsMapping: The `DNSMapping` item to insert.
-  public func insert(_ dnsMapping: DNSMapping) async throws {
+  /// - Parameter dnsMapping: The `ProtocolDNS.Mapping` item to insert.
+  public func insert(_ dnsMapping: ProtocolDNS.Mapping) async throws {
     try await modify { readIntent, writeIntent in
       let file = try String(contentsOf: readIntent.url, encoding: .utf8)
       var lines = file.split(separator: .newlineSequence, omittingEmptySubsequences: false)
-      if let range = lines.firstRange(match: DNSMapping.sectionRegex) {
+      if let range = lines.firstRange(match: ProtocolDNS.Mapping.sectionRegex) {
         lines.insert(Substring(dnsMapping.formatted()), at: range.upperBound)
       } else {
         if lines.last?._trimmingWhitespaces() != "" {
           // Pretty print multiple sections by add an empty line.
           lines.append("")
         }
-        lines.append(Substring(DNSMapping.sectionName))
+        lines.append(Substring(ProtocolDNS.Mapping.sectionName))
         lines.append(Substring(dnsMapping.formatted()))
       }
       let contents = lines.joined(separator: "\n")
@@ -76,12 +76,14 @@ extension ProfileAssistant {
     }
   }
 
-  /// Replace `DNSMapping` item `dnsMapping` with new `DNSMapping` item `newDNSMapping`.
+  /// Replace `ProtocolDNS.Mapping` item `dnsMapping` with new `ProtocolDNS.Mapping` item `newDNSMapping`.
   ///
   /// - Parameters:
-  ///   - dnsMapping: The original `DNSMapping` item to be replaced.
-  ///   - newDNSMapping: The `DNSMapping` item to replace.
-  public func replace(_ dnsMapping: DNSMapping, with newDNSMapping: DNSMapping) async throws {
+  ///   - dnsMapping: The original `ProtocolDNS.Mapping` item to be replaced.
+  ///   - newDNSMapping: The `ProtocolDNS.Mapping` item to replace.
+  public func replace(_ dnsMapping: ProtocolDNS.Mapping, with newDNSMapping: ProtocolDNS.Mapping)
+    async throws
+  {
     try await modify { readIntent, writeIntent in
       let file = try String(contentsOf: readIntent.url, encoding: .utf8)
       let lines = file.split(separator: .newlineSequence, omittingEmptySubsequences: false)
@@ -96,10 +98,10 @@ extension ProfileAssistant {
     }
   }
 
-  /// Remove `DNSMapping` item from `ProfileAssistant` managed profile file.
+  /// Remove `ProtocolDNS.Mapping` item from `ProfileAssistant` managed profile file.
   ///
-  /// - Parameter dnsMapping: The `DNSMapping` item to be removed.
-  public func delete(_ dnsMapping: DNSMapping) async throws {
+  /// - Parameter dnsMapping: The `ProtocolDNS.Mapping` item to be removed.
+  public func delete(_ dnsMapping: ProtocolDNS.Mapping) async throws {
     try await modify { readIntent, writeIntent in
       let file = try String(contentsOf: readIntent.url, encoding: .utf8)
       var lines = file.split(separator: .newlineSequence, omittingEmptySubsequences: false)

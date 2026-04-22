@@ -34,7 +34,7 @@ public enum V1 {}
         _AnyProxy.self,
         _AnyProxyGroup.self,
         _AnyForwardingRule.self,
-        _DNSMapping.self,
+        _ProtocolDNS._Mapping.self,
         _HTTPFieldsRewrite.self,
         _StubbedHTTPResponse.self,
         _URLRewrite.self,

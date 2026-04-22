@@ -138,9 +138,9 @@ extension V1 {
 
     /// The DNS mappings included in this profile.
     #if canImport(SwiftData)
-      @Relationship(inverse: \_DNSMapping.lazyProfile)
+      @Relationship(inverse: \_ProtocolDNS._Mapping.lazyProfile)
     #endif
-    public var lazyDNSMappings: [_DNSMapping] = []
+    public var lazyDNSMappings: [_ProtocolDNS._Mapping] = []
 
     /// The URL rewriting included in this profile.
     #if canImport(SwiftData)

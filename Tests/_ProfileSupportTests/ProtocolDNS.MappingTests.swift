@@ -17,7 +17,7 @@ import Testing
 @testable import _ProfileSupport
 
 @Suite(.tags(.dnsMapping))
-struct DNSMappingTests {
+struct ProtocolDNS_MappingTests {
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
     @available(SwiftStdlib 5.3, *)
@@ -25,8 +25,8 @@ struct DNSMappingTests {
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func propertyInitialValue() {
-    let data = DNSMapping()
-    #expect(data.kind == .mapping)
+    let data = ProtocolDNS.Mapping()
+    #expect(data.strategy == .mapping)
     #expect(data.isEnabled)
     #expect(data.domainName == "")
     #expect(data.value == "")
@@ -34,19 +34,19 @@ struct DNSMappingTests {
   }
 }
 
-@Suite("DNSMapping.KindTests", .tags(.dnsMapping))
-struct DNSMappingKindTests {
+@Suite("ProtocolDNS.MappingStrategyTests", .tags(.dnsMapping))
+struct ProtocolDNS_Mapping_KindTests {
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
     @available(SwiftStdlib 5.3, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test(arguments: zip(DNSMapping.Kind.allCases, [0, 1, 2]))
-  func rawRepresentableConformance(_ kind: DNSMapping.Kind, _ rawValue: Int) {
-    #expect(DNSMapping.Kind(rawValue: rawValue) == kind)
+  @Test(arguments: zip(ProtocolDNS.MappingStrategy.allCases, [0, 1, 2]))
+  func rawRepresentableConformance(_ kind: ProtocolDNS.MappingStrategy, _ rawValue: Int) {
+    #expect(ProtocolDNS.MappingStrategy(rawValue: rawValue) == kind)
     #expect(kind.rawValue == rawValue)
-    #expect(DNSMapping.Kind(rawValue: 9) == nil)
+    #expect(ProtocolDNS.MappingStrategy(rawValue: 9) == nil)
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -55,6 +55,6 @@ struct DNSMappingKindTests {
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func caseIterableConformance() {
-    #expect(DNSMapping.Kind.allCases == [.mapping, .cname, .dns])
+    #expect(ProtocolDNS.MappingStrategy.allCases == [.mapping, .cname, .dns])
   }
 }

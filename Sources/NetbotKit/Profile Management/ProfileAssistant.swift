@@ -343,7 +343,7 @@ public actor ProfileAssistant {
         }
 
         for data in profile.lazyDNSMappings {
-          let model = DNSMapping.Model()
+          let model = ProtocolDNS.Mapping.Model()
           model.mergeValues(data)
           persistentModel.lazyDNSMappings.append(model)
         }
