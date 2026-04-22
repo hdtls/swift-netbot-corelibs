@@ -18,10 +18,9 @@
   import Foundation
   import Logging
   import Network
-  import Observation
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.9, *)
+    @available(SwiftStdlib 5.7, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -83,19 +82,30 @@
     #endif
 
     nonisolated private func _testRouterLatency(address: NWEndpoint.Host) async -> Duration {
-      await withUnsafeContinuation { continuation in
+      await withCheckedContinuation { continuation in
         let connection = NWConnection(to: .hostPort(host: address, port: 53), using: .tcp)
-        let startTime = Date.now
-        connection.stateUpdateHandler = { state in
-          switch state {
-          case .ready:
-            let routerLatency = Duration.seconds(startTime.distance(to: .now))
-            continuation.resume(returning: routerLatency)
-          case .failed:
-            connection.cancel()
-            continuation.resume(returning: .zero)
-          default: break
+
+        let timeoutTask = Task {
+          try await Task.sleep(for: .seconds(5))
+          try Task.checkCancellation()
+
+          guard case .ready = connection.state else {
+            connection.forceCancel()
+            continuation.resume(returning: .seconds(.greatestFiniteMagnitude))
+            return
           }
+        }
+
+        let startTime: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+
+        connection.stateUpdateHandler = {
+          guard case .ready = $0 else {
+            return
+          }
+          let endTime: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+          continuation.resume(returning: .seconds(startTime.distance(to: endTime)))
+          timeoutTask.cancel()
+          connection.forceCancel()
         }
         connection.start(queue: .global())
       }
@@ -107,8 +117,14 @@
       let urlConvertible = url?.absoluteString ?? "https://captive.apple.com/hotspot-detect.html"
 
       let configuration = URLSessionConfiguration.default
-      configuration.proxyConfigurations = []
       configuration.connectionProxyDictionary = [:]
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.9, *) {
+          configuration.proxyConfigurations = []
+        }
+      #else
+        configuration.proxyConfigurations = []
+      #endif
       configuration.timeoutIntervalForRequest = timeoutInterval ?? 5.0
 
       let session = Session(configuration: configuration)
@@ -131,8 +147,14 @@
       let urlConvertible = url?.absoluteString ?? "https://captive.apple.com/hotspot-detect.html"
 
       let configuration = URLSessionConfiguration.default
-      configuration.proxyConfigurations = []
       configuration.connectionProxyDictionary = [:]
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 5.9, *) {
+          configuration.proxyConfigurations = []
+        }
+      #else
+        configuration.proxyConfigurations = []
+      #endif
       configuration.timeoutIntervalForRequest = timeoutInterval ?? 5.0
 
       let session = Session(configuration: configuration)
