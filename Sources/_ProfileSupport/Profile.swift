@@ -98,7 +98,7 @@ import Logging
   public var lazyForwardingRules: [AnyForwardingRule]
 
   /// The DNS mappings included in this profile.
-  public var lazyDNSMappings: [DNSMapping]
+  public var lazyDNSMappings: [ProtocolDNS.Mapping]
 
   /// The URL rewriting included in this profile.
   public var lazyURLRewrites: [URLRewrite]
@@ -132,7 +132,7 @@ import Logging
     lazyProxies: [AnyProxy] = [],
     lazyProxyGroups: [AnyProxyGroup] = [],
     lazyForwardingRules: [AnyForwardingRule] = [],
-    lazyDNSMappings: [DNSMapping] = [],
+    lazyDNSMappings: [ProtocolDNS.Mapping] = [],
     lazyURLRewrites: [URLRewrite] = [],
     lazyHTTPFieldsRewrites: [HTTPFieldsRewrite] = [],
     lazyStubbedHTTPResponses: [StubbedHTTPResponse] = []
@@ -320,7 +320,7 @@ extension Profile {
 
     lazyDNSMappings = persistentModel.lazyDNSMappings
       .sorted(by: { $0.creationDate < $1.creationDate })
-      .map(DNSMapping.init(persistentModel:))
+      .map(ProtocolDNS.Mapping.init(persistentModel:))
 
     lazyURLRewrites = persistentModel.lazyURLRewrites
       .sorted(by: { $0.creationDate < $1.creationDate })

@@ -16,8 +16,8 @@ import Testing
 
 @testable import _ProfileSupport
 
-@Suite("V1._DNSMappingTests", .tags(.swiftData, .schema, .dnsMapping))
-struct DNSMappingPersistentModelTests {
+@Suite("V1._ProtocolDNS._MappingTests", .tags(.swiftData, .schema, .dnsMapping))
+struct V1_ProtocolDNS_MappingTests {
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
     @available(SwiftStdlib 5.9, *)
@@ -25,8 +25,8 @@ struct DNSMappingPersistentModelTests {
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func propertyInitialValue() {
-    let data = V1._DNSMapping()
-    #expect(data.kind == .mapping)
+    let data = V1._ProtocolDNS._Mapping()
+    #expect(data.strategy == .mapping)
     #expect(data.isEnabled)
     #expect(data.domainName == "")
     #expect(data.value == "")
@@ -38,12 +38,12 @@ struct DNSMappingPersistentModelTests {
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test("DNSMapping.init(persistentModel:)")
+  @Test("ProtocolDNS.Mapping.init(persistentModel:)")
   func initWithPersistentModel() {
-    let persistentModel = V1._DNSMapping()
-    let data = DNSMapping(persistentModel: persistentModel)
+    let persistentModel = V1._ProtocolDNS._Mapping()
+    let data = ProtocolDNS.Mapping(persistentModel: persistentModel)
 
-    #expect(data.kind == persistentModel.kind)
+    #expect(data.strategy == persistentModel.strategy)
     #expect(data.domainName == persistentModel.domainName)
     #expect(data.value == persistentModel.value)
     #expect(data.note == persistentModel.note)
@@ -55,30 +55,30 @@ struct DNSMappingPersistentModelTests {
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func mergeValues() {
-    let persistentModel = V1._DNSMapping()
-    let data = DNSMapping()
+    let persistentModel = V1._ProtocolDNS._Mapping()
+    let data = ProtocolDNS.Mapping()
     persistentModel.mergeValues(data)
 
-    #expect(data.kind == persistentModel.kind)
+    #expect(data.strategy == persistentModel.strategy)
     #expect(data.domainName == persistentModel.domainName)
     #expect(data.value == persistentModel.value)
     #expect(data.note == persistentModel.note)
   }
 }
 
-@Suite("V1._DNSMapping.KindTests", .tags(.swiftData, .schema, .dnsMapping))
-struct V1_DNSMappingKindTests {
+@Suite("V1._ProtocolDNS._MappingStrategyTests", .tags(.swiftData, .schema, .dnsMapping))
+struct V1_ProtocolDNS_Mapping_KindTests {
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test(arguments: zip(V1._DNSMapping.Kind.allCases, [0, 1, 2]))
-  func rawRepresentableConformance(_ kind: V1._DNSMapping.Kind, _ rawValue: Int) {
-    #expect(V1._DNSMapping.Kind(rawValue: rawValue) == kind)
-    #expect(kind.rawValue == rawValue)
-    #expect(V1._DNSMapping.Kind(rawValue: 9) == nil)
+  @Test(arguments: zip(ProtocolDNS.MappingStrategy.allCases, [0, 1, 2]))
+  func rawRepresentableConformance(_ strategy: ProtocolDNS.MappingStrategy, _ rawValue: Int) {
+    #expect(ProtocolDNS.MappingStrategy(rawValue: rawValue) == strategy)
+    #expect(strategy.rawValue == rawValue)
+    #expect(ProtocolDNS.MappingStrategy(rawValue: 9) == nil)
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -87,6 +87,6 @@ struct V1_DNSMappingKindTests {
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func caseIterableConformance() {
-    #expect(V1._DNSMapping.Kind.allCases == [.mapping, .cname, .dns])
+    #expect(ProtocolDNS.MappingStrategy.allCases == [.mapping, .cname, .dns])
   }
 }

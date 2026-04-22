@@ -153,7 +153,7 @@ extension Profile.FormatStyle {
     }
 
     if !parseInput.lazyDNSMappings.isEmpty {
-      lines.append(DNSMapping.sectionName)
+      lines.append(ProtocolDNS.Mapping.sectionName)
       lines.append(contentsOf: parseInput.lazyDNSMappings.map { $0.formatted() })
       lines.append("")
     }
@@ -237,7 +237,7 @@ extension Profile.FormatStyle {
     var proxies: [AnyProxy] = []
     var policyGroups: [AnyProxyGroup] = []
     var rules: [AnyForwardingRule] = []
-    var dnsMappings: [DNSMapping] = []
+    var dnsMappings: [ProtocolDNS.Mapping] = []
     var urlRewrites: [URLRewrite] = []
     var stubbedHTTPResponses: [StubbedHTTPResponse] = []
     var httpFieldsRewrites: [HTTPFieldsRewrite] = []
@@ -263,7 +263,7 @@ extension Profile.FormatStyle {
           progress = .startParseProxyGroups
         case AnyForwardingRule.sectionName:
           progress = .startParseRules
-        case DNSMapping.sectionName:
+        case ProtocolDNS.Mapping.sectionName:
           progress = .startParseDNSMappings
         case URLRewrite.sectionName:
           progress = .startParseURLRewrites
@@ -288,7 +288,7 @@ extension Profile.FormatStyle {
         let data = try AnyForwardingRule.FormatStyle().parse(parseInput)
         rules.append(data)
       case .startParseDNSMappings:
-        let data = try DNSMapping.FormatStyle().parse(parseInput)
+        let data = try ProtocolDNS.Mapping.FormatStyle().parse(parseInput)
         dnsMappings.append(data)
       case .startParseURLRewrites:
         let data = try URLRewrite.FormatStyle().parse(parseInput)

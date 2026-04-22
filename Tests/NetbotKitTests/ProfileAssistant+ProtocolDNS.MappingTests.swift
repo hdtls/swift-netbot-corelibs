@@ -24,7 +24,8 @@ import _ProfileSupport
   import Foundation
 #endif
 
-@Suite(.tags(.profileAssistant)) struct DNSMappingManagementTests {
+@Suite(.tags(.profileAssistant))
+struct ProfileAsistant__ProtocolDNS_MappingTests {
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
     @available(SwiftStdlib 5.9, *)
@@ -35,7 +36,7 @@ import _ProfileSupport
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
 
-      let mapping = DNSMapping(domainName: "example.com", value: "1.1.1.1")
+      let mapping = ProtocolDNS.Mapping(domainName: "example.com", value: "1.1.1.1")
       await #expect(throws: Never.self) {
         try await profileAssistant.insert(mapping)
       }
@@ -60,7 +61,7 @@ import _ProfileSupport
 
       try "[DNS Mapping]".write(to: profileURL, atomically: true, encoding: .utf8)
 
-      let mapping = DNSMapping(domainName: "example.com", value: "1.1.1.1")
+      let mapping = ProtocolDNS.Mapping(domainName: "example.com", value: "1.1.1.1")
       await #expect(throws: Never.self) {
         try await profileAssistant.insert(mapping)
       }
@@ -88,7 +89,7 @@ import _ProfileSupport
       recovery.com = server:8.8.8.8
       """.write(to: profileURL, atomically: true, encoding: .utf8)
 
-      let mapping = DNSMapping(domainName: "example.com", value: "1.1.1.1")
+      let mapping = ProtocolDNS.Mapping(domainName: "example.com", value: "1.1.1.1")
       await #expect(throws: Never.self) {
         try await profileAssistant.insert(mapping)
       }
@@ -120,7 +121,7 @@ import _ProfileSupport
       DOMAIN-SUFFIX, swift.org, DIRECT
       """.write(to: profileURL, atomically: true, encoding: .utf8)
 
-      let mapping = DNSMapping(domainName: "example.com", value: "1.1.1.1")
+      let mapping = ProtocolDNS.Mapping(domainName: "example.com", value: "1.1.1.1")
       await #expect(throws: Never.self) {
         try await profileAssistant.insert(mapping)
       }
@@ -151,9 +152,9 @@ import _ProfileSupport
       [DNS Mapping]
       recovery.com = server:8.8.8.8
       """.write(to: profileURL, atomically: true, encoding: .utf8)
-      var mapping = DNSMapping(domainName: "recovery.com", value: "8.8.8.8")
-      mapping.kind = .dns
-      let newMapping = DNSMapping(domainName: "example.com", value: "1.1.1.1")
+      var mapping = ProtocolDNS.Mapping(domainName: "recovery.com", value: "8.8.8.8")
+      mapping.strategy = .dns
+      let newMapping = ProtocolDNS.Mapping(domainName: "example.com", value: "1.1.1.1")
       await #expect(throws: Never.self) {
         try await profileAssistant.replace(mapping, with: newMapping)
       }
@@ -179,8 +180,8 @@ import _ProfileSupport
       [DNS Mapping]
       recovery.com = server:8.8.8.8
       """.write(to: profileURL, atomically: true, encoding: .utf8)
-      var mapping = DNSMapping(domainName: "recovery.com", value: "8.8.8.8")
-      mapping.kind = .dns
+      var mapping = ProtocolDNS.Mapping(domainName: "recovery.com", value: "8.8.8.8")
+      mapping.strategy = .dns
       await #expect(throws: Never.self) {
         try await profileAssistant.delete(mapping)
       }

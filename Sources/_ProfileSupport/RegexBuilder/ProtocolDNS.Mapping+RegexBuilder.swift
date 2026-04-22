@@ -19,7 +19,7 @@ import RegexBuilder
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
-extension DNSMapping {
+extension ProtocolDNS.Mapping {
 
   static let delimiter = "="
 
@@ -40,7 +40,9 @@ extension DNSMapping {
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
     @available(SwiftStdlib 5.7, *)
   #endif
-  package static var regex: Regex<(Substring, Bool, Substring, (DNSMapping.Kind, Substring))> {
+  package static var regex:
+    Regex<(Substring, Bool, Substring, (ProtocolDNS.MappingStrategy, Substring))>
+  {
     Regex {
       TryCapture(Optionally(/\ *# +/)) { $0.isEmpty }
       Capture {
@@ -59,16 +61,16 @@ extension DNSMapping {
           /.+/
         }
       } transform: { parseInput in
-        let kind: DNSMapping.Kind
+        let dnsMappingStrategy: ProtocolDNS.MappingStrategy
         let value: Substring
         if parseInput.hasPrefix("server:") {
-          kind = .dns
+          dnsMappingStrategy = .dns
           value = parseInput.replacing(/server: */, with: "")
         } else {
-          kind = parseInput.isIPAddress() ? .mapping : .cname
+          dnsMappingStrategy = parseInput.isIPAddress() ? .mapping : .cname
           value = parseInput
         }
-        return (kind, value)
+        return (dnsMappingStrategy, value)
       }
     }
   }
@@ -82,7 +84,7 @@ extension DNSMapping {
       isEnabled ? /\ */ : /\ *# */
       domainName
       /\ *= */
-      kind == .dns ? "server:\(value)" : value
+      strategy == .dns ? "server:\(value)" : value
       /\ *$/
     }
   }

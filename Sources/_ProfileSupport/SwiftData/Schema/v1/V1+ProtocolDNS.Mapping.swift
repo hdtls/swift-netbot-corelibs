@@ -33,7 +33,22 @@
 #endif
 extension V1 {
 
-  /// An Object declaring DNS mapping rules.
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  public enum _ProtocolDNS {}
+}
+
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension V1._ProtocolDNS {
+
+  /// An object declaring DNS mappings.
   #if canImport(SwiftData)
     @Model
   #else
@@ -41,15 +56,13 @@ extension V1 {
       @Observable
     #endif
   #endif
-  public class _DNSMapping {
+  public class _Mapping {
 
     /// A boolean value determinse whether this mapping is enabled.
     public var isEnabled = true
 
-    public typealias Kind = DNSMapping.Kind
-
-    /// The kind of the mapping.
-    public var kind = Kind.mapping
+    /// The strategy of the mapping.
+    public var strategy = ProtocolDNS.MappingStrategy.mapping
 
     /// The domain to perform local DNS mapping.
     public var domainName = ""
@@ -68,7 +81,7 @@ extension V1 {
     public var creationDate = Date.now
 
     /// Relationship with `_Profile`.
-    public var lazyProfile: _Profile?
+    public var lazyProfile: V1._Profile?
 
     public init() {
     }
@@ -80,11 +93,11 @@ extension V1 {
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
-extension V1._DNSMapping {
+extension V1._ProtocolDNS._Mapping {
 
-  public func mergeValues(_ data: DNSMapping) {
+  public func mergeValues(_ data: ProtocolDNS.Mapping) {
     isEnabled = data.isEnabled
-    kind = data.kind
+    strategy = data.strategy
     domainName = data.domainName
     value = data.value
     note = data.note
