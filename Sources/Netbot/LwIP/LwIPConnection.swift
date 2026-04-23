@@ -193,7 +193,6 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
       }
 
       let connection = Unmanaged<LwIPConnection>.fromOpaque(contextPtr).takeUnretainedValue()
-      connection.eventLoop.assertInEventLoop()
 
       guard let data else {
         connection.recvBuffer.append((.finalMessage, nil))
@@ -222,7 +221,6 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
       }
 
       let connection = Unmanaged<LwIPConnection>.fromOpaque(contextPtr).takeUnretainedValue()
-      connection.eventLoop.assertInEventLoop()
 
       // check if we have write buffer here, and send it.
       guard !connection.pendingWrites.isEmpty else {
@@ -237,7 +235,7 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
         return
       }
       let connection = Unmanaged<LwIPConnection>.fromOpaque(contextPtr).takeUnretainedValue()
-      connection.eventLoop.assertInEventLoop()
+
       let error = IOError(errnoCode: err_to_errno(errno), reason: "tcp_err")
       switch errno {
       case ERR_CLSD:
