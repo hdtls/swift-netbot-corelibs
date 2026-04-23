@@ -22,8 +22,6 @@ import NIOCore
 #endif
 final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
 
-  private var recvBuffer: [(context: ContentContext, data: ByteBuffer?)] = []
-
   private struct PendingStreamWrite {
     var data: ByteBuffer
     var promise: EventLoopPromise<Void>?
@@ -33,21 +31,6 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
 
   private var inputClosed = false
   private var outputClosed = false
-
-  class ContentContext: @unchecked Sendable {
-
-    let isFinal: Bool
-
-    init(isFinal: Bool = false) {
-      self.isFinal = isFinal
-    }
-
-    static let defaultMessage = ContentContext()
-
-    static let finalMessage = ContentContext(isFinal: true)
-
-    static let defaultStream = ContentContext()
-  }
 
   final override var isWritable: Bool {
     // We can't compare with zero here, if there is no more memory
@@ -111,76 +94,6 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
     }
   }
 
-  func receive(
-    minimumIncompleteLength: Int = 1,
-    maximumLength: Int,
-    completion:
-      @escaping @Sendable (
-        _ content: ByteBuffer?,
-        _ contentContext: ContentContext?,
-        _ isComplete: Bool,
-        _ error: (any Error)?
-      ) -> Void
-  ) {
-    let execute: @Sendable () -> (ByteBuffer?, ContentContext) = {
-      var contentContext = ContentContext.defaultStream
-      var content: ByteBuffer?
-
-      while !self.recvBuffer.isEmpty, (content?.readableBytes ?? 0) < maximumLength {
-        let (context, data) = self.recvBuffer.removeFirst()
-        // If total bytes of `content` and current `data` is less then or equal to `maximumLength`
-        // we should write hole data into `content`, otherwise read part of data into content.
-        if (content?.readableBytes ?? 0) + (data?.readableBytes ?? 0) <= maximumLength {
-          if let data {
-            content.setOrWriteImmutableBuffer(data)
-          }
-
-          // If this is the final message, break the receive loop.
-          if context === LwIPConnection.ContentContext.finalMessage {
-            contentContext = .finalMessage
-            break
-          }
-        } else {
-          // Why we need read operations if no data in `recvBuffer`'s current data.
-          if var data {
-            let bytesToRead = maximumLength - (content?.readableBytes ?? 0)
-            content.setOrWriteImmutableBuffer(data.readSlice(length: bytesToRead)!)
-            data.discardReadBytes()
-
-            if !data.isEmpty {
-              // Prepend the left data to recvBuffer, so that we can read it in another loop.
-              self.recvBuffer.insert((context, data), at: 0)
-            } else {
-
-              // If no data left, we should check whether we should break read loop.
-              if context === LwIPConnection.ContentContext.finalMessage {
-                break
-              }
-            }
-          } else {
-            // If current data is nil and the context is final message, we should break the loop.
-            if context === LwIPConnection.ContentContext.finalMessage {
-              contentContext = .finalMessage
-              break
-            }
-          }
-        }
-      }
-
-      return (content, contentContext)
-    }
-
-    if self.eventLoop.inEventLoop {
-      let (data, contentContext) = execute()
-      completion(data, contentContext, true, nil)
-    } else {
-      self.eventLoop.execute {
-        let (data, contentContext) = execute()
-        completion(data, contentContext, true, nil)
-      }
-    }
-  }
-
   final override func register0(promise: EventLoopPromise<Void>?) {
     guard self.isOpen else {
       promise?.fail(ChannelError.ioOnClosedChannel)
@@ -195,7 +108,6 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
       let connection = Unmanaged<LwIPConnection>.fromOpaque(contextPtr).takeUnretainedValue()
 
       guard let data else {
-        connection.recvBuffer.append((.finalMessage, nil))
         connection.pipeline.fireChannelRead(connection.allocator.buffer(capacity: 0))
         connection.pipeline.fireChannelReadComplete()
         connection.close(mode: .input, promise: nil)
@@ -209,7 +121,6 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
         byteBuffer.writeWithUnsafeMutableBytes(minimumWritableBytes: Int(totalLength)) {
           Int(pbuf_copy_partial(data, $0.baseAddress, totalLength, 0))
         }
-        connection.recvBuffer.append((.defaultStream, byteBuffer))
         connection.pipeline.fireChannelRead(byteBuffer)
         connection.pipeline.fireChannelReadComplete()
       }
