@@ -196,8 +196,10 @@ final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
 
       guard let data else {
         connection.recvBuffer.append((.finalMessage, nil))
+        connection.pipeline.fireChannelRead(connection.allocator.buffer(capacity: 0))
         connection.pipeline.fireChannelReadComplete()
         connection.close(mode: .input, promise: nil)
+        connection.pipeline.fireUserInboundEventTriggered(ChannelEvent.inputClosed)
         return err
       }
 
