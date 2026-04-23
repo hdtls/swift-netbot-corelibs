@@ -145,31 +145,37 @@ import _DNSSupport
     try await listener.register()
     try await listener.bind(to: address)
 
+    // We must set `packetFlow` to write DNS response to system network stack.
     dns.packetFlow = packetFlow
     packetsReadLoop = Task { [weak self] in
       guard let self else { return }
-      try await readPacketsIfActive()
+      await readPacketsIfActive()
     }
   }
 
   func shutdownGracefully() async throws {
     listener.close(promise: nil)
-
+    dns.packetFlow = nil
     try await eventLoop.submit { netif_set_down(self.device) }.get()
-
     packetsReadLoop?.cancel()
     packetsReadLoop = nil
-    dns.packetFlow = nil
   }
 
-  private func readPacketsIfActive() async throws {
-    try Task.checkCancellation()
+  private func readPacketsIfActive() async {
+    // Packet reading loop should never stopped, unless we cancelled
+    // reading task which mean we have already shutdown LwIP service.
+    guard !Task.isCancelled else { return }
 
-    for packetObject in await packetFlow.readPacketObjects() {
-      try await handleInput(packetObject)
+    do {
+      let packetObjects = await packetFlow.readPacketObjects()
+      for packetObject in packetObjects {
+        try await handleInput(packetObject)
+      }
+    } catch {
+      logger.error("LwIP failed to process IP packets: \(error)")
     }
 
-    try await readPacketsIfActive()
+    await readPacketsIfActive()
   }
 
   @discardableResult
