@@ -17,6 +17,7 @@ import Logging
 import NEAddressProcessing
 import NESOCKS
 import NIOCore
+import NIOExtras
 import NetbotLite
 import _DNSSupport
 
@@ -61,6 +62,7 @@ import _DNSSupport
   private let group: any EventLoopGroup
   private let eventLoop: any EventLoop
   private let listener: LwIPListener
+  private let quiescing: ServerQuiescingHelper
   private let logger = Logger(label: "LwIP")
   private let packetFlow: any PacketTunnelFlow
   private let dns: LocalDNSProxy
@@ -75,6 +77,7 @@ import _DNSSupport
     self.packetFlow = packetFlow
     self.dns = dns
     self.listener = LwIPListener(eventLoop: eventLoop, group: group)
+    self.quiescing = ServerQuiescingHelper(group: group)
     self._packetsReadLoop = .init(nil)
     self.device = UnsafeMutablePointer.allocate(capacity: MemoryLayout<netif>.size)
     self.device.initialize(to: .init())
@@ -129,6 +132,10 @@ import _DNSSupport
     netif_set_default(self.device)
 
     self.listener.handleNewFlow = handleNewFlow
+    _ = self.listener.eventLoop.submit {
+      try self.listener.pipeline.syncOperations.addHandler(
+        self.quiescing.makeServerChannelHandler(channel: self.listener))
+    }
   }
 
   deinit {
@@ -159,7 +166,7 @@ import _DNSSupport
   }
 
   func shutdownGracefully() async throws {
-    listener.close(promise: nil)
+    quiescing.initiateShutdown(promise: nil)
     dns.packetFlow = nil
     try await eventLoop.submit { netif_set_down(self.device) }.get()
     packetsReadLoop?.cancel()
