@@ -128,7 +128,7 @@ import _DNSSupport
 
     netif_set_default(self.device)
 
-    self.listener.newConnectionHandler = newConnectionHandler
+    self.listener.handleNewFlow = handleNewFlow
   }
 
   deinit {
@@ -138,6 +138,10 @@ import _DNSSupport
   }
 
   func run() async throws {
+    Task { try await run0() }
+  }
+
+  func run0() async throws {
     let address = try SocketAddress(ipAddress: "0.0.0.0", port: 0)
 
     try await eventLoop.submit { netif_set_up(self.device) }.get()
@@ -151,6 +155,7 @@ import _DNSSupport
       guard let self else { return }
       await readPacketsIfActive()
     }
+    try await listener.closeFuture.get()
   }
 
   func shutdownGracefully() async throws {
@@ -169,7 +174,7 @@ import _DNSSupport
     do {
       let packetObjects = await packetFlow.readPacketObjects()
       for packetObject in packetObjects {
-        try await handleInput(packetObject)
+        try await handleNewPacket(packetObject)
       }
     } catch {
       logger.error("LwIP failed to process IP packets: \(error)")
@@ -179,7 +184,7 @@ import _DNSSupport
   }
 
   @discardableResult
-  private func handleInput(_ packetObject: NEPacket) async throws -> PacketHandleResult {
+  private func handleNewPacket(_ packetObject: NEPacket) async throws -> PacketHandleResult {
     guard case .v4(let inhdr) = packetObject.headerFields else {
       return .discarded
     }
@@ -189,13 +194,13 @@ import _DNSSupport
         let dstPortStartIndex = packetObject.payload.startIndex.advanced(by: 2)
         let port = packetObject.payload.getInteger(at: dstPortStartIndex, as: UInt16.self)
         if port == 53 {
-          try await self.dns.handleInput(packetObject)
+          _ = try await self.dns.handleInput(packetObject)
           return .handled
         }
       }
     }
 
-    @inline(__always) func input(_ packetObject: NEPacket) throws {
+    @Sendable @inline(__always) func input(_ packetObject: NEPacket) throws {
       try packetObject.data.withUnsafeReadableBytes {
         let p = pbuf_alloc(PBUF_RAW, UInt16($0.count), PBUF_RAM)
         pbuf_take(p, $0.baseAddress, UInt16($0.count))
@@ -218,117 +223,68 @@ import _DNSSupport
     return .handled
   }
 
-  private func newConnectionHandler(_ connection: LwIPConnection) {
+  private func handleNewFlow(_ tun: NIOAsyncChannel<ByteBuffer, ByteBuffer>) {
     Task {
-      try await withThrowingTaskGroup(of: Void.self) { g in
-        g.addTask { [weak self] in
-          guard let self else { return }
-          try await connection.closeFuture.get()
-          self.logger.trace("LwIP connection closed")
+      try await tun.executeThenClose { ti, to in
+
+        guard
+          case .hostPort(_, port: let sourcePort) = try tun.channel.remoteAddress?.asAddress(),
+          case .hostPort(host: let host, port: let port) = try tun.channel.localAddress?.asAddress()
+        else {
+          throw AnalyzeError.operationUnsupported
         }
-        g.addTask { [weak self] in
-          guard let self else { return }
-          guard let source = connection.remoteAddress,
-            let destination = connection.localAddress, let host = destination.ipAddress,
-            let port = destination.port
-          else {
-            connection.close(promise: nil)
-            return
+
+        let destinationAddress: Address
+        // Reverse reserved IPs to domain name if needed.
+        if case .ipv4(let address) = host, self.dns.availableIPPool.contains(address) {
+          // According to our dns proxy settings that every reserved IPs should
+          // be able to query PTR records.
+          //
+          // Consider as invalid connection if we can't query valid PTR records,
+          // and close the connection.
+          let prefix = "\(address)".split(separator: ".").reversed().joined(separator: ".")
+          let name = try? await self.dns.queryPTR(name: "\(prefix).in-addr.arpa").first?.data
+          guard let name else {
+            throw AnalyzeError.outputStreamEndpointInvalid
           }
 
-          var destinationAddress: Address = .hostPort(
-            host: .init(host),
-            port: .init(rawValue: UInt16(port))
-          )
+          // Update destination address to use original domain name and port.
+          destinationAddress = .hostPort(host: .name(name), port: port)
+        } else {
+          destinationAddress = .hostPort(host: host, port: port)
+        }
 
-          // Reverse reserved IPs to domain name if needed.
-          if case .hostPort(let host, let port) = destinationAddress {
-            if case .ipv4(let address) = host, self.dns.availableIPPool.contains(address) {
-              // According to our dns proxy settings that every reserved IPs should
-              // be able to query PTR records.
-              //
-              // Consider as invalid connection if we can't query valid PTR records,
-              // and close the connection.
-              let prefix = "\(address)".split(separator: ".").reversed().joined(separator: ".")
-              let name = try? await self.dns.queryPTR(name: "\(prefix).in-addr.arpa").first?.data
-              guard let name else {
-                connection.close(promise: nil)
-                return
-              }
-
-              // Update destination address to use original domain name and port.
-              destinationAddress = .hostPort(host: .name(name), port: port)
-            }
-          }
-
-          do {
-            let destinationAddress = destinationAddress
-            let channel = try await ClientBootstrap(group: .shared)
-              .channelOption(.allowRemoteHalfClosure, value: true)
-              .connect(to: .init(ipAddress: "127.0.0.1", port: 6153))
-              .get()
-
-            guard let localAddress = channel.localAddress else {
-              throw ChannelError.unknownLocalAddress
-            }
-
-            try? ProcessResolver.shared.store(
-              localAddress.asAddress(),
-              to: .hostPort(host: "127.0.0.1", port: .init(rawValue: UInt16(source.port ?? 0)))
-            )
-
-            try await channel.configureSOCKSConnectionPipeline(
-              destinationAddress: destinationAddress
-            ) {
-              channel.pipeline.addHandler(ResponseHandler(connection: connection))
-            }
-            .get()
-            .get()
-
-            @Sendable func read() {
-              connection.receive(maximumLength: 8192) { content, contentContext, _, error in
-                guard error == nil else {
-                  channel.close(promise: nil)
-                  return
+        let socks = try await ClientBootstrap(group: .shared)
+          .channelOption(.allowRemoteHalfClosure, value: true)
+          .connect(to: .init(ipAddress: "127.0.0.1", port: 6153)) { socks in
+            socks.configureSOCKSConnectionPipeline(destinationAddress: destinationAddress) {
+              socks.eventLoop.makeCompletedFuture {
+                try socks.pipeline.syncOperations.addHandler(AutoReplyResponse(tun.channel))
+                guard let localAddress = socks.localAddress else {
+                  throw ChannelError.unknownLocalAddress
                 }
-
-                Task {
-                  // If current read contains valid data then write to connected SOCKS5 server.
-                  if let content {
-                    try await channel.writeAndFlush(content)
-                  }
-
-                  if contentContext === LwIPConnection.ContentContext.finalMessage {
-                    // EOF
-                    try await channel.close(mode: .output)
-                    return
-                  }
-
-                  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-                    if #available(SwiftStdlib 5.7, *) {
-                      try await Task.sleep(for: .seconds(0.1))
-                    } else {
-                      try await Task.sleep(nanoseconds: 100_000_000)
-                    }
-                  #else
-                    try await Task.sleep(for: .seconds(0.1))
-                  #endif
-                  read()
-                }
+                try ProcessResolver.shared.store(
+                  localAddress.asAddress(),
+                  to: .hostPort(host: "127.0.0.1", port: sourcePort)
+                )
+                return socks
               }
             }
-
-            read()
-
-            try await channel.closeFuture.get()
-            self.logger.trace("LwIP SOCKS5 connection closed")
-            connection.close(promise: nil)
-          } catch {
-            self.logger.error("\(error)")
-            connection.close(promise: nil)
           }
+          .get()
+
+        try await withThrowingTaskGroup { g in
+          g.addTask {
+            for try await frame in ti {
+              try await socks.writeAndFlush(frame)
+            }
+          }
+          try await g.next()
+          g.cancelAll()
         }
-        try await g.waitForAll()
+
+        try? await socks.close()
+        self.logger.trace("LwIP TUN to SOCKSv5 flow completed")
       }
     }
   }
@@ -339,18 +295,20 @@ import _DNSSupport
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
-final private class ResponseHandler: ChannelInboundHandler, Sendable {
-  typealias InboundIn = ByteBuffer
+extension LwIP {
+  final private class AutoReplyResponse: ChannelInboundHandler, Sendable {
+    typealias InboundIn = ByteBuffer
 
-  private let connection: LwIPConnection
+    private let connection: any Channel
 
-  init(connection: LwIPConnection) {
-    self.connection = connection
-  }
+    init(_ connection: any Channel) {
+      self.connection = connection
+    }
 
-  func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-    let buffer = unwrapInboundIn(data)
-    connection.writeAndFlush(buffer, promise: nil)
-    context.fireChannelRead(data)
+    func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+      let buffer = unwrapInboundIn(data)
+      connection.writeAndFlush(buffer, promise: nil)
+      context.fireChannelRead(data)
+    }
   }
 }

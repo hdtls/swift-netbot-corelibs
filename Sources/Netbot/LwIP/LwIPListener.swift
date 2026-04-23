@@ -30,27 +30,27 @@ final class LwIPListener: BaseSocketChannel<ServerSocket>, @unchecked Sendable {
 
   private let group: any EventLoopGroup
 
-  final var newConnectionHandler: (@Sendable (_ connection: LwIPConnection) -> Void)? {
+  final var handleNewFlow: (@Sendable (NIOAsyncChannel<ByteBuffer, ByteBuffer>) -> Void)? {
     get {
       if self.eventLoop.inEventLoop {
-        return self._newConnectionHandler
+        return self._handleNewFlow
       } else {
         return self._offEventLoopLock.withLock { _ in
-          self._newConnectionHandler
+          self._handleNewFlow
         }
       }
     }
     set {
       if self.eventLoop.inEventLoop {
-        self._newConnectionHandler = newValue
+        self._handleNewFlow = newValue
       } else {
         self.eventLoop.execute {
-          self._newConnectionHandler = newValue
+          self._handleNewFlow = newValue
         }
       }
     }
   }
-  private var _newConnectionHandler: (@Sendable (_ connection: LwIPConnection) -> Void)?
+  private var _handleNewFlow: (@Sendable (NIOAsyncChannel<ByteBuffer, ByteBuffer>) -> Void)?
 
   init(eventLoop: any EventLoop, group: any EventLoopGroup) {
     self.group = group
@@ -106,23 +106,34 @@ final class LwIPListener: BaseSocketChannel<ServerSocket>, @unchecked Sendable {
         let newConnection = LwIPConnection(
           socket: .init(socket: connection), parent: listener, eventLoop: listener.eventLoop
         )
-        listener.pipeline.fireChannelRead(newConnection)
-        listener.pipeline.fireChannelReadComplete()
-        listener.newConnectionHandler?(newConnection)
+
+        newConnection.eventLoop.makeCompletedFuture {
+          try NIOAsyncChannel<ByteBuffer, ByteBuffer>(wrappingChannelSynchronously: newConnection)
+        }
+        .whenComplete {
+          switch $0 {
+          case .success(let flow):
+            listener.handleNewFlow?(flow)
+            listener.pipeline.fireChannelRead(newConnection)
+            listener.pipeline.fireChannelReadComplete()
+          case .failure(let error):
+            newConnection.close0(error: error, mode: .all, promise: nil)
+          }
+        }
         return ERR_OK
       }
 
       p.succeed()
     } catch {
       p.fail(error)
-      self.newConnectionHandler = nil
+      self.handleNewFlow = nil
     }
   }
 
   override func close0(error: any Error, mode: CloseMode, promise: EventLoopPromise<Void>?) {
     switch mode {
     case .input, .all:
-      self.newConnectionHandler = nil
+      self.handleNewFlow = nil
     default:
       break
     }
