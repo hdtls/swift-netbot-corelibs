@@ -184,13 +184,15 @@ import _DNSSupport
       return .discarded
     }
 
-    guard inhdr.destinationAddress != self.dns.bindAddress else {
-      try await self.dns.handleInput(packetObject)
-      return .handled
-    }
-
-    guard case .tcp = inhdr.protocol else {
-      return .discarded
+    if inhdr.destinationAddress == self.dns.bindAddress {
+      if inhdr.protocol == .tcp || inhdr.protocol == .udp, packetObject.payload.count >= 4 {
+        let dstPortStartIndex = packetObject.payload.startIndex.advanced(by: 2)
+        let port = packetObject.payload.getInteger(at: dstPortStartIndex, as: UInt16.self)
+        if port == 53 {
+          try await self.dns.handleInput(packetObject)
+          return .handled
+        }
+      }
     }
 
     @inline(__always) func input(_ packetObject: NEPacket) throws {
