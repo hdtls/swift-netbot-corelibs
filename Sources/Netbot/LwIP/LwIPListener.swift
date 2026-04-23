@@ -62,9 +62,11 @@ final class LwIPListener: BaseSocketChannel<ServerSocket>, @unchecked Sendable {
 
     let channel = self.unwrapData(data, as: LwIPConnection.self)
     let p: EventLoopPromise<Void> = channel.eventLoop.makePromise()
-    channel.registerAlreadyConfigured0(promise: p)
-    p.futureResult.whenFailure { (_: Error) in
-      channel.close(promise: nil)
+    channel.eventLoop.execute {
+      channel.registerAlreadyConfigured0(promise: p)
+      p.futureResult.whenFailure { (_: Error) in
+        channel.close(promise: nil)
+      }
     }
   }
 
