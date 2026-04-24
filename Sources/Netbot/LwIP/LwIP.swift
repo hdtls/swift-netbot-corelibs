@@ -156,8 +156,6 @@ import _DNSSupport
     try await listener.register()
     try await listener.bind(to: address)
 
-    // We must set `packetFlow` to write DNS response to system network stack.
-    dns.packetFlow = packetFlow
     packetsReadLoop = Task { [weak self] in
       guard let self else { return }
       await readPacketsIfActive()
@@ -167,7 +165,6 @@ import _DNSSupport
 
   func shutdownGracefully() async throws {
     quiescing.initiateShutdown(promise: nil)
-    dns.packetFlow = nil
     try await eventLoop.submit { netif_set_down(self.device) }.get()
     packetsReadLoop?.cancel()
     packetsReadLoop = nil
@@ -178,56 +175,95 @@ import _DNSSupport
     // reading task which mean we have already shutdown LwIP service.
     guard !Task.isCancelled else { return }
 
-    do {
-      let packetObjects = await packetFlow.readPacketObjects()
-      for packetObject in packetObjects {
-        try await handleNewPacket(packetObject)
-      }
-    } catch {
-      logger.error("LwIP failed to process IP packets: \(error)")
-    }
+    await handleNewPackets0(await packetFlow.readPacketObjects())
 
     await readPacketsIfActive()
   }
 
-  @discardableResult
-  private func handleNewPacket(_ packetObject: NEPacket) async throws -> PacketHandleResult {
-    guard case .v4(let inhdr) = packetObject.headerFields else {
-      return .discarded
-    }
+  private func handleNewPackets0(_ packetObjects: [NEPacket]) async {
+    await withTaskGroup { g in
+      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        if #available(SwiftStdlib 6.0, *) {
+          let subranges = packetObjects.indices(where: self.dns.handlePacket(_:))
 
-    if inhdr.destinationAddress == self.dns.bindAddress {
-      if inhdr.protocol == .tcp || inhdr.protocol == .udp, packetObject.payload.count >= 4 {
-        let dstPortStartIndex = packetObject.payload.startIndex.advanced(by: 2)
-        let port = packetObject.payload.getInteger(at: dstPortStartIndex, as: UInt16.self)
-        if port == 53 {
-          _ = try await self.dns.handleInput(packetObject)
-          return .handled
+          g.addTask {
+            let handled = await self.dns.handleNewPackets(packetObjects[subranges])
+
+            self.packetFlow.writePacketObjects(handled)
+          }
+
+          g.addTask {
+            let subranges = packetObjects.indices.removingSubranges(subranges)
+            await self.handleNewPackets(packetObjects[subranges.subranges])
+          }
+        } else {
+          g.addTask {
+            let handled = await self.dns.handleNewPackets(
+              packetObjects.filter(self.dns.handlePacket(_:))
+            )
+            self.packetFlow.writePacketObjects(handled)
+          }
+
+          g.addTask {
+            await self.handleNewPackets(
+              packetObjects.filter {
+                !self.dns.handlePacket($0)
+              })
+          }
+        }
+      #else
+        let subranges = packetObjects.indices(where: self.dns.handlePacket(_:))
+
+        g.addTask {
+          let handled = await self.dns.handleNewPackets(packetObjects[subranges])
+
+          // TODO: Handle failure of packet object write.
+          _ = self.packetFlow.writePacketObjects(handled)
+        }
+
+        g.addTask {
+          let subranges = packetObjects.indices.removingSubranges(subranges)
+          await self.handleNewPackets(packetObjects[subranges.subranges])
+        }
+      #endif
+
+      await g.waitForAll()
+    }
+  }
+
+  private func handleNewPackets(_ packetObjects: some Sequence<NEPacket>) async {
+    for packetObject in packetObjects {
+      guard case .v4(let inhdr) = packetObject.headerFields else {
+        continue
+      }
+
+      guard case .tcp = inhdr.protocol else {
+        continue
+      }
+
+      @Sendable @inline(__always) func input(_ packetObject: NEPacket) throws {
+        try packetObject.data.withUnsafeReadableBytes {
+          let p = pbuf_alloc(PBUF_RAW, UInt16($0.count), PBUF_RAM)
+          pbuf_take(p, $0.baseAddress, UInt16($0.count))
+          let errno = err_to_errno(self.device.pointee.input(p, self.device))
+          guard errno != 0 else {
+            return
+          }
+          pbuf_free(p)
+          throw IOError(errnoCode: errno, reason: #function)
         }
       }
-    }
 
-    @Sendable @inline(__always) func input(_ packetObject: NEPacket) throws {
-      try packetObject.data.withUnsafeReadableBytes {
-        let p = pbuf_alloc(PBUF_RAW, UInt16($0.count), PBUF_RAM)
-        pbuf_take(p, $0.baseAddress, UInt16($0.count))
-        let errno = err_to_errno(self.device.pointee.input(p, self.device))
-        guard errno != 0 else {
-          return
+      do {
+        if self.eventLoop.inEventLoop {
+          try input(packetObject)
+        } else {
+          try await self.eventLoop.submit {
+            try input(packetObject)
+          }.get()
         }
-        pbuf_free(p)
-        throw IOError(errnoCode: errno, reason: #function)
-      }
+      } catch {}
     }
-
-    if self.eventLoop.inEventLoop {
-      try input(packetObject)
-    } else {
-      try await self.eventLoop.submit {
-        try input(packetObject)
-      }.get()
-    }
-    return .handled
   }
 
   private func handleNewFlow(_ tun: NIOAsyncChannel<ByteBuffer, ByteBuffer>) {
