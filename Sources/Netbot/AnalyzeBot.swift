@@ -88,8 +88,8 @@ public actor AnalyzeBot: Actor {
     self.logger = logger
   }
 
-  public func setLwIPEnabled(_ enabled: Bool, packetFlow: (any PacketTunnelFlow)? = nil) async {
-    if enabled, let packetFlow {
+  public func setLwIPEnabled(_ enabled: Bool, packetFlow: any PacketTunnelFlow) async {
+    if enabled {
       self.coreLwIP = LwIP(group: group, packetFlow: packetFlow, dns: dns)
       try? await self.coreLwIP?.run()
     } else {
