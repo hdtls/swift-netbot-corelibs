@@ -26,7 +26,7 @@ struct PrettyDNSTests {
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  private var parser: PrettyDNSParser { PrettyDNSParser() }
+  private var parser: NLDNSParser { NLDNSParser() }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
     @available(SwiftStdlib 5.3, *)
@@ -67,12 +67,14 @@ struct PrettyDNSTests {
         "116581800001000100000000057377696674036f72670000010001c00c0001000100000001000411fd900c"
     )
 
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.headerFields == message.headerFields)
-    #expect(parseOutput.questions == questions)
-    #expect(parseOutput.answerRRs as? [ARecord] == answerRRs)
-    #expect(parseOutput.authorityRRs.isEmpty)
-    #expect(parseOutput.additionalRRs.isEmpty)
+    #expect(throws: Never.self) {
+      let parseOutput = try parser.parse(parseInput)
+      #expect(parseOutput.headerFields == message.headerFields)
+      #expect(parseOutput.questions == questions)
+      #expect(parseOutput.answerRRs as? [ARecord] == answerRRs)
+      #expect(parseOutput.authorityRRs.isEmpty)
+      #expect(parseOutput.additionalRRs.isEmpty)
+    }
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -161,12 +163,14 @@ struct PrettyDNSTests {
         "87da81800001000400000000057377696674036f72670000020001c00c0002000100000cb300100163026e73056170706c6503636f6d00c00c0002000100000cb300040162c029c00c0002000100000cb300040164c029c00c0002000100000cb300040161c029"
     )
 
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.headerFields == message.headerFields)
-    #expect(parseOutput.questions == questions)
-    #expect(parseOutput.answerRRs as? [NSRecord] == answerRRs)
-    #expect(parseOutput.authorityRRs.isEmpty)
-    #expect(parseOutput.additionalRRs.isEmpty)
+    #expect(throws: Never.self) {
+      let parseOutput = try parser.parse(parseInput)
+      #expect(parseOutput.headerFields == message.headerFields)
+      #expect(parseOutput.questions == questions)
+      #expect(parseOutput.answerRRs as? [NSRecord] == answerRRs)
+      #expect(parseOutput.authorityRRs.isEmpty)
+      #expect(parseOutput.additionalRRs.isEmpty)
+    }
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -256,12 +260,14 @@ struct PrettyDNSTests {
         "a8198180000100010000000003777777057377696674036f72670000050001c00c0005000100000e10001f057377696674086c622d6170706c6503636f6d06616b61646e73036e657400"
     )
 
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.headerFields == message.headerFields)
-    #expect(parseOutput.questions == questions)
-    #expect(parseOutput.answerRRs as? [CNAMERecord] == answerRRs)
-    #expect(parseOutput.authorityRRs.isEmpty)
-    #expect(parseOutput.additionalRRs.isEmpty)
+    #expect(throws: Never.self) {
+      let parseOutput = try parser.parse(parseInput)
+      #expect(parseOutput.headerFields == message.headerFields)
+      #expect(parseOutput.questions == questions)
+      #expect(parseOutput.answerRRs as? [CNAMERecord] == answerRRs)
+      #expect(parseOutput.authorityRRs.isEmpty)
+      #expect(parseOutput.additionalRRs.isEmpty)
+    }
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -356,12 +362,14 @@ struct PrettyDNSTests {
         "fb6881800001000100000000057377696674036f72670000060001c00c0006000100000e1000420b6e732d6578742d70726f64096a61636b6672756974056170706c6503636f6d000a686f73746d6173746572c03d78b36168000007080000038400278d0000000708"
     )
 
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.headerFields == message.headerFields)
-    #expect(parseOutput.questions == questions)
-    #expect(parseOutput.answerRRs as? [SOARecord] == answerRRs)
-    #expect(parseOutput.authorityRRs.isEmpty)
-    #expect(parseOutput.additionalRRs.isEmpty)
+    #expect(throws: Never.self) {
+      let parseOutput = try parser.parse(parseInput)
+      #expect(parseOutput.headerFields == message.headerFields)
+      #expect(parseOutput.questions == questions)
+      #expect(parseOutput.answerRRs as? [SOARecord] == answerRRs)
+      #expect(parseOutput.authorityRRs.isEmpty)
+      #expect(parseOutput.additionalRRs.isEmpty)
+    }
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -455,12 +463,14 @@ struct PrettyDNSTests {
         "f2b981800001000100000000023437033232340331373202313707696e2d61646472046172706100000c0001c00c000c00010000a8c0000d076170706c656964036f726700"
     )
 
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.headerFields == message.headerFields)
-    #expect(parseOutput.questions == questions)
-    #expect(parseOutput.answerRRs as? [PTRRecord] == answerRRs)
-    #expect(parseOutput.authorityRRs.isEmpty)
-    #expect(parseOutput.additionalRRs.isEmpty)
+    #expect(throws: Never.self) {
+      let parseOutput = try parser.parse(parseInput)
+      #expect(parseOutput.headerFields == message.headerFields)
+      #expect(parseOutput.questions == questions)
+      #expect(parseOutput.answerRRs as? [PTRRecord] == answerRRs)
+      #expect(parseOutput.authorityRRs.isEmpty)
+      #expect(parseOutput.additionalRRs.isEmpty)
+    }
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -576,12 +586,14 @@ struct PrettyDNSTests {
         "b44181800001000600000000056170706c6503636f6d00000f0001c00c000f000100000e10000d0014086d782d696e2d7367c00cc00c000f000100000e10000e0014096d782d696e2d686664c00cc00c000f000100000e10000d0014086d782d696e2d726ec00cc00c000f000100000e10000d0014086d782d696e2d6d61c00cc00c000f000100000e10000c000a056d782d696e0167c00cc00c000f000100000e10000e0014096d782d696e2d766962c00c"
     )
 
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.headerFields == message.headerFields)
-    #expect(parseOutput.questions == questions)
-    #expect(parseOutput.answerRRs as? [MXRecord] == answerRRs)
-    #expect(parseOutput.authorityRRs.isEmpty)
-    #expect(parseOutput.additionalRRs.isEmpty)
+    #expect(throws: Never.self) {
+      let parseOutput = try parser.parse(parseInput)
+      #expect(parseOutput.headerFields == message.headerFields)
+      #expect(parseOutput.questions == questions)
+      #expect(parseOutput.answerRRs as? [MXRecord] == answerRRs)
+      #expect(parseOutput.authorityRRs.isEmpty)
+      #expect(parseOutput.additionalRRs.isEmpty)
+    }
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -704,12 +716,14 @@ struct PrettyDNSTests {
         "0ec581800001000300000000057377696674036f72670000100001c00c0010000100000708003e3d763d444d415243313b20703d6e6f6e653b207063743d3130303b207275613d73776966742d696e6672617374727563747572654073776966742e6f7267c00c0010000100000708000c0b763d73706631202d616c6cc00c0010000100000708002120636436306e6a6764776c7079796733367074797063326a716862316e72717439"
     )
 
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.headerFields == message.headerFields)
-    #expect(parseOutput.questions == questions)
-    #expect(parseOutput.answerRRs as? [TXTRecord] == answerRRs)
-    #expect(parseOutput.authorityRRs.isEmpty)
-    #expect(parseOutput.additionalRRs.isEmpty)
+    #expect(throws: Never.self) {
+      let parseOutput = try parser.parse(parseInput)
+      #expect(parseOutput.headerFields == message.headerFields)
+      #expect(parseOutput.questions == questions)
+      #expect(parseOutput.answerRRs as? [TXTRecord] == answerRRs)
+      #expect(parseOutput.authorityRRs.isEmpty)
+      #expect(parseOutput.additionalRRs.isEmpty)
+    }
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -823,16 +837,18 @@ struct PrettyDNSTests {
         "6bc88180000100040000000003777777057377696674036f726700001c0001c00c0005000100000001001f057377696674086c622d6170706c6503636f6d06616b61646e73036e657400c02b0005000100000001001909776f726c642d67656e0167076161706c696d6703636f6d00c056001c0001000000010010240303000a04f1000000000000000206c056001c0001000000010010240303000a04f1000000000000000204"
     )
 
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.headerFields == message.headerFields)
-    #expect(parseOutput.questions == questions)
-    #expect(parseOutput.answerRRs.count == 4)
-    #expect(answerRRs[0] as? CNAMERecord == parseOutput.answerRRs[0] as? CNAMERecord)
-    #expect(answerRRs[1] as? CNAMERecord == parseOutput.answerRRs[1] as? CNAMERecord)
-    #expect(answerRRs[2] as? AAAARecord == parseOutput.answerRRs[2] as? AAAARecord)
-    #expect(answerRRs[3] as? AAAARecord == parseOutput.answerRRs[3] as? AAAARecord)
-    #expect(parseOutput.authorityRRs.isEmpty)
-    #expect(parseOutput.additionalRRs.isEmpty)
+    #expect(throws: Never.self) {
+      let parseOutput = try parser.parse(parseInput)
+      #expect(parseOutput.headerFields == message.headerFields)
+      #expect(parseOutput.questions == questions)
+      #expect(parseOutput.answerRRs.count == 4)
+      #expect(answerRRs[0] as? CNAMERecord == parseOutput.answerRRs[0] as? CNAMERecord)
+      #expect(answerRRs[1] as? CNAMERecord == parseOutput.answerRRs[1] as? CNAMERecord)
+      #expect(answerRRs[2] as? AAAARecord == parseOutput.answerRRs[2] as? AAAARecord)
+      #expect(answerRRs[3] as? AAAARecord == parseOutput.answerRRs[3] as? AAAARecord)
+      #expect(parseOutput.authorityRRs.isEmpty)
+      #expect(parseOutput.additionalRRs.isEmpty)
+    }
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -933,12 +949,14 @@ struct PrettyDNSTests {
         "de8381800001000100000000085f63616c64617673045f74637006676f6f676c6503636f6d0000210001c00c00210001000030bb001b0005000001bb0863616c656e64617206676f6f676c6503636f6d00"
     )
 
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.headerFields == message.headerFields)
-    #expect(parseOutput.questions == questions)
-    #expect(parseOutput.answerRRs as? [SRVRecord] == answerRRs)
-    #expect(parseOutput.authorityRRs.isEmpty)
-    #expect(parseOutput.additionalRRs.isEmpty)
+    #expect(throws: Never.self) {
+      let parseOutput = try parser.parse(parseInput)
+      #expect(parseOutput.headerFields == message.headerFields)
+      #expect(parseOutput.questions == questions)
+      #expect(parseOutput.answerRRs as? [SRVRecord] == answerRRs)
+      #expect(parseOutput.authorityRRs.isEmpty)
+      #expect(parseOutput.additionalRRs.isEmpty)
+    }
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -1026,12 +1044,14 @@ struct PrettyDNSTests {
         "aaaa81800001000100000000076578616d706c6503636f6d0000230001c00c002300010000003c00300064000a0175074532552b7369701b215e2e2a24217369703a696e666f406578616d706c652e636f6d2103737276c00c"
     )
 
-    let parseOutput = try parser.parse(parseInput)
-    #expect(parseOutput.headerFields == message.headerFields)
-    #expect(parseOutput.questions == questions)
-    #expect(parseOutput.answerRRs as? [NAPTRRecord] == answerRRs)
-    #expect(parseOutput.authorityRRs.isEmpty)
-    #expect(parseOutput.additionalRRs.isEmpty)
+    #expect(throws: Never.self) {
+      let parseOutput = try parser.parse(parseInput)
+      #expect(parseOutput.headerFields == message.headerFields)
+      #expect(parseOutput.questions == questions)
+      #expect(parseOutput.answerRRs as? [NAPTRRecord] == answerRRs)
+      #expect(parseOutput.authorityRRs.isEmpty)
+      #expect(parseOutput.additionalRRs.isEmpty)
+    }
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS

@@ -26,15 +26,15 @@ import NIOCore
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
-public struct PrettyDNSParser: Sendable {
+public struct NLDNSParser: Sendable {
 
   public init() {}
 
-  public func parse(_ parseInput: ByteBuffer) throws -> Message {
+  public func parse(_ parseInput: ByteBuffer) throws(DNSError) -> Message {
     try parse0(parseInput).0
   }
 
-  private func parse0(_ parseInput: ByteBuffer) throws -> (Message, Int) {
+  private func parse0(_ parseInput: ByteBuffer) throws(DNSError) -> (Message, Int) {
     var consumed = parseInput.readerIndex
     let headerFields = try parseHeaderFields(parseInput, consumed: &consumed)
 
@@ -193,36 +193,36 @@ public struct PrettyDNSParser: Sendable {
   ///
   /// ARCOUNT         an unsigned 16 bit integer specifying the number of
   ///                resource records in the additional records section.
-  private func parseHeaderFields(_ parseInput: ByteBuffer, consumed: inout Int) throws
+  private func parseHeaderFields(_ parseInput: ByteBuffer, consumed: inout Int) throws(DNSError)
     -> Message.HeaderFields
   {
     guard let id: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
     guard let flags: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
     guard let qdCount: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
     guard let anCount: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
     guard let nsCount: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
     guard let arCount: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
@@ -238,21 +238,24 @@ public struct PrettyDNSParser: Sendable {
     return headerFields
   }
 
-  private func parseLengthPrefixedString(_ parseInput: ByteBuffer, consumed: inout Int) throws
+  private func parseLengthPrefixedString(_ parseInput: ByteBuffer, consumed: inout Int)
+    throws(DNSError)
     -> String
   {
     guard let l: UInt8 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt8>.size
     guard let parseOutput = parseInput.getString(at: consumed, length: Int(l)) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += Int(l)
     return parseOutput
   }
 
-  private func parseDomainName(_ parseInput: ByteBuffer, consumed: inout Int) throws -> String {
+  private func parseDomainName(_ parseInput: ByteBuffer, consumed: inout Int) throws(DNSError)
+    -> String
+  {
     var parseOutput = ""
 
     while consumed < parseInput.writerIndex {
@@ -269,7 +272,7 @@ public struct PrettyDNSParser: Sendable {
         // It's a pointer, read the next byte too
         consumed += MemoryLayout<UInt8>.size
         guard let nextByte: UInt8 = parseInput.getInteger(at: consumed) else {
-          throw PrettyDNSError.missingData
+          throw .operationRefused
         }
         consumed += MemoryLayout<UInt8>.size
         var pointerOffset = Int(((UInt16(lengthByte & 0x3F) << 8) | UInt16(nextByte)))
@@ -333,16 +336,18 @@ public struct PrettyDNSParser: Sendable {
   ///
   /// QCLASS          a two octet code that specifies the class of the query.
   ///                 For example, the QCLASS field is IN for the Internet.
-  private func parseQuestion(_ parseInput: ByteBuffer, consumed: inout Int) throws -> Question {
+  private func parseQuestion(_ parseInput: ByteBuffer, consumed: inout Int) throws(DNSError)
+    -> Question
+  {
     let domainName = try parseDomainName(parseInput, consumed: &consumed)
 
     guard let qType: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
     guard let qClass: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
@@ -408,35 +413,35 @@ public struct PrettyDNSParser: Sendable {
   ///                 according to the TYPE and CLASS of the resource record.
   ///                 For example, the if the TYPE is A and the CLASS is IN,
   ///                 the RDATA field is a 4 octet ARPA Internet address.
-  private func parseResourceRecord(_ parseInput: ByteBuffer, consumed: inout Int) throws
+  private func parseResourceRecord(_ parseInput: ByteBuffer, consumed: inout Int) throws(DNSError)
     -> any ResourceRecord
   {
     let name = try parseDomainName(parseInput, consumed: &consumed)
 
     guard let rrtype: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     let recordType = TYPE(rawValue: rrtype)
     consumed += MemoryLayout.size(ofValue: rrtype)
 
     guard let rrclass: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     let dataClass = CLASS(rawValue: rrclass)
     consumed += MemoryLayout<UInt16>.size
 
     guard let ttl: Int32 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<Int32>.size
 
     guard let dataLength: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
     guard parseInput.writerIndex >= consumed + Int(dataLength) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
 
     let finalize: any ResourceRecord
@@ -444,10 +449,10 @@ public struct PrettyDNSParser: Sendable {
     switch recordType {
     case .a:
       guard let addressData = parseInput.getBytes(at: consumed, length: Int(dataLength)) else {
-        throw PrettyDNSError.missingData
+        throw .operationRefused
       }
       guard let data = IPv4Address(.init(addressData)) else {
-        throw PrettyDNSError.missingData
+        throw .operationRefused
       }
       consumed += Int(dataLength)
       finalize = ARecord(
@@ -507,10 +512,10 @@ public struct PrettyDNSParser: Sendable {
       )
     case .aaaa:
       guard let addressData = parseInput.getBytes(at: consumed, length: Int(dataLength)) else {
-        throw PrettyDNSError.missingData
+        throw .operationRefused
       }
       guard let data = IPv6Address(.init(addressData)) else {
-        throw PrettyDNSError.missingData
+        throw .operationRefused
       }
       consumed += Int(dataLength)
       finalize = AAAARecord(
@@ -538,7 +543,7 @@ public struct PrettyDNSParser: Sendable {
       )
     default:
       guard let data = parseInput.getSlice(at: consumed, length: Int(dataLength)) else {
-        throw PrettyDNSError.missingData
+        throw .operationRefused
       }
       consumed += Int(dataLength)
       finalize = RAWRecord(domainName: name, ttl: ttl, dataType: recordType, data: data)
@@ -547,34 +552,35 @@ public struct PrettyDNSParser: Sendable {
     return finalize
   }
 
-  private func parseSOARData(_ parseInput: ByteBuffer, consumed: inout Int) throws -> SOARecord.Data
+  private func parseSOARData(_ parseInput: ByteBuffer, consumed: inout Int) throws(DNSError)
+    -> SOARecord.Data
   {
     let primaryNameServer = try parseDomainName(parseInput, consumed: &consumed)
 
     let responsibleMailbox = try parseDomainName(parseInput, consumed: &consumed)
 
     guard let serialNumber: UInt32 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt32>.size
 
     guard let refreshInterval: UInt32 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt32>.size
 
     guard let retryInterval: UInt32 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt32>.size
 
     guard let expirationTime: UInt32 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt32>.size
 
     guard let ttl: UInt32 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt32>.size
 
@@ -589,9 +595,11 @@ public struct PrettyDNSParser: Sendable {
     )
   }
 
-  private func parseMXRData(_ parseInput: ByteBuffer, consumed: inout Int) throws -> MXRecord.Data {
+  private func parseMXRData(_ parseInput: ByteBuffer, consumed: inout Int) throws(DNSError)
+    -> MXRecord.Data
+  {
     guard let preference: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
@@ -601,20 +609,21 @@ public struct PrettyDNSParser: Sendable {
     )
   }
 
-  private func parseSRVRData(_ parseInput: ByteBuffer, consumed: inout Int) throws -> SRVRecord.Data
+  private func parseSRVRData(_ parseInput: ByteBuffer, consumed: inout Int) throws(DNSError)
+    -> SRVRecord.Data
   {
     guard let priority: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
     guard let weight: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
     guard let port: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
@@ -626,16 +635,16 @@ public struct PrettyDNSParser: Sendable {
     )
   }
 
-  private func parseNAPTRRData(_ parseInput: ByteBuffer, consumed: inout Int) throws
+  private func parseNAPTRRData(_ parseInput: ByteBuffer, consumed: inout Int) throws(DNSError)
     -> NAPTRRecord.Data
   {
     guard let order: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
     guard let preference: UInt16 = parseInput.getInteger(at: consumed) else {
-      throw PrettyDNSError.missingData
+      throw .operationRefused
     }
     consumed += MemoryLayout<UInt16>.size
 
@@ -647,5 +656,180 @@ public struct PrettyDNSParser: Sendable {
       regExp: try parseLengthPrefixedString(parseInput, consumed: &consumed),
       replacement: try parseDomainName(parseInput, consumed: &consumed)
     )
+  }
+}
+
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension Message {
+
+  /// Returns the bytes serialized in DNS message format.
+  ///
+  /// - throws: notImplemented if resource record is not supported yet.
+  public var serializedBytes: [UInt8] {
+    get throws(DNSError) {
+      var serializedBytes: [UInt8] = []
+      var compression: [String: Int] = [:]
+
+      serializedBytes._append(headerFields.transactionID)
+      serializedBytes._append(headerFields.flags.rawValue)
+      serializedBytes._append(headerFields.qestionCount)
+      serializedBytes._append(headerFields.answerCount)
+      serializedBytes._append(headerFields.authorityCount)
+      serializedBytes._append(headerFields.additionCount)
+
+      for question in questions {
+        let labels = question.domainName.split(separator: ".")
+        serializedBytes._append(contentsOf: labels, compression: &compression)
+        serializedBytes._append(question.queryType.rawValue)
+        serializedBytes._append(question.queryClass.rawValue)
+      }
+
+      for answerRR in answerRRs {
+        try serializedBytes._append(answerRR, compression: &compression)
+      }
+
+      for authorityRR in authorityRRs {
+        try serializedBytes._append(authorityRR, compression: &compression)
+      }
+
+      for additionalRR in additionalRRs {
+        try serializedBytes._append(additionalRR, compression: &compression)
+      }
+
+      return serializedBytes
+    }
+  }
+}
+
+#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  @available(SwiftStdlib 5.3, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension Array where Element == UInt8 {
+
+  fileprivate mutating func _append(_ newElement: some FixedWidthInteger) {
+    var value = newElement.bigEndian
+    Swift.withUnsafeBytes(of: &value) {
+      append(contentsOf: $0)
+    }
+  }
+
+  fileprivate mutating func _append(
+    contentsOf newElements: [Substring], compression: inout [String: Int]
+  ) {
+    guard !newElements.isEmpty else {
+      append(.zero)
+      return
+    }
+
+    var labels = newElements[...]
+    repeat {
+      let key = labels.joined(separator: ".")
+      let pointer = compression[key]
+      guard pointer == nil else {
+        // Found reusable compressed domain.
+        // pointer here is validated non-nil, so it is safe to force unwrap the value.
+        _append(UInt16(clamping: pointer!) | 0xC000)
+        break
+      }
+
+      // A new label is here, we need record offset for compressor to use.
+      compression[key] = endIndex
+
+      let label = labels[labels.startIndex]
+      labels = labels.suffix(from: index(after: labels.startIndex))
+
+      // Write label without compression.
+      append(UInt8(label.utf8.count))
+
+      append(contentsOf: label.utf8)
+
+      if labels.isEmpty {
+        append(.zero)
+      }
+    } while !labels.isEmpty
+  }
+
+  fileprivate mutating func _append(
+    _ newElement: some ResourceRecord, compression: inout [String: Int]
+  ) throws(DNSError) {
+    var labels = newElement.domainName.split(separator: ".")
+    _append(contentsOf: labels, compression: &compression)
+    _append(newElement.dataType.rawValue)
+    _append(newElement.dataClass.rawValue)
+    _append(newElement.ttl)
+
+    let dataLengthBytesStartOffset = endIndex
+    // Write placeholder.
+    _append(UInt16.zero)
+
+    switch newElement {
+    case let rr as ARecord:
+      append(contentsOf: rr.data.rawValue)
+    case let rr as NSRecord:
+      _append(contentsOf: rr.data.split(separator: "."), compression: &compression)
+    case let rr as CNAMERecord:
+      _append(contentsOf: rr.data.split(separator: "."), compression: &compression)
+    case let rr as SOARecord:
+      labels = rr.data.primaryNameServer.split(separator: ".")
+      _append(contentsOf: labels, compression: &compression)
+      labels = rr.data.responsibleMailbox.split(separator: ".")
+      _append(contentsOf: labels, compression: &compression)
+      _append(rr.data.serialNumber)
+      _append(rr.data.refreshInterval)
+      _append(rr.data.retryInterval)
+      _append(rr.data.expirationTime)
+      _append(rr.data.ttl)
+    case let rr as PTRRecord:
+      labels = rr.data.split(separator: ".")
+      _append(contentsOf: labels, compression: &compression)
+    case let rr as MXRecord:
+      _append(rr.data.preference)
+      labels = rr.data.exchange.split(separator: ".")
+      _append(contentsOf: labels, compression: &compression)
+    case let rr as TXTRecord:
+      append(UInt8(rr.data.utf8.count))
+      append(contentsOf: rr.data.utf8)
+    case let rr as AAAARecord:
+      append(contentsOf: rr.data.rawValue)
+    case let rr as SRVRecord:
+      _append(rr.data.priority)
+      _append(rr.data.weight)
+      _append(rr.data.port)
+      labels = rr.data.hostname.split(separator: ".")
+      _append(contentsOf: labels, compression: &compression)
+    case let rr as NAPTRRecord:
+      _append(rr.data.order)
+      _append(rr.data.preference)
+      append(UInt8(rr.data.flags.utf8.count))
+      append(contentsOf: rr.data.flags.utf8)
+      append(UInt8(rr.data.services.utf8.count))
+      append(contentsOf: rr.data.services.utf8)
+      append(UInt8(rr.data.regExp.utf8.count))
+      append(contentsOf: rr.data.regExp.utf8)
+      labels = rr.data.replacement.split(separator: ".")
+      _append(contentsOf: labels, compression: &compression)
+    case let rr as RAWRecord:
+      append(contentsOf: rr.data.readableBytesView)
+    default:
+      throw .operationUnsupported
+    }
+
+    // Replace data length placeholder to determined numer.
+    var determined = UInt16(
+      clamping: endIndex - dataLengthBytesStartOffset - MemoryLayout<UInt16>.size
+    ).bigEndian
+
+    Swift.withUnsafeBytes(of: &determined) {
+      replaceSubrange(
+        dataLengthBytesStartOffset..<dataLengthBytesStartOffset + MemoryLayout<UInt16>.size,
+        with: $0
+      )
+    }
   }
 }

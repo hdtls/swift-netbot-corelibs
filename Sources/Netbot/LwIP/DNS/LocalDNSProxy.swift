@@ -40,7 +40,7 @@ import _DNSSupport
 #endif
 @Lockable final public class LocalDNSProxy: Sendable {
 
-  private let parser = PrettyDNSParser()
+  private let parser = NLDNSParser()
   private let availableAQueries: LRUCache<String, Task<[Expirable<ARecord>], any Error>>
   private let disguisedARecords: LRUCache<String, Expirable<ARecord>>
   private let availableAAAAQueries: LRUCache<String, Task<[Expirable<AAAARecord>], any Error>>
@@ -224,15 +224,15 @@ import _DNSSupport
   }
 
   func query(msg message: Message) async throws -> Message {
-    var lastError: any Error = ChannelError.operationUnsupported
+    var lastError: any Error = DNSError.operationRefused
 
     let timeAmount = TimeAmount.seconds(2)
     let maxRetryAttempts = 3
 
     for additionalServer in additionalServers {
-      let server = try additionalServer.asAddress()
-
       for _ in 0..<maxRetryAttempts {
+        let server = try additionalServer.asAddress()
+
         do {
           let eventLoop = eventLoopGroup.next()
 
@@ -243,8 +243,7 @@ import _DNSSupport
           let queryPromise = query.promise
 
           let schedule = eventLoop.scheduleTask(in: timeAmount) {
-            struct DNSQueryTimedOutError: Error {}
-            queryPromise.fail(DNSQueryTimedOutError())
+            queryPromise.fail(DNSError.timeout)
           }
 
           query.continuation?.yield(message)
@@ -320,7 +319,7 @@ extension LocalDNSProxy: PacketHandleProtocol {
   func run() async throws {}
 
   func handleInput(_ packetObject: NEPacket) async throws -> PacketHandleResult {
-    assert(packetFlow != nil, "PacketFlow is required to process NEPacket.")
+    assert(packetFlow != nil, "LocalDNSProxy.packetFlow is required to process NEPacket.")
 
     // Make it mutable, so we don't need alloc new packet for response.
     guard case .v4(var iphdr) = packetObject.headerFields else {

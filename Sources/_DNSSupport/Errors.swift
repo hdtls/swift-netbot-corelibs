@@ -17,7 +17,18 @@
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
-public enum PrettyDNSError: Error {
-  case missingData
-  case notImplemented
+/// The errors reprensent the issues that occur when resolving services over DNS.
+public enum DNSError: Error {
+
+  /// This error indicates that the DNS system or the service provider refuses the operation.
+  case operationRefused
+
+  /// This error indicates that the DNS system or the service provider does not support the operation.
+  case operationUnsupported
+
+  /// This error indicates that a network operation took too long and exceeded the time limit, so the
+  /// request is considered unsuccessful.
+  ///
+  /// This could be caused by network issues, slow servers, or congestion.
+  case timeout
 }
