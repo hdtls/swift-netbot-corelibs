@@ -60,7 +60,7 @@ struct LocalDNSProxyTests {
   final class MockDNSServer: @unchecked Sendable {
     let queryCalls: ManagedAtomic<Int> = .init(0)
     let response: [any ResourceRecord]
-    let parser = PrettyDNSParser()
+    let parser = NLDNSParser()
     private var channel: LocalDNSProxy.AsyncChannel!
 
     init(response: [any ResourceRecord]) {
