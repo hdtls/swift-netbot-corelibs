@@ -118,9 +118,7 @@ struct LocalDNSProxyTests {
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func handleInput() async throws {
-    let packetFlow = MockTunnelFlow()
     let p = LocalDNSProxy()
-    p.packetFlow = packetFlow
     p.bindAddress = IPv4Address("198.18.1.1")!
     p.availableIPPool = .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
 
@@ -171,12 +169,11 @@ struct LocalDNSProxyTests {
     var queryData = queryHeaderFields.data
     queryData.append(contentsOf: datagram.data)
     let query = try #require(NEPacket(data: queryData, protocolFamily: .inet))
-    guard case .handled = try await p.handleInput(query) else {
-      #expect(Bool(false), "Should handle correct DNS query packet.")
-      return
-    }
 
-    guard let packet = packetFlow.writePacketObjects.withLock({ $0.first }) else {
+    let reply = await p.handleNewPackets([query])
+    #expect(!reply.isEmpty, "Should contains one reply packet")
+
+    guard let packet = reply.first else {
       #expect(Bool(false), "Should be IPv4 packet")
       return
     }
