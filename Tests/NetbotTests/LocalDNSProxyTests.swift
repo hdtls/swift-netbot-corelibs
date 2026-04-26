@@ -118,9 +118,14 @@ struct LocalDNSProxyTests {
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func handleInput() async throws {
-    let p = LocalDNSProxy()
-    p.bindAddress = IPv4Address("198.18.1.1")!
-    p.availableIPPool = .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
+    let options = LocalDNSProxy.Options(
+      group: .shared,
+      bindAddress: IPv4Address("198.18.1.1")!,
+      additionalServers: [],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)),
+      dnsMappings: []
+    )
+    let p = LocalDNSProxy(options: options)
 
     try await p.run()
 
@@ -229,7 +234,7 @@ struct LocalDNSProxyTests {
     #expect(response.options == nil)
     #expect(packet.payload == datagram.data)
 
-    p.close(promise: nil)
+    try await p.shutdownGracefully()
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -247,8 +252,17 @@ struct LocalDNSProxyTests {
     )
     let address = try #require(await server.start())
 
-    let p = LocalDNSProxy()
-    p.additionalServers = [try address.asAddress()]
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: []
+      )
+    )
     try await p.run()
 
     await #expect(throws: Never.self) {
@@ -263,7 +277,7 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    p.close(promise: nil)
+    try await p.shutdownGracefully()
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -280,8 +294,17 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy()
-    p.additionalServers = [try address.asAddress()]
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: []
+      )
+    )
     try await p.run()
 
     await #expect(throws: Never.self) {
@@ -297,7 +320,7 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    p.close(promise: nil)
+    try await p.shutdownGracefully()
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -313,8 +336,17 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy()
-    p.additionalServers = [try address.asAddress()]
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: []
+      )
+    )
     try await p.run()
 
     await #expect(throws: Never.self) {
@@ -329,7 +361,7 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    p.close(promise: nil)
+    try await p.shutdownGracefully()
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -342,8 +374,17 @@ struct LocalDNSProxyTests {
       response: [AAAARecord(domainName: "example.com", ttl: 1, data: .init("::1")!)]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy()
-    p.additionalServers = [try address.asAddress()]
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: []
+      )
+    )
     try await p.run()
 
     await #expect(throws: Never.self) {
@@ -359,7 +400,7 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    p.close(promise: nil)
+    try await p.shutdownGracefully()
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -374,8 +415,17 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy()
-    p.additionalServers = [try address.asAddress()]
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: []
+      )
+    )
     try await p.run()
 
     await #expect(throws: Never.self) {
@@ -390,7 +440,7 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    p.close(promise: nil)
+    try await p.shutdownGracefully()
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -406,8 +456,17 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy()
-    p.additionalServers = [try address.asAddress()]
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: []
+      )
+    )
     try await p.run()
 
     await #expect(throws: Never.self) {
@@ -422,7 +481,7 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    p.close(promise: nil)
+    try await p.shutdownGracefully()
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -442,8 +501,17 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy()
-    p.additionalServers = [try address.asAddress()]
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: []
+      )
+    )
     try await p.run()
 
     await #expect(throws: Never.self) {
@@ -458,7 +526,7 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    p.close(promise: nil)
+    try await p.shutdownGracefully()
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -474,8 +542,17 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy()
-    p.additionalServers = [try address.asAddress()]
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: []
+      )
+    )
     try await p.run()
 
     await #expect(throws: Never.self) {
@@ -490,7 +567,7 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    p.close(promise: nil)
+    try await p.shutdownGracefully()
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -513,8 +590,17 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy()
-    p.additionalServers = [try address.asAddress()]
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: []
+      )
+    )
     try await p.run()
 
     await #expect(throws: Never.self) {
@@ -529,7 +615,7 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    p.close(promise: nil)
+    try await p.shutdownGracefully()
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -545,8 +631,17 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy()
-    p.additionalServers = [try address.asAddress()]
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: []
+      )
+    )
     try await p.run()
 
     await #expect(throws: Never.self) {
@@ -561,7 +656,7 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    p.close(promise: nil)
+    try await p.shutdownGracefully()
   }
 
   #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
@@ -579,8 +674,17 @@ struct LocalDNSProxyTests {
       ]
     )
     let address = try #require(await server.start())
-    let p = LocalDNSProxy()
-    p.additionalServers = [try address.asAddress()]
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: []
+      )
+    )
     try await p.run()
 
     await #expect(throws: Never.self) {
@@ -595,6 +699,261 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    p.close(promise: nil)
+    try await p.shutdownGracefully()
+  }
+
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func aAddressMapping() async throws {
+    let mapping = ProtocolDNS.Mapping(
+      strategy: .mapping, domainName: "localhost", value: "127.0.0.1", note: "")
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: [mapping]
+      )
+    )
+    try await p.run()
+
+    let expected = Message(
+      headerFields: .init(
+        transactionID: 0x1165,
+        flags: .init(
+          response: false,
+          opcode: .query,
+          authoritative: false,
+          truncated: false,
+          recursionDesired: false,
+          recursionAvailable: false,
+          authenticatedData: false,
+          checkingDisabled: true,
+          responseCode: .noError
+        ),
+        qestionCount: 1,
+        answerCount: 1,
+        authorityCount: 0,
+        additionCount: 0
+      ),
+      questions: [.init(domainName: "localhost", queryType: .a)],
+      answerRRs: [
+        ARecord(
+          domainName: "localhost", ttl: 0, dataLength: .determined(4),
+          data: IPv4Address(mapping.value)!)
+      ],
+      authorityRRs: [],
+      additionalRRs: []
+    )
+    let response = try await p.query(
+      msg: .init(
+        headerFields: .init(
+          transactionID: 0x1165,
+          flags: .init(rawValue: 0x8180),
+          qestionCount: 1,
+          answerCount: 0,
+          authorityCount: 0,
+          additionCount: 0
+        ),
+        questions: expected.questions,
+        answerRRs: [],
+        authorityRRs: [],
+        additionalRRs: []
+      )
+    )
+
+    #expect(response.headerFields.qestionCount == expected.headerFields.qestionCount)
+    #expect(response.headerFields.answerCount == expected.headerFields.answerCount)
+    #expect(response.questions == expected.questions)
+    #expect(response.answerRRs as! [ARecord] == expected.answerRRs as! [ARecord])
+  }
+
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func aaaaAddressMapping() async throws {
+    let mapping = ProtocolDNS.Mapping(
+      strategy: .mapping, domainName: "localhost", value: "::1", note: "")
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: [mapping]
+      )
+    )
+    try await p.run()
+
+    let expected = Message(
+      headerFields: .init(
+        transactionID: 0x1165,
+        flags: .init(
+          response: false,
+          opcode: .query,
+          authoritative: false,
+          truncated: false,
+          recursionDesired: false,
+          recursionAvailable: false,
+          authenticatedData: false,
+          checkingDisabled: true,
+          responseCode: .noError
+        ),
+        qestionCount: 1,
+        answerCount: 1,
+        authorityCount: 0,
+        additionCount: 0
+      ),
+      questions: [.init(domainName: "localhost", queryType: .aaaa)],
+      answerRRs: [
+        AAAARecord(
+          domainName: "localhost", ttl: 0, dataLength: .determined(16),
+          data: IPv6Address(mapping.value)!)
+      ],
+      authorityRRs: [],
+      additionalRRs: []
+    )
+    let response = try await p.query(
+      msg: .init(
+        headerFields: .init(
+          transactionID: 0x1165,
+          flags: .init(rawValue: 0x8180),
+          qestionCount: 1,
+          answerCount: 0,
+          authorityCount: 0,
+          additionCount: 0
+        ),
+        questions: expected.questions,
+        answerRRs: [],
+        authorityRRs: [],
+        additionalRRs: []
+      )
+    )
+
+    #expect(response.headerFields.qestionCount == expected.headerFields.qestionCount)
+    #expect(response.headerFields.answerCount == expected.headerFields.answerCount)
+    #expect(response.questions == expected.questions)
+    #expect(response.answerRRs as! [AAAARecord] == expected.answerRRs as! [AAAARecord])
+  }
+
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func cnameMapping() async throws {
+    let mapping = ProtocolDNS.Mapping(
+      strategy: .cname, domainName: "example.com", value: "test.com", note: "")
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        ),
+        dnsMappings: [mapping]
+      )
+    )
+    try await p.run()
+
+    let expected = Message(
+      headerFields: .init(
+        transactionID: 0x1165,
+        flags: .init(
+          response: false,
+          opcode: .query,
+          authoritative: false,
+          truncated: false,
+          recursionDesired: false,
+          recursionAvailable: false,
+          authenticatedData: false,
+          checkingDisabled: true,
+          responseCode: .noError
+        ),
+        qestionCount: 1,
+        answerCount: 1,
+        authorityCount: 0,
+        additionCount: 0
+      ),
+      questions: [.init(domainName: "example.com", queryType: .aaaa)],
+      answerRRs: [CNAMERecord(domainName: "example.com", ttl: 0, data: "test.com")],
+      authorityRRs: [],
+      additionalRRs: []
+    )
+    let response = try await p.query(
+      msg: .init(
+        headerFields: .init(
+          transactionID: 0x1165,
+          flags: .init(rawValue: 0x8180),
+          qestionCount: 1,
+          answerCount: 0,
+          authorityCount: 0,
+          additionCount: 0
+        ),
+        questions: expected.questions,
+        answerRRs: [],
+        authorityRRs: [],
+        additionalRRs: []
+      )
+    )
+
+    #expect(response.headerFields.qestionCount == expected.headerFields.qestionCount)
+    #expect(response.headerFields.answerCount == expected.headerFields.answerCount)
+    #expect(response.questions == expected.questions)
+    #expect(response.answerRRs as! [CNAMERecord] == expected.answerRRs as! [CNAMERecord])
+  }
+
+  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    @available(SwiftStdlib 5.3, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func dnsServerAddressMapping() async throws {
+    //    let server = MockDNSServer(
+    //      response: [
+    //        PTRRecord(
+    //          domainName: "example.com", ttl: 300, dataLength: .determined(8), data: "1.exp.com")
+    //      ]
+    //    )
+    //    let address = try #require(await server.start())
+    //    let p = LocalDNSProxy(
+    //      options: .init(
+    //        group: .shared,
+    //        bindAddress: IPv4Address("198.18.0.2")!,
+    //        additionalServers: [Address.hostPort(host: "8.8.8.8", port: 53)],
+    //        availableIPPool: AvailableIPPool(
+    //          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+    //        ),
+    //        dnsMappings: [
+    //          .init(strategy: .dns, domainName: "example.com", value: "\(address)", note: "")
+    //        ]
+    //      )
+    //    )
+    //    try await p.run()
+    //
+    //    await #expect(throws: Never.self) {
+    //      let result = try await p.queryPTR(name: "example.com")
+    //      #expect(!result.isEmpty)
+    //      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+    //      #expect(result == server.response as? [PTRRecord])
+    //
+    //      _ = try await p.queryPTR(name: "example.com")
+    //      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
+    //      #expect(result == server.response as? [PTRRecord])
+    //    }
+    //
+    //    server.close(promise: nil)
+    //    try await p.shutdownGracefully()
   }
 }

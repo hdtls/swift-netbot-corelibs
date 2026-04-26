@@ -40,14 +40,31 @@ import _ProfileSupport
 #endif
 @Lockable final public class LocalDNSProxy: Sendable {
 
-  public var bindAddress: IPv4Address
-  public var additionalServers: [Address]
+  public struct Options: Sendable {
+    public let group: any EventLoopGroup
+    public let logger: Logger = Logger(label: "dns")
+    public let bindAddress: IPv4Address
+    public let additionalServers: any Collection<Address> & Sendable
+    public let availableIPPool: AvailableIPPool
+    public let dnsMappings: any Collection<ProtocolDNS.Mapping> & Sendable
+    public let timeoutInterval: TimeAmount = .seconds(2)
+    public let maxRetryAttempts = 3
+  }
 
-  @LockableTracked(accessLevel: .package)
-  public var availableIPPool: AvailableIPPool
+  public var bindAddress: IPv4Address {
+    options.bindAddress
+  }
 
-  let group: any EventLoopGroup
-  let logger = Logger(label: "dns")
+  public var additionalServers: any Collection<Address> {
+    options.additionalServers
+  }
+
+  public var availableIPPool: AvailableIPPool {
+    options.availableIPPool
+  }
+
+  var group: any EventLoopGroup { options.group }
+  var logger: Logger { options.logger }
   let parser = NLDNSParser()
 
   let availableAQueries: LRUCache<String, Task<[Expirable<ARecord>], any Error>>
@@ -65,7 +82,20 @@ import _ProfileSupport
       continuation: AsyncStream<Message>.Continuation, queries: [UInt16: EventLoopPromise<Message>]
     )]
 
-  public init(
+  @LockableTracked(accessLevel: .public, accessors: .get)
+  public var options: Options
+
+  public init(options: Options) {
+    self._options = .init(options)
+    self.availableAQueries = .init(capacity: 200)
+    self.availableAAAAQueries = .init(capacity: 200)
+    self.availableSOAQueries = .init(capacity: 50)
+    self.availablePTRQueries = .init(capacity: 200)
+    self.disguisedARecords = .init(capacity: 200)
+    self._queries = .init([:])
+  }
+
+  public convenience init(
     group: any EventLoopGroup = .shared,
     bindAddress: IPv4Address = IPv4Address("198.18.0.2")!,
     additionalServers: [Address] = [],
@@ -73,16 +103,15 @@ import _ProfileSupport
       bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
     )
   ) {
-    self.group = group
-    self.availableAQueries = .init(capacity: 200)
-    self.availableAAAAQueries = .init(capacity: 200)
-    self.availableSOAQueries = .init(capacity: 50)
-    self.availablePTRQueries = .init(capacity: 200)
-    self.disguisedARecords = .init(capacity: 200)
-    self._bindAddress = .init(bindAddress)
-    self._additionalServers = .init(additionalServers)
-    self._availableIPPool = .init(availableIPPool)
-    self._queries = .init([:])
+    self.init(
+      options: .init(
+        group: group,
+        bindAddress: bindAddress,
+        additionalServers: additionalServers,
+        availableIPPool: availableIPPool,
+        dnsMappings: []
+      )
+    )
   }
 
   public func run() async throws {
@@ -222,13 +251,69 @@ import _ProfileSupport
   }
 
   func query(msg message: Message) async throws -> Message {
+    // The `additionalServers` may changed, if our dns mappings contains dns server map.
+    var additionalServers = options.additionalServers
     var lastError: any Error = DNSError.operationRefused
 
-    let timeAmount = TimeAmount.seconds(2)
-    let maxRetryAttempts = 3
+    // For current version, DNS mapping requires that the query contains
+    // only one question.
+    if message.questions.count == 1,
+      let question = message.questions.first,
+      let mapping = self.options.dnsMappings.first(where: { $0.domainName == question.domainName })
+    {
+      @inline(__always) func response(_ record: any ResourceRecord) -> Message {
+        Message(
+          headerFields: .init(
+            transactionID: message.headerFields.transactionID,
+            flags: .init(rawValue: 0x8180),
+            qestionCount: UInt16(message.questions.count),
+            answerCount: 1,
+            authorityCount: 0,
+            additionCount: 0
+          ),
+          questions: message.questions,
+          answerRRs: [record],
+          authorityRRs: [],
+          additionalRRs: []
+        )
+      }
+      switch mapping.strategy {
+      case .mapping:
+        switch question.queryType {
+        case .a:
+          if let address = IPv4Address(mapping.value) {
+            return response(
+              ARecord(
+                domainName: question.domainName,
+                ttl: 0,
+                dataLength: .determined(4),
+                data: address
+              )
+            )
+          }
+        case .aaaa:
+          if let address = IPv6Address(mapping.value) {
+            return response(
+              AAAARecord(
+                domainName: question.domainName,
+                ttl: 0,
+                dataLength: .determined(16),
+                data: address
+              )
+            )
+          }
+        default:
+          break
+        }
+      case .cname:
+        return response(CNAMERecord(domainName: question.domainName, ttl: 0, data: mapping.value))
+      case .dns:
+        additionalServers = [Address.hostPort(host: .init(mapping.value), port: 53)]
+      }
+    }
 
-    for additionalServer in additionalServers {
-      for _ in 0..<maxRetryAttempts {
+    for _ in 0..<options.maxRetryAttempts {
+      for additionalServer in additionalServers {
         let server = try additionalServer.asAddress()
 
         do {
@@ -240,7 +325,7 @@ import _ProfileSupport
           )
           let queryPromise = query.promise
 
-          let schedule = eventLoop.scheduleTask(in: timeAmount) {
+          let schedule = eventLoop.scheduleTask(in: options.timeoutInterval) {
             queryPromise.fail(DNSError.timeout)
           }
 
