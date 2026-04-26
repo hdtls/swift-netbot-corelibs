@@ -27,6 +27,12 @@ import _ProfileSupport
   import Foundation
 #endif
 
+#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  import NIOConcurrencyHelpers
+#else
+  import Synchronization
+#endif
+
 #if canImport(Network)
   import NIOTransportServices
 #else
@@ -155,6 +161,14 @@ public actor AnalyzeBot: Actor {
       contentsOf: newProfile.dnsSettings.servers.map {
         Address.hostPort(host: .init($0), port: 53)
       })
-    dns.additionalServers = additionalServers
+    dns._options.withLock {
+      $0 = .init(
+        group: $0.group,
+        bindAddress: $0.bindAddress,
+        additionalServers: additionalServers,
+        availableIPPool: $0.availableIPPool,
+        dnsMappings: $0.dnsMappings
+      )
+    }
   }
 }
