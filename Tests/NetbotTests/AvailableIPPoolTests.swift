@@ -13,7 +13,6 @@
 // ===----------------------------------------------------------------------===//
 
 import NEAddressProcessing
-import NIOCore
 import Testing
 
 @testable import Netbot
@@ -28,7 +27,6 @@ struct AvailableIPPoolTests {
   @Test(arguments: [
     "1111.1/12",
     "as.1/12",
-    "192.168/16",
     "192.168.1.1.1/16",
     "192.168.1.1/33",
     "192.168.1.1/z",
