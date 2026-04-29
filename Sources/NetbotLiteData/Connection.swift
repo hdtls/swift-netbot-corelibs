@@ -21,22 +21,22 @@ import HTTPTypes
   import Foundation
 #endif
 
-#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   import NIOConcurrencyHelpers
 #else
   import Synchronization
 #endif
 
 // swift-format-ignore: AlwaysUseLowerCamelCase
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 public let SQL_lastInsertedID = ManagedAtomic<UInt64>(0)
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -70,7 +70,7 @@ public let SQL_lastInsertedID = ManagedAtomic<UInt64>(0)
 
   public var earliestBeginDate: Date
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #endif
   public var duration: Duration {
@@ -108,13 +108,7 @@ public let SQL_lastInsertedID = ManagedAtomic<UInt64>(0)
     self._originalRequest = .init(nil)
     self._currentRequest = .init(nil)
     self._response = .init(nil)
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      let earliestBeginDate: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
-    #else
-      let earliestBeginDate = Date.now
-    #endif
-    self._earliestBeginDate = .init(earliestBeginDate)
-
+    self._earliestBeginDate = .init(.now)
     self.__duration = .init(0)
     self._taskDescription = .init("")
     self._tls = .init(false)
@@ -127,8 +121,8 @@ public let SQL_lastInsertedID = ManagedAtomic<UInt64>(0)
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -195,7 +189,7 @@ extension Connection: Codable {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)

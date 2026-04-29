@@ -25,8 +25,8 @@ import Testing
 @Suite(.tags(.proxyGroup, .formatting))
 struct AnyProxyGroupFormatStyleTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -44,8 +44,8 @@ struct AnyProxyGroupFormatStyleTests {
     #expect(formatInput.formatted() == expected)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -65,7 +65,7 @@ struct AnyProxyGroupFormatStyleTests {
     #expect(formatInput.formatted() == expected)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -86,7 +86,7 @@ struct AnyProxyGroupFormatStyleTests {
     #expect(parseOutput.resource.source == .cache)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -111,7 +111,7 @@ struct AnyProxyGroupFormatStyleTests {
     #expect(parseOutput.resource.source == .query)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -130,8 +130,8 @@ struct AnyProxyGroupFormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -144,7 +144,7 @@ struct AnyProxyGroupFormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -155,7 +155,7 @@ struct AnyProxyGroupFormatStyleTests {
     #expect(formatInput.formatted(.proxyGroup) == "example = select, proxies = direct")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #else
     @available(SwiftStdlib 6.0, *)

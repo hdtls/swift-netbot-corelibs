@@ -19,15 +19,15 @@
   import _PrivilegeSupport
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   public var PHT: PrivilegeScope { PrivilegeScope.shared }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -119,7 +119,7 @@
         try await setAppServiceHandleIfNeeded()
         let proxy = try privileges.remoteAppServiceHandle()
 
-        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
           if #available(SwiftStdlib 5.7, *) {
             if case .enabled = await proxy.status(daemon: plistName) {
               return
@@ -155,7 +155,7 @@
 
       do {
         let proxy = try privileges.remoteAppServiceHandle()
-        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
           if #available(SwiftStdlib 5.7, *) {
             guard case .enabled = await proxy.status(daemon: plistName) else {
               return
@@ -226,8 +226,8 @@
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif

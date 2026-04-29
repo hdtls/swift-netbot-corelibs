@@ -18,8 +18,8 @@ import NEAddressProcessing
 /// became established. This is intended to be used for analysis of performance
 /// after connection establishment. The report cannot be gathered until a
 /// connection is in the .ready state.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -29,7 +29,7 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
   /// This is the total time from when the successful connection
   /// attempt began until the connection becomes ready, including
   /// resolution, proxy evaluation, and protocol handshakes.
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #endif
   public var duration: Duration {
@@ -90,7 +90,7 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
     public var source: Source
 
     /// The duration spent on this resolution step.
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       @available(SwiftStdlib 5.7, *)
     #endif
     public var duration: Duration {
@@ -180,7 +180,7 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)

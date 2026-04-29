@@ -27,7 +27,7 @@ struct UUIDFormatStyleTests {
 
   let uuid = UUID()
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -54,7 +54,7 @@ struct UUIDFormatStyleTests {
     #expect(parseOutput == uuid)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -75,8 +75,8 @@ struct UUIDFormatStyleTests {
   }
 
   #if canImport(Darwin)
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      @available(SwiftStdlib 5.3, *)
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+      @available(SwiftStdlib 5.5, *)
     #else
       @available(SwiftStdlib 6.0, *)
     #endif
@@ -95,8 +95,8 @@ struct UUIDFormatStyleTests {
       #expect(formatOutput == uuid.uuidString)
     }
 
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      @available(SwiftStdlib 5.3, *)
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+      @available(SwiftStdlib 5.5, *)
     #else
       @available(SwiftStdlib 6.0, *)
     #endif

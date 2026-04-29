@@ -20,8 +20,8 @@ import HTTPTypes
   import Foundation
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -31,8 +31,8 @@ extension AnyProxy {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -246,7 +246,7 @@ extension AnyProxy.FormatStyle {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -254,15 +254,15 @@ extension AnyProxy.FormatStyle {
 extension AnyProxy.FormatStyle: FormatStyle {
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 extension AnyProxy.FormatStyle {
 
   public func parse(_ value: String) throws -> AnyProxy {
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       if #available(SwiftStdlib 5.7, *) {
         try _parse(value)
       } else {
@@ -273,7 +273,7 @@ extension AnyProxy.FormatStyle {
     #endif
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #endif
   func _parse(_ value: String) throws -> AnyProxy {
@@ -496,7 +496,7 @@ extension AnyProxy.FormatStyle {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -504,8 +504,8 @@ extension AnyProxy.FormatStyle {
 extension AnyProxy.FormatStyle: ParseStrategy {
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -515,7 +515,7 @@ extension AnyProxy.FormatStyle {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -523,14 +523,14 @@ extension AnyProxy.FormatStyle {
 extension AnyProxy.FormatStyle: ParseableFormatStyle {
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 extension AnyProxy.FormatStyle: Codable, Hashable {}
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -539,7 +539,7 @@ extension FormatStyle where Self == AnyProxy.FormatStyle {
   public static var proxy: Self { .init() }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -548,7 +548,7 @@ extension ParseableFormatStyle where Self == AnyProxy.FormatStyle {
   public static var proxy: Self { .init() }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -558,8 +558,8 @@ extension ParseStrategy where Self == AnyProxy.FormatStyle {
   public static var proxy: Self { .init() }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -571,7 +571,7 @@ extension AnyProxy {
       return v.format(self)
     }
   #else
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       @available(SwiftStdlib 5.5, *)
     #endif
     public func formatted<S>(_ v: S) -> S.FormatOutput
@@ -586,7 +586,7 @@ extension AnyProxy {
     FormatStyle().format(self)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.5, *)
   #endif
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws

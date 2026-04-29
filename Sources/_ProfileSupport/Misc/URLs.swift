@@ -18,8 +18,8 @@
   import Foundation
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -50,7 +50,7 @@ extension URL {
   public static var profile: URL {
     #if canImport(Darwin)
       let pathComponent = "Library/Application Support/Netbot/Profiles/Default.netbotcfg"
-      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
         if #available(SwiftStdlib 5.7, *) {
           return
             securityApplicationGroupDirectory
@@ -80,7 +80,7 @@ extension URL {
     #else
       let pathComponent = "com.tenbits.netbot.packet-tunnel.extension/MaxMindDB"
     #endif
-    #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       if #available(SwiftStdlib 5.7, *) {
         return .applicationSupportDirectory
           .appending(component: pathComponent, directoryHint: .isDirectory)
@@ -108,7 +108,7 @@ extension URL {
     #else
       let pathComponent = "com.tenbits.netbot.packet-tunnel.extension/External Resource"
     #endif
-    #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       if #available(SwiftStdlib 5.7, *) {
         return .applicationSupportDirectory
           .appending(component: pathComponent, directoryHint: .isDirectory)
@@ -130,8 +130,8 @@ extension URL {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif

@@ -19,8 +19,8 @@
 #endif
 
 /// An object that encapsualtes the performance metrics during the execution of a network speed test.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -45,10 +45,6 @@ public struct TransactionMetrics: Codable, Equatable, Hashable, Sendable {
     self.latency = .max
     self.roundTripTime = .max
     self.packetLoss = 100
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      self.creationDate = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
-    #else
-      self.creationDate = .now
-    #endif
+    self.creationDate = .now
   }
 }

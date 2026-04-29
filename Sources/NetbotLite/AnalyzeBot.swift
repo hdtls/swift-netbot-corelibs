@@ -26,7 +26,7 @@ import NIOSSL
 import NetbotLiteData
 import Tracing
 
-#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   import NIOConcurrencyHelpers
 #else
   import Synchronization
@@ -47,8 +47,8 @@ import Tracing
 /// A `AnalyzeBot` is an easy way to create network proxy servers.
 ///
 /// For current version we support start HTTP and SOCKS as local proxy servers if possible.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -252,7 +252,7 @@ import Tracing
         _isActive.store(true, ordering: .relaxed)
         _closePromise.withLock { $0 = eventLoopGroup.any().makePromise() }
 
-        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
           if #available(SwiftStdlib 5.9, *) {
             try await withThrowingDiscardingTaskGroup { g in
               g.addTask {
@@ -412,7 +412,7 @@ import Tracing
       }
     }
 
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       if #available(SwiftStdlib 5.9, *) {
         let channel = try await bootstrap.bind(
           to: address, childChannelInitializer: channelInitializer)

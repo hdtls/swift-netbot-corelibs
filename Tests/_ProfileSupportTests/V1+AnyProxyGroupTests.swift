@@ -19,7 +19,7 @@ import Testing
 @Suite("V1._AnyProxyGroupTests", .tags(.swiftData, .schema, .proxyGroup))
 struct V1_AnyProxyGroupTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -30,7 +30,7 @@ struct V1_AnyProxyGroupTests {
     #expect(persistentModel.resource == .init())
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -47,7 +47,7 @@ struct V1_AnyProxyGroupTests {
     #expect(group.creationDate == persistentModel.creationDate)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -68,7 +68,7 @@ struct V1_AnyProxyGroupTests {
 @Suite("V1._AnyProxyGroup.KindTests", .tags(.swiftData, .schema, .proxyGroup))
 struct V1_AnyProxyGroupKindTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -86,7 +86,7 @@ struct V1_AnyProxyGroupKindTests {
     #expect(kind.localizedName == localizedName)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -107,7 +107,7 @@ struct V1_AnyProxyGroupKindTests {
     #expect(kind.localizedDescription == description)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -117,7 +117,7 @@ struct V1_AnyProxyGroupKindTests {
       V1._AnyProxyGroup.Kind.allCases == [.select, .urlTest, .fallback, .ssid, .loadBalance])
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -138,7 +138,7 @@ struct V1_AnyProxyGroupKindTests {
 @Suite("V1_AnyProxyGroup.MeasurementTests", .tags(.swiftData, .schema, .proxyGroup))
 struct V1_AnyProxyGroupMeasurementTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -157,7 +157,7 @@ struct V1_AnyProxyGroupMeasurementTests {
 @Suite("V1._AnyProxyGroup.ResourceTests", .tags(.swiftData, .schema, .proxyGroup))
 struct V1_AnyProxyGroupResourceTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -173,7 +173,7 @@ struct V1_AnyProxyGroupResourceTests {
 @Suite("V1._AnyProxyGroup.Resource.SourceTests", .tags(.swiftData, .schema, .proxyGroup))
 struct V1_AnyProxyGroupResourceSourceTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)

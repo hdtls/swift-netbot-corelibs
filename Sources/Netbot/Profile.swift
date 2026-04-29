@@ -33,8 +33,8 @@ import _ProfileSupport
   import Foundation
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -139,11 +139,7 @@ extension Profile {
       SubjectAlternativeNames(hostnames.map { .dnsName($0) })
     }
 
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      let notValidBefore: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
-    #else
-      let notValidBefore = Date.now
-    #endif
+    let notValidBefore = Date.now
 
     let leafCert = try Certificate(
       version: .v3,
@@ -168,8 +164,8 @@ extension Profile {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -235,7 +231,7 @@ extension AnyProxy {
         passwordReference: passwordReference
       )
     case .vmess:
-      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
         if #available(SwiftStdlib 5.7, *) {
           forwardProtocol = ForwardProtocolVMESS(
             name: name,
@@ -264,8 +260,8 @@ extension AnyProxy {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif

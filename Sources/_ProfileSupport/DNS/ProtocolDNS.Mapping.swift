@@ -18,8 +18,8 @@
   import Foundation
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -72,16 +72,12 @@ extension ProtocolDNS {
       self.strategy = strategy
       self.domainName = domainName
       self.value = value
-      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-        self.creationDate = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
-      #else
-        self.creationDate = .now
-      #endif
+      self.creationDate = .now
     }
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)

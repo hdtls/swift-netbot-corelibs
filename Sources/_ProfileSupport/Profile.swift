@@ -21,8 +21,8 @@ import Logging
   import Foundation
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -137,20 +137,9 @@ import Logging
     lazyHTTPFieldsRewrites: [HTTPFieldsRewrite] = [],
     lazyStubbedHTTPResponses: [StubbedHTTPResponse] = []
   ) {
-    let creationDate: Date
-    let contentModificationDate: Date
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      if #available(SwiftStdlib 5.5, *) {
-        creationDate = .now
-        contentModificationDate = .now
-      } else {
-        creationDate = .init()
-        contentModificationDate = .init()
-      }
-    #else
-      creationDate = .now
-      contentModificationDate = .now
-    #endif
+    let creationDate = Date.now
+    let contentModificationDate = creationDate
+
     _storage = _Storage(
       url: url,
       logLevel: logLevel,
@@ -183,8 +172,8 @@ import Logging
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -243,15 +232,15 @@ extension Profile._Storage: Hashable {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 extension Profile._Storage: @unchecked Sendable {}
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -259,7 +248,7 @@ extension Profile {
 
   public init(contentsOf url: URL) throws {
     let parseInput: String
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       if #available(SwiftStdlib 5.7, *) {
         parseInput = try String(contentsOf: url, encoding: .utf8)
       } else {
@@ -273,7 +262,7 @@ extension Profile {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)

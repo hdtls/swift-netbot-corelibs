@@ -19,8 +19,8 @@
 #endif
 
 /// A HTTP fields modification representation object, define how to modify mached request header fields.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -38,7 +38,7 @@ public struct HTTPFieldsRewrite: Equatable, Hashable, Sendable {
     case remove
     case replace
 
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       @available(SwiftStdlib 5.5, *)
     #endif
     public var localizedName: String {
@@ -97,15 +97,11 @@ public struct HTTPFieldsRewrite: Equatable, Hashable, Sendable {
     self.name = name
     self.replacement = replacement
     self.value = value
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      self.creationDate = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
-    #else
-      self.creationDate = .now
-    #endif
+    self.creationDate = .now
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
