@@ -30,7 +30,7 @@ import NEAddressProcessing
 #endif
 
 #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -39,12 +39,12 @@ import NEAddressProcessing
 
     @Model final public class _Connection {
 
-      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
         @available(SwiftStdlib 6.0, *)
       #endif
       #Unique<_Connection>([\.taskIdentifier])
 
-      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
         @available(SwiftStdlib 6.0, *)
       #endif
       #Index<_Connection>([\.taskIdentifier])
@@ -114,7 +114,7 @@ import NEAddressProcessing
     }
   }
 #else
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -183,7 +183,7 @@ import NEAddressProcessing
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -193,7 +193,7 @@ import NEAddressProcessing
   }
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)

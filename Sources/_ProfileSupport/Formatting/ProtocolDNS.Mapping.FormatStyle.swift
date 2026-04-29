@@ -18,8 +18,8 @@
   import Foundation
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -29,8 +29,8 @@ extension ProtocolDNS.Mapping {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -47,7 +47,7 @@ extension ProtocolDNS.Mapping.FormatStyle {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -55,15 +55,15 @@ extension ProtocolDNS.Mapping.FormatStyle {
 extension ProtocolDNS.Mapping.FormatStyle: FormatStyle {
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 extension ProtocolDNS.Mapping.FormatStyle {
 
   public func parse(_ value: String) throws -> ProtocolDNS.Mapping {
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       if #available(SwiftStdlib 5.7, *) {
         try _parse(value)
       } else {
@@ -74,7 +74,7 @@ extension ProtocolDNS.Mapping.FormatStyle {
     #endif
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #endif
   func _parse(_ value: String) throws -> ProtocolDNS.Mapping {
@@ -138,7 +138,7 @@ extension ProtocolDNS.Mapping.FormatStyle {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -146,8 +146,8 @@ extension ProtocolDNS.Mapping.FormatStyle {
 extension ProtocolDNS.Mapping.FormatStyle: ParseStrategy {
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -157,7 +157,7 @@ extension ProtocolDNS.Mapping.FormatStyle {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -165,14 +165,14 @@ extension ProtocolDNS.Mapping.FormatStyle {
 extension ProtocolDNS.Mapping.FormatStyle: ParseableFormatStyle {
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 extension ProtocolDNS.Mapping.FormatStyle: Codable, Hashable {}
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -181,7 +181,7 @@ extension FormatStyle where Self == ProtocolDNS.Mapping.FormatStyle {
   public static var dnsMapping: Self { .init() }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -191,8 +191,8 @@ extension ParseStrategy where Self == ProtocolDNS.Mapping.FormatStyle {
   public static var dnsMapping: Self { .init() }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -204,7 +204,7 @@ extension ProtocolDNS.Mapping {
       return v.format(self)
     }
   #else
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       @available(SwiftStdlib 5.5, *)
     #endif
     public func formatted<S>(_ v: S) -> S.FormatOutput
@@ -217,7 +217,7 @@ extension ProtocolDNS.Mapping {
     FormatStyle().format(self)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.5, *)
   #endif
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws

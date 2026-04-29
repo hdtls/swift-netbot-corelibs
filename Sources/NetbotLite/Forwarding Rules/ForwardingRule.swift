@@ -16,8 +16,8 @@ import NetbotLiteData
 
 /// Types that conform to the `ForwardingRuleConvertible` protocol can provide
 /// their own representation to be used when converting an instance to a `ForwardingRule`.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -28,8 +28,8 @@ public protocol ForwardingRuleConvertible: Sendable {
 }
 
 /// A `ForwardingRule` specifies how to route network traffic to the backend services.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -52,8 +52,8 @@ public protocol ForwardingRule: Sendable {
 ///
 /// There always contains one `FinalForwardingRule`, if user provide FinalForwardingRule implementation, it will be used as
 /// final result, otherwise a builtin FinalForwardingRule will be used.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -61,8 +61,8 @@ public protocol FinalForwardingRule: ForwardingRule {
 
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -77,15 +77,15 @@ extension FinalForwardingRule {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 struct _FinalForwardingRule: FinalForwardingRule, ForwardingRuleConvertible {}
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif

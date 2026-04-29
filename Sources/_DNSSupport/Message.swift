@@ -16,8 +16,8 @@ import NEAddressProcessing
 import NIOCore
 
 /// `QTYPE` fields appear in the question part of a query, define the type of the question.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -31,8 +31,8 @@ public struct QTYPE: RawRepresentable, Hashable, Sendable {
 }
 
 /// Full list of DNS Parameters can be found here:  https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -158,8 +158,8 @@ extension QTYPE {
   public static let any = QTYPE(rawValue: 255)
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -208,8 +208,8 @@ extension QTYPE: CustomDebugStringConvertible {
 }
 
 /// `QCLASS` fields appear in the question section of a query, define the class of the question.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -222,8 +222,8 @@ public struct QCLASS: RawRepresentable, Hashable, Sendable {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -250,8 +250,8 @@ extension QCLASS {
   public static let any = QCLASS(rawValue: 255)
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -273,8 +273,8 @@ extension QCLASS: CustomDebugStringConvertible {
 /// `TYPE` fields are used in resource records.
 ///
 /// - note: These types should be a subset of QTYPEs, for convenience we use QTYPE directly.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -283,15 +283,15 @@ public typealias TYPE = QTYPE
 /// `CLASS` fields are used in resource records.
 ///
 /// - note: These types should be a subset of QCLASSes, for convenience we use QCLASS directly,
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 public typealias CLASS = QCLASS
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -303,8 +303,8 @@ public enum RDATALength: Hashable, Sendable {
 /// Resource record defines information about a dns resource record,
 /// including pertains domain name, type, class, ttl, data length and
 /// data.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -344,8 +344,8 @@ public protocol ResourceRecord: Hashable, Sendable {
 /// browser, the DNS system uses the A record to translate that domain
 /// into an IP address (like 192.0.2.1) so that it knows where to send the
 /// request.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -383,8 +383,8 @@ public struct ARecord: ResourceRecord {
 /// NS record that specifies which servers are authoritative for a particular
 /// domain. In simpler terms, it tells the internet where to look for the DNS
 /// records for that domain.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -425,8 +425,8 @@ public struct NSRecord: ResourceRecord {
 /// Essentially, it allows you to point one domain (or subdomain) to another
 /// domain, rather than directly mapping it to an IP address like with an A
 /// record.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -470,8 +470,8 @@ public struct CNAMERecord: ResourceRecord {
 /// The SOA record is critical for DNS zone management because it helps
 /// control how DNS information is propagated and cached across the
 /// internet. It's usually the first record in a DNS zone file.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -556,8 +556,8 @@ public struct SOARecord: ResourceRecord {
 ///
 /// It’s primarily used in reverse DNS lookups to determine the domain name
 /// associated with an IP address.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -597,8 +597,8 @@ public struct PTRRecord: ResourceRecord {
 ///
 /// When someone sends an email to an address (e.g., user@example.com),
 /// the MX record tells the sending email server where to deliver the email.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -654,8 +654,8 @@ public struct MXRecord: ResourceRecord {
 /// While TXT records were originally designed for human-readable
 /// information, they are now commonly used for a variety of purposes
 /// related to domain verification and security.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -698,8 +698,8 @@ public struct TXTRecord: ResourceRecord {
 /// the AAAA record is used for the newer IPv6 protocol, which provides
 /// a much larger address space and is becoming increasingly important
 /// as the number of devices connected to the internet grows.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -740,8 +740,8 @@ public struct AAAARecord: ResourceRecord {
 /// (e.g., SIP, XMPP, LDAP) and is commonly used for services like instant
 /// messaging, VoIP, and other network protocols that require server
 /// discovery.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -808,8 +808,8 @@ public struct SRVRecord: ResourceRecord {
 ///
 /// NAPTR records are often used in combination with SRV (Service) records,
 /// particularly in systems like SIP and ENUM (E.164 Number Mapping).
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -880,8 +880,8 @@ public struct NAPTRRecord: ResourceRecord {
 }
 
 /// A RAW record is a type erased resource record.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -919,8 +919,8 @@ public struct RAWRecord: ResourceRecord {
 }
 
 /// The question is used to carry the "question" in most DNS queries.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -959,8 +959,8 @@ public struct Question: Hashable, Sendable {
 //  +---------------------+
 ///
 /// The header section is always present.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif

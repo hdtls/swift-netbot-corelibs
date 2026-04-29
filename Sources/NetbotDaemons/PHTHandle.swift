@@ -23,8 +23,8 @@
 
   /// This object implements the protocol which we have defined. It provides the actual behavior for the service. It is 'exported' by the
   /// service to make it available to the process hosting the service over an NSXPCConnection.
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -39,7 +39,7 @@
     }
 
     /// Connection code signing requirement.
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       @available(SwiftStdlib 5.7, *)
     #endif
     public func codeSigningRequirement() -> String {
@@ -121,15 +121,15 @@
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   extension PHTHandle: @unchecked Sendable {}
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -218,7 +218,7 @@
           var buffer = [CChar](repeating: 0, count: Int(PROC_PIDPATHINFO_MAXSIZE))
           if proc_pidpath(processIdentifier, &buffer, PROC_PIDPATHINFO_MAXSIZE) > 0 {
             let filePath = String(cString: buffer, encoding: .utf8) ?? ""
-            #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+            #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
               if #available(SwiftStdlib 5.7, *) {
                 processInfo.processExecutableURL = filePath.isEmpty ? nil : URL(filePath: filePath)
               } else {

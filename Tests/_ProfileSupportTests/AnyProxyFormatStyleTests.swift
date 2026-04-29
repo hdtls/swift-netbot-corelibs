@@ -26,16 +26,16 @@ import Testing
 @Suite(.tags(.proxy, .formatting))
 struct AnyProxyFormatStyleTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   private var formatter: AnyProxy.FormatStyle { .init() }
 
   /// A AnyProxy modified all basic properties to undefault value.
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -75,8 +75,8 @@ struct AnyProxyFormatStyleTests {
     "VMESS = vmess, username = C51F3C92-EEF6-4506-A39F-C2D7786A50D7, password-reference = password, authentication-required = true, force-http-tunneling = true, alpn = h2, tls = true, tls.skip-certificate-verification = true, tls.sni = sni.example.com, tls.certificate-pinning = wLgBEAGmLltnXbK6pzpvPMeOCTKZ0QwrWGem6DkNf6o=, allow-udp-relay = true, algo = AES-256-GCM, obfs = true, obfs.strategy = 2, obfs.hostname = obfuscate.example.com, ws = true, ws.uri = /ws, ws.http-fields = Connection:keep-alive, force-vmess-aead = true, tfo = true, test-url = http://test.example.com, dont-alert-error = true, port = 6152, server-address = svr.example.com, interface-name = AirPort, back-to-default-if-nic-unavailable = true, ip.packet-tos = 2, ip.version-strategy = v4"
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -112,8 +112,8 @@ struct AnyProxyFormatStyleTests {
     return expected
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -131,8 +131,8 @@ struct AnyProxyFormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -150,8 +150,8 @@ struct AnyProxyFormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -169,8 +169,8 @@ struct AnyProxyFormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -193,8 +193,8 @@ struct AnyProxyFormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -217,8 +217,8 @@ struct AnyProxyFormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -241,8 +241,8 @@ struct AnyProxyFormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -266,8 +266,8 @@ struct AnyProxyFormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -290,8 +290,8 @@ struct AnyProxyFormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -316,7 +316,7 @@ struct AnyProxyFormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -365,7 +365,7 @@ struct AnyProxyFormatStyleTests {
     #expect(parseOutput.dontAlertError == possibleParseOutput.dontAlertError)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -377,7 +377,7 @@ struct AnyProxyFormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -389,7 +389,7 @@ struct AnyProxyFormatStyleTests {
     #expect(parseOutput.name == "DIRECT")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -406,7 +406,7 @@ struct AnyProxyFormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -438,7 +438,7 @@ struct AnyProxyFormatStyleTests {
     #expect(formatOuput == expected)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -449,7 +449,7 @@ struct AnyProxyFormatStyleTests {
     #expect(proxy.formatted(AnyProxy.FormatStyle()) == "DIRECT = direct")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -460,7 +460,7 @@ struct AnyProxyFormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #else
     @available(SwiftStdlib 6.0, *)

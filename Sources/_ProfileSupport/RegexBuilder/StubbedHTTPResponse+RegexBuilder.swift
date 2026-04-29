@@ -14,8 +14,8 @@
 
 import RegexBuilder
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -25,7 +25,7 @@ extension StubbedHTTPResponse {
 
   package static let sectionName = "[HTTP API Mocking]"
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #endif
   package static var sectionRegex: some RegexComponent {
@@ -37,7 +37,7 @@ extension StubbedHTTPResponse {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #endif
   package static var regex: Regex<(Substring, Bool, Substring, Substring)> {
@@ -50,7 +50,7 @@ extension StubbedHTTPResponse {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #endif
   package var regex: some RegexComponent {

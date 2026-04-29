@@ -41,8 +41,8 @@ import NetbotLiteData
   import NetworkExtension
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -52,8 +52,8 @@ public enum DataTransfer: Hashable, Sendable {
 }
 
 #if canImport(Network)
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -80,8 +80,8 @@ public enum DataTransfer: Hashable, Sendable {
     }
   }
 #else
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -90,8 +90,8 @@ public enum DataTransfer: Hashable, Sendable {
   }
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -100,8 +100,8 @@ public protocol ConnectionsDependency: Sendable {
   var messages: AsyncThrowingStream<[Connection], any Error> { get }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -177,7 +177,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
   public init() {}
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)

@@ -18,8 +18,8 @@ import Testing
 
 @Suite(.tags(.proxy)) struct AnyProxyTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -51,8 +51,8 @@ import Testing
 @Suite("AnyProxy.KindTests", .tags(.proxy))
 struct AnyProxyKindTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -69,8 +69,8 @@ struct AnyProxyKindTests {
     #expect(kind.localizedName == localizedName)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -89,8 +89,8 @@ struct AnyProxyKindTests {
     #expect(AnyProxy.Kind(rawValue: "unknown") == nil)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -102,8 +102,8 @@ struct AnyProxyKindTests {
     #expect(kind.isProxyable == isProxy)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -120,8 +120,8 @@ struct AnyProxyKindTests {
 @Suite("AnyProxy.EgressTests", .tags(.proxy))
 struct AnyProxyEngressTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -133,8 +133,8 @@ struct AnyProxyEngressTests {
     #expect(engress.versionStrategy == .dual)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -148,8 +148,8 @@ struct AnyProxyEngressTests {
     #expect(AnyProxy.Engress.VersionStrategy(rawValue: rawValue) == strategy)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -162,8 +162,8 @@ struct AnyProxyEngressTests {
 @Suite("AnyProxy.MeasurementTests", .tags(.proxy))
 struct AnyProxyMeasurementTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -178,8 +178,8 @@ struct AnyProxyMeasurementTests {
 @Suite("AnyProxy.ObfuscationTests", .tags(.proxy))
 struct AnyProxyObfuscationTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -194,8 +194,8 @@ struct AnyProxyObfuscationTests {
 @Suite("AnyProxy.Obfuscation.StrategyTests", .tags(.proxy))
 struct AnyProxyObfuscationStrategyTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -205,8 +205,8 @@ struct AnyProxyObfuscationStrategyTests {
     #expect(AnyProxy.Obfuscation.Strategy(rawValue: rawValue) == strategy)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -215,8 +215,8 @@ struct AnyProxyObfuscationStrategyTests {
     #expect(strategy.localizedName == localizedName)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -228,8 +228,8 @@ struct AnyProxyObfuscationStrategyTests {
 @Suite("AnyProxy.SourceTests", .tags(.proxy))
 struct AnyProxySourceTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -241,8 +241,8 @@ struct AnyProxySourceTests {
 @Suite("AnyProxy.TLSTests", .tags(.proxy))
 struct AnyProxyTLSTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -258,8 +258,8 @@ struct AnyProxyTLSTests {
 @Suite("AnyProxy.WebSocketTests", .tags(.proxy))
 struct AnyProxyWebSocketTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif

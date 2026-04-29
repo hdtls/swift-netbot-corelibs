@@ -17,14 +17,14 @@ import NetbotLite
 import NetbotLiteData
 import Synchronization
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
-  #if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     typealias AvailableIPv6Pool = _AvailableIPv6Pool
   #endif
 
@@ -107,8 +107,8 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -125,21 +125,21 @@ extension IPCIDRForwardingRule._Storage: Hashable {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 extension IPCIDRForwardingRule._Storage: @unchecked Sendable {}
 
-#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   #if canImport(FoundationEssentials)
     import FoundationEssentials
   #else
     import Foundation
   #endif
 
-  @available(SwiftStdlib 5.3, *)
+  @available(SwiftStdlib 5.5, *)
   extension IPv6Address {
 
     @available(SwiftStdlib 6.0, *)
@@ -162,7 +162,7 @@ extension IPCIDRForwardingRule._Storage: @unchecked Sendable {}
     }
   }
 
-  @available(SwiftStdlib 5.3, *)
+  @available(SwiftStdlib 5.5, *)
   extension IPCIDRForwardingRule {
 
     struct _AvailableIPv6Pool: @unchecked Sendable {
@@ -181,6 +181,7 @@ extension IPCIDRForwardingRule._Storage: @unchecked Sendable {}
       private var __bounds: (lower: _UInt128, upper: _UInt128) {
         bounds as! (lower: _UInt128, upper: _UInt128)
       }
+
       private let bounds: Any
 
       /// Create new IPv6 pool with specific block of IPv6 adresses.

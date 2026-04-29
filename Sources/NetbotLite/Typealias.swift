@@ -19,29 +19,29 @@ import NIOCore
   import Network
   import NIOTransportServices
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   public typealias ClientBootstrap = NIOTransportServices.NIOTSConnectionBootstrap
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   public typealias ServerBootstrap = NIOTransportServices.NIOTSListenerBootstrap
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   public typealias MultiThreadedEventLoopGroup = NIOTransportServices.NIOTSEventLoopGroup
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -61,8 +61,8 @@ import NIOCore
   public typealias MultiThreadedEventLoopGroup = NIOPosix.MultiThreadedEventLoopGroup
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif

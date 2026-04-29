@@ -20,8 +20,8 @@
 
 /// An URL rewrite representation object, define how to navigates the user from a source URL to a target URL with
 /// a specific HTTP status code.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -82,15 +82,11 @@ public struct URLRewrite: Equatable, Hashable, Sendable {
     self.type = type
     self.pattern = pattern
     self.destination = destination
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      self.creationDate = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
-    #else
-      self.creationDate = .now
-    #endif
+    self.creationDate = .now
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)

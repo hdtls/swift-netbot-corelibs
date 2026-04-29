@@ -20,8 +20,8 @@ import CoWOptimization
   import Foundation
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -47,24 +47,19 @@ import CoWOptimization
 
   /// Create an instance of `AnyProxyGroup` with specified name.
   public init(name: String = UUID().uuidString) {
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      let creationDate: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
-    #else
-      let creationDate = Date.now
-    #endif
     self._storage = _Storage(
       name: name,
       kind: .select,
       resource: .init(),
       measurement: .init(),
-      creationDate: creationDate,
+      creationDate: .now,
       lazyProxies: []
     )
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -88,14 +83,14 @@ extension AnyProxyGroup._Storage: Hashable {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 extension AnyProxyGroup._Storage: @unchecked Sendable {}
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)

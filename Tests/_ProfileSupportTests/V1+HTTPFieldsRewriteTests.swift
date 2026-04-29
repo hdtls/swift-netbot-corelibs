@@ -19,7 +19,7 @@ import Testing
 @Suite("v1.HTTPFieldsRewriteTests", .tags(.httpFieldsRewrite))
 struct V1_HTTPFieldsRewriteTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -39,7 +39,7 @@ struct V1_HTTPFieldsRewriteTests {
 @Suite("v1.HTTPFieldsRewrite.DirectionTests", .tags(.httpFieldsRewrite))
 struct V1_HTTPFieldsRewriteHDirectionTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -55,7 +55,7 @@ struct V1_HTTPFieldsRewriteHDirectionTests {
     #expect(V1._HTTPFieldsRewrite.Direction(rawValue: "unknown") == nil)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -68,7 +68,7 @@ struct V1_HTTPFieldsRewriteHDirectionTests {
 @Suite("v1.HTTPFieldsRewrite.Action", .tags(.urlRewrite))
 struct V1_HTTPFieldsRewriteActionTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -84,7 +84,7 @@ struct V1_HTTPFieldsRewriteActionTests {
     #expect(V1._HTTPFieldsRewrite.Action(rawValue: "unknown") == nil)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)

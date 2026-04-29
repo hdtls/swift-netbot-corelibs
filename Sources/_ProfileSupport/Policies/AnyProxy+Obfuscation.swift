@@ -16,8 +16,8 @@
   import Foundation
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -44,7 +44,7 @@ extension AnyProxy {
         [.http, .tls]
       }
 
-      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
         @available(SwiftStdlib 5.5, *)
       #endif
       public var localizedName: String {

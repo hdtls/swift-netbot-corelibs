@@ -19,7 +19,7 @@ import Testing
 @Suite("V1._URLRewriteTests", .tags(.swiftData, .schema, .urlRewrite))
 struct V1_URLRewriteTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -32,7 +32,7 @@ struct V1_URLRewriteTests {
     #expect(data.destination == "")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -46,7 +46,7 @@ struct V1_URLRewriteTests {
     #expect(urlRewrite.destination == persistentModel.destination)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -66,7 +66,7 @@ struct V1_URLRewriteTests {
 @Suite("V1._URLRewrite.RewriteTypeTests", .tags(.swiftData, .schema, .urlRewrite))
 struct V1_URLRewriteRewriteTypeTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -83,7 +83,7 @@ struct V1_URLRewriteRewriteTypeTests {
     #expect(V1._URLRewrite.RewriteType(rawValue: "unknown") == nil)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -93,7 +93,7 @@ struct V1_URLRewriteRewriteTypeTests {
       V1._URLRewrite.RewriteType.allCases == [.httpFields, .found, .temporaryRedirect, .reject])
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)

@@ -34,8 +34,8 @@
     import Network
   #endif
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -48,8 +48,8 @@
     func autoReloadDecryptionPKCS12Bundle(_ bundle: NIOSSLPKCS12Bundle?) async
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -103,7 +103,7 @@
     private var maxminddbFile: String {
       let filename = "GeoLite2-Country.mmdb"
       let filePath: String
-      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
         if #available(SwiftStdlib 5.7, *) {
           filePath = URL.maxmind.appending(path: filename, directoryHint: .notDirectory).path(
             percentEncoded: false)
@@ -178,7 +178,7 @@
           if let httpListenPort = profile.httpListenPort,
             let port = NWEndpoint.Port(rawValue: UInt16(httpListenPort))
           {
-            #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+            #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
               if #available(SwiftStdlib 5.9, *) {
                 configuration.proxyConfigurations = [
                   .init(
@@ -258,11 +258,7 @@
           return
         }
 
-        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-          let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
-        #else
-          let now = Date.now
-        #endif
+        let now = Date.now
         let timeIntervalPast = date > now ? 86400 * 7 : Int64(now.timeIntervalSince(date))
         let initialDelay = TimeAmount.seconds(max(0, 86400 * 7 - timeIntervalPast))
         let delay = TimeAmount.hours(24 * 7)
@@ -283,11 +279,7 @@
         .sink { [weak self] date in
           guard let self else { return }
 
-          #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-            let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
-          #else
-            let now = Date.now
-          #endif
+          let now = Date.now
           let timeIntervalPast = date > now ? 24 * 3600 : Int64(now.timeIntervalSince(date))
           let initialDelay = TimeAmount.seconds(max(0, 24 * 60 * 60 - timeIntervalPast))
           let delay = TimeAmount.hours(24)
@@ -316,11 +308,7 @@
         .serializingDownloadedFileURL()
         .value
 
-      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-        let now: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
-      #else
-        let now = Date.now
-      #endif
+      let now = Date.now
       let maxminddbLastUpdatedDate =
         (try? fileURL.resourceValues(forKeys: [.contentModificationDateKey])
           .contentModificationDate)
@@ -375,12 +363,7 @@
       }
 
       await MainActor.run {
-        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-          forwardingRuleResourcesLastUpdatedDate =
-            if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
-        #else
-          forwardingRuleResourcesLastUpdatedDate = Date.now
-        #endif
+        forwardingRuleResourcesLastUpdatedDate = Date.now
       }
 
       profile = try await Profile(contentsOf: profileURL)
@@ -433,8 +416,8 @@
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif

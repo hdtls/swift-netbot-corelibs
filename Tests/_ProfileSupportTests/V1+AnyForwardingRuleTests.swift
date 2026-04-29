@@ -19,7 +19,7 @@ import Testing
 @Suite("V1._AnyForwardingRuleTests", .tags(.swiftData, .schema, .forwardingRule))
 struct AnyRulePersistentModelTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -34,7 +34,7 @@ struct AnyRulePersistentModelTests {
     #expect(data.notification == .init())
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -55,7 +55,7 @@ struct AnyRulePersistentModelTests {
 @Suite("V1._AnyForwardingRule.KindTests", .tags(.swiftData, .schema, .forwardingRule))
 struct V1_AnyRuleKindTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -74,7 +74,7 @@ struct V1_AnyRuleKindTests {
     #expect(V1._AnyForwardingRule.Kind(rawValue: "unknown") == nil)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -95,7 +95,7 @@ struct V1_AnyRuleKindTests {
 @Suite("V1._AnyForwardingRule.NotificationTests", .tags(.swiftData, .schema, .forwardingRule))
 struct V1_AnyRuleNotificationTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -107,7 +107,7 @@ struct V1_AnyRuleNotificationTests {
     #expect(notification.timeInterval == 300)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)

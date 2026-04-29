@@ -12,13 +12,13 @@
 //
 // ===----------------------------------------------------------------------===//
 
-#if canImport(Darwin) && NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   import NIOConcurrencyHelpers
 
-  @available(SwiftStdlib 5.3, *)
+  @available(SwiftStdlib 5.5, *)
   public typealias Mutex = NIOLockedValueBox
 
-  @available(SwiftStdlib 5.3, *)
+  @available(SwiftStdlib 5.5, *)
   extension NIOLockedValueBox {
     /// Add a wrap function to make it easier to migrate to Mutex in the future.
     public func withLock<Result>(_ body: (inout Value) throws -> Result) rethrows -> Result {
@@ -29,8 +29,8 @@
   import Synchronization
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -51,16 +51,16 @@ public struct Lockable {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 @attached(memberAttribute)
 public macro Lockable() = #externalMacro(module: "SynchronizationMacros", type: "LockableMacro")
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -71,8 +71,8 @@ public macro LockableTracked(
   accessors: Lockable.Accessor...
 ) = #externalMacro(module: "SynchronizationMacros", type: "LockableTrackedMacro")
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif

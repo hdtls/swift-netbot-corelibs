@@ -19,8 +19,8 @@ import Preference
 #endif
 
 /// The network outbound mode.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -36,15 +36,15 @@ public enum OutboundMode: String, RawRepresentable, Sendable {
   case ruleBased = "rule-based"
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 extension OutboundMode: PreferenceRepresentable {}
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -52,27 +52,11 @@ extension OutboundMode {
 
   public var localizedName: String {
     #if canImport(Darwin)
-      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-        if #available(SwiftStdlib 5.5, *) {
-          switch self {
-          case .direct: return String(localized: "Direct Outbound", comment: "")
-          case .globalProxy: return String(localized: "Global Proxy", comment: "")
-          case .ruleBased: return String(localized: "Rule-based Proxy", comment: "")
-          }
-        } else {
-          switch self {
-          case .direct: return NSLocalizedString("Direct Outbound", comment: "")
-          case .globalProxy: return NSLocalizedString("Global Proxy", comment: "")
-          case .ruleBased: return NSLocalizedString("Rule-based Proxy", comment: "")
-          }
-        }
-      #else
-        switch self {
-        case .direct: return String(localized: "Direct Outbound", comment: "")
-        case .globalProxy: return String(localized: "Global Proxy", comment: "")
-        case .ruleBased: return String(localized: "Rule-based Proxy", comment: "")
-        }
-      #endif
+      switch self {
+      case .direct: return String(localized: "Direct Outbound", comment: "")
+      case .globalProxy: return String(localized: "Global Proxy", comment: "")
+      case .ruleBased: return String(localized: "Rule-based Proxy", comment: "")
+      }
     #else
       switch self {
       case .direct:
@@ -87,59 +71,23 @@ extension OutboundMode {
 
   public var localizedDescription: String {
     #if canImport(Darwin)
-      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-        if #available(SwiftStdlib 5.5, *) {
-          switch self {
-          case .direct:
-            return String(
-              localized: "All requests will be sent directly",
-              comment: "Direct outbound mode help message"
-            )
-          case .globalProxy:
-            return String(
-              localized: "All requests will be forwarded to a proxy server",
-              comment: "Proxy outbound mode help message"
-            )
-          case .ruleBased:
-            return String(
-              localized: "All requests will be forwarded base on rule system",
-              comment: "Rule-Based outbound mode help message"
-            )
-          }
-        } else {
-          switch self {
-          case .direct:
-            return NSLocalizedString(
-              "All requests will be sent directly", comment: "Direct outbound mode help message")
-          case .globalProxy:
-            return NSLocalizedString(
-              "All requests will be forwarded to a proxy server",
-              comment: "Proxy outbound mode help message")
-          case .ruleBased:
-            return NSLocalizedString(
-              "All requests will be forwarded base on rule system",
-              comment: "Rule-Based outbound mode help message")
-          }
-        }
-      #else
-        switch self {
-        case .direct:
-          return String(
-            localized: "All requests will be sent directly",
-            comment: "Direct outbound mode help message"
-          )
-        case .globalProxy:
-          return String(
-            localized: "All requests will be forwarded to a proxy server",
-            comment: "Proxy outbound mode help message"
-          )
-        case .ruleBased:
-          return String(
-            localized: "All requests will be forwarded base on rule system",
-            comment: "Rule-Based outbound mode help message"
-          )
-        }
-      #endif
+      switch self {
+      case .direct:
+        return String(
+          localized: "All requests will be sent directly",
+          comment: "Direct outbound mode help message"
+        )
+      case .globalProxy:
+        return String(
+          localized: "All requests will be forwarded to a proxy server",
+          comment: "Proxy outbound mode help message"
+        )
+      case .ruleBased:
+        return String(
+          localized: "All requests will be forwarded base on rule system",
+          comment: "Rule-Based outbound mode help message"
+        )
+      }
     #else
       switch self {
       case .direct: return "All requests will be sent directly"
@@ -150,8 +98,8 @@ extension OutboundMode {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif

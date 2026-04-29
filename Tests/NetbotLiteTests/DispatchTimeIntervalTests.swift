@@ -22,8 +22,8 @@ import Testing
   let t1 = DispatchTime(uptimeNanoseconds: 0)
 
   #if os(Linux) || os(Windows) || os(Android) || os(OpenBSD)
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      @available(SwiftStdlib 5.3, *)
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+      @available(SwiftStdlib 5.5, *)
     #else
       @available(SwiftStdlib 6.0, *)
     #endif
@@ -33,8 +33,8 @@ import Testing
     }
   #endif
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -46,8 +46,8 @@ import Testing
     #expect(t2.prettyPrinted == "10000 s")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -65,8 +65,8 @@ import Testing
     #expect(t2.prettyPrinted == "1 s")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -90,8 +90,8 @@ import Testing
     #expect(t2.prettyPrinted == "1 s")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif

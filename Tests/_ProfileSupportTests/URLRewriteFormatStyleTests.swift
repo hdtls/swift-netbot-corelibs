@@ -25,8 +25,8 @@ import Testing
 @Suite(.tags(.urlRewrite, .formatting))
 struct URLRewriteFormatStyleTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -46,8 +46,8 @@ struct URLRewriteFormatStyleTests {
     #expect(urlRewrite.formatted(formatter) == expected)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -60,7 +60,7 @@ struct URLRewriteFormatStyleTests {
     let parseInput = "found, (?:http://)?swift.org, https://swift.org"
 
     let parseFunctions: [(String) throws -> URLRewrite]
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       if #available(SwiftStdlib 5.7, *) {
         parseFunctions = [parser.parse, parser._parse, parser._parse0]
       } else {
@@ -80,8 +80,8 @@ struct URLRewriteFormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -93,7 +93,7 @@ struct URLRewriteFormatStyleTests {
     let parser = URLRewrite.FormatStyle()
 
     let parseFunctions: [(String) throws -> URLRewrite]
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       if #available(SwiftStdlib 5.7, *) {
         parseFunctions = [parser.parse, parser._parse, parser._parse0]
       } else {
@@ -110,8 +110,8 @@ struct URLRewriteFormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -124,8 +124,8 @@ struct URLRewriteFormatStyleTests {
     #expect(urlRewrite.formatted(.urlRewrite) == "found, (?:http://)?swift.org, https://swift.org")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif

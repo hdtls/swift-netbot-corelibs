@@ -25,8 +25,8 @@ import Testing
 @Suite(.tags(.dnsMapping, .formatting))
 struct ProtocolDNS_Mapping_FormatStyleTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -40,8 +40,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatOutput == "example.com = 1.1.1.1")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -56,8 +56,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatOutput == "example.com = example1.com")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -72,8 +72,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatOutput == "example.com = server:8.8.8.8")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -88,8 +88,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatOutput == "# example.com = 1.1.1.1")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -105,8 +105,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatOutput == "# example.com = example1.com")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -122,8 +122,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatOutput == "# example.com = server:8.8.8.8")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -134,15 +134,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
   ])
   func parseDNSMappingFromInvalidString(_ parser: ProtocolDNS.Mapping.FormatStyle) {
     let parseFunctions: [(String) throws -> ProtocolDNS.Mapping]
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      if #available(SwiftStdlib 5.5, *) {
-        parseFunctions = [parser.parse, parser._parse, parser._parse0]
-      } else {
-        parseFunctions = [parser.parse, parser._parse0]
-      }
-    #else
-      parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    #endif
+    parseFunctions = [parser.parse, parser._parse, parser._parse0]
 
     for parse in parseFunctions {
       #expect(throws: CocoaError.self) {
@@ -154,8 +146,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -168,15 +160,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     let parseInput = "example.com = 1.1.1.1"
 
     let parseFunctions: [(String) throws -> ProtocolDNS.Mapping]
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      if #available(SwiftStdlib 5.5, *) {
-        parseFunctions = [parser.parse, parser._parse, parser._parse0]
-      } else {
-        parseFunctions = [parser.parse, parser._parse0]
-      }
-    #else
-      parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    #endif
+    parseFunctions = [parser.parse, parser._parse, parser._parse0]
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -188,8 +172,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -202,15 +186,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     let parseInput = "example.com = example1.com"
 
     let parseFunctions: [(String) throws -> ProtocolDNS.Mapping]
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      if #available(SwiftStdlib 5.5, *) {
-        parseFunctions = [parser.parse, parser._parse, parser._parse0]
-      } else {
-        parseFunctions = [parser.parse, parser._parse0]
-      }
-    #else
-      parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    #endif
+    parseFunctions = [parser.parse, parser._parse, parser._parse0]
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -222,8 +198,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -236,15 +212,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     let parseInput = "example.com = server:8.8.8.8"
 
     let parseFunctions: [(String) throws -> ProtocolDNS.Mapping]
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      if #available(SwiftStdlib 5.5, *) {
-        parseFunctions = [parser.parse, parser._parse, parser._parse0]
-      } else {
-        parseFunctions = [parser.parse, parser._parse0]
-      }
-    #else
-      parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    #endif
+    parseFunctions = [parser.parse, parser._parse, parser._parse0]
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -256,8 +224,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -270,15 +238,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     let parseInput = "# example.com = 1.1.1.1"
 
     let parseFunctions: [(String) throws -> ProtocolDNS.Mapping]
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      if #available(SwiftStdlib 5.5, *) {
-        parseFunctions = [parser.parse, parser._parse, parser._parse0]
-      } else {
-        parseFunctions = [parser.parse, parser._parse0]
-      }
-    #else
-      parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    #endif
+    parseFunctions = [parser.parse, parser._parse, parser._parse0]
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -290,8 +250,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -304,15 +264,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     let parseInput = "# example.com = example1.com"
 
     let parseFunctions: [(String) throws -> ProtocolDNS.Mapping]
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      if #available(SwiftStdlib 5.5, *) {
-        parseFunctions = [parser.parse, parser._parse, parser._parse0]
-      } else {
-        parseFunctions = [parser.parse, parser._parse0]
-      }
-    #else
-      parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    #endif
+    parseFunctions = [parser.parse, parser._parse, parser._parse0]
+
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
       #expect(parseOutput.strategy == .cname)
@@ -323,8 +276,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -337,15 +290,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     let parseInput = "# example.com = server:8.8.8.8"
 
     let parseFunctions: [(String) throws -> ProtocolDNS.Mapping]
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      if #available(SwiftStdlib 5.5, *) {
-        parseFunctions = [parser.parse, parser._parse, parser._parse0]
-      } else {
-        parseFunctions = [parser.parse, parser._parse0]
-      }
-    #else
-      parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    #endif
+    parseFunctions = [parser.parse, parser._parse, parser._parse0]
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -357,8 +302,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -369,8 +314,8 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatInput.formatted(.dnsMapping) == "# example.com = server:8.8.8.8")
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif

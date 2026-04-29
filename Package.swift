@@ -256,22 +256,27 @@ if Context.environment["NETBOT_REQUIRES_LOCAL_PACKAGE_DEPENDENCIES"] != nil {
 
 for target in package.targets {
   var settings = target.swiftSettings ?? []
+  settings.append(.define("NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5"))
   settings.append(.enableExperimentalFeature("StrictConcurrency=complete"))
   settings.append(
     .enableExperimentalFeature(
-      "AvailabilityMacro=SwiftStdlib 5.3:iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0"))
+      "AvailabilityMacro=SwiftStdlib 5.5:iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0"
+    ))
   settings.append(
     .enableExperimentalFeature(
-      "AvailabilityMacro=SwiftStdlib 5.5:iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0"))
+      "AvailabilityMacro=SwiftStdlib 5.7:iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0"
+    ))
   settings.append(
     .enableExperimentalFeature(
-      "AvailabilityMacro=SwiftStdlib 5.7:iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0"))
-  settings.append(
-    .enableExperimentalFeature(
-      "AvailabilityMacro=SwiftStdlib 5.9:iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0"))
+      "AvailabilityMacro=SwiftStdlib 5.9:iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0"
+    ))
   settings.append(
     .enableExperimentalFeature(
       "AvailabilityMacro=SwiftStdlib 6.0:iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0"
+    ))
+  settings.append(
+    .enableExperimentalFeature(
+      "AvailabilityMacro=SwiftStdlib 6.2:macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, visionOS 26.0"
     ))
   target.swiftSettings = settings
 }

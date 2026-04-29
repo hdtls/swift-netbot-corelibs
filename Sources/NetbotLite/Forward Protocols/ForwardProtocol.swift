@@ -18,8 +18,8 @@ import NetbotLiteData
 
 /// Types that conform to the `ForwardProtocolConvertible` protocol can provide
 /// their own representation to be used when converting an instance to a `ForwardProtocol`.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -30,8 +30,8 @@ public protocol ForwardProtocolConvertible: Sendable {
 }
 
 /// A `ForwardProtocol` declares the programmatic interface for an object that provides a tunnel.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -53,8 +53,8 @@ public protocol ForwardProtocol: Sendable {
 }
 
 /// A `ProxiableForwardProtocol` declares the programmatic interface for an object that provides a proxy tunnel.
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -67,8 +67,8 @@ public protocol ProxiableForwardProtocol: ForwardProtocol {
   var port: Int { get }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif

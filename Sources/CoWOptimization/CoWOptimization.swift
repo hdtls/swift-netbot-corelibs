@@ -22,8 +22,8 @@
 ///        var name: String = ""
 ///        var needsRepairs: Bool = false
 ///     }
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -32,8 +32,8 @@
 public macro _cowOptimization() =
   #externalMacro(module: "CoWOptimizationMacros", type: "CoWOptimizationMacro")
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -41,8 +41,8 @@ public macro _cowOptimization() =
 public macro _cowOptimizationTracked() =
   #externalMacro(module: "CoWOptimizationMacros", type: "CoWOptimizationTrackedMacro")
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif

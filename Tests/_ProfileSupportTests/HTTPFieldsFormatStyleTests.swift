@@ -26,8 +26,8 @@ import Testing
 @Suite(.tags(.httpFieldsRewrite, .formatting))
 struct HTTPFieldsFormatStyleTests {
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -41,8 +41,8 @@ struct HTTPFieldsFormatStyleTests {
     #expect(httpFields.formatted() == expected)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -66,8 +66,8 @@ struct HTTPFieldsFormatStyleTests {
     }
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -81,15 +81,7 @@ struct HTTPFieldsFormatStyleTests {
     let parseInput = "Connection:keep-alive|Content-Length:0"
 
     let parseFunctions: [(String) throws -> HTTPFields]
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-      if #available(SwiftStdlib 5.5, *) {
-        parseFunctions = [parser.parse, parser._parse, parser._parse0]
-      } else {
-        parseFunctions = [parser.parse, parser._parse0]
-      }
-    #else
-      parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    #endif
+    parseFunctions = [parser.parse, parser._parse, parser._parse0]
 
     for parse in parseFunctions {
       #expect(throws: Never.self) {

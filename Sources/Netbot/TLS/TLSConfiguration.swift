@@ -20,8 +20,8 @@
 #endif
 
 #if canImport(Network)
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -34,7 +34,7 @@
     internal var supportedTLSVersion: tls_protocol_version_t {
       switch self {
       case .tlsv1:
-        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
           if #available(macOS 12.0, *) {
             return .TLSv12
           } else {
@@ -44,7 +44,7 @@
           return .TLSv12
         #endif
       case .tlsv11:
-        #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+        #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
           if #available(macOS 12.0, *) {
             return .TLSv12
           } else {
@@ -62,8 +62,8 @@
   }
 
   /// Certificate verification modes.
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -81,8 +81,8 @@
   }
 
   /// Places NIOSSL can obtain a trust store from.
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -118,8 +118,8 @@
   }
 
   /// Places NIOSSL can obtain additional trust roots from.
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -131,8 +131,8 @@
     case certificates([Certificate])
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif

@@ -19,8 +19,8 @@
 #endif
 
 #if canImport(Darwin)
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-    @available(SwiftStdlib 5.3, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -61,8 +61,8 @@
   }
 #endif
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -86,7 +86,7 @@ extension UUID {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -94,7 +94,7 @@ extension UUID {
 extension UUID.FormatStyle: FormatStyle {
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -102,8 +102,8 @@ extension UUID.FormatStyle: FormatStyle {
 extension UUID.FormatStyle: ParseStrategy {
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -113,7 +113,7 @@ extension UUID.FormatStyle {
   }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -121,14 +121,14 @@ extension UUID.FormatStyle {
 extension UUID.FormatStyle: ParseableFormatStyle {
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 extension UUID.FormatStyle: Codable, Hashable {}
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -137,7 +137,7 @@ extension FormatStyle where Self == UUID.FormatStyle {
   public static var uuid: Self { .init() }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
   @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -147,8 +147,8 @@ extension ParseStrategy where Self == UUID.FormatStyle {
   public static var uuid: Self { .init() }
 }
 
-#if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
-  @available(SwiftStdlib 5.3, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  @available(SwiftStdlib 5.5, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -160,7 +160,7 @@ extension UUID {
       return v.format(self)
     }
   #else
-    #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
       @available(SwiftStdlib 5.5, *)
     #endif
     public func formatted<S>(_ v: S) -> S.FormatOutput
@@ -173,7 +173,7 @@ extension UUID {
     FormatStyle().format(self)
   }
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.5, *)
   #endif
   public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws

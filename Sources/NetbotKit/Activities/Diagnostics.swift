@@ -19,7 +19,7 @@
   import Logging
   import Network
 
-  #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
     @available(SwiftStdlib 5.7, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -96,14 +96,13 @@
           }
         }
 
-        let startTime: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
+        let startTime: Date = .now
 
         connection.stateUpdateHandler = {
           guard case .ready = $0 else {
             return
           }
-          let endTime: Date = if #available(SwiftStdlib 5.5, *) { .now } else { .init() }
-          continuation.resume(returning: .seconds(startTime.distance(to: endTime)))
+          continuation.resume(returning: .seconds(startTime.distance(to: .now)))
           timeoutTask.cancel()
           connection.forceCancel()
         }
@@ -118,7 +117,7 @@
 
       let configuration = URLSessionConfiguration.default
       configuration.connectionProxyDictionary = [:]
-      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
         if #available(SwiftStdlib 5.9, *) {
           configuration.proxyConfigurations = []
         }
@@ -148,7 +147,7 @@
 
       let configuration = URLSessionConfiguration.default
       configuration.connectionProxyDictionary = [:]
-      #if NETBOT_REQUIRES_SUPPORT_EARLY_OS_VERSIONS
+      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
         if #available(SwiftStdlib 5.9, *) {
           configuration.proxyConfigurations = []
         }
