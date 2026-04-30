@@ -144,7 +144,7 @@ import Tracing
     self._outboundMode = .init(.direct)
     self._forwardProtocol = .init(.direct)
     self._capabilities = .init([])
-    self._resolver = .init(DefaultResolver(eventLoop: group.any()))
+    self._resolver = .init(DefaultResolver(eventLoop: group.next()))
     self._rulesEngine = .init(DefaultRulesEngine(logger: logger))
     self._processInfo = .init(DefaultProcessReporting())
     self._connectionPublisher = .init(DefaultConnectionPublisher())
@@ -250,7 +250,7 @@ import Tracing
           return
         }
         _isActive.store(true, ordering: .relaxed)
-        _closePromise.withLock { $0 = eventLoopGroup.any().makePromise() }
+        _closePromise.withLock { $0 = eventLoopGroup.next().makePromise() }
 
         #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
           if #available(SwiftStdlib 5.9, *) {
@@ -318,7 +318,7 @@ import Tracing
     renamed: "shutdownGracefully"
   )
   private func syncShutdownGracefully() throws {
-    try eventLoopGroup.any().makeFutureWithTask { try await self.shutdownGracefully() }.wait()
+    try eventLoopGroup.next().makeFutureWithTask { try await self.shutdownGracefully() }.wait()
   }
 
   /// Fully shutdown service.
@@ -332,7 +332,7 @@ import Tracing
       try await withThrowingTaskGroup(of: Void.self) { g in
         for quiescing in self.quiescing {
           g.addTask {
-            let promise = self.eventLoopGroup.any().makePromise(of: Void.self)
+            let promise = self.eventLoopGroup.next().makePromise(of: Void.self)
             quiescing.initiateShutdown(promise: promise)
             // Wait until all child channels closed.
             try await promise.futureResult.get()
@@ -495,7 +495,7 @@ import Tracing
           session.forwardingReport?._forwardProtocol as? ForwardProtocol ?? .direct
 
         let outputStream = try await forwardProtocol.makeConnection(
-          logger: logger, connection: session, on: inputStream.eventLoop.any()
+          logger: logger, connection: session, on: inputStream.eventLoop.next()
         )
 
         session.state = .active

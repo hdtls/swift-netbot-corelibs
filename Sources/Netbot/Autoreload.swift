@@ -243,7 +243,6 @@
         }
         .store(in: &cancellables)
 
-      let eventLoop = eventLoopGroup.any()
       // Maxmind db auto update.
       Publishers.CombineLatest3(
         $maxminddbDownloadURL.removeDuplicates(),
@@ -264,11 +263,10 @@
         let delay = TimeAmount.hours(24 * 7)
         existingGeoLite2AutoUpdateTask?.cancel()
         existingGeoLite2AutoUpdateTask =
-          eventLoop
-          .scheduleRepeatedAsyncTask(initialDelay: initialDelay, delay: delay) { _ in
-            eventLoop.makeFutureWithTask {
-              try await self.downloadMaxmindDBs()
-            }
+          eventLoopGroup
+          .next()
+          .scheduleRepeatedTask(initialDelay: initialDelay, delay: delay) { _ in
+            Task { [weak self] in try await self?.downloadMaxmindDBs() }
           }
       }
       .store(in: &cancellables)
@@ -285,12 +283,10 @@
           let delay = TimeAmount.hours(24)
           existingForwardingRulesAutoUpdateTask?.cancel()
           existingForwardingRulesAutoUpdateTask =
-            eventLoop
-            .any()
-            .scheduleRepeatedAsyncTask(initialDelay: initialDelay, delay: delay) { _ in
-              eventLoop.makeFutureWithTask {
-                try await self.downloadForwardingRuleExternalResources()
-              }
+            eventLoopGroup
+            .next()
+            .scheduleRepeatedTask(initialDelay: initialDelay, delay: delay) { _ in
+              Task { [weak self] in try await self?.downloadForwardingRuleExternalResources() }
             }
         }
         .store(in: &cancellables)

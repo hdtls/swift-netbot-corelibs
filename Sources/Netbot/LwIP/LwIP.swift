@@ -71,7 +71,7 @@ import _DNSSupport
   private var packetsReadLoop: Task<Void, any Error>?
 
   init(group: any EventLoopGroup = .shared, packetFlow: any PacketTunnelFlow, dns: LocalDNSProxy) {
-    let eventLoop = group.any()
+    let eventLoop = group.next()
     self.eventLoop = eventLoop
     self.group = group
     self.packetFlow = packetFlow

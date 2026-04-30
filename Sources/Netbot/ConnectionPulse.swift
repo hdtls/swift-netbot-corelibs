@@ -64,7 +64,7 @@ import NetbotLiteData
     self.address = address
     self._outboundStreams = .init([:])
     #if canImport(Network)
-      self.closePromise = group.any().makePromise()
+      self.closePromise = group.next().makePromise()
       self._listener = .init(nil)
     #else
       self.quiescing = ServerQuiescingHelper(group: group)
@@ -217,7 +217,7 @@ import NetbotLiteData
       outboundStreams.removeAll()
     }
 
-    let promise = group.any().makePromise(of: Void.self)
+    let promise = group.next().makePromise(of: Void.self)
     #if canImport(Network)
       promise.futureResult.cascade(to: self.closePromise)
       self.listener?.cancel()
