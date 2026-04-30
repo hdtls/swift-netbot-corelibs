@@ -17,21 +17,11 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
 public struct CoWOptimizationMacro: Sendable {
   static let optimizationIgnored = "_cowOptimizationIgnored"
   static let optimizationTracked = "_cowOptimizationTracked"
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
 extension CoWOptimizationMacro: MemberMacro {
 
   public static func expansion<
@@ -80,11 +70,6 @@ extension CoWOptimizationMacro: MemberMacro {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
 extension CoWOptimizationMacro: MemberAttributeMacro {
   public static func expansion<
     Declaration: DeclGroupSyntax,
@@ -131,11 +116,6 @@ extension CoWOptimizationMacro: MemberAttributeMacro {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
 public struct CoWOptimizationTrackedMacro: AccessorMacro, Sendable {
   public static func expansion<
     Context: MacroExpansionContext,
@@ -177,11 +157,6 @@ public struct CoWOptimizationTrackedMacro: AccessorMacro, Sendable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
 public struct CoWOptimizationIgnoredMacro: PeerMacro, Sendable {
   public static func expansion(
     of node: AttributeSyntax,
@@ -192,11 +167,6 @@ public struct CoWOptimizationIgnoredMacro: PeerMacro, Sendable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
 extension VariableDeclSyntax {
   fileprivate var optimizable: Bool {
     !isComputed

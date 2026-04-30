@@ -29,10 +29,12 @@
   import Synchronization
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
+#if compiler(>=6.2)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
 #endif
 public struct Lockable {
 
@@ -51,18 +53,22 @@ public struct Lockable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
+#if compiler(>=6.2)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
 #endif
 @attached(memberAttribute)
 public macro Lockable() = #externalMacro(module: "SynchronizationMacros", type: "LockableMacro")
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
+#if compiler(>=6.2)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
 #endif
 @attached(accessor, names: named(get), named(set))
 @attached(peer, names: prefixed(_))
@@ -71,10 +77,12 @@ public macro LockableTracked(
   accessors: Lockable.Accessor...
 ) = #externalMacro(module: "SynchronizationMacros", type: "LockableTrackedMacro")
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
+#if compiler(>=6.2)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
 #endif
 @attached(peer)
 public macro LockableIgnored() =

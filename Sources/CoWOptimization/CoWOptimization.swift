@@ -22,29 +22,35 @@
 ///        var name: String = ""
 ///        var needsRepairs: Bool = false
 ///     }
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
+#if compiler(>=6.2)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
 #endif
 @attached(member, names: named(_storage), named(_Storage))
 @attached(memberAttribute)
 public macro _cowOptimization() =
   #externalMacro(module: "CoWOptimizationMacros", type: "CoWOptimizationMacro")
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
+#if compiler(>=6.2)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
 #endif
 @attached(accessor, names: named(get), named(_modify))
 public macro _cowOptimizationTracked() =
   #externalMacro(module: "CoWOptimizationMacros", type: "CoWOptimizationTrackedMacro")
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
+#if compiler(>=6.2)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    @available(SwiftStdlib 5.5, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
 #endif
 @attached(peer)
 public macro _cowOptimizationIgnored() =

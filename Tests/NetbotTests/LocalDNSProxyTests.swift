@@ -122,8 +122,8 @@ struct LocalDNSProxyTests {
       group: .shared,
       bindAddress: IPv4Address("198.18.1.1")!,
       additionalServers: [],
-      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)),
-      dnsMappings: []
+      mappings: [],
+      availableIPPool: .init(bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!))
     )
     let p = LocalDNSProxy(options: options)
 
@@ -257,10 +257,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [try address.asAddress()],
+        mappings: [],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: []
+        )
       )
     )
     try await p.run()
@@ -299,10 +299,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [try address.asAddress()],
+        mappings: [],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: []
+        )
       )
     )
     try await p.run()
@@ -341,10 +341,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [try address.asAddress()],
+        mappings: [],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: []
+        )
       )
     )
     try await p.run()
@@ -379,10 +379,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [try address.asAddress()],
+        mappings: [],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: []
+        )
       )
     )
     try await p.run()
@@ -420,10 +420,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [try address.asAddress()],
+        mappings: [],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: []
+        )
       )
     )
     try await p.run()
@@ -461,10 +461,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [try address.asAddress()],
+        mappings: [],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: []
+        )
       )
     )
     try await p.run()
@@ -506,10 +506,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [try address.asAddress()],
+        mappings: [],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: []
+        )
       )
     )
     try await p.run()
@@ -547,10 +547,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [try address.asAddress()],
+        mappings: [],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: []
+        )
       )
     )
     try await p.run()
@@ -595,10 +595,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [try address.asAddress()],
+        mappings: [],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: []
+        )
       )
     )
     try await p.run()
@@ -636,10 +636,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [try address.asAddress()],
+        mappings: [],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: []
+        )
       )
     )
     try await p.run()
@@ -679,10 +679,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [try address.asAddress()],
+        mappings: [],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: []
+        )
       )
     )
     try await p.run()
@@ -715,10 +715,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [],
+        mappings: [mapping],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: [mapping]
+        )
       )
     )
     try await p.run()
@@ -787,10 +787,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [],
+        mappings: [mapping],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: [mapping]
+        )
       )
     )
     try await p.run()
@@ -859,10 +859,10 @@ struct LocalDNSProxyTests {
         group: .shared,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [],
+        mappings: [mapping],
         availableIPPool: AvailableIPPool(
           bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        ),
-        dnsMappings: [mapping]
+        )
       )
     )
     try await p.run()

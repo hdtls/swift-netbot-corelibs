@@ -42,22 +42,75 @@ import _ProfileSupport
 
   public struct Options: Sendable {
     public let group: any EventLoopGroup
-    public let logger: Logger = Logger(label: "dns")
+    public let logger: Logger
     public let bindAddress: IPv4Address
-    public let additionalServers: any Collection<Address> & Sendable
+    #if compiler(>=6.2)
+      public let additionalServers: any Collection<Address> & Sendable
+      public let mappings: any Collection<ProtocolDNS.Mapping> & Sendable
+    #else
+      public let additionalServers: [Address]
+      public let mappings: [ProtocolDNS.Mapping]
+    #endif
     public let availableIPPool: AvailableIPPool
-    public let dnsMappings: any Collection<ProtocolDNS.Mapping> & Sendable
-    public let timeoutInterval: TimeAmount = .seconds(2)
-    public let maxRetryAttempts = 3
+    public let timeoutInterval: TimeAmount
+    public let maxRetryAttempts: Int
+
+    #if compiler(>=6.2)
+      public init(
+        group: any EventLoopGroup,
+        logger: Logger = Logger(label: "dns"),
+        bindAddress: IPv4Address,
+        additionalServers: any Collection<Address> & Sendable,
+        mappings: any Collection<ProtocolDNS.Mapping> & Sendable,
+        availableIPPool: AvailableIPPool,
+        timeoutInterval: TimeAmount = .seconds(2),
+        maxRetryAttempts: Int = 3
+      ) {
+        self.group = group
+        self.logger = logger
+        self.bindAddress = bindAddress
+        self.additionalServers = additionalServers
+        self.mappings = mappings
+        self.availableIPPool = availableIPPool
+        self.timeoutInterval = timeoutInterval
+        self.maxRetryAttempts = maxRetryAttempts
+      }
+    #else
+      public init(
+        group: any EventLoopGroup,
+        logger: Logger = Logger(label: "dns"),
+        bindAddress: IPv4Address,
+        additionalServers: [Address],
+        mappings: [ProtocolDNS.Mapping],
+        availableIPPool: AvailableIPPool,
+        timeoutInterval: TimeAmount = .seconds(2),
+        maxRetryAttempts: Int = 3
+      ) {
+        self.group = group
+        self.logger = logger
+        self.bindAddress = bindAddress
+        self.additionalServers = additionalServers
+        self.mappings = mappings
+        self.availableIPPool = availableIPPool
+        self.timeoutInterval = timeoutInterval
+        self.maxRetryAttempts = maxRetryAttempts
+      }
+    #endif
   }
 
   public var bindAddress: IPv4Address {
     options.bindAddress
   }
 
-  public var additionalServers: any Collection<Address> {
-    options.additionalServers
-  }
+  #if compiler(>=6.2)
+    public var additionalServers: any Collection<Address> & Sendable {
+      options.additionalServers
+    }
+  #else
+    public var additionalServers: [Address] {
+      options.additionalServers
+    }
+  #endif
 
   public var availableIPPool: AvailableIPPool {
     options.availableIPPool
@@ -108,8 +161,8 @@ import _ProfileSupport
         group: group,
         bindAddress: bindAddress,
         additionalServers: additionalServers,
-        availableIPPool: availableIPPool,
-        dnsMappings: []
+        mappings: [],
+        availableIPPool: availableIPPool
       )
     )
   }
@@ -259,7 +312,7 @@ import _ProfileSupport
     // only one question.
     if message.questions.count == 1,
       let question = message.questions.first,
-      let mapping = self.options.dnsMappings.first(where: { $0.domainName == question.domainName })
+      let mapping = self.options.mappings.first(where: { $0.domainName == question.domainName })
     {
       @inline(__always) func response(_ record: any ResourceRecord) -> Message {
         Message(
