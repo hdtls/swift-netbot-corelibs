@@ -17,11 +17,6 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
 public struct LockableMacro: Sendable {
   static let prefixed = "_"
   static let lockable = "Lockable"
@@ -29,11 +24,6 @@ public struct LockableMacro: Sendable {
   static let lockableIgnored = "LockableIgnored"
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
 struct Lockable {
 
   enum Accessor: String, Comparable, Hashable {
@@ -46,11 +36,6 @@ struct Lockable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
 extension LockableMacro: MemberAttributeMacro {
   public static func expansion(
     of node: AttributeSyntax, attachedTo declaration: some DeclGroupSyntax,
@@ -77,11 +62,6 @@ extension LockableMacro: MemberAttributeMacro {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
 public struct LockableTrackedMacro: AccessorMacro, Sendable {
   public static func expansion<
     Context: MacroExpansionContext,
@@ -146,11 +126,6 @@ public struct LockableTrackedMacro: AccessorMacro, Sendable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
 extension LockableTrackedMacro: PeerMacro {
   public static func expansion(
     of node: AttributeSyntax,
@@ -182,11 +157,6 @@ extension LockableTrackedMacro: PeerMacro {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
 public struct LockableIgnoredMacro: PeerMacro, Sendable {
   public static func expansion(
     of node: AttributeSyntax,

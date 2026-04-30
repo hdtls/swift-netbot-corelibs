@@ -164,10 +164,13 @@ public actor AnalyzeBot: Actor {
     dns._options.withLock {
       $0 = .init(
         group: $0.group,
+        logger: $0.logger,
         bindAddress: $0.bindAddress,
         additionalServers: additionalServers,
+        mappings: $0.mappings,
         availableIPPool: $0.availableIPPool,
-        dnsMappings: $0.dnsMappings
+        timeoutInterval: $0.timeoutInterval,
+        maxRetryAttempts: $0.maxRetryAttempts
       )
     }
   }
