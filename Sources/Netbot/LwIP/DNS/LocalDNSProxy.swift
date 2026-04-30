@@ -200,14 +200,14 @@ import _ProfileSupport
         return (promise, continuation)
       }
 
-      let promise = self.group.any().makePromise(of: Message.self)
+      let promise = self.group.next().makePromise(of: Message.self)
       self._queries.withLock {
         $0[server]?.queries[transactionID] = promise
       }
       return (promise, continuation)
     }
 
-    let promise = self.group.any().makePromise(of: Message.self)
+    let promise = self.group.next().makePromise(of: Message.self)
     let (stream, continuation) = AsyncStream<Message>.makeStream()
     let query = (promise: promise, continuation: continuation)
     self._queries.withLock {
