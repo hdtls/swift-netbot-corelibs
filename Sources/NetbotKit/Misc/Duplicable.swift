@@ -13,7 +13,7 @@
 // ===----------------------------------------------------------------------===//
 
 import Foundation
-import RegexBuilder
+import _ProfileSupport
 
 /// Duplicate a new object.
 #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -117,5 +117,57 @@ extension Sequence where Element == String {
 
     let finalize = "\(elementToDuplicate) copy\(missing == 0 ? "" : " \(missing)")"
     return finalize
+  }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_7
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension _ProfileSupport.V1._AnyProxy {
+
+  public func copy() -> _ProfileSupport.V1._AnyProxy {
+    let duplicated = _ProfileSupport.V1._AnyProxy()
+    duplicated.name = lazyProfile?.lazyProxies.map(\.name).duplicate(name) ?? name
+    duplicated.source = source
+    duplicated.kind = kind
+    duplicated.serverAddress = serverAddress
+    duplicated.port = port
+    duplicated.username = username
+    duplicated.passwordReference = passwordReference
+    duplicated.alpn = alpn
+    duplicated.authenticationRequired = authenticationRequired
+    duplicated.algorithm = algorithm
+    duplicated.obfuscation = obfuscation
+    duplicated.measurement = measurement
+    duplicated.tls = tls
+    duplicated.ws = ws
+    duplicated.engress = engress
+    duplicated.allowUDPRelay = allowUDPRelay
+    duplicated.isTFOEnabled = isTFOEnabled
+    duplicated.forceHTTPTunneling = forceHTTPTunneling
+    duplicated.dontAlertError = dontAlertError
+    duplicated.lazyProfile = lazyProfile
+    return duplicated
+  }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_7
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension _ProfileSupport.V1._AnyProxyGroup {
+
+  public func copy() -> _ProfileSupport.V1._AnyProxyGroup {
+    let duplicated = _ProfileSupport.V1._AnyProxyGroup()
+    duplicated.name = lazyProfile?.lazyProxyGroups.map(\.name).duplicate(name) ?? name
+    duplicated.kind = kind
+    duplicated.resource = resource
+    duplicated.measurement = measurement
+    duplicated.lazyProfile = lazyProfile
+    duplicated.lazyProxies = lazyProxies
+    return duplicated
   }
 }
