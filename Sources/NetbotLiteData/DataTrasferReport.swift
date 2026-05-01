@@ -29,14 +29,7 @@ public struct DataTransferReport: Codable, Hashable, Sendable {
   /// Length of time in duration over which the report collected
   /// information. This can be used to calculate throughput for
   /// application and transport bytes counts.
-  public var duration: Duration {
-    .seconds(_duration)
-  }
-
-  /// Length of time in seconds over which the report collected
-  /// information. This can be used to calculate throughput for
-  /// application and transport bytes counts.
-  public var _duration: Double
+  public var duration: Duration
 
   /// A path report contains counters and statistics observed
   /// by the connection along a single network path.
@@ -120,11 +113,11 @@ public struct DataTransferReport: Codable, Hashable, Sendable {
   public var pathReport: PathReport
 
   package init(
-    duration: Double = 0,
+    duration: Duration = .zero,
     aggregatePathReport: PathReport = .init(),
     pathReport: PathReport = .init()
   ) {
-    self._duration = duration
+    self.duration = duration
     self.aggregatePathReport = aggregatePathReport
     self.pathReport = pathReport
   }
@@ -140,7 +133,7 @@ extension DataTransferReport {
   public typealias Model = V1._DataTransferReport
 
   public init(persistentModel: Model) {
-    self._duration = persistentModel.duration.seconds
+    self.duration = persistentModel.duration
     self.aggregatePathReport = .init()
     self.pathReport = .init()
   }

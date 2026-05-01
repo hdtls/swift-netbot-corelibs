@@ -70,11 +70,7 @@ public let SQL_lastInsertedID = ManagedAtomic<UInt64>(0)
 
   public var earliestBeginDate: Date
 
-  public var duration: Duration {
-    .seconds(_duration)
-  }
-
-  public var _duration: Double
+  public var duration: Duration
 
   public var taskDescription: String
 
@@ -106,7 +102,7 @@ public let SQL_lastInsertedID = ManagedAtomic<UInt64>(0)
     self._currentRequest = .init(nil)
     self._response = .init(nil)
     self._earliestBeginDate = .init(.now)
-    self.__duration = .init(0)
+    self._duration = .init(.zero)
     self._taskDescription = .init("")
     self._tls = .init(false)
     self._state = .init(.establishing)
@@ -150,7 +146,7 @@ extension Connection: Codable {
     self.currentRequest = try container.decodeIfPresent(Request.self, forKey: .currentRequest)
     self.response = try container.decodeIfPresent(Response.self, forKey: .response)
     self.earliestBeginDate = try container.decode(Date.self, forKey: .earliestBeginDate)
-    self._duration = try container.decode(Double.self, forKey: .duration)
+    self.duration = try container.decode(Duration.self, forKey: .duration)
     self.taskDescription = try container.decode(String.self, forKey: .taskDescription)
     self.tls = try container.decode(Bool.self, forKey: .tls)
     self.state = try container.decode(State.self, forKey: .state)
@@ -174,7 +170,7 @@ extension Connection: Codable {
     try container.encodeIfPresent(currentRequest, forKey: .currentRequest)
     try container.encodeIfPresent(response, forKey: .response)
     try container.encode(earliestBeginDate, forKey: .earliestBeginDate)
-    try container.encode(_duration, forKey: .duration)
+    try container.encode(duration, forKey: .duration)
     try container.encode(taskDescription, forKey: .taskDescription)
     try container.encode(tls, forKey: .tls)
     try container.encode(state, forKey: .state)
@@ -198,7 +194,7 @@ extension Connection {
   public convenience init(persistentModel: Model) {
     self.init(taskIdentifier: persistentModel.taskIdentifier)
     self.earliestBeginDate = persistentModel.earliestBeginDate
-    self._duration = persistentModel.duration.seconds
+    self.duration = persistentModel.duration
     self.taskDescription = persistentModel.taskDescription
     self.tls = persistentModel.tls
     self.state = persistentModel.state

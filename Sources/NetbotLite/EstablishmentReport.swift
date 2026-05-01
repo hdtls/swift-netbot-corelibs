@@ -46,7 +46,7 @@ extension Channel {
           }
           do {
             let establishmentReport = try EstablishmentReport(
-              duration: establishmentReport.duration,
+              duration: .seconds(establishmentReport.duration),
               attemptStartedAfterInterval: establishmentReport.attemptStartedAfterInterval,
               previousAttemptCount: establishmentReport.previousAttemptCount,
               sourceEndpoint: nil,
@@ -75,7 +75,7 @@ extension Channel {
 
                 return try EstablishmentReport.Resolution(
                   source: source,
-                  duration: $0.duration,
+                  duration: .seconds($0.duration),
                   endpointCount: $0.endpointCount,
                   successfulEndpoint: $0.successfulEndpoint.asAddress(),
                   preferredEndpoint: $0.preferredEndpoint.asAddress(),

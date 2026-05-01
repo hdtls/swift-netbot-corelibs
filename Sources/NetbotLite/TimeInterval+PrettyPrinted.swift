@@ -35,22 +35,22 @@ import Dispatch
 #endif
 extension DispatchTimeInterval {
 
-  var timeInterval: Double {
+  var duration: Duration {
     switch self {
     case .seconds(let seconds):
-      return Double(seconds)
+      return .seconds(seconds)
     case .milliseconds(let milliseconds):
-      return Double(milliseconds / 1_000)
+      return .milliseconds(milliseconds)
     case .microseconds(let microseconds):
-      return Double(microseconds / 1_000_000)
+      return .microseconds(microseconds)
     case .nanoseconds(let nanoseconds):
-      return Double(nanoseconds / 1_000_000_000)
+      return .nanoseconds(nanoseconds)
     case .never:
-      return .infinity
+      return .seconds(Double.greatestFiniteMagnitude)
     #if canImport(Darwin)
       @unknown default:
         assertionFailure()
-        return 0
+        return .zero
     #endif
     }
   }
@@ -90,17 +90,5 @@ extension DispatchTimeInterval {
         return "n/a"
     #endif
     }
-  }
-}
-
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_7
-  @available(SwiftStdlib 5.7, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
-extension Double {
-
-  var timeInterval: DispatchTimeInterval {
-    .nanoseconds(Int(self * 1_000_000_000))
   }
 }

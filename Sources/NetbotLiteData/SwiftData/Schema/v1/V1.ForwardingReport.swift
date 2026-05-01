@@ -38,7 +38,8 @@ extension V1 {
 
     /// The length of time duration on this matching step.
     public var duration: Duration {
-      .seconds(_duration)
+      get { .seconds(_duration) }
+      set { _duration = newValue.seconds }
     }
 
     /// Length of time in seconds spent on forwarding rule matching.
@@ -67,12 +68,12 @@ extension V1._ForwardingReport {
   /// - Parameter data: New `ForwardingReport` to merge.
   public func mergeValues(_ data: ForwardingReport) {
     #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
-      self._duration = data._duration
+      self.duration = data.duration
       self.forwardingRule = data.forwardingRule
       self.forwardProtocol = data.forwardProtocol
     #else
-      if self._duration != data._duration {
-        self._duration = data._duration
+      if self.duration != data.duration {
+        self.duration = data.duration
       }
       if self.forwardingRule != data.forwardingRule {
         self.forwardingRule = data.forwardingRule

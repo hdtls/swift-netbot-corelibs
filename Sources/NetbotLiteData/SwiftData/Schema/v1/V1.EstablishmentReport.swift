@@ -34,7 +34,8 @@ extension V1 {
     @Model final public class _EstablishmentReport {
 
       public var duration: Duration {
-        .seconds(_duration)
+        get { .seconds(_duration) }
+        set { _duration = newValue.seconds }
       }
 
       /// The duration of the connection's establishment in seconds.
@@ -119,15 +120,11 @@ extension V1 {
     #endif
     final public class _EstablishmentReport {
 
-      public var duration: Duration {
-        .seconds(_duration)
-      }
-
       /// The duration of the connection's establishment in seconds.
       /// This is the total time from when the successful connection
       /// attempt began until the connection becomes ready, including
       /// resolution, proxy evaluation, and protocol handshakes.
-      public var _duration: Double
+      public var duration: Duration
 
       /// The delay after calling start() before the successful connection
       /// attempt began. For connections that succeed on the first attempt,
@@ -162,7 +159,7 @@ extension V1 {
       public var connection: _Connection?
 
       public init() {
-        _duration = 0
+        duration = .zero
         attemptStartedAfterInterval = 0
         previousAttemptCount = 0
         usedProxy = false
@@ -186,12 +183,7 @@ extension V1._EstablishmentReport {
     public var source: EstablishmentReport.Resolution.Source
 
     /// The duration spent on this resolution step.
-    public var duration: Duration {
-      .seconds(_duration)
-    }
-
-    /// The length of time in seconds spent on this resolution step.
-    public var _duration: Double
+    public var duration: Duration
 
     /// The number of resolved endpoints discovered by the resolution step.
     public var endpointCount: Int
@@ -207,14 +199,14 @@ extension V1._EstablishmentReport {
 
     public init(
       source: EstablishmentReport.Resolution.Source,
-      duration: TimeInterval,
+      duration: Duration,
       endpointCount: Int,
       successfulEndpoint: Address,
       preferredEndpoint: Address,
       dnsProtocol: EstablishmentReport.Resolution.DNSProtocol
     ) {
       self.source = source
-      self._duration = duration
+      self.duration = duration
       self.endpointCount = endpointCount
       self.successfulEndpoint = successfulEndpoint
       self.preferredEndpoint = preferredEndpoint
@@ -234,7 +226,7 @@ extension V1._EstablishmentReport {
   /// - Parameter data: New `EstablishmentReport` to merge.
   public func mergeValues(_ data: EstablishmentReport) {
     #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
-      self._duration = data._duration
+      self.duration = data.duration
       self.attemptStartedAfterInterval = data.attemptStartedAfterInterval
       self.previousAttemptCount = data.previousAttemptCount
       self.sourceEndpoint = data.sourceEndpoint
@@ -243,7 +235,7 @@ extension V1._EstablishmentReport {
       self.resolutions = data.resolutions.map {
         Resolution(
           source: $0.source,
-          duration: $0._duration,
+          duration: $0.duration,
           endpointCount: $0.endpointCount,
           successfulEndpoint: $0.successfulEndpoint,
           preferredEndpoint: $0.preferredEndpoint,
@@ -251,8 +243,8 @@ extension V1._EstablishmentReport {
         )
       }
     #else
-      if self._duration != data._duration {
-        self._duration = data._duration
+      if self.duration != data.duration {
+        self.duration = data.duration
       }
       if self.attemptStartedAfterInterval != data.attemptStartedAfterInterval {
         self.attemptStartedAfterInterval = data.attemptStartedAfterInterval
@@ -272,7 +264,7 @@ extension V1._EstablishmentReport {
       let resolutions = data.resolutions.map {
         Resolution(
           source: $0.source,
-          duration: $0._duration,
+          duration: $0.duration,
           endpointCount: $0.endpointCount,
           successfulEndpoint: $0.successfulEndpoint,
           preferredEndpoint: $0.preferredEndpoint,

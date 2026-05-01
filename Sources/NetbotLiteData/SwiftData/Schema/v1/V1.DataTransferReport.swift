@@ -37,8 +37,12 @@ extension V1 {
   #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     @Model public class _DataTransferReport {
 
+      /// Length of time over which the report collected
+      /// information. This can be used to calculate throughput for
+      /// application and transport bytes counts.
       public var duration: Duration {
-        .seconds(_duration)
+        get { .seconds(_duration) }
+        set { _duration = newValue.seconds }
       }
 
       /// Length of time in seconds over which the report collected
@@ -90,14 +94,10 @@ extension V1 {
     #endif
     public class _DataTransferReport {
 
-      public var duration: Duration {
-        .seconds(_duration)
-      }
-
-      /// Length of time in seconds over which the report collected
+      /// Length of time over which the report collected
       /// information. This can be used to calculate throughput for
       /// application and transport bytes counts.
-      public var _duration = Double.zero
+      public var duration = Duration.zero
 
       public var durationFormatted = "0ms"
 
@@ -148,7 +148,7 @@ extension V1._DataTransferReport {
   /// Merge new values from DTO.
   /// - Parameter data: New `DataTransferReport` to merge.
   public func mergeValues(_ data: DataTransferReport) {
-    if self._duration != data._duration {
+    if self.duration != data.duration {
       self.durationFormatted = data.duration.formatted(
         .units(
           allowed: [.hours, .minutes, .seconds, .milliseconds],
@@ -158,10 +158,10 @@ extension V1._DataTransferReport {
       )
     }
     #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
-      self._duration = data._duration
+      self.duration = data.duration
     #else
-      if self._duration != data._duration {
-        self._duration = data._duration
+      if self.duration != data.duration {
+        self.duration = data.duration
       }
     #endif
 

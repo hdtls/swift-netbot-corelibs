@@ -25,19 +25,11 @@ import NEAddressProcessing
 #endif
 public struct EstablishmentReport: Codable, Hashable, Sendable {
 
-  /// The duration of the connection's establishment.
-  /// This is the total time from when the successful connection
-  /// attempt began until the connection becomes ready, including
-  /// resolution, proxy evaluation, and protocol handshakes.
-  public var duration: Duration {
-    .seconds(_duration)
-  }
-
   /// The duration of the connection's establishment in seconds.
   /// This is the total time from when the successful connection
   /// attempt began until the connection becomes ready, including
   /// resolution, proxy evaluation, and protocol handshakes.
-  public var _duration: Double
+  public var duration: Duration
 
   /// The delay after calling start() before the successful connection
   /// attempt began. For connections that succeed on the first attempt,
@@ -86,13 +78,8 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
     /// The source of this resolution.
     public var source: Source
 
-    /// The duration spent on this resolution step.
-    public var duration: Duration {
-      .seconds(_duration)
-    }
-
     /// The length of time in seconds spent on this resolution step.
-    public var _duration: Double
+    public var duration: Duration
 
     /// The number of resolved endpoints discovered by the resolution step.
     public var endpointCount: Int
@@ -128,14 +115,14 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
 
     package init(
       source: Source,
-      duration: TimeInterval,
+      duration: Duration,
       endpointCount: Int,
       successfulEndpoint: Address,
       preferredEndpoint: Address,
       dnsProtocol: DNSProtocol
     ) {
       self.source = source
-      self._duration = duration
+      self.duration = duration
       self.endpointCount = endpointCount
       self.successfulEndpoint = successfulEndpoint
       self.preferredEndpoint = preferredEndpoint
@@ -148,7 +135,7 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
   public var resolutions: [Resolution]
 
   package init(
-    duration: Double,
+    duration: Duration,
     attemptStartedAfterInterval: Double,
     previousAttemptCount: Int,
     sourceEndpoint: Address?,
@@ -156,7 +143,7 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
     proxyEndpoint: Address?,
     resolutions: [Resolution]
   ) {
-    self._duration = duration
+    self.duration = duration
     self.attemptStartedAfterInterval = attemptStartedAfterInterval
     self.previousAttemptCount = previousAttemptCount
     self.sourceEndpoint = sourceEndpoint
@@ -166,7 +153,7 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
   }
 
   package init() {
-    self._duration = 0
+    self.duration = .zero
     self.attemptStartedAfterInterval = 0
     self.previousAttemptCount = 0
     self.usedProxy = false
@@ -184,7 +171,7 @@ extension EstablishmentReport {
   public typealias Model = V1._EstablishmentReport
 
   public init(persistentModel: Model) {
-    _duration = persistentModel.duration.seconds
+    duration = persistentModel.duration
     attemptStartedAfterInterval = persistentModel.attemptStartedAfterInterval
     previousAttemptCount = persistentModel.previousAttemptCount
     sourceEndpoint = persistentModel.sourceEndpoint
@@ -192,7 +179,7 @@ extension EstablishmentReport {
     proxyEndpoint = persistentModel.proxyEndpoint
     resolutions = persistentModel.resolutions.map {
       Resolution(
-        source: $0.source, duration: $0.duration.seconds, endpointCount: $0.endpointCount,
+        source: $0.source, duration: $0.duration, endpointCount: $0.endpointCount,
         successfulEndpoint: $0.successfulEndpoint, preferredEndpoint: $0.preferredEndpoint,
         dnsProtocol: $0.dnsProtocol)
     }

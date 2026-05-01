@@ -358,7 +358,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
         let modelContext = self.modelContainer.mainContext
 
         let term = Connection.State.active.rawValue
-        var fd = FetchDescriptor<Data>(predicate: #Predicate { $0._state == term })
+        let fd = FetchDescriptor<Data>(predicate: #Predicate { $0._state == term })
         let models: [DataTransferReport.PathReport] =
           (try? modelContext.fetch(fd).compactMap {
             guard let pathReport = $0.dataTransferReport?.pathReport else { return nil }

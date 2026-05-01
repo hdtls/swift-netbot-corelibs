@@ -76,10 +76,10 @@ extension Channel {
     func collect(
       queue: DispatchQueue, completion: @escaping @Sendable (DataTransferReport) -> Void
     ) {
-      self.collect(queue: queue) { dataTransferReport in
+      self.collect(queue: queue) { (dataTransferReport: NWConnection.DataTransferReport) in
         completion(
           DataTransferReport(
-            duration: dataTransferReport.duration,
+            duration: .seconds(dataTransferReport.duration),
             aggregatePathReport: .init(
               receivedIPPacketCount: dataTransferReport.aggregatePathReport.receivedIPPacketCount,
               sentIPPacketCount: dataTransferReport.aggregatePathReport.sentIPPacketCount,

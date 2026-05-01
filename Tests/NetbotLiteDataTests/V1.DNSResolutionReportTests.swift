@@ -39,11 +39,11 @@ import Testing
   #endif
   @Test func mergeValues() {
     let data = DNSResolutionReport(
-      duration: 12.5,
+      duration: .seconds(12.5),
       resolutions: [
         DNSResolutionReport.Resolution(
           source: .query,
-          duration: 3.5,
+          duration: .seconds(3.5),
           dnsProtocol: .udp,
           endpoints: [
             Address.hostPort(host: "2.2.2.2", port: 53),
@@ -52,7 +52,7 @@ import Testing
         ),
         DNSResolutionReport.Resolution(
           source: .cache,
-          duration: 4.75,
+          duration: .seconds(4.75),
           dnsProtocol: .tcp,
           endpoints: [
             Address.hostPort(host: "4.4.4.4", port: 53)

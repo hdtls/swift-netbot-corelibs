@@ -144,8 +144,7 @@ import Testing
   #endif
   @Test func propertyInitialValues() async throws {
     let report = DataTransferReport()
-    #expect(report._duration == 0)
-    #expect(report.duration == .seconds(0))
+    #expect(report.duration == .zero)
     #expect(report.aggregatePathReport == .init())
     #expect(report.pathReport == .init())
   }
@@ -178,7 +177,7 @@ import Testing
     let data = try jsonEncoder.encode(report)
     let encodedString = String(data: data, encoding: .utf8)
     let expectedJSONString =
-      "{\"_duration\":0,\"aggregatePathReport\":{\"receivedApplicationByteCount\":0,\"receivedIPPacketCount\":0,\"receivedTransportByteCount\":0,\"receivedTransportDuplicateByteCount\":0,\"receivedTransportOutOfOrderByteCount\":0,\"retransmittedTransportByteCount\":0,\"sentApplicationByteCount\":0,\"sentIPPacketCount\":0,\"sentTransportByteCount\":0,\"transportMinimumRTT\":0,\"transportRTTVariance\":0,\"transportSmoothedRTT\":0},\"pathReport\":{\"receivedApplicationByteCount\":0,\"receivedIPPacketCount\":0,\"receivedTransportByteCount\":0,\"receivedTransportDuplicateByteCount\":0,\"receivedTransportOutOfOrderByteCount\":0,\"retransmittedTransportByteCount\":0,\"sentApplicationByteCount\":0,\"sentIPPacketCount\":0,\"sentTransportByteCount\":0,\"transportMinimumRTT\":0,\"transportRTTVariance\":0,\"transportSmoothedRTT\":0}}"
+      "{\"aggregatePathReport\":{\"receivedApplicationByteCount\":0,\"receivedIPPacketCount\":0,\"receivedTransportByteCount\":0,\"receivedTransportDuplicateByteCount\":0,\"receivedTransportOutOfOrderByteCount\":0,\"retransmittedTransportByteCount\":0,\"sentApplicationByteCount\":0,\"sentIPPacketCount\":0,\"sentTransportByteCount\":0,\"transportMinimumRTT\":0,\"transportRTTVariance\":0,\"transportSmoothedRTT\":0},\"duration\":[0,0],\"pathReport\":{\"receivedApplicationByteCount\":0,\"receivedIPPacketCount\":0,\"receivedTransportByteCount\":0,\"receivedTransportDuplicateByteCount\":0,\"receivedTransportOutOfOrderByteCount\":0,\"retransmittedTransportByteCount\":0,\"sentApplicationByteCount\":0,\"sentIPPacketCount\":0,\"sentTransportByteCount\":0,\"transportMinimumRTT\":0,\"transportRTTVariance\":0,\"transportSmoothedRTT\":0}}"
     #expect(encodedString == expectedJSONString)
 
     let result = try JSONDecoder().decode(DataTransferReport.self, from: data)
@@ -284,12 +283,12 @@ import Testing
     pathReport.sentApplicationByteCount = 12
 
     let model = V1._DataTransferReport()
-    model._duration = 1.5
+    model.duration = .seconds(1.5)
     model.aggregatePathReport = pathReport
     model.pathReport = pathReport
 
     let report = DataTransferReport(persistentModel: model)
-    #expect(report._duration == 1.5)
+    #expect(report.duration == .seconds(1.5))
     #expect(report.aggregatePathReport == .init())
     #expect(report.pathReport == .init())
   }

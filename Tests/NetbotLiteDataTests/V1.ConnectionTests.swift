@@ -76,7 +76,7 @@ import Testing
     let date = Date()
     let data = Connection(taskIdentifier: 55)
     data.earliestBeginDate = date
-    data._duration = 1000
+    data.duration = .seconds(1000)
     data.taskDescription = "descA"
     data.tls = false
     data.state = .active

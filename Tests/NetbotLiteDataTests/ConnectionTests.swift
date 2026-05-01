@@ -99,7 +99,7 @@ import Testing
     connection.tls = false
     connection.state = .completed
     connection.establishmentReport = .init(
-      duration: 1,
+      duration: .seconds(1),
       attemptStartedAfterInterval: 0,
       previousAttemptCount: 0,
       sourceEndpoint: .hostPort(host: "192.168.1.2", port: 63532),
@@ -108,7 +108,7 @@ import Testing
       resolutions: [
         .init(
           source: .cache,
-          duration: 0.14,
+          duration: .seconds(0.14),
           endpointCount: 1,
           successfulEndpoint: .hostPort(host: "192.168.1.2", port: 63532),
           preferredEndpoint: .hostPort(host: "192.168.1.2", port: 63532),
@@ -117,12 +117,12 @@ import Testing
       ]
     )
     connection.forwardingReport = .init(
-      duration: 1,
+      duration: .seconds(1),
       forwardProtocol: "HTTP",
       forwardingRule: "FINAL"
     )
     connection.dataTransferReport = .init(
-      duration: 12,
+      duration: .seconds(12),
       aggregatePathReport: .init(
         receivedIPPacketCount: 89,
         sentIPPacketCount: 123,

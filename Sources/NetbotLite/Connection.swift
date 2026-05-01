@@ -92,7 +92,7 @@ extension Connection {
       guard let address = originalRequest?.address, let port = originalRequest?.port
       else {
         dnsResolutionReport = DNSResolutionReport(
-          duration: startTime.distance(to: .now()).timeInterval,
+          duration: startTime.distance(to: .now()).duration,
           resolutions: []
         )
         return
@@ -105,11 +105,11 @@ extension Connection {
           hostname = name
         case .ipv4, .ipv6:
           dnsResolutionReport = DNSResolutionReport(
-            duration: startTime.distance(to: .now()).timeInterval,
+            duration: startTime.distance(to: .now()).duration,
             resolutions: [
               DNSResolutionReport.Resolution(
                 source: .cache,
-                duration: startTime.distance(to: .now()).timeInterval,
+                duration: startTime.distance(to: .now()).duration,
                 dnsProtocol: .unknown,
                 endpoints: [address]
               )
@@ -119,14 +119,14 @@ extension Connection {
         }
       case .unix:
         dnsResolutionReport = DNSResolutionReport(
-          duration: startTime.distance(to: .now()).timeInterval,
+          duration: startTime.distance(to: .now()).duration,
           resolutions: []
         )
         return
       case .url:
         // Not supported yet.
         dnsResolutionReport = DNSResolutionReport(
-          duration: startTime.distance(to: .now()).timeInterval,
+          duration: startTime.distance(to: .now()).duration,
           resolutions: []
         )
         return
@@ -148,7 +148,7 @@ extension Connection {
               return .success([
                 DNSResolutionReport.Resolution(
                   source: .query,
-                  duration: startTime.distance(to: .now()).timeInterval,
+                  duration: startTime.distance(to: .now()).duration,
                   dnsProtocol: .udp,
                   endpoints: addresses.compactMap { try? $0.asAddress() }
                 )
@@ -167,7 +167,7 @@ extension Connection {
               return .success([
                 DNSResolutionReport.Resolution(
                   source: .query,
-                  duration: startTime.distance(to: .now()).timeInterval,
+                  duration: startTime.distance(to: .now()).duration,
                   dnsProtocol: .udp,
                   endpoints: addresses.compactMap { try? $0.asAddress() }
                 )
@@ -185,7 +185,7 @@ extension Connection {
               let resolutions: [DNSResolutionReport.Resolution] = try resolution.get()
               _dnsResolutionReport.withLock {
                 if $0 == nil {
-                  $0 = DNSResolutionReport(duration: 0, resolutions: resolutions)
+                  $0 = DNSResolutionReport(duration: .zero, resolutions: resolutions)
                 } else {
                   $0?.resolutions.append(contentsOf: resolutions)
                 }
@@ -222,7 +222,7 @@ extension Connection {
 
       var forwardingReport = await rulesEngine.executeAllRules(connection: self)
       let duration = startTime.distance(to: .now())
-      forwardingReport._duration = duration.timeInterval
+      forwardingReport.duration = duration.duration
       assert(forwardingReport._forwardingRule != nil)
       assert(forwardingReport._forwardProtocol != nil)
       self.forwardingReport = forwardingReport
@@ -259,13 +259,13 @@ extension Connection {
       case .direct:
         fallback = .direct
         forwardingReport = ForwardingReport(
-          duration: startTime.distance(to: .now()).timeInterval,
+          duration: startTime.distance(to: .now()).duration,
           forwardProtocol: fallback
         )
       case .globalProxy:
         fallback = forwardProtocol.asForwardProtocol()
         forwardingReport = ForwardingReport(
-          duration: startTime.distance(to: .now()).timeInterval,
+          duration: startTime.distance(to: .now()).duration,
           forwardProtocol: fallback
         )
       case .ruleBased:
@@ -296,7 +296,7 @@ extension Connection {
 
       repeat {
         try await Task.sleep(nanoseconds: 1_000_000_000)
-        _duration += 1
+        duration += .seconds(1)
 
         // Publish session changes.
         await publisher.send(self)
@@ -319,7 +319,7 @@ extension Connection {
           // and the second is that the channel.connection is missing. Both
           // situations indicate that the connection has ended, so we mark it
           // `completed` here.
-          _duration = -earliestBeginDate.timeIntervalSinceNow
+          duration = .seconds(-earliestBeginDate.timeIntervalSinceNow)
           state = .completed
           break
         }
@@ -329,14 +329,14 @@ extension Connection {
           .get()
         if let dataTransferReport {
           self.dataTransferReport = .init(
-            duration: dataTransferReport._duration + currentDataTransferReport._duration,
+            duration: dataTransferReport.duration + currentDataTransferReport.duration,
             aggregatePathReport: dataTransferReport.aggregatePathReport
               &+ currentDataTransferReport.aggregatePathReport,
             pathReport: currentDataTransferReport.aggregatePathReport
           )
         } else {
           dataTransferReport = .init(
-            duration: currentDataTransferReport._duration,
+            duration: currentDataTransferReport.duration,
             aggregatePathReport: currentDataTransferReport.aggregatePathReport,
             pathReport: currentDataTransferReport.aggregatePathReport
           )

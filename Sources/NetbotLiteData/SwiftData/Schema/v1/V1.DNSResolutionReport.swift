@@ -39,7 +39,8 @@ extension V1 {
   final public class _DNSResolutionReport {
 
     public var duration: Duration {
-      .seconds(_duration)
+      get { .seconds(_duration) }
+      set { _duration = newValue.seconds }
     }
 
     /// The duration of the connection's establishment in seconds.
@@ -57,12 +58,7 @@ extension V1 {
       public var source: Source
 
       /// The duration spent on this resolution step.
-      public var duration: Duration {
-        .seconds(_duration)
-      }
-
-      /// The length of time in seconds spent on this resolution step.
-      public var _duration: Double
+      public var duration: Duration
 
       /// The number of resolved endpoints discovered by the resolution step.
       public var endpointCount: Int { endpoints.count }
@@ -76,12 +72,12 @@ extension V1 {
 
       public init(
         source: Source,
-        duration: TimeInterval,
+        duration: Duration,
         dnsProtocol: DNSProtocol,
         endpoints: [Address]
       ) {
         self.source = source
-        self._duration = duration
+        self.duration = duration
         self.dnsProtocol = dnsProtocol
         self.endpoints = endpoints
       }
@@ -111,23 +107,23 @@ extension V1._DNSResolutionReport {
   /// - Parameter data: New `DNSResolutionReport` to merge.
   public func mergeValues(_ data: DNSResolutionReport) {
     #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
-      self._duration = data._duration
+      self.duration = data.duration
       self.resolutions = data.resolutions.map {
         Resolution(
           source: $0.source,
-          duration: $0._duration,
+          duration: $0.duration,
           dnsProtocol: $0.dnsProtocol,
           endpoints: $0.endpoints
         )
       }
     #else
-      if self._duration != data._duration {
-        self._duration = data._duration
+      if self.duration != data.duration {
+        self.duration = data.duration
       }
       let resolutions = data.resolutions.map {
         Resolution(
           source: $0.source,
-          duration: $0._duration,
+          duration: $0.duration,
           dnsProtocol: $0.dnsProtocol,
           endpoints: $0.endpoints
         )

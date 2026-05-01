@@ -22,19 +22,11 @@ import NEAddressProcessing
 #endif
 public struct DNSResolutionReport: Codable, Hashable, Sendable {
 
-  /// The duration of the connection's establishment.
-  /// This is the total time from when the successful connection
-  /// attempt began until the connection becomes ready, including
-  /// resolution, proxy evaluation, and protocol handshakes.
-  public var duration: Duration {
-    .seconds(_duration)
-  }
-
   /// The duration of the connection's establishment in seconds.
   /// This is the total time from when the successful connection
   /// attempt began until the connection becomes ready, including
   /// resolution, proxy evaluation, and protocol handshakes.
-  public var _duration: Double
+  public var duration: Duration
 
   /// An array of zero or more Resolution reports, in order from first resolved
   /// to last resolved.
@@ -47,13 +39,8 @@ public struct DNSResolutionReport: Codable, Hashable, Sendable {
     /// The source of this resolution.
     public var source: Source
 
-    /// The duration spent on this resolution step.
-    public var duration: Duration {
-      .seconds(_duration)
-    }
-
     /// The length of time in seconds spent on this resolution step.
-    public var _duration: Double
+    public var duration: Duration
 
     /// The number of resolved endpoints discovered by the resolution step.
     public var endpointCount: Int { endpoints.count }
@@ -66,16 +53,17 @@ public struct DNSResolutionReport: Codable, Hashable, Sendable {
     /// The value of resolved endpoints discovered by the resolution step.
     public var endpoints: [Address]
 
-    package init(source: Source, duration: Double, dnsProtocol: DNSProtocol, endpoints: [Address]) {
+    package init(source: Source, duration: Duration, dnsProtocol: DNSProtocol, endpoints: [Address])
+    {
       self.source = source
-      self._duration = duration
+      self.duration = duration
       self.dnsProtocol = dnsProtocol
       self.endpoints = endpoints
     }
   }
 
-  package init(duration: Double, resolutions: [Resolution]) {
-    self._duration = duration
+  package init(duration: Duration, resolutions: [Resolution]) {
+    self.duration = duration
     self.resolutions = resolutions
   }
 }
@@ -90,11 +78,11 @@ extension DNSResolutionReport {
   public typealias Model = V1._DNSResolutionReport
 
   public init(persistentModel: Model) {
-    self._duration = persistentModel._duration
+    self.duration = persistentModel.duration
     self.resolutions = persistentModel.resolutions.map {
       Resolution(
         source: $0.source,
-        duration: $0._duration,
+        duration: $0.duration,
         dnsProtocol: $0.dnsProtocol,
         endpoints: $0.endpoints
       )

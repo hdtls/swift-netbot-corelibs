@@ -241,7 +241,7 @@ final class __CapabilitiesProcessingHandler<HeadT: Equatable & Sendable>: Channe
       }
       return wrapInboundOut(.body(.byteBuffer(partialResult)))
     case .end(let trailers):
-      connection._duration = -connection.earliestBeginDate.timeIntervalSinceNow
+      connection.duration = .seconds(-connection.earliestBeginDate.timeIntervalSinceNow)
       connection.state = .completed
       guard let trailers else {
         return wrapInboundOut(.end(trailers))

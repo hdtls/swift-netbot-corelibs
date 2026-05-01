@@ -389,7 +389,7 @@ import Tracing
           throw AnalyzeError.inputStreamEndpointInvalid
         }
         session.establishmentReport = EstablishmentReport(
-          duration: 0,
+          duration: .zero,
           attemptStartedAfterInterval: 0,
           previousAttemptCount: 0,
           sourceEndpoint: sourceEndpoint,
@@ -434,7 +434,7 @@ import Tracing
               // to use original value.
               let usedProxy = $0?.usedProxy ?? false
 
-              $0?._duration = establishmentReport._duration
+              $0?.duration = establishmentReport.duration
               $0?.attemptStartedAfterInterval = establishmentReport.attemptStartedAfterInterval
               $0?.previousAttemptCount = establishmentReport.previousAttemptCount
               $0?.proxyEndpoint = usedProxy ? (try? outputStream.remoteAddress?.asAddress()) : nil
@@ -583,7 +583,7 @@ import Tracing
         }.get()
         return (inputStream, outputStream, session)
       } catch {
-        session._duration = -session.earliestBeginDate.timeIntervalSinceNow
+        session.duration = .seconds(-session.earliestBeginDate.timeIntervalSinceNow)
         session.state = .failed
         self.logger.error(
           "Connection failure with error: \(error)",

@@ -73,6 +73,8 @@ import NEAddressProcessing
       }
       public var _duration: Double = 0
 
+      public var durationFormatted = "0ms"
+
       /// Description of the task.
       public var taskDescription = ""
 

@@ -127,7 +127,7 @@ public protocol RulesEngine: Sendable {
   @available(SwiftStdlib 6.0, *)
 #endif
 extension ForwardingReport {
-  init(duration: Double = 0, forwardingRule: any ForwardingRule) {
+  init(duration: Duration = .zero, forwardingRule: any ForwardingRule) {
     let forwardProtocol = forwardingRule.forwardProtocol.asForwardProtocol()
     self.init(
       duration: duration,
@@ -138,7 +138,7 @@ extension ForwardingReport {
     self._forwardProtocol = forwardProtocol
   }
 
-  init(duration: Double = 0, forwardProtocol: any ForwardProtocol) {
+  init(duration: Duration = .zero, forwardProtocol: any ForwardProtocol) {
     self.init(duration: duration, forwardProtocol: forwardProtocol.name)
     self._forwardProtocol = forwardProtocol
   }

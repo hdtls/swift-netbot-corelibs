@@ -37,14 +37,14 @@ import Testing
     let model = V1._ForwardingReport()
 
     let data = ForwardingReport(
-      duration: 13.5,
+      duration: .seconds(13.5),
       forwardProtocol: "REJECT",
       forwardingRule: "FINAL"
     )
 
     model.mergeValues(data)
 
-    #expect(model._duration == 13.5)
+    #expect(model.duration == .seconds(13.5))
     #expect(model.forwardProtocol == "REJECT")
     #expect(model.forwardingRule == "FINAL")
   }

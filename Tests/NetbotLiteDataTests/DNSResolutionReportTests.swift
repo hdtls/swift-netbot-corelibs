@@ -25,10 +25,9 @@ import Testing
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func propertyInitialValues() {
-    let report = DNSResolutionReport(duration: 0, resolutions: [])
+    let report = DNSResolutionReport(duration: .zero, resolutions: [])
     #expect(report.duration == .zero)
     #expect(report.resolutions.isEmpty)
-    #expect(report.duration.seconds == report._duration)
   }
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -43,7 +42,7 @@ import Testing
     ]
     let resolution = DNSResolutionReport.Resolution(
       source: .query,
-      duration: 1.25,
+      duration: .seconds(1.25),
       dnsProtocol: .udp,
       endpoints: addresses
     )
@@ -62,7 +61,7 @@ import Testing
     let resolutions = [
       DNSResolutionReport.Resolution(
         source: .query,
-        duration: 0.5,
+        duration: .seconds(0.5),
         dnsProtocol: .tcp,
         endpoints: [
           Address.hostPort(host: "9.9.9.9", port: 53),
@@ -71,14 +70,14 @@ import Testing
       ),
       DNSResolutionReport.Resolution(
         source: .cache,
-        duration: 0.75,
+        duration: .seconds(0.75),
         dnsProtocol: .udp,
         endpoints: [
           Address.hostPort(host: "8.8.4.4", port: 53)
         ]
       ),
     ]
-    let report = DNSResolutionReport(duration: 3.25, resolutions: resolutions)
+    let report = DNSResolutionReport(duration: .seconds(3.25), resolutions: resolutions)
 
     let encoder = JSONEncoder()
     let data = try encoder.encode(report)
@@ -103,11 +102,11 @@ import Testing
   #endif
   @Test func dnsResolutionReportFromPersistentModel() throws {
     let persistent = V1._DNSResolutionReport()
-    persistent._duration = 12.5
+    persistent.duration = .seconds(12.5)
     persistent.resolutions = [
       V1._DNSResolutionReport.Resolution(
         source: .query,
-        duration: 3.5,
+        duration: .seconds(3.5),
         dnsProtocol: .udp,
         endpoints: [
           Address.hostPort(host: "2.2.2.2", port: 53),
@@ -116,7 +115,7 @@ import Testing
       ),
       V1._DNSResolutionReport.Resolution(
         source: .cache,
-        duration: 4.75,
+        duration: .seconds(4.75),
         dnsProtocol: .tcp,
         endpoints: [
           Address.hostPort(host: "4.4.4.4", port: 53)

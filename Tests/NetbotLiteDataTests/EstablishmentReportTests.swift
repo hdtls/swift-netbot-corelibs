@@ -91,11 +91,10 @@ import Testing
   #endif
   @Test func resolutionPropertyInitialValues() async throws {
     let resolution = EstablishmentReport.Resolution.init(
-      source: .query, duration: 1.0, endpointCount: 1,
+      source: .query, duration: .seconds(1), endpointCount: 1,
       successfulEndpoint: .hostPort(host: "127.0.0.1", port: 1111),
       preferredEndpoint: .hostPort(host: "127.0.0.1", port: 1111), dnsProtocol: .tcp)
     #expect(resolution.source == .query)
-    #expect(resolution._duration == 1.0)
     #expect(resolution.duration == .seconds(1))
     #expect(resolution.endpointCount == 1)
     #expect(resolution.successfulEndpoint == .hostPort(host: "127.0.0.1", port: 1111))
@@ -110,7 +109,7 @@ import Testing
   #endif
   @Test func resolutionHashableConformance() async throws {
     let resolution = EstablishmentReport.Resolution.init(
-      source: .query, duration: 1.0, endpointCount: 1,
+      source: .query, duration: .seconds(1), endpointCount: 1,
       successfulEndpoint: .hostPort(host: "127.0.0.1", port: 1111),
       preferredEndpoint: .hostPort(host: "127.0.0.1", port: 1111), dnsProtocol: .tcp)
     let expected = resolution
@@ -128,7 +127,7 @@ import Testing
   #endif
   @Test func resolutionCodableConformance() async throws {
     let resolution = EstablishmentReport.Resolution.init(
-      source: .query, duration: 1.0, endpointCount: 1,
+      source: .query, duration: .seconds(1), endpointCount: 1,
       successfulEndpoint: .hostPort(host: "127.0.0.1", port: 1111),
       preferredEndpoint: .hostPort(host: "127.0.0.1", port: 1111), dnsProtocol: .tcp)
 
@@ -145,8 +144,7 @@ import Testing
   @Test func propertyInitialValues() async throws {
     let report = EstablishmentReport()
 
-    #expect(report._duration == 0.0)
-    #expect(report.duration == .seconds(0))
+    #expect(report.duration == .zero)
     #expect(report.attemptStartedAfterInterval == 0.0)
     #expect(report.previousAttemptCount == 0)
     #expect(report.sourceEndpoint == nil)
@@ -165,7 +163,7 @@ import Testing
     #expect(report.destinationEndpoint == nil)
 
     report = EstablishmentReport(
-      duration: 0,
+      duration: .zero,
       attemptStartedAfterInterval: 0,
       previousAttemptCount: 0,
       sourceEndpoint: nil,
@@ -174,14 +172,14 @@ import Testing
       resolutions: [
         .init(
           source: .query,
-          duration: 0,
+          duration: .zero,
           endpointCount: 1,
           successfulEndpoint: .hostPort(host: "127.0.0.1", port: 443),
           preferredEndpoint: .hostPort(host: "127.0.0.1", port: 443),
           dnsProtocol: .udp),
         .init(
           source: .query,
-          duration: 0,
+          duration: .zero,
           endpointCount: 1,
           successfulEndpoint: .hostPort(host: "127.0.0.2", port: 443),
           preferredEndpoint: .hostPort(host: "127.0.0.2", port: 443),
@@ -197,7 +195,7 @@ import Testing
   #endif
   @Test func destinationEndpointWhenUseProxyIsEnabled() async throws {
     var report = EstablishmentReport(
-      duration: 0,
+      duration: .zero,
       attemptStartedAfterInterval: 0,
       previousAttemptCount: 0,
       sourceEndpoint: nil,
@@ -208,7 +206,7 @@ import Testing
     #expect(report.destinationEndpoint == nil)
 
     report = EstablishmentReport(
-      duration: 0,
+      duration: .zero,
       attemptStartedAfterInterval: 0,
       previousAttemptCount: 0,
       sourceEndpoint: nil,
@@ -263,7 +261,7 @@ import Testing
     let persistentModel = V1._EstablishmentReport()
     persistentModel.resolutions = [
       .init(
-        source: .cache, duration: 0.5, endpointCount: 1,
+        source: .cache, duration: .seconds(0.5), endpointCount: 1,
         successfulEndpoint: .hostPort(host: "127.0.0.1", port: 443),
         preferredEndpoint: .hostPort(host: "127.0.0.1", port: 443), dnsProtocol: .udp)
     ]
@@ -271,7 +269,7 @@ import Testing
     #expect(
       establishmentReport
         == EstablishmentReport(
-          duration: 0,
+          duration: .zero,
           attemptStartedAfterInterval: 0,
           previousAttemptCount: 0,
           sourceEndpoint: nil,
@@ -279,7 +277,7 @@ import Testing
           proxyEndpoint: nil,
           resolutions: [
             .init(
-              source: .cache, duration: 0.5, endpointCount: 1,
+              source: .cache, duration: .seconds(0.5), endpointCount: 1,
               successfulEndpoint: .hostPort(host: "127.0.0.1", port: 443),
               preferredEndpoint: .hostPort(host: "127.0.0.1", port: 443), dnsProtocol: .udp)
           ]))

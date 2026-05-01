@@ -31,8 +31,7 @@ import Testing
   #endif
   @Test func propertyInitialValues() async throws {
     let report = ForwardingReport()
-    #expect(report._duration == 0)
-    #expect(report.duration == .seconds(0))
+    #expect(report.duration == .zero)
     #expect(report.forwardProtocol == "DIRECT")
     #expect(report.forwardingRule == nil)
   }

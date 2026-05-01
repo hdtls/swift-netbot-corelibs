@@ -32,11 +32,10 @@ import Testing
   #endif
   @Test func resolutionPropertyInitialValues() async throws {
     let resolution = V1._EstablishmentReport.Resolution.init(
-      source: .query, duration: 1.0, endpointCount: 1,
+      source: .query, duration: .seconds(1.0), endpointCount: 1,
       successfulEndpoint: .hostPort(host: "127.0.0.1", port: 1111),
       preferredEndpoint: .hostPort(host: "127.0.0.1", port: 1111), dnsProtocol: .tcp)
     #expect(resolution.source == .query)
-    #expect(resolution._duration == 1.0)
     #expect(resolution.duration == .seconds(1))
     #expect(resolution.endpointCount == 1)
     #expect(resolution.successfulEndpoint == .hostPort(host: "127.0.0.1", port: 1111))
@@ -51,7 +50,7 @@ import Testing
   #endif
   @Test func resolutionHashableConformance() async throws {
     let resolution = V1._EstablishmentReport.Resolution.init(
-      source: .query, duration: 1.0, endpointCount: 1,
+      source: .query, duration: .seconds(1.0), endpointCount: 1,
       successfulEndpoint: .hostPort(host: "127.0.0.1", port: 1111),
       preferredEndpoint: .hostPort(host: "127.0.0.1", port: 1111), dnsProtocol: .tcp)
     let expected = resolution
@@ -69,7 +68,7 @@ import Testing
   #endif
   @Test func resolutionCodableConformance() async throws {
     let resolution = V1._EstablishmentReport.Resolution.init(
-      source: .query, duration: 1.0, endpointCount: 1,
+      source: .query, duration: .seconds(1.0), endpointCount: 1,
       successfulEndpoint: .hostPort(host: "127.0.0.1", port: 1111),
       preferredEndpoint: .hostPort(host: "127.0.0.1", port: 1111), dnsProtocol: .tcp)
 
@@ -86,7 +85,7 @@ import Testing
   @Test func mutateResolutionSuccessfulEndpoint() async throws {
     let address = Address.hostPort(host: "1.1.1.1", port: 443)
     var resolution = V1._EstablishmentReport.Resolution(
-      source: .cache, duration: 0, endpointCount: 0,
+      source: .cache, duration: .zero, endpointCount: 0,
       successfulEndpoint: .unix(path: "/var/run/tmp.socks"),
       preferredEndpoint: .unix(path: "/var/run/tmp.socks"), dnsProtocol: .udp)
     resolution.successfulEndpoint = address
@@ -101,7 +100,7 @@ import Testing
   @Test func mutateResolutionPreferredEndpoint() async throws {
     let address = Address.hostPort(host: "1.1.1.1", port: 443)
     var resolution = V1._EstablishmentReport.Resolution(
-      source: .cache, duration: 0, endpointCount: 0,
+      source: .cache, duration: .zero, endpointCount: 0,
       successfulEndpoint: .unix(path: "/var/run/tmp.socks"),
       preferredEndpoint: .unix(path: "/var/run/tmp.socks"), dnsProtocol: .udp)
     resolution.preferredEndpoint = address
@@ -116,8 +115,7 @@ import Testing
   @Test func propertyInitialValues() async throws {
     let report = V1._EstablishmentReport()
 
-    #expect(report._duration == 0.0)
-    #expect(report.duration == .seconds(0))
+    #expect(report.duration == .zero)
     #expect(report.attemptStartedAfterInterval == 0.0)
     #expect(report.previousAttemptCount == 0)
     #expect(report.sourceEndpoint == nil)
@@ -138,14 +136,14 @@ import Testing
     report.resolutions = [
       .init(
         source: .query,
-        duration: 0,
+        duration: .zero,
         endpointCount: 1,
         successfulEndpoint: .hostPort(host: "127.0.0.1", port: 443),
         preferredEndpoint: .hostPort(host: "127.0.0.1", port: 443),
         dnsProtocol: .udp),
       .init(
         source: .query,
-        duration: 0,
+        duration: .zero,
         endpointCount: 1,
         successfulEndpoint: .hostPort(host: "127.0.0.2", port: 443),
         preferredEndpoint: .hostPort(host: "127.0.0.2", port: 443),
@@ -205,7 +203,7 @@ import Testing
   #endif
   @Test func mergeValues() async throws {
     let data = EstablishmentReport(
-      duration: 1,
+      duration: .seconds(1),
       attemptStartedAfterInterval: 1,
       previousAttemptCount: 4,
       sourceEndpoint: .hostPort(host: "0.0.0.0", port: 0),
@@ -213,14 +211,13 @@ import Testing
       proxyEndpoint: .hostPort(host: "0.0.0.0", port: 0),
       resolutions: [
         .init(
-          source: .cache, duration: 0.5, endpointCount: 1,
+          source: .cache, duration: .seconds(0.5), endpointCount: 1,
           successfulEndpoint: .hostPort(host: "127.0.0.1", port: 443),
           preferredEndpoint: .hostPort(host: "127.0.0.1", port: 443), dnsProtocol: .udp)
       ])
     let establishmentReport = V1._EstablishmentReport()
     establishmentReport.mergeValues(data)
     #expect(establishmentReport.duration == data.duration)
-    #expect(establishmentReport._duration == data._duration)
     #expect(establishmentReport.attemptStartedAfterInterval == data.attemptStartedAfterInterval)
     #expect(establishmentReport.previousAttemptCount == data.previousAttemptCount)
     #expect(establishmentReport.sourceEndpoint == data.sourceEndpoint)
