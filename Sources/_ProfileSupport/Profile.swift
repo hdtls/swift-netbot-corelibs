@@ -21,8 +21,8 @@ import Logging
   import Foundation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -172,8 +172,8 @@ import Logging
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -232,37 +232,28 @@ extension Profile._Storage: Hashable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 extension Profile._Storage: @unchecked Sendable {}
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 extension Profile {
 
   public init(contentsOf url: URL) throws {
-    let parseInput: String
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      if #available(SwiftStdlib 5.7, *) {
-        parseInput = try String(contentsOf: url, encoding: .utf8)
-      } else {
-        parseInput = try String(contentsOfFile: url.path, encoding: .utf8)
-      }
-    #else
-      parseInput = try String(contentsOf: url, encoding: .utf8)
-    #endif
+    let parseInput = try String(contentsOf: url, encoding: .utf8)
     self = try Profile.FormatStyle().parse(parseInput)
     self.url = url
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)

@@ -19,8 +19,8 @@ import Testing
 @Suite(.tags(.dnsMapping))
 struct ProtocolDNS_MappingTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -34,11 +34,11 @@ struct ProtocolDNS_MappingTests {
   }
 }
 
-@Suite("ProtocolDNS.MappingStrategyTests", .tags(.dnsMapping))
-struct ProtocolDNS_Mapping_KindTests {
+@Suite(.tags(.dnsMapping))
+struct ProtocolDNS_MappingStrategyTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -49,8 +49,8 @@ struct ProtocolDNS_Mapping_KindTests {
     #expect(ProtocolDNS.MappingStrategy(rawValue: 9) == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif

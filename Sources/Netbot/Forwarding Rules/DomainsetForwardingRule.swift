@@ -24,8 +24,8 @@ import _ProfileSupport
   import Foundation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -41,15 +41,7 @@ struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hasha
       let fileURL = externalResourceDirectory
       let digest = Insecure.MD5.hash(data: Array(originalURLString.utf8))
       let filename = ByteBuffer(bytes: digest).hexDump(format: .compact)
-      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-        if #available(SwiftStdlib 5.7, *) {
-          return fileURL.appending(path: filename)
-        } else {
-          return fileURL.appendingPathComponent(filename)
-        }
-      #else
-        return fileURL.appending(path: filename)
-      #endif
+      return fileURL.appending(path: filename)
     }
 
     @inlinable init(
@@ -150,8 +142,8 @@ struct DomainsetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hasha
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -174,8 +166,8 @@ extension DomainsetForwardingRule._Storage: Hashable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif

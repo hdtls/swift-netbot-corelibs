@@ -14,8 +14,8 @@
 
 import RegexBuilder
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -25,9 +25,6 @@ extension ProtocolDNS.Mapping {
 
   package static let sectionName = "[DNS Mapping]"
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.7, *)
-  #endif
   package static var sectionRegex: some RegexComponent {
     Regex {
       ZeroOrMore(.whitespace)
@@ -37,9 +34,6 @@ extension ProtocolDNS.Mapping {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.7, *)
-  #endif
   package static var regex:
     Regex<(Substring, Bool, Substring, (ProtocolDNS.MappingStrategy, Substring))>
   {
@@ -75,9 +69,6 @@ extension ProtocolDNS.Mapping {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.7, *)
-  #endif
   package var regex: some RegexComponent {
     Regex {
       /^ */

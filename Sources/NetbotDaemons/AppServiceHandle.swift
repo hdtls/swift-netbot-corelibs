@@ -19,8 +19,8 @@
 
   /// This object implements the protocol which we have defined. It provides the actual behavior for the service. It is 'exported' by the
   /// service to make it available to the process hosting the service over an NSXPCConnection.
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -58,9 +58,6 @@
       }
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      @available(SwiftStdlib 5.7, *)
-    #endif
     private func register(plistName: String, service: SMAppService) async throws {
       do {
         let status = service.status
@@ -112,9 +109,6 @@
       }
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      @available(SwiftStdlib 5.7, *)
-    #endif
     private func unregister(plistName: String, service: SMAppService) async throws {
       do {
         try await SMAppService.daemon(plistName: plistName).unregister()
@@ -154,23 +148,20 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   extension AppServiceHandle: @unchecked Sendable {}
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   extension AppServiceHandle: AppServiceHandleProtocol {
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      @available(SwiftStdlib 5.7, *)
-    #endif
     public func codeSigningRequirement() async -> String {
       var codeSigningRequirementParts: [Substring] = []
 
@@ -190,40 +181,20 @@
     }
 
     public func register(daemon plistName: String) async throws {
-      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-        if #available(SwiftStdlib 5.7, *) {
-          let daemon = SMAppService.daemon(plistName: plistName)
-          try await register(plistName: plistName, service: daemon)
-        }
-      #else
-        let daemon = SMAppService.daemon(plistName: plistName)
-        try await register(plistName: plistName, service: daemon)
-      #endif
+      let daemon = SMAppService.daemon(plistName: plistName)
+      try await register(plistName: plistName, service: daemon)
     }
 
     public func unregister(daemon plistName: String) async throws {
-      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-        if #available(SwiftStdlib 5.7, *) {
-          let daemon = SMAppService.daemon(plistName: plistName)
-          try await unregister(plistName: plistName, service: daemon)
-        }
-      #else
-        let daemon = SMAppService.daemon(plistName: plistName)
-        try await unregister(plistName: plistName, service: daemon)
-      #endif
+      let daemon = SMAppService.daemon(plistName: plistName)
+      try await unregister(plistName: plistName, service: daemon)
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      @available(SwiftStdlib 5.7, *)
-    #endif
     public func status(daemon plistName: String) async -> SMAppService.Status {
       let daemon = SMAppService.daemon(plistName: plistName)
       return daemon.status
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      @available(SwiftStdlib 5.7, *)
-    #endif
     public func openSystemSettingsLoginItems() async {
       SMAppService.openSystemSettingsLoginItems()
     }
@@ -252,8 +223,8 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -283,8 +254,8 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -292,8 +263,8 @@
     case operationUnsupported
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif

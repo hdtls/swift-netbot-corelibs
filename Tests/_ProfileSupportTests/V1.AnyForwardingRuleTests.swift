@@ -1,0 +1,120 @@
+// ===----------------------------------------------------------------------===//
+//
+// This source file is part of the Netbot open source project
+//
+// Copyright (c) 2025 Junfeng Zhang and the Netbot project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+// See CONTRIBUTORS.txt for the list of Netbot project authors
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+// ===----------------------------------------------------------------------===//
+
+import Testing
+
+@testable import _ProfileSupport
+
+@Suite(.tags(.swiftData, .schema, .forwardingRule))
+struct V1_AnyForwardingRuleTests {
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func propertyInitialValue() {
+    let data = V1._AnyForwardingRule()
+    #expect(data.isEnabled)
+    #expect(data.kind == .domain)
+    #expect(data.value == "")
+    #expect(data.comment == "")
+    //      #expect(data.foreignKey == "direct")
+    #expect(data.notification == .init())
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func mergeValues() {
+    let persistentModel = V1._AnyForwardingRule()
+    let forwardingRule = AnyForwardingRule()
+    persistentModel.mergeValues(forwardingRule)
+
+    #expect(persistentModel.isEnabled == forwardingRule.isEnabled)
+    #expect(persistentModel.kind == forwardingRule.kind)
+    #expect(persistentModel.value == forwardingRule.value)
+    #expect(persistentModel.comment == forwardingRule.comment)
+    #expect(persistentModel.notification == forwardingRule.notification)
+  }
+}
+
+@Suite(.tags(.swiftData, .schema, .forwardingRule))
+struct V1_AnyForwardingRule_KindTests {
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test(
+    arguments: zip(
+      V1._AnyForwardingRule.Kind.allCases,
+      [
+        "DOMAIN", "DOMAIN-KEYWORD", "DOMAIN-SUFFIX", "DOMAIN-SET", "RULE-SET", "GEOIP",
+        "IP-CIDR", "PROCESS-NAME", "FINAL",
+      ]
+    ))
+  func rawRepresentableConformance(_ kind: V1._AnyForwardingRule.Kind, _ rawValue: String) {
+    #expect(V1._AnyForwardingRule.Kind(rawValue: rawValue) == kind)
+    #expect(kind.rawValue == rawValue)
+    #expect(V1._AnyForwardingRule.Kind(rawValue: "unknown") == nil)
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test(
+    arguments: zip(
+      V1._AnyForwardingRule.Kind.allCases,
+      [
+        "DOMAIN", "DOMAIN-KEYWORD", "DOMAIN-SUFFIX", "DOMAIN-SET", "RULE-SET", "GEOIP",
+        "IP-CIDR", "PROCESS-NAME", "FINAL",
+      ]
+    ))
+  func localizedName(_ kind: V1._AnyForwardingRule.Kind, _ localizedName: String) {
+    #expect(kind.localizedName == localizedName)
+  }
+}
+
+@Suite(.tags(.swiftData, .schema, .forwardingRule))
+struct V1_AnyForwardingRule_NotificationTests {
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func propertyInitialValue() {
+    let notification = V1._AnyForwardingRule.Notification()
+    #expect(notification.message == "")
+    #expect(!notification.showNotification)
+    #expect(notification.timeInterval == 300)
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func equatableConformance() async throws {
+    let lhs = V1._AnyForwardingRule.Notification()
+    let rhs = V1._AnyForwardingRule.Notification()
+    #expect(lhs == rhs)
+  }
+}

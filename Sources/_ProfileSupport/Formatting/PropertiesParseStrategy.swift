@@ -18,28 +18,17 @@
   import Foundation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 struct PropertiesParseStrategy {
 
   func parse(_ parseInput: String) throws -> [String: [String]] {
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      if #available(SwiftStdlib 5.7, *) {
-        try _parse(parseInput)
-      } else {
-        try _parse0(parseInput)
-      }
-    #else
-      try _parse(parseInput)
-    #endif
+    try _parse(parseInput)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.7, *)
-  #endif
   func _parse(_ parseInput: String) throws -> [String: [String]] {
     var properties: [String: [String]] = [:]
     var parseInput = Substring(parseInput)

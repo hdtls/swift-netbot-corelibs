@@ -26,7 +26,7 @@ import NIOSSL
 import NetbotLiteData
 import Tracing
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   import NIOConcurrencyHelpers
 #else
   import Synchronization
@@ -47,8 +47,8 @@ import Tracing
 /// A `AnalyzeBot` is an easy way to create network proxy servers.
 ///
 /// For current version we support start HTTP and SOCKS as local proxy servers if possible.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -252,58 +252,20 @@ import Tracing
         _isActive.store(true, ordering: .relaxed)
         _closePromise.withLock { $0 = eventLoopGroup.next().makePromise() }
 
-        #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-          if #available(SwiftStdlib 5.9, *) {
-            try await withThrowingDiscardingTaskGroup { g in
-              g.addTask {
-                try await withSpan("HTTP") { _ in
-                  try await self.startVPNTunnel(
-                    protocol: .http, address: self.webProxyListenAddress)
-                }
-              }
-
-              g.addTask {
-                try await withSpan("SOCKS5") { _ in
-                  try await self.startVPNTunnel(
-                    protocol: .socks5, address: self.socksProxyListenAddress)
-                }
-              }
-            }
-          } else {
-            // Run and wait until all server channels closed.
-            try await withThrowingTaskGroup(of: Void.self) { g in
-              g.addTask {
-                try await withSpan("HTTP") { _ in
-                  try await self.startVPNTunnel(
-                    protocol: .http, address: self.webProxyListenAddress)
-                }
-              }
-
-              g.addTask {
-                try await withSpan("SOCKS5") { _ in
-                  try await self.startVPNTunnel(
-                    protocol: .socks5, address: self.socksProxyListenAddress)
-                }
-              }
-              try await g.waitForAll()
+        try await withThrowingDiscardingTaskGroup { g in
+          g.addTask {
+            try await withSpan("HTTP") { _ in
+              try await self.startVPNTunnel(protocol: .http, address: self.webProxyListenAddress)
             }
           }
-        #else
-          try await withThrowingDiscardingTaskGroup { g in
-            g.addTask {
-              try await withSpan("HTTP") { _ in
-                try await self.startVPNTunnel(protocol: .http, address: self.webProxyListenAddress)
-              }
-            }
 
-            g.addTask {
-              try await withSpan("SOCKS5") { _ in
-                try await self.startVPNTunnel(
-                  protocol: .socks5, address: self.socksProxyListenAddress)
-              }
+          g.addTask {
+            try await withSpan("SOCKS5") { _ in
+              try await self.startVPNTunnel(
+                protocol: .socks5, address: self.socksProxyListenAddress)
             }
           }
-        #endif
+        }
       } catch {
         _isActive.store(false, ordering: .relaxed)
         _closePromise.withLock { $0?.fail(error) }
@@ -363,7 +325,7 @@ import Tracing
   private func startVPNTunnel(protocol: Proxy.`Protocol`, address: SocketAddress) async throws {
     let quiescing = ServerQuiescingHelper(group: eventLoopGroup)
 
-    let bootstrap = ServerBootstrap(group: eventLoopGroup)
+    let channel = try await ServerBootstrap(group: eventLoopGroup)
       .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
       .serverChannelOption(ChannelOptions.socketOption(.init(rawValue: SO_REUSEPORT)), value: 1)
       .serverChannelInitializer { channel in
@@ -374,88 +336,46 @@ import Tracing
         }
       }
       .childChannelOption(ChannelOptions.tcpOption(.tcp_nodelay), value: 1)
-
-    @inline(__always)
-    @Sendable func channelInitializer(_ channel: any Channel) -> EventLoopFuture<
-      EventLoopFuture<Flow>
-    > {
-      switch `protocol` {
-      case .http:
-        return channel.configureHTTPListenerPipeline { _, req in
-          channel.eventLoop.makeFutureWithTask {
-            try await self.initializeFlow(channel, originalRequest: .init(httpRequest: req))
+      .bind(to: address) { channel in
+        switch `protocol` {
+        case .http:
+          return channel.configureHTTPListenerPipeline { _, req in
+            channel.eventLoop.makeFutureWithTask {
+              try await self.initializeFlow(channel, originalRequest: .init(httpRequest: req))
+            }
           }
-        }
-      case .socks5:
-        return channel.configureSOCKSListenerPipeline { address in
-          channel.eventLoop.makeFutureWithTask {
-            try await self.initializeFlow(channel, originalRequest: .init(address: address))
+        case .socks5:
+          return channel.configureSOCKSListenerPipeline { address in
+            channel.eventLoop.makeFutureWithTask {
+              try await self.initializeFlow(channel, originalRequest: .init(address: address))
+            }
           }
         }
       }
-    }
 
-    @inline(__always)
-    func postBind(channel: any Channel) {
-      guard let localAddress = try? channel.localAddress?.asAddress() else {
-        fatalError(
-          "Address was unable to bind. Please check that the socket was not closed or that the address family was understood."
-        )
-      }
-
-      self.logger.info(
-        "\(processName) \(`protocol`.rawValue.uppercased()) started and listening on \(localAddress)"
+    guard let localAddress = try? channel.channel.localAddress?.asAddress() else {
+      fatalError(
+        "Address was unable to bind. Please check that the socket was not closed or that the address family was understood."
       )
-
-      self._quiescing.withLock {
-        $0.append(quiescing)
-      }
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      if #available(SwiftStdlib 5.9, *) {
-        let channel = try await bootstrap.bind(
-          to: address, childChannelInitializer: channelInitializer)
+    self.logger.info(
+      "\(processName) \(`protocol`.rawValue.uppercased()) started and listening on \(localAddress)"
+    )
 
-        postBind(channel: channel.channel)
+    self._quiescing.withLock {
+      $0.append(quiescing)
+    }
 
-        try await withThrowingDiscardingTaskGroup { g in
-          try await channel.executeThenClose { inbound in
-            for try await _ in inbound {
-              g.addTask {
+    try await withThrowingDiscardingTaskGroup { g in
+      try await channel.executeThenClose { inbound in
+        for try await _ in inbound {
+          g.addTask {
 
-              }
-            }
-          }
-        }
-      } else {
-        let channel = try await bootstrap.childChannelInitializer { channel in
-          channelInitializer(channel).flatMap { _ in
-            channel.eventLoop.makeSucceededVoidFuture()
-          }
-        }
-        .bind(to: address).get()
-
-        postBind(channel: channel)
-
-        try await channel.closeFuture.get()
-      }
-    #else
-      let channel = try await bootstrap.bind(
-        to: address, childChannelInitializer: channelInitializer)
-
-      postBind(channel: channel.channel)
-
-      try await withThrowingDiscardingTaskGroup { g in
-        try await channel.executeThenClose { inbound in
-          for try await _ in inbound {
-            g.addTask {
-
-            }
           }
         }
       }
-    #endif
+    }
   }
 
   private func initializeFlow(_ inputStream: any Channel, originalRequest: Request) async throws

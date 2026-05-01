@@ -1,0 +1,236 @@
+// ===----------------------------------------------------------------------===//
+//
+// This source file is part of the Netbot open source project
+//
+// Copyright (c) 2025 Junfeng Zhang and the Netbot project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+// See CONTRIBUTORS.txt for the list of Netbot project authors
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+// ===----------------------------------------------------------------------===//
+
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension AnyProxyGroup {
+  public struct FormatStyle: Sendable {
+    public init() {}
+  }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension AnyProxyGroup.FormatStyle {
+  public func format(_ value: AnyProxyGroup) -> String {
+    var formatOutput = "\(value.name) = \(value.kind.rawValue)"
+    switch value.resource.source {
+    case .cache:
+      formatOutput += ", proxies = \(value.lazyProxies.joined(separator: ", "))"
+    case .query:
+      formatOutput += ", proxies-url = \(value.resource.externalProxiesURL?.absoluteString ?? "")"
+      if value.resource.externalProxiesAutoUpdateTimeInterval != 86400 {
+        formatOutput +=
+          ", proxies-auto-update-time-interval = \(value.resource.externalProxiesAutoUpdateTimeInterval)"
+      }
+    }
+    return formatOutput
+  }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension AnyProxyGroup.FormatStyle: FormatStyle {
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension AnyProxyGroup.FormatStyle {
+
+  public func parse(_ value: String) throws -> AnyProxyGroup {
+    func buildError(value: String, example: String) -> CocoaError {
+      let errorStr =
+        "Cannot parse \(value). String should adhere to the preferred format, such as \"\(example)\"."
+      return CocoaError(.formatting, userInfo: [NSDebugDescriptionErrorKey: errorStr])
+    }
+    // Example format: name = kind, prop1 = val1, prop2 = val2
+    let parts = value.split(separator: ",", maxSplits: 1, omittingEmptySubsequences: false)
+    guard parts.count > 1 else {
+      throw buildError(value: value, example: "example = select, proxies = DIRECT, REJECT")
+    }
+
+    // Split head: "name = kind"
+    let head = parts[0].split(separator: "=", maxSplits: 1).map {
+      String($0)._trimmingWhitespaces()
+    }
+    guard head.count == 2 else {
+      throw buildError(value: value, example: "example = select, proxies = DIRECT, REJECT")
+    }
+
+    var parseOutput = AnyProxyGroup(name: head[0])
+
+    guard let kind = AnyProxyGroup.Kind(rawValue: head[1]) else {
+      throw buildError(value: value, example: "example = select, proxies = DIRECT, REJECT")
+    }
+    parseOutput.kind = kind
+
+    var source: AnyProxyGroup.Resource.Source?
+
+    // Parse property section (if exists)
+    let properties: [String: [String]]
+    do {
+      properties = try PropertiesParseStrategy().parse(String(parts[1]))
+    } catch {
+      throw buildError(value: value, example: "example = select, proxies = DIRECT, REJECT")
+    }
+
+    for property in properties {
+      if property.key == "proxies" {
+        guard !property.value.isEmpty else {
+          throw buildError(value: value, example: "example = select, proxies = DIRECT, REJECT")
+        }
+        parseOutput.lazyProxies = property.value
+        source = .cache
+      }
+      if property.key == "proxies-url" {
+        guard let urlString = property.value.first, let url = URL(string: urlString),
+          url.scheme != nil
+        else {
+          throw buildError(
+            value: value, example: "example = select, proxies-url = https://example.com")
+        }
+        parseOutput.resource.externalProxiesURL = url
+        source = .query
+      }
+      if property.key == "proxies-auto-update-time-interval" {
+        guard let timeIntervalString = property.value.first,
+          let timeInterval = Int(timeIntervalString)
+        else {
+          throw buildError(
+            value: value,
+            example:
+              "example = select, proxies-url = https://example.com, proxies-auto-update-time-interval = 86400"
+          )
+        }
+        parseOutput.resource.externalProxiesAutoUpdateTimeInterval = timeInterval
+      }
+    }
+    guard let source else {
+      throw buildError(value: value, example: "example = select, proxies = DIRECT, REJECT")
+    }
+    parseOutput.resource.source = source
+    return parseOutput
+  }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension AnyProxyGroup.FormatStyle: ParseStrategy {
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension AnyProxyGroup.FormatStyle {
+  public var parseStrategy: AnyProxyGroup.FormatStyle {
+    self
+  }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension AnyProxyGroup.FormatStyle: ParseableFormatStyle {
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension AnyProxyGroup.FormatStyle: Codable, Hashable {}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension FormatStyle where Self == AnyProxyGroup.FormatStyle {
+  public static var proxyGroup: Self { .init() }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension ParseableFormatStyle where Self == AnyProxyGroup.FormatStyle {
+  public static var proxyGroup: Self { .init() }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension ParseStrategy where Self == AnyProxyGroup.FormatStyle {
+  @_disfavoredOverload
+  public static var proxyGroup: Self { .init() }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension AnyProxyGroup {
+
+  #if canImport(FoundationEssentials)
+    public func formatted<S>(_ v: S) -> S.FormatOutput
+    where S: FoundationEssentials.FormatStyle, S.FormatInput == AnyProxyGroup {
+      return v.format(self)
+    }
+  #else
+    public func formatted<S>(_ v: S) -> S.FormatOutput
+    where S: Foundation.FormatStyle, S.FormatInput == AnyProxyGroup {
+      v.format(self)
+    }
+  #endif
+
+  /// Formats `self`.
+  /// - Returns: A formatted string to describe the policy.
+  public func formatted() -> String {
+    FormatStyle().format(self)
+  }
+
+  public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
+  where T.ParseOutput == Self {
+    self = try strategy.parse(value)
+  }
+}

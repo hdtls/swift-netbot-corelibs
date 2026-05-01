@@ -34,8 +34,8 @@
     import Network
   #endif
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -48,8 +48,8 @@
     func autoReloadDecryptionPKCS12Bundle(_ bundle: NIOSSLPKCS12Bundle?) async
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -102,18 +102,8 @@
 
     private var maxminddbFile: String {
       let filename = "GeoLite2-Country.mmdb"
-      let filePath: String
-      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-        if #available(SwiftStdlib 5.7, *) {
-          filePath = URL.maxmind.appending(path: filename, directoryHint: .notDirectory).path(
-            percentEncoded: false)
-        } else {
-          filePath = URL.maxmind.appendingPathComponent(filename, isDirectory: false).path
-        }
-      #else
-        filePath = URL.maxmind.appending(path: filename, directoryHint: .notDirectory).path(
-          percentEncoded: false)
-      #endif
+      let filePath = URL.maxmind.appending(path: filename, directoryHint: .notDirectory).path(
+        percentEncoded: false)
       return filePath
     }
 
@@ -178,25 +168,10 @@
           if let httpListenPort = profile.httpListenPort,
             let port = NWEndpoint.Port(rawValue: UInt16(httpListenPort))
           {
-            #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-              if #available(SwiftStdlib 5.9, *) {
-                configuration.proxyConfigurations = [
-                  .init(
-                    httpCONNECTProxy: .hostPort(host: .init(profile.httpListenAddress), port: port))
-                ]
-              } else {
-                configuration.connectionProxyDictionary = [
-                  kCFNetworkProxiesHTTPEnable as String: 1,
-                  kCFNetworkProxiesHTTPProxy as String: profile.httpListenAddress,
-                  kCFNetworkProxiesHTTPPort as String: port.rawValue,
-                ]
-              }
-            #else
-              configuration.proxyConfigurations = [
-                .init(
-                  httpCONNECTProxy: .hostPort(host: .init(profile.httpListenAddress), port: port))
-              ]
-            #endif
+            configuration.proxyConfigurations = [
+              .init(
+                httpCONNECTProxy: .hostPort(host: .init(profile.httpListenAddress), port: port))
+            ]
           }
         #endif
         return Session(configuration: configuration)
@@ -412,8 +387,8 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif

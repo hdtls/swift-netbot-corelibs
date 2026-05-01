@@ -16,10 +16,10 @@ import Testing
 
 @testable import _ProfileSupport
 
-@Suite("V1._ProtocolDNS._MappingTests", .tags(.swiftData, .schema, .dnsMapping))
+@Suite(.tags(.swiftData, .schema, .dnsMapping))
 struct V1_ProtocolDNS_MappingTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -33,7 +33,7 @@ struct V1_ProtocolDNS_MappingTests {
     #expect(data.note == "")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -49,7 +49,7 @@ struct V1_ProtocolDNS_MappingTests {
     #expect(data.note == persistentModel.note)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -66,10 +66,10 @@ struct V1_ProtocolDNS_MappingTests {
   }
 }
 
-@Suite("V1._ProtocolDNS._MappingStrategyTests", .tags(.swiftData, .schema, .dnsMapping))
+@Suite(.tags(.swiftData, .schema, .dnsMapping))
 struct V1_ProtocolDNS_Mapping_KindTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
@@ -81,7 +81,7 @@ struct V1_ProtocolDNS_Mapping_KindTests {
     #expect(ProtocolDNS.MappingStrategy(rawValue: 9) == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)

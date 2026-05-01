@@ -1,0 +1,193 @@
+// ===----------------------------------------------------------------------===//
+//
+// This source file is part of the Netbot open source project
+//
+// Copyright (c) 2025 Junfeng Zhang and the Netbot project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+// See CONTRIBUTORS.txt for the list of Netbot project authors
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+// ===----------------------------------------------------------------------===//
+
+import HTTPTypes
+
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension HTTPFields {
+  public struct FormatStyle: Sendable {
+    public init() {}
+  }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension HTTPFields.FormatStyle {
+  public func format(_ value: HTTPFields) -> String {
+    var formattedString = ""
+    for field in value {
+      formattedString += "|\(field.name):\(field.value)"
+    }
+    // Drop first `|`.
+    return formattedString.isEmpty ? "" : String(formattedString.dropFirst())
+  }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension HTTPFields.FormatStyle: FormatStyle {
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension HTTPFields.FormatStyle {
+
+  public func parse(_ value: String) throws -> HTTPFields {
+    try _parse(value)
+  }
+
+  func _parse(_ value: String) throws -> HTTPFields {
+    let fields: [HTTPField] = value.split(separator: "|").compactMap {
+      let matches = $0.matches(of: /\ *(.+): *(.+)/)
+      guard let match = matches.first else {
+        return nil
+      }
+      guard let name = HTTPField.Name(String(match.1)) else {
+        return nil
+      }
+      return HTTPField(name: name, value: String(match.2))
+    }
+
+    guard !fields.isEmpty else {
+      let exampleFormattedString = HTTPFields.FormatStyle().format(
+        HTTPFields([.init(name: .connection, value: "keep-alive")]))
+      let errorStr =
+        "Cannot parse \(value). String should adhere to the preferred format, such as \(exampleFormattedString)."
+      throw CocoaError(.formatting, userInfo: [NSDebugDescriptionErrorKey: errorStr])
+    }
+    let httpFields = HTTPFields(fields)
+    return httpFields
+  }
+
+  func _parse0(_ value: String) throws -> HTTPFields {
+    let fieldStrings = value.split(separator: "|", omittingEmptySubsequences: true)
+    let fields: [HTTPField] = fieldStrings.compactMap { fieldStr in
+      guard let colonIndex = fieldStr.firstIndex(of: ":") else { return nil }
+      let namePart = fieldStr[..<colonIndex]._trimmingWhitespaces()
+      let valuePart = fieldStr[fieldStr.index(after: colonIndex)...]._trimmingWhitespaces()
+      guard let name = HTTPField.Name(String(namePart)) else { return nil }
+      return HTTPField(name: name, value: String(valuePart))
+    }
+    guard !fields.isEmpty else {
+      let exampleFormattedString = HTTPFields.FormatStyle().format(
+        HTTPFields([.init(name: .connection, value: "keep-alive")]))
+      let errorStr =
+        "Cannot parse \(value). String should adhere to the preferred format, such as \(exampleFormattedString)."
+      throw CocoaError(.formatting, userInfo: [NSDebugDescriptionErrorKey: errorStr])
+    }
+    let httpFields = HTTPFields(fields)
+    return httpFields
+  }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension HTTPFields.FormatStyle: ParseStrategy {
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension HTTPFields.FormatStyle {
+  public var parseStrategy: HTTPFields.FormatStyle {
+    self
+  }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension HTTPFields.FormatStyle: ParseableFormatStyle {
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension HTTPFields.FormatStyle: Codable, Hashable {}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension FormatStyle where Self == HTTPFields.FormatStyle {
+  public static var httpFields: Self { .init() }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension ParseStrategy where Self == HTTPFields.FormatStyle {
+  @_disfavoredOverload
+  public static var httpFields: Self { .init() }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension HTTPFields {
+
+  #if canImport(FoundationEssentials)
+    public func formatted<S>(_ v: S) -> S.FormatOutput
+    where S: FoundationEssentials.FormatStyle, S.FormatInput == HTTPFields {
+      return v.format(self)
+    }
+  #else
+    public func formatted<S>(_ v: S) -> S.FormatOutput
+    where S: Foundation.FormatStyle, S.FormatInput == HTTPFields {
+      return v.format(self)
+    }
+  #endif
+
+  public func formatted() -> String {
+    FormatStyle().format(self)
+  }
+
+  public init<T: ParseStrategy>(_ value: T.ParseInput, strategy: T) throws
+  where T.ParseOutput == Self {
+    self = try strategy.parse(value)
+  }
+}

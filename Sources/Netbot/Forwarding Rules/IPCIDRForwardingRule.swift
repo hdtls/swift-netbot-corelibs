@@ -17,14 +17,14 @@ import NetbotLite
 import NetbotLiteData
 import Synchronization
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
-  #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     typealias AvailableIPv6Pool = _AvailableIPv6Pool
   #endif
 
@@ -107,8 +107,8 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -125,21 +125,21 @@ extension IPCIDRForwardingRule._Storage: Hashable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 extension IPCIDRForwardingRule._Storage: @unchecked Sendable {}
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   #if canImport(FoundationEssentials)
     import FoundationEssentials
   #else
     import Foundation
   #endif
 
-  @available(SwiftStdlib 5.5, *)
+  @available(SwiftStdlib 5.9, *)
   extension IPv6Address {
 
     @available(SwiftStdlib 6.0, *)
@@ -162,7 +162,7 @@ extension IPCIDRForwardingRule._Storage: @unchecked Sendable {}
     }
   }
 
-  @available(SwiftStdlib 5.5, *)
+  @available(SwiftStdlib 5.9, *)
   extension IPCIDRForwardingRule {
 
     struct _AvailableIPv6Pool: @unchecked Sendable {

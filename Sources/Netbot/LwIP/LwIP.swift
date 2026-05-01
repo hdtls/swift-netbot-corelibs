@@ -21,7 +21,7 @@ import NIOExtras
 import NetbotLite
 import _DNSSupport
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   import NIOConcurrencyHelpers
 #else
   import Synchronization
@@ -33,8 +33,8 @@ import _DNSSupport
   import NIOPosix
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -182,7 +182,7 @@ import _DNSSupport
 
   private func handleNewPackets0(_ packetObjects: [NEPacket]) async {
     await withTaskGroup { g in
-      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
         if #available(SwiftStdlib 6.0, *) {
           let subranges = packetObjects.indices(where: self.dns.handlePacket(_:))
 
@@ -333,8 +333,8 @@ import _DNSSupport
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif

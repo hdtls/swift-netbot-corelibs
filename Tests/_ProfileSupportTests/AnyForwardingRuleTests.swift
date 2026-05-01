@@ -19,8 +19,8 @@ import Testing
 @Suite(.tags(.forwardingRule))
 struct AnyForwardingRuleTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -35,11 +35,11 @@ struct AnyForwardingRuleTests {
   }
 }
 
-@Suite("AnyForwardingRule.KindTests", .tags(.forwardingRule))
-struct AnyForwardingRuleKindTests {
+@Suite(.tags(.forwardingRule))
+struct AnyForwardingRule_KindTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -57,8 +57,8 @@ struct AnyForwardingRuleKindTests {
     #expect(AnyForwardingRule.Kind(rawValue: "unknown") == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -75,11 +75,11 @@ struct AnyForwardingRuleKindTests {
   }
 }
 
-@Suite("AnyForwardingRule.NotificationTests", .tags(.forwardingRule))
-struct AnyForwardingRuleNotificationTests {
+@Suite(.tags(.forwardingRule))
+struct AnyForwardingRule_NotificationTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -90,8 +90,8 @@ struct AnyForwardingRuleNotificationTests {
     #expect(notification.timeInterval == 300)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif

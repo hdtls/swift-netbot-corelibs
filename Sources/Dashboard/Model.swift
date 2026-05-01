@@ -41,8 +41,8 @@ import NetbotLiteData
   import NetworkExtension
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -52,8 +52,8 @@ public enum DataTransfer: Hashable, Sendable {
 }
 
 #if canImport(Network)
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -80,8 +80,8 @@ public enum DataTransfer: Hashable, Sendable {
     }
   }
 #else
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -90,8 +90,8 @@ public enum DataTransfer: Hashable, Sendable {
   }
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -100,8 +100,8 @@ public protocol ConnectionsDependency: Sendable {
   var messages: AsyncThrowingStream<[Connection], any Error> { get }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -177,7 +177,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
   public init() {}
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
@@ -264,14 +264,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
   #endif
 
   nonisolated public convenience init() {
-    #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
-      let schema = Schema(versionedSchema: V1.self)
-      let configuration: ModelConfiguration = .init(isStoredInMemoryOnly: true)
-      let modelContainer = try! ModelContainer(for: schema, configurations: [configuration])
-      self.init(modelContainer: modelContainer, dependency: DefaultConnectionsDependency())
-    #else
-      self.init(dependency: DefaultConnectionsDependency())
-    #endif
+    self.init(dependency: DefaultConnectionsDependency())
   }
 
   #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
@@ -280,11 +273,18 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
     ) {
       self.init(_modelContainer: modelContainer, dependency: dependency)
     }
-  #else
-    nonisolated public convenience init(dependency: any ConnectionsDependency) {
-      self.init(_modelContainer: nil, dependency: dependency)
-    }
   #endif
+
+  nonisolated public convenience init(dependency: any ConnectionsDependency) {
+    #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+      let schema = Schema(versionedSchema: V1.self)
+      let configuration: ModelConfiguration = .init(isStoredInMemoryOnly: true)
+      let modelContainer = try! ModelContainer(for: schema, configurations: [configuration])
+      self.init(_modelContainer: modelContainer, dependency: dependency)
+    #else
+      self.init(_modelContainer: nil, dependency: dependency)
+    #endif
+  }
 
   nonisolated private init(_modelContainer: Any?, dependency: any ConnectionsDependency) {
     self.dependency = dependency

@@ -33,8 +33,8 @@ import _ProfileSupport
   import Foundation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -164,8 +164,8 @@ extension Profile {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -231,37 +231,21 @@ extension AnyProxy {
         passwordReference: passwordReference
       )
     case .vmess:
-      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-        if #available(SwiftStdlib 5.7, *) {
-          forwardProtocol = ForwardProtocolVMESS(
-            name: name,
-            serverAddress: serverAddress,
-            port: port,
-            userID: UUID(uuidString: username)!,
-            ws: ws,
-            tls: tls
-          )
-        } else {
-          // TODO: ForwardProtocolVMESS BackDeploy
-          forwardProtocol = .direct
-        }
-      #else
-        forwardProtocol = ForwardProtocolVMESS(
-          name: name,
-          serverAddress: serverAddress,
-          port: port,
-          userID: UUID(uuidString: username)!,
-          ws: ws,
-          tls: tls
-        )
-      #endif
+      forwardProtocol = ForwardProtocolVMESS(
+        name: name,
+        serverAddress: serverAddress,
+        port: port,
+        userID: UUID(uuidString: username)!,
+        ws: ws,
+        tls: tls
+      )
     }
     return forwardProtocol
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif

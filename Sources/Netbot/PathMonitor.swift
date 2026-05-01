@@ -27,15 +27,15 @@
     import CoreWLAN
   #endif
 
-  #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     import NIOConcurrencyHelpers
   #else
     import Synchronization
   #endif
 
   /// A wrap class for `NWPathMonitor` providing default `pathUpdateHandler`.
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -122,7 +122,7 @@
         self.logger.info("Network has been changed to \(ssid), New IP address: \(address)")
 
         let content = UNMutableNotificationContent()
-        #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+        #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
           content.title = String(
             localized: "Network Changed",
             comment: "Title of network changed notification"

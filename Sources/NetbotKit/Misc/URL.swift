@@ -20,7 +20,7 @@
 #endif
 
 #if !canImport(FoundationEssentials)
-  @available(SwiftStdlib 5.7, *)
+  @available(SwiftStdlib 5.9, *)
   extension ParseableFormatStyle where Self == URL.FormatStyle {
 
     public static var _url: URL.FormatStyle {
@@ -29,8 +29,8 @@
   }
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif

@@ -19,15 +19,15 @@
   import _PrivilegeSupport
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   public var PHT: PrivilegeScope { PrivilegeScope.shared }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -119,24 +119,11 @@
         try await setAppServiceHandleIfNeeded()
         let proxy = try privileges.remoteAppServiceHandle()
 
-        #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-          if #available(SwiftStdlib 5.7, *) {
-            if case .enabled = await proxy.status(daemon: plistName) {
-              return
-            }
-            try await proxy.register(daemon: plistName)
-            isActive = true
-          } else {
-            // TODO: Fallback to SwiftStdlib 5.3
-          }
-        #else
-          if case .enabled = await proxy.status(daemon: plistName) {
-            return
-          }
-          try await proxy.register(daemon: plistName)
-          isActive = true
-        #endif
-
+        if case .enabled = await proxy.status(daemon: plistName) {
+          return
+        }
+        try await proxy.register(daemon: plistName)
+        isActive = true
       } catch {
         self.logger.error("Launch daemon \(plistName) register failure with error: \(error)")
         throw error
@@ -155,21 +142,10 @@
 
       do {
         let proxy = try privileges.remoteAppServiceHandle()
-        #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-          if #available(SwiftStdlib 5.7, *) {
-            guard case .enabled = await proxy.status(daemon: plistName) else {
-              return
-            }
-            try await proxy.unregister(daemon: plistName)
-          } else {
-            // TODO: Fallback to SwiftStdlib 5.3
-          }
-        #else
-          guard case .enabled = await proxy.status(daemon: plistName) else {
-            return
-          }
-          try await proxy.unregister(daemon: plistName)
-        #endif
+        guard case .enabled = await proxy.status(daemon: plistName) else {
+          return
+        }
+        try await proxy.unregister(daemon: plistName)
       } catch {
         self.logger.error("Launch daemon \(plistName) unregister failure with error: \(error)")
         throw error
@@ -226,8 +202,8 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif

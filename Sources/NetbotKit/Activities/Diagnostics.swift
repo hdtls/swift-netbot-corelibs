@@ -19,8 +19,8 @@
   import Logging
   import Network
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.7, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -117,13 +117,7 @@
 
       let configuration = URLSessionConfiguration.default
       configuration.connectionProxyDictionary = [:]
-      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-        if #available(SwiftStdlib 5.9, *) {
-          configuration.proxyConfigurations = []
-        }
-      #else
-        configuration.proxyConfigurations = []
-      #endif
+      configuration.proxyConfigurations = []
       configuration.timeoutIntervalForRequest = timeoutInterval ?? 5.0
 
       let session = Session(configuration: configuration)
@@ -147,13 +141,7 @@
 
       let configuration = URLSessionConfiguration.default
       configuration.connectionProxyDictionary = [:]
-      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-        if #available(SwiftStdlib 5.9, *) {
-          configuration.proxyConfigurations = []
-        }
-      #else
-        configuration.proxyConfigurations = []
-      #endif
+      configuration.proxyConfigurations = []
       configuration.timeoutIntervalForRequest = timeoutInterval ?? 5.0
 
       let session = Session(configuration: configuration)

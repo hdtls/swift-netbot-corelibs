@@ -25,30 +25,21 @@ import Testing
 @Suite(.tags(.formatting))
 struct PropertiesParseStrategyTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   var parser: PropertiesParseStrategy { .init() }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test(arguments: ["==", " = = ", "p1, p2 = 1", "p1"])
   func parsePropertiesFromInvalidInput(_ parseInput: String) async throws {
-    let parseFunctions: [(String) throws -> [String: [String]]]
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      if #available(SwiftStdlib 5.7, *) {
-        parseFunctions = [parser.parse, parser._parse, parser._parse0]
-      } else {
-        parseFunctions = [parser.parse, parser._parse0]
-      }
-    #else
-      parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    #endif
+    let parseFunctions = [parser.parse, parser._parse, parser._parse0]
 
     for parse in parseFunctions {
       #expect(throws: CocoaError.self) {
@@ -57,22 +48,13 @@ struct PropertiesParseStrategyTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func parse() async throws {
-    let parseFunctions: [(String) throws -> [String: [String]]]
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      if #available(SwiftStdlib 5.7, *) {
-        parseFunctions = [parser.parse, parser._parse, parser._parse0]
-      } else {
-        parseFunctions = [parser.parse, parser._parse0]
-      }
-    #else
-      parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    #endif
+    let parseFunctions = [parser.parse, parser._parse, parser._parse0]
 
     for parse in parseFunctions {
       #expect(try parse("p1 = 1") == ["p1": ["1"]])
@@ -86,8 +68,8 @@ struct PropertiesParseStrategyTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -95,16 +77,7 @@ struct PropertiesParseStrategyTests {
 
     let parseInput = "p1 = 1, \"p2 = 2\""
 
-    let parseFunctions: [(String) throws -> [String: [String]]]
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      if #available(SwiftStdlib 5.7, *) {
-        parseFunctions = [parser.parse, parser._parse, parser._parse0]
-      } else {
-        parseFunctions = [parser.parse, parser._parse0]
-      }
-    #else
-      parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    #endif
+    let parseFunctions = [parser.parse, parser._parse, parser._parse0]
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)
@@ -112,24 +85,15 @@ struct PropertiesParseStrategyTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func parsePropertiesFromInputContainingMultipleQuotationMarks() throws {
     let parseInput = "p1 = 1, \"p2 = 2\", p3 = \"a\""
 
-    let parseFunctions: [(String) throws -> [String: [String]]]
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      if #available(SwiftStdlib 5.7, *) {
-        parseFunctions = [parser.parse, parser._parse, parser._parse0]
-      } else {
-        parseFunctions = [parser.parse, parser._parse0]
-      }
-    #else
-      parseFunctions = [parser.parse, parser._parse, parser._parse0]
-    #endif
+    let parseFunctions = [parser.parse, parser._parse, parser._parse0]
 
     for parse in parseFunctions {
       let parseOutput = try parse(parseInput)

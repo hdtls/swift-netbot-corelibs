@@ -17,14 +17,14 @@ import Dispatch
 import NEAddressProcessing
 import NIOCore
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   import NIOConcurrencyHelpers
 #else
   import Synchronization
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -41,7 +41,7 @@ class BaseSocketChannel<SocketType: BaseSocketProtocol>: Channel, ChannelCore, @
   let eventLoop: any EventLoop
   private let closePromise: EventLoopPromise<Void>
 
-  #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+  #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     internal let _offEventLoopLock = NIOLockedValueBox(Void())
   #else
     internal let _offEventLoopLock = Mutex(Void())

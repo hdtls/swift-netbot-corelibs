@@ -14,8 +14,8 @@
 
 import RegexBuilder
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -25,9 +25,6 @@ extension AnyForwardingRule {
 
   package static let sectionName = "[Rule]"
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.7, *)
-  #endif
   package static var sectionRegex: some RegexComponent {
     Regex {
       ZeroOrMore(.whitespace)
@@ -38,9 +35,6 @@ extension AnyForwardingRule {
   }
 
   /// Regular expression for match all forwarding rule with specified pattern.
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.7, *)
-  #endif
   package static var regex:
     Regex<(Substring, Bool, AnyForwardingRule.Kind, Substring, Substring, Substring?)>
   {
@@ -74,11 +68,6 @@ extension AnyForwardingRule {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.7, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
   package var regex: some RegexComponent {
     Regex {
       /^/

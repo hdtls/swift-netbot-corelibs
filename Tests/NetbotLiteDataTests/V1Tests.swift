@@ -20,7 +20,7 @@
 
   @Suite struct V1Tests {
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
       @available(SwiftStdlib 5.9, *)
     #else
       @available(SwiftStdlib 6.0, *)
@@ -30,7 +30,7 @@
       #expect(source.count == 10)
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
       @available(SwiftStdlib 5.9, *)
     #else
       @available(SwiftStdlib 6.0, *)

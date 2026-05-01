@@ -19,17 +19,14 @@
   /// AppServiceHandleProtocol is the NSXPCConnection-based protocol implemented by the XPC service and called by the app.
   ///
   /// The protocol that this service will vend as its API. This protocol will also need to be visible to the process hosting the service.
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
   @objc public protocol AppServiceHandleProtocol: Sendable {
 
     /// Connection code signing requirement.
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      @available(SwiftStdlib 5.7, *)
-    #endif
     func codeSigningRequirement() async -> String
 
     /// Initializes an app service object with a launch daemon with the property list name you provide and register the service.
@@ -39,15 +36,9 @@
     func unregister(daemon plistName: String) async throws
 
     /// Return status of the app service object for a launch daemon initialized with the identifier you provide.
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      @available(SwiftStdlib 5.7, *)
-    #endif
     func status(daemon plistName: String) async -> SMAppService.Status
 
     /// Opens System Settings to the Login Items control panel.
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      @available(SwiftStdlib 5.7, *)
-    #endif
     func openSystemSettingsLoginItems() async
 
     /// Called by the app to get an endpoint that's connected to the helper tool.

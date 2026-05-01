@@ -14,7 +14,7 @@
 
 import _ProfileSupport
 
-@available(SwiftStdlib 5.7, *)
+@available(SwiftStdlib 5.9, *)
 extension Array where Element == Substring {
 
   func firstRange(match sectionRegex: some RegexComponent) -> ClosedRange<Int>? {

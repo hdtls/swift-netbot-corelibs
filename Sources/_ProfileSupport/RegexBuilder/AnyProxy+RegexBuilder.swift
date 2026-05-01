@@ -14,8 +14,8 @@
 
 import RegexBuilder
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-  @available(SwiftStdlib 5.5, *)
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
@@ -23,9 +23,6 @@ extension AnyProxy {
 
   package static let sectionName = "[Proxy]"
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.7, *)
-  #endif
   package static var sectionRegex: some RegexComponent {
     Regex {
       ZeroOrMore(.whitespace)
@@ -35,9 +32,6 @@ extension AnyProxy {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.7, *)
-  #endif
   package static var regex: Regex<(Substring, Substring, AnyProxy.Kind, Substring?)> {
     Regex {
       /([^=\n]+) *= */
@@ -50,9 +44,6 @@ extension AnyProxy {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.7, *)
-  #endif
   package var regex: some RegexComponent {
     Regex {
       ZeroOrMore(.whitespace)
@@ -66,9 +57,6 @@ extension AnyProxy {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.7, *)
-  #endif
   package var rulesRegex: some RegexComponent {
     Regex {
       ZeroOrMore(.whitespace)

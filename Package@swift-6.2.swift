@@ -256,16 +256,8 @@ if Context.environment["NETBOT_REQUIRES_LOCAL_PACKAGE_DEPENDENCIES"] != nil {
 
 for target in package.targets {
   var settings = target.swiftSettings ?? []
-  settings.append(.define("NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5"))
   settings.append(.enableExperimentalFeature("StrictConcurrency=complete"))
-  settings.append(
-    .enableExperimentalFeature(
-      "AvailabilityMacro=SwiftStdlib 5.5:iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0"
-    ))
-  settings.append(
-    .enableExperimentalFeature(
-      "AvailabilityMacro=SwiftStdlib 5.7:iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0"
-    ))
+  settings.append(.define("NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9"))
   settings.append(
     .enableExperimentalFeature(
       "AvailabilityMacro=SwiftStdlib 5.9:iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0"

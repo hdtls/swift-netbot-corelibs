@@ -23,8 +23,8 @@ import Testing
 #if canImport(CoWOptimizationMacros)
   import CoWOptimizationMacros
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-    @available(SwiftStdlib 5.5, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
@@ -38,8 +38,8 @@ import Testing
 @Suite struct CopyonWriteMacrosTests {
 
   #if canImport(CoWOptimizationMacros)
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      @available(SwiftStdlib 5.5, *)
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+      @available(SwiftStdlib 5.9, *)
     #else
       @available(SwiftStdlib 6.0, *)
     #endif
@@ -122,8 +122,8 @@ import Testing
       }
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      @available(SwiftStdlib 5.5, *)
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+      @available(SwiftStdlib 5.9, *)
     #else
       @available(SwiftStdlib 6.0, *)
     #endif
@@ -191,8 +191,8 @@ import Testing
       }
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_5
-      @available(SwiftStdlib 5.5, *)
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+      @available(SwiftStdlib 5.9, *)
     #else
       @available(SwiftStdlib 6.0, *)
     #endif
