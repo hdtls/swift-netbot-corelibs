@@ -49,7 +49,7 @@ struct AnyProxy_FormatStyleTests {
     proxy.authenticationRequired = true
     proxy.algorithm = .aes256Gcm
     proxy.obfuscation = .init(isEnabled: true, strategy: .tls, hostname: "obfuscate.example.com")
-    proxy.measurement.url = .init(string: "http://test.example.com")
+    proxy.measurePolicy.testURL = .init(string: "http://test.example.com")
     proxy.engress.interfaceName = "AirPort"
     proxy.engress.backToDefaultIfNICUnavailable = true
     proxy.engress.packetToS = 2
@@ -93,7 +93,7 @@ struct AnyProxy_FormatStyleTests {
     expected.obfuscation.isEnabled = true
     expected.obfuscation.strategy = .tls
     expected.obfuscation.hostname = "obfuscate.example.com"
-    expected.measurement.url = .init(string: "http://test.example.com")
+    expected.measurePolicy.testURL = .init(string: "http://test.example.com")
     expected.engress.interfaceName = "AirPort"
     expected.engress.backToDefaultIfNICUnavailable = true
     expected.engress.packetToS = 2
@@ -340,7 +340,7 @@ struct AnyProxy_FormatStyleTests {
     #expect(parseOutput.obfuscation.isEnabled == possibleParseOutput.obfuscation.isEnabled)
     #expect(parseOutput.obfuscation.strategy == possibleParseOutput.obfuscation.strategy)
     #expect(parseOutput.obfuscation.hostname == possibleParseOutput.obfuscation.hostname)
-    #expect(parseOutput.measurement.url == possibleParseOutput.measurement.url)
+    #expect(parseOutput.measurePolicy.testURL == possibleParseOutput.measurePolicy.testURL)
     #expect(parseOutput.engress.interfaceName == possibleParseOutput.engress.interfaceName)
     #expect(
       parseOutput.engress.backToDefaultIfNICUnavailable

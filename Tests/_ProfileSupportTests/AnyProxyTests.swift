@@ -24,8 +24,7 @@ import Testing
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func propertyInitialValue() {
-    let measurement = AnyProxy.Measurement()
-    let proxy = AnyProxy(name: "sample", measurement: measurement)
+    let proxy = AnyProxy(name: "sample")
     #expect(proxy.name == "sample")
     #expect(proxy.source == .userDefined)
     #expect(proxy.kind == .http)
@@ -37,7 +36,7 @@ import Testing
     #expect(!proxy.authenticationRequired)
     #expect(proxy.algorithm == .aes128Gcm)
     #expect(proxy.obfuscation == .init())
-    #expect(proxy.measurement == measurement)
+    #expect(proxy.measurePolicy == .init())
     #expect(proxy.tls == .init())
     #expect(proxy.ws == .init())
     #expect(proxy.engress == .init())
@@ -156,22 +155,6 @@ struct AnyProxy_EngressTests {
   @Test("AnyProxy.Egress.VersionStrategy CaseIterable Conformance")
   func versionStrategyCaseIterableConformance() {
     #expect(AnyProxy.Engress.VersionStrategy.allCases == [.v4, .v6, .dual])
-  }
-}
-
-@Suite(.tags(.proxy))
-struct AnyProxy_MeasurementTests {
-
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  @Test func propertyInitialValue() {
-    let transactionMetrics = TransactionMetrics()
-    let measurement = AnyProxy.Measurement(transactionMetrics: transactionMetrics)
-    #expect(measurement.url == nil)
-    #expect(measurement.transactionMetrics == transactionMetrics)
   }
 }
 

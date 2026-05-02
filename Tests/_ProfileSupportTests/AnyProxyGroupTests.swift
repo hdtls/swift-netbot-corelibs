@@ -126,22 +126,3 @@ struct AnyProxyGroup_Resource_SourceTests {
     #expect(AnyProxyGroup.Resource.Source.allCases == [.cache, .query])
   }
 }
-
-@Suite(.tags(.proxyGroup))
-struct AnyProxyGroup_MeasurementTests {
-
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  @Test func propertyInitialValue() {
-    let transactionMetrics = TransactionMetrics()
-    let measurement = AnyProxyGroup.Measurement(transactionMetrics: transactionMetrics)
-    #expect(measurement.url == nil)
-    #expect(measurement.transactionMetricsExpiryInterval == 600.0)
-    #expect(measurement.timeout == 5.0)
-    #expect(measurement.tolerance == 100)
-    #expect(measurement.transactionMetrics == transactionMetrics)
-  }
-}

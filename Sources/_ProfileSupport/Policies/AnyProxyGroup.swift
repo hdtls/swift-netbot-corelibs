@@ -36,8 +36,11 @@ import CoWOptimization
   /// Resource of policies.
   public var resource: Resource
 
-  /// Network measurements.
-  public var measurement: Measurement
+  /// Policy for internet latency test..
+  public var measurePolicy: MeasurePolicy
+
+  /// Metrics for latency tests.
+  public var transactionMetrics: TransactionMetrics
 
   /// The group's creation date.
   public var creationDate: Date
@@ -51,7 +54,8 @@ import CoWOptimization
       name: name,
       kind: .select,
       resource: .init(),
-      measurement: .init(),
+      measurePolicy: .init(),
+      transactionMetrics: .init(),
       creationDate: .now,
       lazyProxies: []
     )
@@ -68,7 +72,8 @@ extension AnyProxyGroup._Storage: Hashable {
     return lhs.name == rhs.name
       && lhs.kind == rhs.kind
       && lhs.resource == rhs.resource
-      && lhs.measurement == rhs.measurement
+      && lhs.measurePolicy == rhs.measurePolicy
+      && lhs.transactionMetrics == rhs.transactionMetrics
       && lhs.creationDate == rhs.creationDate
       && lhs.lazyProxies == rhs.lazyProxies
   }
@@ -77,7 +82,8 @@ extension AnyProxyGroup._Storage: Hashable {
     hasher.combine(name)
     hasher.combine(kind)
     hasher.combine(resource)
-    hasher.combine(measurement)
+    hasher.combine(measurePolicy)
+    hasher.combine(transactionMetrics)
     hasher.combine(creationDate)
     hasher.combine(lazyProxies)
   }
@@ -104,7 +110,8 @@ extension AnyProxyGroup {
     name = persistentModel.name
     kind = persistentModel.kind
     resource = persistentModel.resource
-    measurement = persistentModel.measurement
+    measurePolicy = persistentModel.measurePolicy
+    transactionMetrics = persistentModel.transactionMetrics
     creationDate = persistentModel.creationDate
 
     lazyProxies = persistentModel.lazyProxies

@@ -140,7 +140,8 @@ extension _ProfileSupport.V1._AnyProxy {
     duplicated.authenticationRequired = authenticationRequired
     duplicated.algorithm = algorithm
     duplicated.obfuscation = obfuscation
-    duplicated.measurement = measurement
+    duplicated.measurePolicy = measurePolicy
+    duplicated.transactionMetrics = .init()
     duplicated.tls = tls
     duplicated.ws = ws
     duplicated.engress = engress
@@ -165,7 +166,8 @@ extension _ProfileSupport.V1._AnyProxyGroup {
     duplicated.name = lazyProfile?.lazyProxyGroups.map(\.name).duplicate(name) ?? name
     duplicated.kind = kind
     duplicated.resource = resource
-    duplicated.measurement = measurement
+    duplicated.measurePolicy = measurePolicy
+    duplicated.transactionMetrics = .init()
     duplicated.lazyProfile = lazyProfile
     duplicated.lazyProxies = lazyProxies
     return duplicated

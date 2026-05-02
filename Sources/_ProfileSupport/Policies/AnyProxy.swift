@@ -64,8 +64,11 @@ public struct AnyProxy: Equatable, Hashable, Sendable {
   /// The data obfuscation settings.
   public var obfuscation = Obfuscation()
 
-  /// Network measurements.
-  public var measurement = Measurement()
+  /// Policy for internet latency test..
+  public var measurePolicy = MeasurePolicy()
+
+  /// Metrics for latency tests.
+  public var transactionMetrics = TransactionMetrics()
 
   /// TLS configuration used to secure transport connections make by this policy.
   public var tls = TLS()
@@ -103,7 +106,8 @@ public struct AnyProxy: Equatable, Hashable, Sendable {
     authenticationRequired: Bool = false,
     algorithm: Algorithm = Algorithm.aes128Gcm,
     obfuscation: AnyProxy.Obfuscation = Obfuscation(),
-    measurement: AnyProxy.Measurement = Measurement(),
+    measurePolicy: MeasurePolicy = MeasurePolicy(),
+    transcationMetrics: TransactionMetrics = TransactionMetrics(),
     tls: AnyProxy.TLS = TLS(),
     ws: AnyProxy.WebSocket = WebSocket(),
     engress: AnyProxy.Engress = Engress(),
@@ -123,7 +127,8 @@ public struct AnyProxy: Equatable, Hashable, Sendable {
     self.authenticationRequired = authenticationRequired
     self.algorithm = algorithm
     self.obfuscation = obfuscation
-    self.measurement = measurement
+    self.measurePolicy = measurePolicy
+    self.transactionMetrics = transcationMetrics
     self.tls = tls
     self.ws = ws
     self.engress = engress
@@ -145,7 +150,6 @@ extension AnyProxy {
   public typealias Model = V1._AnyProxy
 
   public init(persistentModel: Model) {
-    self.init()
     name = persistentModel.name
     source = .init(rawValue: persistentModel.source) ?? .userDefined
     kind = persistentModel.kind
@@ -157,7 +161,8 @@ extension AnyProxy {
     authenticationRequired = persistentModel.authenticationRequired
     algorithm = persistentModel.algorithm
     obfuscation = persistentModel.obfuscation
-    measurement = persistentModel.measurement
+    measurePolicy = persistentModel.measurePolicy
+    transactionMetrics = persistentModel.transactionMetrics
     tls = persistentModel.tls
     ws = persistentModel.ws
     engress = persistentModel.engress

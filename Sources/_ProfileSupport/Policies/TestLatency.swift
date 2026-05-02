@@ -18,13 +18,60 @@
   import Foundation
 #endif
 
+/// An object that contains definitions of how to measure network latency.
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+public struct MeasurePolicy: Codable, Hashable, Sendable {
+
+  // The URL used to test latency.
+  public var testURL: URL?
+
+  /// Timeout interval for latency test.
+  public var timeoutInterval: Duration {
+    get { .seconds(_timeoutInterval) }
+    set {
+      let (seconds, attoseconds) = newValue.components
+      _timeoutInterval = Double(seconds) + Double(attoseconds) / 1_000_000_000_000_000_000
+    }
+  }
+
+  /// Timeout interval in seconds.
+  public var _timeoutInterval: Double = 5
+
+  /// Transaction metrics expiry time interval.
+  public var transactionMetricsExpiryInterval: Duration {
+    get { .seconds(_transactionMetricsExpiryInterval) }
+    set {
+      let (seconds, attoseconds) = newValue.components
+      _transactionMetricsExpiryInterval =
+        Double(seconds) + Double(attoseconds) / 1_000_000_000_000_000_000
+    }
+  }
+
+  /// Transaction metrics expiry time interval in seconds.
+  public var _transactionMetricsExpiryInterval: Double = 300
+
+  public init(
+    testURL: URL? = nil,
+    timeoutInterval: Duration = .seconds(5),
+    transactionMetricsExpiryInterval: Duration = .seconds(300)
+  ) {
+    self.testURL = testURL
+    self.timeoutInterval = timeoutInterval
+    self.transactionMetricsExpiryInterval = transactionMetricsExpiryInterval
+  }
+}
+
 /// An object that encapsualtes the performance metrics during the execution of a network speed test.
 #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
-public struct TransactionMetrics: Codable, Equatable, Hashable, Sendable {
+public struct TransactionMetrics: Codable, Hashable, Sendable {
 
   /// The maximum amount of data that can be transmitted over a network in a given amount of time.
   public var bandwidth: Int
@@ -51,6 +98,8 @@ public struct TransactionMetrics: Codable, Equatable, Hashable, Sendable {
 
   /// PLR, the number of packets that fail to transfer from one destination to another.
   public var packetLoss: Int
+
+  public var tolerance: Int = 0
 
   public var creationDate: Date
 

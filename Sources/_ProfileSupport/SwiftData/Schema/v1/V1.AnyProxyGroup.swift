@@ -59,11 +59,11 @@ extension V1 {
     /// Resource of policies.
     public var resource = Resource()
 
-    /// An object representing network measurements.
-    public typealias Measurement = AnyProxyGroup.Measurement
+    /// Policy for internet latency test..
+    public var measurePolicy = MeasurePolicy()
 
-    /// Network measurements.
-    public var measurement = Measurement()
+    /// Metrics for latency tests.
+    public var transactionMetrics = TransactionMetrics()
 
     /// The group's creation date.
     public var creationDate = Date.now
@@ -99,7 +99,8 @@ extension V1._AnyProxyGroup {
     self.name = data.name
     self.kind = data.kind
     self.resource = data.resource
-    self.measurement = data.measurement
+    self.measurePolicy = data.measurePolicy
+    self.transactionMetrics = data.transactionMetrics
     self.creationDate = data.creationDate
   }
 }

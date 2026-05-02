@@ -220,7 +220,7 @@ extension AnyProxy.FormatStyle {
         formatOutput += ", \(Fields.tfo.rawValue) = \(value.isTFOEnabled)"
       }
     }
-    if let testURL = value.measurement.url {
+    if let testURL = value.measurePolicy.testURL {
       formatOutput += ", \(Fields.testURL.rawValue) = \(testURL.absoluteString)"
     }
     if value.dontAlertError {
@@ -280,7 +280,7 @@ extension AnyProxy.FormatStyle {
       example.algorithm = .aes256Gcm
       example.obfuscation = .init(
         isEnabled: true, strategy: .tls, hostname: "obfuscate-example.com")
-      example.measurement.url = URL(string: "http://test-example.com")
+      example.measurePolicy.testURL = URL(string: "http://test-example.com")
       example.engress.interfaceName = "AirPort"
       example.engress.backToDefaultIfNICUnavailable = true
       example.engress.packetToS = 2
@@ -459,7 +459,7 @@ extension AnyProxy.FormatStyle {
     parseOutput.obfuscation.strategy = obfsStrategy
     parseOutput.obfuscation.hostname = obfsHostname._trimmingWhitespaces()
     // swift 6.0 initialize URL with empty string is not nil
-    parseOutput.measurement.url = testURL
+    parseOutput.measurePolicy.testURL = testURL
     parseOutput.engress.interfaceName = interfaceName._trimmingWhitespaces()
     parseOutput.engress.backToDefaultIfNICUnavailable = backToDefaultIfNICUnavailable
     parseOutput.engress.packetToS = UInt8(ipPacketToS._trimmingWhitespaces()) ?? 0

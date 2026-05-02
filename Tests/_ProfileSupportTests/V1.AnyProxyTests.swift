@@ -37,7 +37,7 @@ struct V1_AnyProxyTests {
     #expect(!proxy.authenticationRequired)
     #expect(proxy.algorithm == .aes128Gcm)
     #expect(proxy.obfuscation == .init())
-    //      #expect(proxy.measurement == measurement)
+    #expect(proxy.measurePolicy == .init())
     #expect(proxy.tls == .init())
     #expect(proxy.ws == .init())
     #expect(proxy.engress == .init())
@@ -68,7 +68,8 @@ struct V1_AnyProxyTests {
     #expect(proxy.authenticationRequired == persistentModel.authenticationRequired)
     #expect(proxy.algorithm == persistentModel.algorithm)
     #expect(proxy.obfuscation == persistentModel.obfuscation)
-    #expect(proxy.measurement == persistentModel.measurement)
+    #expect(proxy.measurePolicy == persistentModel.measurePolicy)
+    #expect(proxy.transactionMetrics == persistentModel.transactionMetrics)
     #expect(proxy.tls == persistentModel.tls)
     #expect(proxy.ws == persistentModel.ws)
     #expect(proxy.engress == persistentModel.engress)
@@ -100,7 +101,8 @@ struct V1_AnyProxyTests {
     #expect(persistentModel.authenticationRequired == proxy.authenticationRequired)
     #expect(persistentModel.algorithm == proxy.algorithm)
     #expect(persistentModel.obfuscation == proxy.obfuscation)
-    #expect(persistentModel.measurement == proxy.measurement)
+    #expect(persistentModel.measurePolicy == proxy.measurePolicy)
+    #expect(persistentModel.transactionMetrics == proxy.transactionMetrics)
     #expect(persistentModel.tls == proxy.tls)
     #expect(persistentModel.ws == proxy.ws)
     #expect(persistentModel.engress == proxy.engress)
@@ -226,22 +228,6 @@ struct V1_AnyProxy_Obfuscation_StrategyTests {
   #endif
   @Test func caseIterableConformance() async throws {
     #expect(V1._AnyProxy.Obfuscation.Strategy.allCases == [.http, .tls])
-  }
-}
-
-@Suite(.tags(.swiftData, .schema, .proxy))
-struct V1_AnyProxy_MeasurementTests {
-
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  @Test func propertyInitialValue() async throws {
-    let transactionMetrics = TransactionMetrics()
-    let measurement = V1._AnyProxy.Measurement(transactionMetrics: transactionMetrics)
-    #expect(measurement.url == nil)
-    #expect(measurement.transactionMetrics == transactionMetrics)
   }
 }
 

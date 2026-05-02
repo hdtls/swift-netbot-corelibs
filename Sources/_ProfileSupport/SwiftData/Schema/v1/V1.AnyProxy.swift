@@ -91,11 +91,11 @@ extension V1 {
     /// The data obfuscation settings.
     public var obfuscation = Obfuscation()
 
-    /// An object representing network measurements.
-    public typealias Measurement = AnyProxy.Measurement
+    /// Policy for internet latency test..
+    public var measurePolicy = MeasurePolicy()
 
-    /// Network measurements.
-    public var measurement = Measurement()
+    /// Metrics for latency tests.
+    public var transactionMetrics = TransactionMetrics()
 
     /// WebSocket settings for VMESS protocol.
     public typealias TLS = AnyProxy.TLS
@@ -176,7 +176,8 @@ extension V1._AnyProxy {
     authenticationRequired = data.authenticationRequired
     algorithm = data.algorithm
     obfuscation = data.obfuscation
-    measurement = data.measurement
+    measurePolicy = data.measurePolicy
+    transactionMetrics = data.transactionMetrics
     tls = data.tls
     ws = data.ws
     engress = data.engress

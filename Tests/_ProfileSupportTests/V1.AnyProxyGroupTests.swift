@@ -43,7 +43,8 @@ struct V1_AnyProxyGroupTests {
     #expect(group.name == persistentModel.name)
     #expect(group.kind == persistentModel.kind)
     #expect(group.resource == persistentModel.resource)
-    #expect(group.measurement == persistentModel.measurement)
+    #expect(group.measurePolicy.testURL == persistentModel.measurePolicy.testURL)
+    #expect(group.transactionMetrics == persistentModel.transactionMetrics)
     #expect(group.creationDate == persistentModel.creationDate)
   }
 
@@ -60,7 +61,8 @@ struct V1_AnyProxyGroupTests {
     #expect(persistentModel.name == group.name)
     #expect(persistentModel.kind == group.kind)
     #expect(persistentModel.resource == group.resource)
-    #expect(persistentModel.measurement == group.measurement)
+    #expect(persistentModel.measurePolicy.testURL == group.measurePolicy.testURL)
+    #expect(persistentModel.transactionMetrics == group.transactionMetrics)
     #expect(persistentModel.creationDate == group.creationDate)
   }
 }
@@ -132,25 +134,6 @@ struct V1_AnyProxyGroup_KindTests {
     #expect(kind.rawValue == rawValue)
     #expect(V1._AnyProxyGroup.Kind(rawValue: rawValue) == kind)
     #expect(V1._AnyProxyGroup.Kind(rawValue: "unknown") == nil)
-  }
-}
-
-@Suite(.tags(.swiftData, .schema, .proxyGroup))
-struct V1_AnyProxyGroup_MeasurementTests {
-
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  @Test func propertyInitialValue() {
-    let transactionMetrics = TransactionMetrics()
-    let measurement = V1._AnyProxyGroup.Measurement(transactionMetrics: transactionMetrics)
-    #expect(measurement.url == nil)
-    #expect(measurement.transactionMetricsExpiryInterval == 600.0)
-    #expect(measurement.timeout == 5.0)
-    #expect(measurement.tolerance == 100)
-    #expect(measurement.transactionMetrics == transactionMetrics)
   }
 }
 
