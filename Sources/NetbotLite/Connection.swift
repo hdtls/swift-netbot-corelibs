@@ -136,9 +136,7 @@ extension Connection {
       // first success result received.
       let promise = eventLoop.makePromise(of: Void.self)
       Task {
-        try await withThrowingTaskGroup(
-          of: Result<[DNSResolutionReport.Resolution], any Error>.self
-        ) { g in
+        await withTaskGroup(of: Result<[DNSResolutionReport.Resolution], any Error>.self) { g in
           g.addTask {
             do {
               let startTime = DispatchTime.now()
@@ -179,10 +177,10 @@ extension Connection {
 
           var lastError: (any Error)?
 
-          // There is no error for for-in loop, so we don't need handle this.
-          for try await resolution in g {
+          for await resolution in g {
             do {
               let resolutions: [DNSResolutionReport.Resolution] = try resolution.get()
+              guard !resolutions.isEmpty else { continue }
               _dnsResolutionReport.withLock {
                 if $0 == nil {
                   $0 = DNSResolutionReport(duration: .zero, resolutions: resolutions)
@@ -192,17 +190,14 @@ extension Connection {
               }
               promise.succeed()
             } catch {
-              if lastError != nil {
-                // Failed to query both A and AAAA records.
-                throw error
-              }
               lastError = error
             }
           }
 
           if let lastError {
-            if dnsResolutionReport?.resolutions.isEmpty ?? false {
-              throw lastError
+            // Failed when both DNS resolutions is empty and an error is occured.
+            if _dnsResolutionReport.withLock({ $0?.resolutions.isEmpty ?? true }) {
+              promise.fail(lastError)
             }
           }
         }
@@ -295,7 +290,7 @@ extension Connection {
       await publisher.send(self)
 
       repeat {
-        try await Task.sleep(nanoseconds: 1_000_000_000)
+        try? await Task.sleep(nanoseconds: 1_000_000_000)
         duration += .seconds(1)
 
         // Publish session changes.
@@ -324,21 +319,22 @@ extension Connection {
           break
         }
 
-        try await Task.sleep(nanoseconds: 1_000_000_000)
-        let currentDataTransferReport = try await channel.dataTransferReport(collector)
-          .get()
-        if let dataTransferReport {
+        try? await Task.sleep(nanoseconds: 1_000_000_000)
+        // We don't care about failure here ignore errors by optional try.
+        guard let new = try? await channel.dataTransferReport(collector).get() else {
+          continue
+        }
+        if let old = dataTransferReport {
           self.dataTransferReport = .init(
-            duration: dataTransferReport.duration + currentDataTransferReport.duration,
-            aggregatePathReport: dataTransferReport.aggregatePathReport
-              &+ currentDataTransferReport.aggregatePathReport,
-            pathReport: currentDataTransferReport.aggregatePathReport
+            duration: old.duration + new.duration,
+            aggregatePathReport: old.aggregatePathReport &+ new.aggregatePathReport,
+            pathReport: new.aggregatePathReport
           )
         } else {
           dataTransferReport = .init(
-            duration: currentDataTransferReport.duration,
-            aggregatePathReport: currentDataTransferReport.aggregatePathReport,
-            pathReport: currentDataTransferReport.aggregatePathReport
+            duration: new.duration,
+            aggregatePathReport: new.aggregatePathReport,
+            pathReport: new.aggregatePathReport
           )
         }
       } while !state.isFinished

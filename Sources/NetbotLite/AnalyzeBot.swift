@@ -239,7 +239,8 @@ import Tracing
 
   /// Run analyze services.
   public func run() async throws {
-    Task { try await run0() }
+    // FIXME: [#NoUseUnstructuredThrowingTask]
+    _ = Task { try await run0() }
   }
 
   /// Run analyze services and block IO until closed.

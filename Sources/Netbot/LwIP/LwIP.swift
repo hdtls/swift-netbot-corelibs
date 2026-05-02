@@ -145,7 +145,10 @@ import _DNSSupport
   }
 
   func run() async throws {
-    Task { try await run0() }
+    // FIXME: [#NoUseUnstructuredThrowingTask]
+    _ = Task {
+      try await run0()
+    }
   }
 
   func run0() async throws {
@@ -267,7 +270,8 @@ import _DNSSupport
   }
 
   private func handleNewFlow(_ tun: NIOAsyncChannel<ByteBuffer, ByteBuffer>) {
-    Task {
+    // FIXME: [#NoUseUnstructuredThrowingTask]
+    _ = Task {
       try await tun.executeThenClose { ti, to in
 
         guard

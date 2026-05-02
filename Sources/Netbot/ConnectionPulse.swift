@@ -72,7 +72,14 @@ import NetbotLiteData
     self._connections = .init([:])
   }
 
-  private func run0() async throws {
+  func run() async throws {
+    // FIXME: [#NoUseUnstructuredThrowingTask]
+    _ = Task {
+      try await run0()
+    }
+  }
+
+  func run0() async throws {
     #if canImport(Network)
       let parameters = NWParameters.tcp
       parameters.requiredLocalEndpoint = try address.asEndpoint()
@@ -185,12 +192,6 @@ import NetbotLiteData
         }
       }
     #endif
-  }
-
-  func run() async throws {
-    Task(priority: .high) {
-      try await run0()
-    }
   }
 
   #if canImport(Network)

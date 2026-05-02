@@ -76,7 +76,7 @@ struct LocalDNSProxyTests {
         }
 
       Task {
-        try await channel.executeThenClose { inbound, outbound in
+        try? await channel.executeThenClose { inbound, outbound in
           for try await frame in inbound {
             // Always response privoded records.
             queryCalls.wrappingIncrement(ordering: .relaxed)

@@ -168,7 +168,8 @@ import _ProfileSupport
   }
 
   public func run() async throws {
-    Task {
+    // FIXME: [#NoUseUnstructuredThrowingTask]
+    _ = Task {
       try await run0()
     }
   }
@@ -254,10 +255,10 @@ import _ProfileSupport
       }
     }
 
-    Task.detached {
+    // FIXME: [#NoUseUnstructuredThrowingTask]
+    _ = Task {
       try await channel.executeThenClose { inbound, outbound in
 
-        // We need to specific type of ChildTaskResult to make it compatible with Swift 6.0.
         try await withThrowingTaskGroup(of: Void.self) { g in
           g.addTask {
             for try await query in stream {
@@ -435,7 +436,8 @@ import _ProfileSupport
         ARecord(domainName: name, ttl: 300, data: availableIPPool.loadThenWrappingIncrement())
       )
       // Query A records for use later
-      Task.detached(priority: .background) {
+      _ = Task(priority: .background) {
+        // As is a background query, we can ignore errors here.
         _ = try await self.queryA(name: name)
       }
     }
