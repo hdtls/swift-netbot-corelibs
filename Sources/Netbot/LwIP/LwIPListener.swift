@@ -12,138 +12,140 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import CNELwIP
-import NIOCore
+#if NETBOT_REQUIRES_LWIP
+  import CNELwIP
+  import NIOCore
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import NIOConcurrencyHelpers
-#else
-  import Synchronization
-#endif
+  #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    import NIOConcurrencyHelpers
+  #else
+    import Synchronization
+  #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
-final class LwIPListener: BaseSocketChannel<ServerSocket>, @unchecked Sendable {
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  final class LwIPListener: BaseSocketChannel<ServerSocket>, @unchecked Sendable {
 
-  private let group: any EventLoopGroup
+    private let group: any EventLoopGroup
 
-  final var handleNewFlow: (@Sendable (NIOAsyncChannel<ByteBuffer, ByteBuffer>) -> Void)? {
-    get {
-      if self.eventLoop.inEventLoop {
-        return self._handleNewFlow
-      } else {
-        return self._offEventLoopLock.withLock { _ in
-          self._handleNewFlow
-        }
-      }
-    }
-    set {
-      if self.eventLoop.inEventLoop {
-        self._handleNewFlow = newValue
-      } else {
-        self.eventLoop.execute {
-          self._handleNewFlow = newValue
-        }
-      }
-    }
-  }
-  private var _handleNewFlow: (@Sendable (NIOAsyncChannel<ByteBuffer, ByteBuffer>) -> Void)?
-
-  init(eventLoop: any EventLoop, group: any EventLoopGroup) {
-    self.group = group
-    super.init(socket: ServerSocket(), eventLoop: eventLoop)
-  }
-
-  final override func channelRead0(_ data: NIOAny) {
-    self.eventLoop.assertInEventLoop()
-
-    let channel = self.unwrapData(data, as: LwIPConnection.self)
-    let p: EventLoopPromise<Void> = channel.eventLoop.makePromise()
-    channel.eventLoop.execute {
-      channel.registerAlreadyConfigured0(promise: p)
-      p.futureResult.whenFailure { (_: Error) in
-        channel.close(promise: nil)
-      }
-    }
-  }
-
-  final override func bind0(to address: SocketAddress, promise: EventLoopPromise<Void>?) {
-    self.eventLoop.assertInEventLoop()
-
-    guard self.isOpen else {
-      promise?.fail(ChannelError.ioOnClosedChannel)
-      return
-    }
-
-    let p = self.eventLoop.makePromise(of: Void.self)
-    p.futureResult.map {
-      self.becomeActive0(promise: promise)
-    }.whenFailure { error in
-      promise?.fail(error)
-    }
-
-    do {
-      try self.socket.bind(to: address)
-      try self.socket.listen()
-
-      let cached = self.addressesCached
-      self.addressesCached = .init(local: try? self.localAddress0(), remote: cached.remote)
-
-      let opaquePtr = Unmanaged.passUnretained(self).toOpaque()
-      tcp_arg(self.socket.descriptor, opaquePtr)
-      // register0(promise:) is execute before bind0 called, so if we
-      // register tcp_accept in register0(promise:) the handler will
-      // be reset by socket.listen().
-      tcp_accept(self.socket.descriptor) { contextPtr, connection, _ in
-        guard let contextPtr, let connection else {
-          return ERR_ARG
-        }
-
-        let listener = Unmanaged<LwIPListener>.fromOpaque(contextPtr).takeUnretainedValue()
-        let newConnection = LwIPConnection(
-          socket: .init(socket: connection), parent: listener, eventLoop: listener.eventLoop
-        )
-
-        newConnection.eventLoop.makeCompletedFuture {
-          try NIOAsyncChannel<ByteBuffer, ByteBuffer>(wrappingChannelSynchronously: newConnection)
-        }
-        .whenComplete {
-          switch $0 {
-          case .success(let flow):
-            listener.handleNewFlow?(flow)
-            listener.pipeline.fireChannelRead(newConnection)
-            listener.pipeline.fireChannelReadComplete()
-          case .failure(let error):
-            newConnection.close0(error: error, mode: .all, promise: nil)
+    final var handleNewFlow: (@Sendable (NIOAsyncChannel<ByteBuffer, ByteBuffer>) -> Void)? {
+      get {
+        if self.eventLoop.inEventLoop {
+          return self._handleNewFlow
+        } else {
+          return self._offEventLoopLock.withLock { _ in
+            self._handleNewFlow
           }
         }
-        return ERR_OK
+      }
+      set {
+        if self.eventLoop.inEventLoop {
+          self._handleNewFlow = newValue
+        } else {
+          self.eventLoop.execute {
+            self._handleNewFlow = newValue
+          }
+        }
+      }
+    }
+    private var _handleNewFlow: (@Sendable (NIOAsyncChannel<ByteBuffer, ByteBuffer>) -> Void)?
+
+    init(eventLoop: any EventLoop, group: any EventLoopGroup) {
+      self.group = group
+      super.init(socket: ServerSocket(), eventLoop: eventLoop)
+    }
+
+    final override func channelRead0(_ data: NIOAny) {
+      self.eventLoop.assertInEventLoop()
+
+      let channel = self.unwrapData(data, as: LwIPConnection.self)
+      let p: EventLoopPromise<Void> = channel.eventLoop.makePromise()
+      channel.eventLoop.execute {
+        channel.registerAlreadyConfigured0(promise: p)
+        p.futureResult.whenFailure { (_: Error) in
+          channel.close(promise: nil)
+        }
+      }
+    }
+
+    final override func bind0(to address: SocketAddress, promise: EventLoopPromise<Void>?) {
+      self.eventLoop.assertInEventLoop()
+
+      guard self.isOpen else {
+        promise?.fail(ChannelError.ioOnClosedChannel)
+        return
       }
 
-      p.succeed()
-    } catch {
-      p.fail(error)
-      self.handleNewFlow = nil
+      let p = self.eventLoop.makePromise(of: Void.self)
+      p.futureResult.map {
+        self.becomeActive0(promise: promise)
+      }.whenFailure { error in
+        promise?.fail(error)
+      }
+
+      do {
+        try self.socket.bind(to: address)
+        try self.socket.listen()
+
+        let cached = self.addressesCached
+        self.addressesCached = .init(local: try? self.localAddress0(), remote: cached.remote)
+
+        let opaquePtr = Unmanaged.passUnretained(self).toOpaque()
+        tcp_arg(self.socket.descriptor, opaquePtr)
+        // register0(promise:) is execute before bind0 called, so if we
+        // register tcp_accept in register0(promise:) the handler will
+        // be reset by socket.listen().
+        tcp_accept(self.socket.descriptor) { contextPtr, connection, _ in
+          guard let contextPtr, let connection else {
+            return ERR_ARG
+          }
+
+          let listener = Unmanaged<LwIPListener>.fromOpaque(contextPtr).takeUnretainedValue()
+          let newConnection = LwIPConnection(
+            socket: .init(socket: connection), parent: listener, eventLoop: listener.eventLoop
+          )
+
+          newConnection.eventLoop.makeCompletedFuture {
+            try NIOAsyncChannel<ByteBuffer, ByteBuffer>(wrappingChannelSynchronously: newConnection)
+          }
+          .whenComplete {
+            switch $0 {
+            case .success(let flow):
+              listener.handleNewFlow?(flow)
+              listener.pipeline.fireChannelRead(newConnection)
+              listener.pipeline.fireChannelReadComplete()
+            case .failure(let error):
+              newConnection.close0(error: error, mode: .all, promise: nil)
+            }
+          }
+          return ERR_OK
+        }
+
+        p.succeed()
+      } catch {
+        p.fail(error)
+        self.handleNewFlow = nil
+      }
+    }
+
+    override func close0(error: any Error, mode: CloseMode, promise: EventLoopPromise<Void>?) {
+      switch mode {
+      case .input, .all:
+        self.handleNewFlow = nil
+      default:
+        break
+      }
+      super.close0(error: error, mode: mode, promise: promise)
+    }
+
+    final override func hasFlushedPendingWrites() -> Bool {
+      false
+    }
+
+    final override func markFlushPoint() {
     }
   }
-
-  override func close0(error: any Error, mode: CloseMode, promise: EventLoopPromise<Void>?) {
-    switch mode {
-    case .input, .all:
-      self.handleNewFlow = nil
-    default:
-      break
-    }
-    super.close0(error: error, mode: mode, promise: promise)
-  }
-
-  final override func hasFlushedPendingWrites() -> Bool {
-    false
-  }
-
-  final override func markFlushPoint() {
-  }
-}
+#endif

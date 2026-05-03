@@ -106,11 +106,13 @@ let package = Package(
         "_DNSSupport",
         "_PreferenceSupport",
         "_ProfileSupport",
-        "NetbotDaemons",
         "NetbotLite",
         "NetbotLiteData",
-        "CNELwIP",
         "CoWOptimization",
+
+        .target(name: "CNELwIP", condition: .when(platforms: [.macOS])),
+        .target(name: "NetbotDaemons", condition: .when(platforms: [.macOS])),
+
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "Preference", package: "swift-preference"),
         .product(name: "X509", package: "swift-certificates"),
@@ -258,6 +260,7 @@ for target in package.targets {
   var settings = target.swiftSettings ?? []
   settings.append(.enableExperimentalFeature("StrictConcurrency=complete"))
   settings.append(.define("NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9"))
+  settings.append(.define("NETBOT_REQUIRES_LWIP", .when(platforms: [.macOS])))
   settings.append(
     .enableExperimentalFeature(
       "AvailabilityMacro=SwiftStdlib 5.9:iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0"

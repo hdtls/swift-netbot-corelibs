@@ -12,21 +12,23 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import CNELwIP
-import NIOCore
+#if NETBOT_REQUIRES_LWIP
+  import CNELwIP
+  import NIOCore
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  class ServerSocket: BaseSocket {
+
+    convenience init() {
+      self.init(socket: tcp_new())
+    }
+
+    func listen(backlog: UInt8 = 128) throws {
+      self.descriptor = tcp_listen_with_backlog(descriptor, backlog)
+    }
+  }
 #endif
-class ServerSocket: BaseSocket {
-
-  convenience init() {
-    self.init(socket: tcp_new())
-  }
-
-  func listen(backlog: UInt8 = 128) throws {
-    self.descriptor = tcp_listen_with_backlog(descriptor, backlog)
-  }
-}

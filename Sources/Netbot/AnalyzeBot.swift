@@ -53,7 +53,10 @@ public actor AnalyzeBot: Actor {
 
   nonisolated private let dns: LocalDNSProxy
   nonisolated private let core: NetbotLite.AnalyzeBot
-  private var coreLwIP: LwIP?
+
+  #if NETBOT_REQUIRES_LWIP
+    private var coreLwIP: LwIP?
+  #endif
 
   nonisolated public let group: any EventLoopGroup
   public var logger: Logger = Logger(label: "AnalyzeBot")
@@ -95,13 +98,15 @@ public actor AnalyzeBot: Actor {
   }
 
   public func setLwIPEnabled(_ enabled: Bool, packetFlow: any PacketTunnelFlow) async {
-    if enabled {
-      self.coreLwIP = LwIP(group: group, packetFlow: packetFlow, dns: dns)
-      try? await self.coreLwIP?.run()
-    } else {
-      try? await self.coreLwIP?.shutdownGracefully()
-      self.coreLwIP = nil
-    }
+    #if NETBOT_REQUIRES_LWIP
+      if enabled {
+        self.coreLwIP = LwIP(group: group, packetFlow: packetFlow, dns: dns)
+        try? await self.coreLwIP?.run()
+      } else {
+        try? await self.coreLwIP?.shutdownGracefully()
+        self.coreLwIP = nil
+      }
+    #endif
   }
 
   /// Modify outbound mode.

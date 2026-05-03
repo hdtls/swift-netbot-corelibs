@@ -12,244 +12,246 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import CNELwIP
-import NIOCore
+#if NETBOT_REQUIRES_LWIP
+  import CNELwIP
+  import NIOCore
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
-final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {
 
-  private struct PendingStreamWrite {
-    var data: ByteBuffer
-    var promise: EventLoopPromise<Void>?
-  }
-
-  private var pendingWrites = MarkedCircularBuffer<PendingStreamWrite>(initialCapacity: 16)
-
-  private var inputClosed = false
-  private var outputClosed = false
-
-  final override var isWritable: Bool {
-    // We can't compare with zero here, if there is no more memory
-    // snd_buf could be set to 1, this cause infinite `flushNow`.
-    self.socket.descriptor.pointee.snd_buf > 100
-  }
-
-  init(socket: Socket, parent: LwIPListener?, eventLoop: any EventLoop) {
-    super.init(socket: socket, eventLoop: eventLoop)
-
-    let opaquePtr = Unmanaged.passUnretained(self).toOpaque()
-    tcp_arg(self.socket.descriptor, opaquePtr)
-  }
-
-  deinit {
-    assert(inputClosed == true)
-    assert(outputClosed == true)
-    assert(pendingWrites.isEmpty)
-  }
-
-  override func close0(error: any Error, mode: CloseMode, promise: EventLoopPromise<Void>?) {
-    self.eventLoop.assertInEventLoop()
-    switch mode {
-    case .output:
-      if self.outputClosed {
-        promise?.fail(ChannelError.outputClosed)
-        return
-      }
-      if self.inputClosed {
-        self.close0(error: error, mode: .all, promise: promise)
-        return
-      }
-
-      tcp_sent(self.socket.descriptor, nil)
-      while let pendingWrite = self.pendingWrites.popFirst() {
-        pendingWrite.promise?.fail(error)
-      }
-      self.outputClosed = true
-      self.pipeline.fireUserInboundEventTriggered(ChannelEvent.outputClosed)
-    case .input:
-      if self.inputClosed {
-        promise?.fail(ChannelError.inputClosed)
-        return
-      }
-      if self.outputClosed {
-        self.close0(error: error, mode: .all, promise: promise)
-        return
-      }
-
-      tcp_recv(self.socket.descriptor, nil)
-      self.readPending = false
-      self.inputClosed = true
-      self.pipeline.fireUserInboundEventTriggered(ChannelEvent.inputClosed)
-    case .all:
-      self.inputClosed = true
-      self.outputClosed = true
-      while let pendingWrite = self.pendingWrites.popFirst() {
-        pendingWrite.promise?.fail(error)
-      }
-      super.close0(error: error, mode: mode, promise: promise)
-    }
-  }
-
-  final override func register0(promise: EventLoopPromise<Void>?) {
-    guard self.isOpen else {
-      promise?.fail(ChannelError.ioOnClosedChannel)
-      return
+    private struct PendingStreamWrite {
+      var data: ByteBuffer
+      var promise: EventLoopPromise<Void>?
     }
 
-    tcp_recv(self.socket.descriptor) { contextPtr, connectionPtr, data, err in
-      guard let contextPtr else {
-        return ERR_ABRT
-      }
+    private var pendingWrites = MarkedCircularBuffer<PendingStreamWrite>(initialCapacity: 16)
 
-      let connection = Unmanaged<LwIPConnection>.fromOpaque(contextPtr).takeUnretainedValue()
+    private var inputClosed = false
+    private var outputClosed = false
 
-      guard let data else {
-        connection.pipeline.fireChannelRead(connection.allocator.buffer(capacity: 0))
-        connection.pipeline.fireChannelReadComplete()
-        connection.close(mode: .input, promise: nil)
-        connection.pipeline.fireUserInboundEventTriggered(ChannelEvent.inputClosed)
-        return err
-      }
+    final override var isWritable: Bool {
+      // We can't compare with zero here, if there is no more memory
+      // snd_buf could be set to 1, this cause infinite `flushNow`.
+      self.socket.descriptor.pointee.snd_buf > 100
+    }
 
-      let totalLength = data.pointee.tot_len
-      if totalLength > 0 {
-        var byteBuffer = connection.allocator.buffer(capacity: Int(totalLength))
-        byteBuffer.writeWithUnsafeMutableBytes(minimumWritableBytes: Int(totalLength)) {
-          Int(pbuf_copy_partial(data, $0.baseAddress, totalLength, 0))
+    init(socket: Socket, parent: LwIPListener?, eventLoop: any EventLoop) {
+      super.init(socket: socket, eventLoop: eventLoop)
+
+      let opaquePtr = Unmanaged.passUnretained(self).toOpaque()
+      tcp_arg(self.socket.descriptor, opaquePtr)
+    }
+
+    deinit {
+      assert(inputClosed == true)
+      assert(outputClosed == true)
+      assert(pendingWrites.isEmpty)
+    }
+
+    override func close0(error: any Error, mode: CloseMode, promise: EventLoopPromise<Void>?) {
+      self.eventLoop.assertInEventLoop()
+      switch mode {
+      case .output:
+        if self.outputClosed {
+          promise?.fail(ChannelError.outputClosed)
+          return
         }
-        connection.pipeline.fireChannelRead(byteBuffer)
-        connection.pipeline.fireChannelReadComplete()
+        if self.inputClosed {
+          self.close0(error: error, mode: .all, promise: promise)
+          return
+        }
+
+        tcp_sent(self.socket.descriptor, nil)
+        while let pendingWrite = self.pendingWrites.popFirst() {
+          pendingWrite.promise?.fail(error)
+        }
+        self.outputClosed = true
+        self.pipeline.fireUserInboundEventTriggered(ChannelEvent.outputClosed)
+      case .input:
+        if self.inputClosed {
+          promise?.fail(ChannelError.inputClosed)
+          return
+        }
+        if self.outputClosed {
+          self.close0(error: error, mode: .all, promise: promise)
+          return
+        }
+
+        tcp_recv(self.socket.descriptor, nil)
+        self.readPending = false
+        self.inputClosed = true
+        self.pipeline.fireUserInboundEventTriggered(ChannelEvent.inputClosed)
+      case .all:
+        self.inputClosed = true
+        self.outputClosed = true
+        while let pendingWrite = self.pendingWrites.popFirst() {
+          pendingWrite.promise?.fail(error)
+        }
+        super.close0(error: error, mode: mode, promise: promise)
       }
-      pbuf_free(data)
-      tcp_recved(connectionPtr, totalLength)
-      return ERR_OK
     }
-    tcp_sent(self.socket.descriptor) { contextPtr, _, _ in
-      guard let contextPtr else {
-        return ERR_ABRT
+
+    final override func register0(promise: EventLoopPromise<Void>?) {
+      guard self.isOpen else {
+        promise?.fail(ChannelError.ioOnClosedChannel)
+        return
       }
 
-      let connection = Unmanaged<LwIPConnection>.fromOpaque(contextPtr).takeUnretainedValue()
+      tcp_recv(self.socket.descriptor) { contextPtr, connectionPtr, data, err in
+        guard let contextPtr else {
+          return ERR_ABRT
+        }
 
-      // check if we have write buffer here, and send it.
-      guard !connection.pendingWrites.isEmpty else {
+        let connection = Unmanaged<LwIPConnection>.fromOpaque(contextPtr).takeUnretainedValue()
+
+        guard let data else {
+          connection.pipeline.fireChannelRead(connection.allocator.buffer(capacity: 0))
+          connection.pipeline.fireChannelReadComplete()
+          connection.close(mode: .input, promise: nil)
+          connection.pipeline.fireUserInboundEventTriggered(ChannelEvent.inputClosed)
+          return err
+        }
+
+        let totalLength = data.pointee.tot_len
+        if totalLength > 0 {
+          var byteBuffer = connection.allocator.buffer(capacity: Int(totalLength))
+          byteBuffer.writeWithUnsafeMutableBytes(minimumWritableBytes: Int(totalLength)) {
+            Int(pbuf_copy_partial(data, $0.baseAddress, totalLength, 0))
+          }
+          connection.pipeline.fireChannelRead(byteBuffer)
+          connection.pipeline.fireChannelReadComplete()
+        }
+        pbuf_free(data)
+        tcp_recved(connectionPtr, totalLength)
         return ERR_OK
       }
-      connection.flushNow()
-      connection.pipeline.fireChannelWritabilityChanged()
-      return ERR_OK
+      tcp_sent(self.socket.descriptor) { contextPtr, _, _ in
+        guard let contextPtr else {
+          return ERR_ABRT
+        }
+
+        let connection = Unmanaged<LwIPConnection>.fromOpaque(contextPtr).takeUnretainedValue()
+
+        // check if we have write buffer here, and send it.
+        guard !connection.pendingWrites.isEmpty else {
+          return ERR_OK
+        }
+        connection.flushNow()
+        connection.pipeline.fireChannelWritabilityChanged()
+        return ERR_OK
+      }
+      tcp_err(self.socket.descriptor) { contextPtr, errno in
+        guard let contextPtr else {
+          return
+        }
+        let connection = Unmanaged<LwIPConnection>.fromOpaque(contextPtr).takeUnretainedValue()
+
+        let error = IOError(errnoCode: err_to_errno(errno), reason: "tcp_err")
+        switch errno {
+        case ERR_CLSD:
+          connection.socket.isOpen = false
+          connection.close(promise: nil)
+        default:
+          connection.socket.isOpen = false
+          connection.pipeline.fireErrorCaught(error)
+          connection.close(promise: nil)
+        }
+      }
+
+      promise?.succeed()
     }
-    tcp_err(self.socket.descriptor) { contextPtr, errno in
-      guard let contextPtr else {
+
+    final override func read0() {
+      if self.inputClosed {
         return
       }
-      let connection = Unmanaged<LwIPConnection>.fromOpaque(contextPtr).takeUnretainedValue()
+      super.read0()
+    }
 
-      let error = IOError(errnoCode: err_to_errno(errno), reason: "tcp_err")
-      switch errno {
-      case ERR_CLSD:
-        connection.socket.isOpen = false
-        connection.close(promise: nil)
-      default:
-        connection.socket.isOpen = false
-        connection.pipeline.fireErrorCaught(error)
-        connection.close(promise: nil)
+    final override func readFromSocket() throws -> ReadResult {
+      return .some
+    }
+
+    @discardableResult
+    final override func readIfNeeded0() -> Bool {
+      if self.inputClosed {
+        return false
       }
+      return super.readIfNeeded0()
     }
 
-    promise?.succeed()
-  }
+    final override func writeToSocket() throws {
+      while var pendingWrite = self.pendingWrites.first {
+        // It's safe to convert Int to UInt16, because we have already checked
+        // that the bigest value of min(_,_) result is clamping into 0xFFFF
+        // witch is equal to UInt16.max.
+        let writableBytes = UInt16(
+          min(pendingWrite.data.count, Int(min(self.socket.descriptor.pointee.snd_buf, 0xFFFF)))
+        )
 
-  final override func read0() {
-    if self.inputClosed {
-      return
-    }
-    super.read0()
-  }
+        var flags = TCP_WRITE_FLAG_COPY
+        if writableBytes < pendingWrite.data.count {
+          flags |= TCP_WRITE_FLAG_MORE
+        }
 
-  final override func readFromSocket() throws -> ReadResult {
-    return .some
-  }
+        do {
+          try pendingWrite.data
+            .getSlice(at: pendingWrite.data.startIndex, length: Int(writableBytes))?
+            .withUnsafeReadableBytes {
+              try self.socket.write(pointer: $0, flags: flags)
+            }
 
-  @discardableResult
-  final override func readIfNeeded0() -> Bool {
-    if self.inputClosed {
-      return false
-    }
-    return super.readIfNeeded0()
-  }
-
-  final override func writeToSocket() throws {
-    while var pendingWrite = self.pendingWrites.first {
-      // It's safe to convert Int to UInt16, because we have already checked
-      // that the bigest value of min(_,_) result is clamping into 0xFFFF
-      // witch is equal to UInt16.max.
-      let writableBytes = UInt16(
-        min(pendingWrite.data.count, Int(min(self.socket.descriptor.pointee.snd_buf, 0xFFFF)))
-      )
-
-      var flags = TCP_WRITE_FLAG_COPY
-      if writableBytes < pendingWrite.data.count {
-        flags |= TCP_WRITE_FLAG_MORE
-      }
-
-      do {
-        try pendingWrite.data
-          .getSlice(at: pendingWrite.data.startIndex, length: Int(writableBytes))?
-          .withUnsafeReadableBytes {
-            try self.socket.write(pointer: $0, flags: flags)
+          if self.pendingWrites.isMarked(index: self.pendingWrites.startIndex) {
+            let errno = err_to_errno(tcp_output(self.socket.descriptor))
+            if errno != 0 {
+              throw IOError(errnoCode: errno, reason: #function)
+            }
           }
 
-        if self.pendingWrites.isMarked(index: self.pendingWrites.startIndex) {
+          guard pendingWrite.data.readableBytes > writableBytes else {
+            _ = self.pendingWrites.removeFirst()
+            pendingWrite.promise?.succeed()
+            continue
+          }
+
+          pendingWrite.data.moveReaderIndex(forwardBy: Int(writableBytes))
+          pendingWrite.data.discardReadBytes()
+          self.pendingWrites[self.pendingWrites.startIndex] = pendingWrite
+
+          // Writable buffer is full, try to flush enqueued tcp writes and break write loop.
           let errno = err_to_errno(tcp_output(self.socket.descriptor))
           if errno != 0 {
             throw IOError(errnoCode: errno, reason: #function)
           }
+          break
+        } catch {
+          pendingWrite.promise?.fail(error)
+          throw error
         }
-
-        guard pendingWrite.data.readableBytes > writableBytes else {
-          _ = self.pendingWrites.removeFirst()
-          pendingWrite.promise?.succeed()
-          continue
-        }
-
-        pendingWrite.data.moveReaderIndex(forwardBy: Int(writableBytes))
-        pendingWrite.data.discardReadBytes()
-        self.pendingWrites[self.pendingWrites.startIndex] = pendingWrite
-
-        // Writable buffer is full, try to flush enqueued tcp writes and break write loop.
-        let errno = err_to_errno(tcp_output(self.socket.descriptor))
-        if errno != 0 {
-          throw IOError(errnoCode: errno, reason: #function)
-        }
-        break
-      } catch {
-        pendingWrite.promise?.fail(error)
-        throw error
       }
     }
-  }
 
-  final override func hasFlushedPendingWrites() -> Bool {
-    self.pendingWrites.hasMark
-  }
-
-  final override func markFlushPoint() {
-    self.pendingWrites.mark()
-  }
-
-  final override func bufferPendingWrite(data: NIOAny, promise: EventLoopPromise<Void>?) {
-    guard !self.outputClosed else {
-      promise?.fail(ChannelError.outputClosed)
-      return
+    final override func hasFlushedPendingWrites() -> Bool {
+      self.pendingWrites.hasMark
     }
 
-    let data = self.unwrapData(data, as: ByteBuffer.self)
+    final override func markFlushPoint() {
+      self.pendingWrites.mark()
+    }
 
-    self.pendingWrites.append(.init(data: data, promise: promise))
+    final override func bufferPendingWrite(data: NIOAny, promise: EventLoopPromise<Void>?) {
+      guard !self.outputClosed else {
+        promise?.fail(ChannelError.outputClosed)
+        return
+      }
+
+      let data = self.unwrapData(data, as: ByteBuffer.self)
+
+      self.pendingWrites.append(.init(data: data, promise: promise))
+    }
   }
-}
+#endif

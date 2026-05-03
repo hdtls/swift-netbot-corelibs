@@ -12,12 +12,15 @@
 //
 // ===----------------------------------------------------------------------===//
 
-#if os(macOS)
+#if canImport(Darwin)
   import Alamofire
   import Dispatch
   import Foundation
   import Logging
-  import Network
+
+  #if canImport(Network)
+    import Network
+  #endif
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
@@ -82,32 +85,36 @@
     #endif
 
     nonisolated private func _testRouterLatency(address: NWEndpoint.Host) async -> Duration {
-      await withCheckedContinuation { continuation in
-        let connection = NWConnection(to: .hostPort(host: address, port: 53), using: .tcp)
+      #if canImport(Network)
+        await withCheckedContinuation { continuation in
+          let connection = NWConnection(to: .hostPort(host: address, port: 53), using: .tcp)
 
-        let timeoutTask = Task {
-          try await Task.sleep(for: .seconds(5))
-          try Task.checkCancellation()
+          let timeoutTask = Task {
+            try await Task.sleep(for: .seconds(5))
+            try Task.checkCancellation()
 
-          guard case .ready = connection.state else {
+            guard case .ready = connection.state else {
+              connection.forceCancel()
+              continuation.resume(returning: .seconds(.greatestFiniteMagnitude))
+              return
+            }
+          }
+
+          let startTime: Date = .now
+
+          connection.stateUpdateHandler = {
+            guard case .ready = $0 else {
+              return
+            }
+            continuation.resume(returning: .seconds(startTime.distance(to: .now)))
+            timeoutTask.cancel()
             connection.forceCancel()
-            continuation.resume(returning: .seconds(.greatestFiniteMagnitude))
-            return
           }
+          connection.start(queue: .global())
         }
-
-        let startTime: Date = .now
-
-        connection.stateUpdateHandler = {
-          guard case .ready = $0 else {
-            return
-          }
-          continuation.resume(returning: .seconds(startTime.distance(to: .now)))
-          timeoutTask.cancel()
-          connection.forceCancel()
-        }
-        connection.start(queue: .global())
-      }
+      #else
+        .max
+      #endif
     }
 
     nonisolated private func _testDNSLatency(url: URL? = nil, timeoutInterval: Double? = nil) async

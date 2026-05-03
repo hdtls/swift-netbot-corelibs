@@ -12,25 +12,27 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import CNELwIP
-import NIOCore
+#if NETBOT_REQUIRES_LWIP
+  import CNELwIP
+  import NIOCore
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
-class Socket: BaseSocket {
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  class Socket: BaseSocket {
 
-  func write(pointer: UnsafeRawBufferPointer, flags: Int32) throws {
-    var rt = tcp_write(self.descriptor, pointer.baseAddress, u16_t(pointer.count), UInt8(flags))
-    guard rt == ERR_OK else {
-      throw IOError(errnoCode: err_to_errno(rt), reason: "tcp_write")
-    }
+    func write(pointer: UnsafeRawBufferPointer, flags: Int32) throws {
+      var rt = tcp_write(self.descriptor, pointer.baseAddress, u16_t(pointer.count), UInt8(flags))
+      guard rt == ERR_OK else {
+        throw IOError(errnoCode: err_to_errno(rt), reason: "tcp_write")
+      }
 
-    rt = tcp_output(self.descriptor)
-    guard rt == ERR_OK else {
-      throw IOError(errnoCode: err_to_errno(rt), reason: "tcp_output")
+      rt = tcp_output(self.descriptor)
+      guard rt == ERR_OK else {
+        throw IOError(errnoCode: err_to_errno(rt), reason: "tcp_output")
+      }
     }
   }
-}
+#endif
