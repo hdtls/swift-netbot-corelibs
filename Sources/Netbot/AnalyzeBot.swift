@@ -41,6 +41,7 @@ import _ProfileSupport
 
 #if os(macOS)
   import NetbotDaemons
+  import _PrivilegeSupport
 #endif
 
 /// Assistant to manage PacketTunnelProvider and NIO proxy servers backend.

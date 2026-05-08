@@ -20,6 +20,7 @@
   import NIOCore
   import NIOExtras
   import NetbotLite
+  import NetbotLiteData
   import _DNSSupport
 
   #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
