@@ -26,6 +26,9 @@ import _ProfileSupport
   import SwiftData
 #endif
 
+// swift-format-ignore: AlwaysUseLowerCamelCase
+let __dir = UUID()
+
 #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   @available(SwiftStdlib 5.9, *)
 #else
@@ -40,11 +43,14 @@ func withManagedProfile(body: (ProfileAssistant) async throws -> Void) async thr
   #else
     let profileAssistant = ProfileAssistant()
   #endif
-  let profileURL = URL(filePath: #filePath).deletingLastPathComponent()
-    .appending(path: UUID().uuidString).appendingPathExtension(.profilePathExtension)
+  let profilesDirectory = URL.temporaryDirectory
+    .appending(path: __dir.uuidString, directoryHint: .isDirectory)
+  try FileManager.default.createDirectory(at: profilesDirectory, withIntermediateDirectories: true)
+  let profileURL = profilesDirectory.appending(path: UUID().uuidString)
+    .appendingPathExtension(.profilePathExtension)
   try "".write(to: profileURL, atomically: true, encoding: .utf8)
   await profileAssistant.setProfileURL(profileURL)
-  await profileAssistant.setProfilesDirectory(profileURL.deletingLastPathComponent())
+  await profileAssistant.setProfilesDirectory(profilesDirectory)
   try await body(profileAssistant)
   try FileManager.default.removeItem(at: profileURL)
 }
