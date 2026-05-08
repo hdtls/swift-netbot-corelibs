@@ -20,7 +20,7 @@ import Testing
 
 @testable import Netbot
 
-@Suite(.tags(.forwardingRule))
+@Suite(.tags(.forwardingrule))
 struct IPCIDRForwardingRuleTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

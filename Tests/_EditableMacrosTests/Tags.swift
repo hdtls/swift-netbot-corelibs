@@ -14,5 +14,6 @@
 
 import Testing
 
-@Suite(.tags(.profile, .dns))
-struct ProtocolDNSTests {}
+extension Tag {
+  @Tag static var swiftmacros: Tag
+}

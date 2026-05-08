@@ -16,7 +16,8 @@ import Testing
 
 @testable import _ProfileSupport
 
-@Suite(.tags(.proxyGroup)) struct AnyProxyGroupTests {
+@Suite(.tags(.profile, .forwardproto))
+struct AnyProxyGroupTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
@@ -30,7 +31,7 @@ import Testing
   }
 }
 
-@Suite(.tags(.proxyGroup))
+@Suite(.tags(.profile, .forwardproto))
 struct AnyProxyGroup_KindTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -98,7 +99,7 @@ struct AnyProxyGroup_KindTests {
   }
 }
 
-@Suite(.tags(.proxyGroup))
+@Suite(.tags(.profile, .forwardproto))
 struct AnyProxyGroup_ResourceTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -114,7 +115,7 @@ struct AnyProxyGroup_ResourceTests {
   }
 }
 
-@Suite(.tags(.proxyGroup))
+@Suite(.tags(.profile, .forwardproto))
 struct AnyProxyGroup_Resource_SourceTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

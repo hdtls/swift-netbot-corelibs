@@ -19,7 +19,7 @@
   @testable import NetbotKit
   import Foundation
 
-  @Suite(.tags(.dns))
+  @Suite(.tags(.profile, .profileassistant, .dns))
   struct DNSTests {
     private var recovery: String = """
       [General]

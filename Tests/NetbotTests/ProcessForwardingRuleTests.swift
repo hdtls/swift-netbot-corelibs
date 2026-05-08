@@ -24,7 +24,7 @@ import Testing
   import Foundation
 #endif
 
-@Suite(.tags(.forwardingRule))
+@Suite(.tags(.forwardingrule))
 struct ProcessForwardingRuleTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

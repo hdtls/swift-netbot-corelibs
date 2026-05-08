@@ -16,7 +16,7 @@ import Testing
 
 @testable import _ProfileSupport
 
-@Suite(.tags(.swiftData, .schema, .proxy))
+@Suite(.tags(.profile, .forwardproto, .swiftdata))
 struct V1_AnyProxyTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -113,7 +113,7 @@ struct V1_AnyProxyTests {
   }
 }
 
-@Suite(.tags(.swiftData, .schema, .proxy))
+@Suite(.tags(.profile, .forwardproto, .swiftdata))
 struct V1_AnyProxy_KindTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -181,7 +181,7 @@ struct V1_AnyProxy_KindTests {
   }
 }
 
-@Suite(.tags(.swiftData, .schema, .proxy))
+@Suite(.tags(.profile, .forwardproto, .swiftdata))
 struct V1_AnyProxy_ObfuscationTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -197,7 +197,7 @@ struct V1_AnyProxy_ObfuscationTests {
   }
 }
 
-@Suite(.tags(.swiftData, .schema, .proxy))
+@Suite(.tags(.profile, .forwardproto, .swiftdata))
 struct V1_AnyProxy_Obfuscation_StrategyTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -231,7 +231,7 @@ struct V1_AnyProxy_Obfuscation_StrategyTests {
   }
 }
 
-@Suite(.tags(.swiftData, .schema, .proxy))
+@Suite(.tags(.profile, .forwardproto, .swiftdata))
 struct V1_AnyProxy_TLSTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -248,7 +248,7 @@ struct V1_AnyProxy_TLSTests {
   }
 }
 
-@Suite(.tags(.swiftData, .schema, .proxy))
+@Suite(.tags(.profile, .forwardproto, .swiftdata))
 struct V1_AnyProxy_WebSocketTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -264,7 +264,7 @@ struct V1_AnyProxy_WebSocketTests {
   }
 }
 
-@Suite(.tags(.swiftData, .schema, .proxy))
+@Suite(.tags(.profile, .forwardproto, .swiftdata))
 struct V1_AnyProx_EngressTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

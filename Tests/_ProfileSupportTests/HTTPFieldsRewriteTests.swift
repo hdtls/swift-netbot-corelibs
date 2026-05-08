@@ -16,7 +16,7 @@ import Testing
 
 @testable import _ProfileSupport
 
-@Suite(.tags(.httpFieldsRewrite))
+@Suite(.tags(.profile, .httprewrites))
 struct HTTPFieldsRewriteTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -36,7 +36,7 @@ struct HTTPFieldsRewriteTests {
   }
 }
 
-@Suite(.tags(.httpFieldsRewrite))
+@Suite(.tags(.profile, .httprewrites))
 struct HTTPFieldsRewrite_DirectionTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -65,7 +65,7 @@ struct HTTPFieldsRewrite_DirectionTests {
   }
 }
 
-@Suite(.tags(.urlRewrite))
+@Suite(.tags(.profile, .httprewrites))
 struct HTTPFieldsRewrite_ActionTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

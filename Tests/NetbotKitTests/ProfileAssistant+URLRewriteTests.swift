@@ -24,7 +24,7 @@ import _ProfileSupport
   import Foundation
 #endif
 
-@Suite(.tags(.urlRewrite))
+@Suite(.tags(.profile, .profileassistant, .httprewrites))
 struct ProfileAssistant__URLRewriteTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

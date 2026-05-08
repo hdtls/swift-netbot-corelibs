@@ -16,7 +16,7 @@ import Testing
 
 @testable import _ProfileSupport
 
-@Suite(.tags(.swiftData, .schema, .dnsMapping))
+@Suite(.tags(.profile, .dns, .swiftdata))
 struct V1_ProtocolDNS_MappingTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -66,7 +66,7 @@ struct V1_ProtocolDNS_MappingTests {
   }
 }
 
-@Suite(.tags(.swiftData, .schema, .dnsMapping))
+@Suite(.tags(.profile, .dns, .swiftdata))
 struct V1_ProtocolDNS_Mapping_KindTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

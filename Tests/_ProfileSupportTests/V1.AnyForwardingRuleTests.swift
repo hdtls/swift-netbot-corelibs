@@ -16,7 +16,7 @@ import Testing
 
 @testable import _ProfileSupport
 
-@Suite(.tags(.swiftData, .schema, .forwardingRule))
+@Suite(.tags(.profile, .forwardingrule, .swiftdata))
 struct V1_AnyForwardingRuleTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -52,7 +52,7 @@ struct V1_AnyForwardingRuleTests {
   }
 }
 
-@Suite(.tags(.swiftData, .schema, .forwardingRule))
+@Suite(.tags(.profile, .forwardingrule, .swiftdata))
 struct V1_AnyForwardingRule_KindTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -92,7 +92,7 @@ struct V1_AnyForwardingRule_KindTests {
   }
 }
 
-@Suite(.tags(.swiftData, .schema, .forwardingRule))
+@Suite(.tags(.profile, .forwardingrule, .swiftdata))
 struct V1_AnyForwardingRule_NotificationTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

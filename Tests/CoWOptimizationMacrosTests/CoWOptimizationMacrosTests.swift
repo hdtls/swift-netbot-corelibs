@@ -35,7 +35,8 @@ import Testing
   ]
 #endif
 
-@Suite struct CopyonWriteMacrosTests {
+@Suite(.tags(.swiftmacros))
+struct CopyonWriteMacrosTests {
 
   #if canImport(CoWOptimizationMacros)
     #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

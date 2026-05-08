@@ -17,7 +17,7 @@ import Testing
 
 @testable import Netbot
 
-@Suite(.tags(.forwardingRule))
+@Suite(.tags(.forwardingrule))
 struct GeoIPForwardingRuleTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

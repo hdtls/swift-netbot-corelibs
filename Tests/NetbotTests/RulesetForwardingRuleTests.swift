@@ -25,7 +25,7 @@ import Testing
   import Foundation
 #endif
 
-@Suite(.tags(.forwardingRule))
+@Suite(.tags(.forwardingrule))
 struct RulesetForwardingRuleTests {
 
   private let externalResourceDirectory: URL = URL(fileURLWithPath: #filePath)

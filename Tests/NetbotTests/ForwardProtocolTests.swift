@@ -21,7 +21,8 @@ import Testing
 
 @testable import Netbot
 
-@Suite struct ForwardProtocolTests {
+@Suite(.tags(.forwardproto))
+struct ForwardProtocolTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)

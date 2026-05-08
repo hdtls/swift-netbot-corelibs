@@ -28,7 +28,8 @@ import Testing
   ]
 #endif
 
-@Suite struct EditableMacrosTests {
+@Suite(.tags(.swiftmacros))
+struct EditableMacrosTests {
 
   #if canImport(EditableMacros)
     @Test func editableMacro() throws {

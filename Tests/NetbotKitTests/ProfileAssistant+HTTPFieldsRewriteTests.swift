@@ -24,7 +24,7 @@ import _ProfileSupport
   import Foundation
 #endif
 
-@Suite(.tags(.httpFieldsRewrite))
+@Suite(.tags(.profile, .profileassistant, .httprewrites))
 struct ProfileAssistant__HTTPFieldsRewriteTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

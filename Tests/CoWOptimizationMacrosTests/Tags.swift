@@ -2,7 +2,7 @@
 //
 // This source file is part of the Netbot open source project
 //
-// Copyright (c) 2025 Junfeng Zhang and the Netbot project authors
+// Copyright (c) 2026 Junfeng Zhang and the Netbot project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -14,5 +14,6 @@
 
 import Testing
 
-@Suite(.tags(.profile, .dns))
-struct ProtocolDNSTests {}
+extension Tag {
+  @Tag static var swiftmacros: Tag
+}

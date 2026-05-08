@@ -22,7 +22,6 @@ import Testing
   import Foundation
 #endif
 
-@Suite(.tags(.formatting))
 struct UUID_FormatStyleTests {
 
   let uuid = UUID()

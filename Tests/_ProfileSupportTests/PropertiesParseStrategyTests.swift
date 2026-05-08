@@ -22,7 +22,7 @@ import Testing
   import Foundation
 #endif
 
-@Suite(.tags(.formatting))
+@Suite(.tags(.profileparser))
 struct PropertiesParseStrategyTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

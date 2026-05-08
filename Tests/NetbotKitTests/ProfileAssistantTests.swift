@@ -26,7 +26,7 @@ import _ProfileSupport
   import SwiftData
 #endif
 
-@Suite(.tags(.profileAssistant, .swiftData))
+@Suite(.tags(.profile, .profileassistant))
 struct ProfileAssistantTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

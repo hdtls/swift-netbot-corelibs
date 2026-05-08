@@ -16,7 +16,7 @@ import Testing
 
 @testable import _ProfileSupport
 
-@Suite(.tags(.urlRewrite))
+@Suite(.tags(.profile, .httprewrites))
 struct URLRewriteTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -33,7 +33,7 @@ struct URLRewriteTests {
   }
 }
 
-@Suite(.tags(.urlRewrite))
+@Suite(.tags(.profile, .httprewrites))
 struct URLRewrite_RewriteTypeTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

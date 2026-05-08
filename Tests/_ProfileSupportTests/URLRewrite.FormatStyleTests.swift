@@ -22,7 +22,7 @@ import Testing
   import Foundation
 #endif
 
-@Suite(.tags(.urlRewrite, .formatting))
+@Suite(.tags(.profile, .profileparser, .httprewrites))
 struct URLRewrite_FormatStyleTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

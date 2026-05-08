@@ -22,7 +22,8 @@ import Testing
   import Foundation
 #endif
 
-@Suite struct ForwardProtocolVMESSTests {
+@Suite(.tags(.forwardproto))
+struct ForwardProtocolVMESSTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)

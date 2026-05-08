@@ -15,6 +15,5 @@
 import Testing
 
 extension Tag {
-
   @Tag static var dns: Tag
 }

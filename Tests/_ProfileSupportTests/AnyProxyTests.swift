@@ -16,7 +16,8 @@ import Testing
 
 @testable import _ProfileSupport
 
-@Suite(.tags(.proxy)) struct AnyProxyTests {
+@Suite(.tags(.profile, .forwardproto))
+struct AnyProxyTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
@@ -47,7 +48,7 @@ import Testing
   }
 }
 
-@Suite(.tags(.proxy))
+@Suite(.tags(.profile, .forwardproto))
 struct AnyProxy_KindTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -116,7 +117,7 @@ struct AnyProxy_KindTests {
   }
 }
 
-@Suite(.tags(.proxy))
+@Suite(.tags(.profile, .forwardproto))
 struct AnyProxy_EngressTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -158,7 +159,7 @@ struct AnyProxy_EngressTests {
   }
 }
 
-@Suite(.tags(.proxy))
+@Suite(.tags(.profile, .forwardproto))
 struct AnyProxy_ObfuscationTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -174,7 +175,7 @@ struct AnyProxy_ObfuscationTests {
   }
 }
 
-@Suite(.tags(.proxy))
+@Suite(.tags(.profile, .forwardproto))
 struct AnyProxy_Obfuscation_StrategyTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -208,7 +209,7 @@ struct AnyProxy_Obfuscation_StrategyTests {
   }
 }
 
-@Suite(.tags(.proxy))
+@Suite(.tags(.profile, .forwardproto))
 struct AnyProxy_SourceTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -221,7 +222,7 @@ struct AnyProxy_SourceTests {
   }
 }
 
-@Suite(.tags(.proxy))
+@Suite(.tags(.profile, .forwardproto))
 struct AnyProxy_TLSTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -238,7 +239,7 @@ struct AnyProxy_TLSTests {
   }
 }
 
-@Suite(.tags(.proxy))
+@Suite(.tags(.profile, .forwardproto))
 struct AnyProxy_WebSocketTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

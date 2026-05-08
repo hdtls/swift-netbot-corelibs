@@ -16,7 +16,7 @@ import Testing
 
 @testable import _ProfileSupport
 
-@Suite(.tags(.forwardingRule))
+@Suite(.tags(.profile, .profileparser, .forwardingrule))
 struct AnyForwardingRule__RegexBuilderTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

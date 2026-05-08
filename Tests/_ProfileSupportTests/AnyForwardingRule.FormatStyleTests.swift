@@ -22,7 +22,7 @@ import Testing
   import Foundation
 #endif
 
-@Suite(.tags(.formatting, .forwardingRule))
+@Suite(.tags(.profile, .profileparser, .forwardingrule))
 struct AnyForwardingRule_FormatStyleTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

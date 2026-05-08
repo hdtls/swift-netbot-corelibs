@@ -23,7 +23,7 @@ import Testing
   import Foundation
 #endif
 
-@Suite(.tags(.profileAssistant))
+@Suite(.tags(.profile, .profileassistant))
 struct ProfileAssistant__ProfileTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

@@ -24,7 +24,7 @@ import _ProfileSupport
   import Foundation
 #endif
 
-@Suite(.tags(.profileAssistant))
+@Suite(.tags(.profile, .profileassistant, .forwardproto))
 struct ProfileAssistant__AnyProxyGroupTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
