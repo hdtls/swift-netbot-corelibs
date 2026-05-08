@@ -33,7 +33,9 @@ struct ProfileAssistant__ProfileTests {
   #endif
   @Test func replaceUnsupportedProperties() async throws {
     try await withManagedProfile { profileAssistant in
-      await XCTAssertNoThrow(try await profileAssistant.replace(\.lazyProxies, with: []))
+      await #expect(throws: Never.self) {
+        try await profileAssistant.replace(\.lazyProxies, with: [])
+      }
       let finalize = try await String(contentsOf: profileAssistant.profileURL, encoding: .utf8)
       #expect(finalize == "")
     }
