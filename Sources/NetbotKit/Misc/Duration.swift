@@ -15,8 +15,8 @@
 @available(SwiftStdlib 5.9, *)
 extension Duration {
 
-  /// Value of `Duration.seconds(Double.greatestFiniteMagnitude)`.
+  /// Value of `Duration.seconds(Int.max)`.
   public static var max: Duration {
-    .seconds(Double.greatestFiniteMagnitude)
+    .seconds(Int.max)
   }
 }

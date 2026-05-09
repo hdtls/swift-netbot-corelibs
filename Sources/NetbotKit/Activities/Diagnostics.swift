@@ -95,7 +95,7 @@
 
             guard case .ready = connection.state else {
               connection.forceCancel()
-              continuation.resume(returning: .seconds(.greatestFiniteMagnitude))
+              continuation.resume(returning: .max)
               return
             }
           }

@@ -46,7 +46,10 @@ extension DispatchTimeInterval {
     case .nanoseconds(let nanoseconds):
       return .nanoseconds(nanoseconds)
     case .never:
-      return .seconds(Double.greatestFiniteMagnitude)
+      // As we know, the process is unlikely to run `Int.max` seconds,
+      // so we use the value when the duration is `Int.max` seconds to
+      // represent `never`.
+      return .seconds(Int.max)
     #if canImport(Darwin)
       @unknown default:
         assertionFailure()
