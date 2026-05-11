@@ -39,13 +39,13 @@
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  public protocol AutoreloadDelegate: AnyObject, Sendable {
-    func autoReloadEnabledHTTPCapabilities(_ capabilities: CapabilityFlags) async
-    func autoReloadForwardProtocol(_ forwardProtocol: any ForwardProtocolConvertible) async
-    func autoReloadForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) async
-    func autoReloadOutboundMode(_ mode: OutboundMode) async
-    func autoReloadProfile(_ profile: Profile, mode: ProxyMode) async
-    func autoReloadDecryptionPKCS12Bundle(_ bundle: NIOSSLPKCS12Bundle?) async
+  public protocol ProfileAutoreloadDelegate: AnyObject, Sendable {
+    func setEnabledHTTPCapabilities(_ capabilities: CapabilityFlags) async
+    func setForwardProtocol(_ forwardProtocol: any ForwardProtocolConvertible) async
+    func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) async
+    func setOutboundMode(_ mode: OutboundMode) async
+    func setDecryptionPKCS12Bundle(_ bundle: NIOSSLPKCS12Bundle?) async
+    func setTunnelNetworkSettings(_ profile: Profile, mode: ProxyMode) async throws
   }
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -53,7 +53,7 @@
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @MainActor final public class AutoreloadSubscription {
+  @MainActor final public class ProfileAutoreload {
 
     @Preference(Prefs.Name.profileURL, store: .__shared)
     public var profileURL = URL.profile
@@ -89,16 +89,14 @@
     public var forwardingRuleResourcesLastUpdatedDate = Date.distantFuture
 
     private var cancellables = Set<AnyCancellable>()
-    private var existingGeoLite2AutoUpdateTask: RepeatedTask?
-    private var existingForwardingRulesAutoUpdateTask: RepeatedTask?
+    private var maxminddbAutoreload: Scheduled<Task<Void, any Error>>?
+    private var externalRulesAutoreload: Scheduled<Task<Void, any Error>>?
 
-    public weak var delegate: (any AutoreloadDelegate)?
+    public weak var delegate: (any ProfileAutoreloadDelegate)?
 
     public let logger = Logger(label: "AnalyzeBot-autoreload")
 
-    private var maxminddb: MaxMindDB?
-
-    private let eventLoopGroup: any EventLoopGroup
+    private let group: any EventLoopGroup
 
     private var maxminddbFile: String {
       let filename = "GeoLite2-Country.mmdb"
@@ -108,7 +106,7 @@
     }
 
     public init(group: any EventLoopGroup = .shared, store: UserDefaults?) {
-      self.eventLoopGroup = group
+      self.group = group
       self._profileURL = .init(wrappedValue: .profile, Prefs.Name.profileURL, store: store)
       self._profileLastContentModificationDate = .init(
         wrappedValue: .distantFuture,
@@ -155,7 +153,7 @@
     }
 
     nonisolated public init(group: any EventLoopGroup = .shared) {
-      eventLoopGroup = group
+      self.group = group
     }
 
     private var session: Session {
@@ -179,97 +177,85 @@
     }
 
     public func run() async throws {
-      maxminddb = try MaxMindDB(file: maxminddbFile, mode: .mmap)
       let profile = try Profile(contentsOf: profileURL)
-      await setOutboundMode(outboundMode)
-      await setProfile(profile, mode: proxyMode)
-      await setEnabledHTTPCapabilities(enabledHTTPCapabilities)
+      await delegate?.setOutboundMode(outboundMode)
+      await delegate?.setEnabledHTTPCapabilities(enabledHTTPCapabilities)
+      await delegate?.setForwardProtocol(profile.asForwardProtocol())
+      await delegate?.setDecryptionPKCS12Bundle(try? profile.asDecryptionPKCS12Bundle())
+      await setForwardingRules(profile.asForwardingRules())
+      try await delegate?.setTunnelNetworkSettings(profile, mode: proxyMode)
 
       $profileURL
         .combineLatest($proxyMode, $profileLastContentModificationDate, $selectionRecords)
         .dropFirst()
-        .sink { [weak self] url, mode, _, _ in
-          guard let self, let profile = try? Profile(contentsOf: url) else { return }
-          Task {
-            await setProfile(profile, mode: mode)
+        .map { ($0.0, $0.1) }
+        .sink { url, mode in
+          Task { [weak self] in
+            guard let self, let profile = try? Profile(contentsOf: url) else { return }
+            await setForwardingRules(profile.asForwardingRules())
+            await delegate?.setForwardProtocol(profile.asForwardProtocol())
+            await delegate?.setDecryptionPKCS12Bundle(try? profile.asDecryptionPKCS12Bundle())
+            try? await delegate?.setTunnelNetworkSettings(profile, mode: mode)
           }
         }
         .store(in: &cancellables)
 
       $enabledHTTPCapabilities
-        .removeDuplicates()
         .dropFirst()
-        .sink { [weak self] capabilities in
-          guard let self else { return }
-          Task {
-            await setEnabledHTTPCapabilities(capabilities)
+        .sink { capabilities in
+          Task { [weak self] in
+            guard let self else { return }
+            await delegate?.setEnabledHTTPCapabilities(capabilities)
           }
         }
         .store(in: &cancellables)
 
       $outboundMode
-        .removeDuplicates()
         .dropFirst()
-        .sink { [weak self] mode in
-          guard let self else { return }
-          Task {
-            await setOutboundMode(mode)
+        .sink { mode in
+          Task { [weak self] in
+            guard let self else { return }
+            await delegate?.setOutboundMode(mode)
           }
         }
         .store(in: &cancellables)
 
       // Maxmind db auto update.
-      Publishers.CombineLatest3(
-        $maxminddbDownloadURL.removeDuplicates(),
-        $maxminddbLastUpdatedDate.removeDuplicates(),
-        $maxminddbKeepUpToDate.removeDuplicates()
-      )
-      .sink { [weak self] _, date, keepUpToDate in
-        guard let self else { return }
-        guard keepUpToDate else {
-          // Cancel auto update task.
-          existingGeoLite2AutoUpdateTask?.cancel()
-          return
-        }
-
-        let now = Date.now
-        let timeIntervalPast = date > now ? 86400 * 7 : Int64(now.timeIntervalSince(date))
-        let initialDelay = TimeAmount.seconds(max(0, 86400 * 7 - timeIntervalPast))
-        let delay = TimeAmount.hours(24 * 7)
-        existingGeoLite2AutoUpdateTask?.cancel()
-        existingGeoLite2AutoUpdateTask =
-          eventLoopGroup
-          .next()
-          .scheduleRepeatedTask(initialDelay: initialDelay, delay: delay) { _ in
-            Task { [weak self] in try await self?.downloadMaxmindDBs() }
+      $maxminddbDownloadURL.combineLatest($maxminddbLastUpdatedDate, $maxminddbKeepUpToDate)
+        .sink { [weak self] url, date, keepUpToDate in
+          guard let self else { return }
+          guard keepUpToDate else {
+            // Cancel auto update task.
+            maxminddbAutoreload?.cancel()
+            return
           }
-      }
-      .store(in: &cancellables)
+          let now = Date.now
+          let timeIntervalPast = date > now ? 86400 * 7 : Int64(now.timeIntervalSince(date))
+          let initialDelay = TimeAmount.seconds(max(0, 86400 * 7 - timeIntervalPast))
+          maxminddbAutoreload?.cancel()
+          maxminddbAutoreload = group.next().scheduleTask(deadline: .now() + initialDelay) {
+            Task { try await self.downloadMaxmindDBs(url) }
+          }
+        }
+        .store(in: &cancellables)
 
       // External forwarding rule resources auto update.
       $forwardingRuleResourcesLastUpdatedDate
-        .removeDuplicates()
         .sink { [weak self] date in
           guard let self else { return }
-
           let now = Date.now
           let timeIntervalPast = date > now ? 24 * 3600 : Int64(now.timeIntervalSince(date))
           let initialDelay = TimeAmount.seconds(max(0, 24 * 60 * 60 - timeIntervalPast))
-          let delay = TimeAmount.hours(24)
-          existingForwardingRulesAutoUpdateTask?.cancel()
-          existingForwardingRulesAutoUpdateTask =
-            eventLoopGroup
-            .next()
-            .scheduleRepeatedTask(initialDelay: initialDelay, delay: delay) { _ in
-              Task { [weak self] in try await self?.downloadForwardingRuleExternalResources() }
-            }
+          externalRulesAutoreload?.cancel()
+          externalRulesAutoreload = group.next().scheduleTask(deadline: .now() + initialDelay) {
+            Task { try await self.downloadExternalRules() }
+          }
         }
         .store(in: &cancellables)
     }
 
-    nonisolated private func downloadMaxmindDBs() async throws {
+    nonisolated private func downloadMaxmindDBs(_ url: URL) async throws {
       let session = try await self.session
-      let url = await maxminddbDownloadURL
       let fileURL = await URL(fileURLWithPath: maxminddbFile)
 
       let destination: DownloadRequest.Destination = { _, _ in
@@ -293,7 +279,7 @@
       await setForwardingRules(profile.asForwardingRules())
     }
 
-    nonisolated private func downloadForwardingRuleExternalResources() async throws {
+    nonisolated private func downloadExternalRules() async throws {
       var profile = try await Profile(contentsOf: profileURL)
 
       try await withThrowingTaskGroup(of: Void.self) { g in
@@ -338,26 +324,12 @@
       }
 
       profile = try await Profile(contentsOf: profileURL)
-      await setForwardingRules(profile.asForwardingRules())
-    }
-
-    private func setProfile(_ profile: Profile, mode: ProxyMode) async {
-      await setForwardingRules(profile.asForwardingRules())
-      await delegate?.autoReloadProfile(profile, mode: mode)
-      await delegate?.autoReloadForwardProtocol(profile.asForwardProtocol())
-      await delegate?.autoReloadDecryptionPKCS12Bundle(try? profile.asDecryptionPKCS12Bundle())
-    }
-
-    private func setOutboundMode(_ mode: OutboundMode) async {
-      await delegate?.autoReloadOutboundMode(mode)
-    }
-
-    private func setEnabledHTTPCapabilities(_ capabilities: CapabilityFlags) async {
-      await delegate?.autoReloadEnabledHTTPCapabilities(capabilities)
+      await delegate?.setForwardingRules(profile.asForwardingRules())
     }
 
     private func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) async {
-      await delegate?.autoReloadForwardingRules(
+      let maxminddb = try? MaxMindDB(file: maxminddbFile, mode: .mmap)
+      await delegate?.setForwardingRules(
         forwardingRules.map {
           if var forwardingRule = $0 as? GeoIPForwardingRule {
             forwardingRule.db = maxminddb
@@ -377,13 +349,14 @@
           }
 
           return $0
-        })
+        }
+      )
     }
 
     public func shutdownGracefully() async {
       cancellables = []
-      existingGeoLite2AutoUpdateTask?.cancel()
-      existingForwardingRulesAutoUpdateTask?.cancel()
+      maxminddbAutoreload?.cancel()
+      externalRulesAutoreload?.cancel()
     }
   }
 

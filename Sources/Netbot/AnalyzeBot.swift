@@ -87,7 +87,7 @@ public actor AnalyzeBot: Actor {
   /// Stop current running analyze tunnel.
   public func shutdownGracefully() async {
     #if os(macOS)
-      try? await self.setNWProtocolProxiesOptions(.init())
+      try? await self.setSystemProxySettings(.init())
     #endif
     let publisher = self.core.connectionPublisher as! ConnectionPulse
     try? await publisher.shutdownGracefully()
@@ -98,13 +98,13 @@ public actor AnalyzeBot: Actor {
     self.logger = logger
   }
 
-  public func setLwIPEnabled(_ enabled: Bool, packetFlow: any PacketTunnelFlow) async {
+  public func setLwIPEnabled(_ enabled: Bool, packetFlow: any PacketTunnelFlow) async throws {
     #if NETBOT_REQUIRES_LWIP
       if enabled {
         self.coreLwIP = LwIP(group: group, packetFlow: packetFlow, dns: dns)
-        try? await self.coreLwIP?.run()
+        try await self.coreLwIP?.run()
       } else {
-        try? await self.coreLwIP?.shutdownGracefully()
+        try await self.coreLwIP?.shutdownGracefully()
         self.coreLwIP = nil
       }
     #endif
@@ -139,7 +139,7 @@ public actor AnalyzeBot: Actor {
   }
 
   #if os(macOS)
-    public func setNWProtocolProxiesOptions(_ options: NEProtocolProxies.Options) async throws {
+    public func setSystemProxySettings(_ options: NEProtocolProxies.Options) async throws {
       do {
         try await PHT.setNWProtocolProxies(
           processName: ProcessInfo.processInfo.processName,
@@ -153,7 +153,7 @@ public actor AnalyzeBot: Actor {
   #endif
 
   /// Modify settings using specific profile.
-  public func setProfile(_ newProfile: Profile) async throws {
+  public func setTunnelNetworkSettings(_ newProfile: Profile) async throws {
     try await core.setTunnelNetworkSettings(
       (
         SocketAddress(
