@@ -48,19 +48,19 @@
     /// DNS latency.
     public var dnsLatency = Duration.zero
     #if canImport(SwiftUI)
-      public var dnsLatencyAttributed: AttributedString = "N/Ams"
+      public var dnsLatencyAttributed: AttributedString = "-/ms"
     #endif
 
     /// Router latency.
     public var routerLatency = Duration.zero
     #if canImport(SwiftUI)
-      public var routerLatencyAttributed: AttributedString = "N/Ams"
+      public var routerLatencyAttributed: AttributedString = "-/ms"
     #endif
 
     /// Internet latency.
     public var internetLatency = Duration.zero
     #if canImport(SwiftUI)
-      public var internetLatencyAttributed: AttributedString = "N/Ams"
+      public var internetLatencyAttributed: AttributedString = "-/ms"
     #endif
 
     public var events: [EventLog] = []
@@ -87,15 +87,23 @@
     #if canImport(SwiftUI)
       nonisolated private func attributedString(fromDuration duration: Duration) -> AttributedString
       {
-        let formatted = duration.formatted(formatStyle)
-        var valuePart: String = "≤1"
+        var valuePart: String = "-"
         var unitPart: Substring = "ms"
-        if let unitStartIndex = formatted.firstIndex(where: { !$0.isNumber }) {
-          valuePart = formatted[..<unitStartIndex].trimmingCharacters(in: .whitespaces)
-          if valuePart == "0" {
-            valuePart = "≤1"
+
+        // Zero means initial value, max means test failed, both zero and failed should
+        // show `-/ms` as result.
+        switch duration {
+        case .zero, .max:
+          break
+        case Duration.nanoseconds(1)...Duration.microseconds(999):
+          valuePart = "≤1"
+        default:
+          let formatted = duration.formatted(formatStyle)
+
+          if let unitStartIndex = formatted.firstIndex(where: { !$0.isNumber && $0 != "," }) {
+            valuePart = formatted[..<unitStartIndex].trimmingCharacters(in: .whitespaces)
+            unitPart = formatted[unitStartIndex...]
           }
-          unitPart = formatted[unitStartIndex...]
         }
 
         var duration = AttributedString(valuePart)
