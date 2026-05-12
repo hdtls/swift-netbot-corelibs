@@ -12,7 +12,6 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Atomics
 import HTTPTypes
 
 #if canImport(FoundationEssentials)
@@ -22,6 +21,7 @@ import HTTPTypes
 #endif
 
 #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  import Atomics
   import NIOConcurrencyHelpers
 #else
   import Synchronization
@@ -33,7 +33,7 @@ import HTTPTypes
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
-public let SQL_lastInsertedID = ManagedAtomic<UInt64>(0)
+public let SQL_lastInsertedID = Atomic<UInt64>(0)
 
 #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   @available(SwiftStdlib 5.9, *)
@@ -95,7 +95,7 @@ public let SQL_lastInsertedID = ManagedAtomic<UInt64>(0)
   public var processReport: ProcessReport?
 
   public init(
-    taskIdentifier: UInt64 = SQL_lastInsertedID.loadThenWrappingIncrement(ordering: .relaxed)
+    taskIdentifier: UInt64 = SQL_lastInsertedID.wrappingAdd(1, ordering: .relaxed).oldValue
   ) {
     self.taskIdentifier = taskIdentifier
     self._originalRequest = .init(nil)

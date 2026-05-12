@@ -12,7 +12,6 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Atomics
 import NEAddressProcessing
 import NIOCore
 import NIOEmbedded
@@ -24,7 +23,10 @@ import _DNSSupport
 @testable import Netbot
 
 #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  import Atomics
   import NIOConcurrencyHelpers
+
+  typealias Atomic = ManagedAtomic
 #else
   import Synchronization
 #endif
@@ -58,7 +60,7 @@ struct LocalDNSProxyTests {
     @available(SwiftStdlib 6.0, *)
   #endif
   final class MockDNSServer: @unchecked Sendable {
-    let queryCalls: ManagedAtomic<Int> = .init(0)
+    let queryCalls: Atomic<Int> = .init(0)
     let response: [any ResourceRecord]
     let parser = NLDNSParser()
     private var channel: LocalDNSProxy.AsyncChannel!
@@ -79,7 +81,7 @@ struct LocalDNSProxyTests {
         try? await channel.executeThenClose { inbound, outbound in
           for try await frame in inbound {
             // Always response privoded records.
-            queryCalls.wrappingIncrement(ordering: .relaxed)
+            queryCalls.wrappingAdd(1, ordering: .relaxed)
             let message = try parser.parse(frame.data)
 
             let response = Message(

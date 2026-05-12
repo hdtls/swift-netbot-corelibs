@@ -13,13 +13,68 @@
 // ===----------------------------------------------------------------------===//
 
 #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  import Atomics
   import NIOConcurrencyHelpers
+
+  @available(SwiftStdlib 5.9, *)
+  public typealias Atomic = ManagedAtomic
 
   @available(SwiftStdlib 5.9, *)
   public typealias Mutex = NIOLockedValueBox
 
   @available(SwiftStdlib 5.9, *)
-  extension NIOLockedValueBox {
+  extension Atomic where Value == Int {
+
+    @_semantics("atomics.requires_constant_orderings")
+    @_transparent @_alwaysEmitIntoClient
+    @discardableResult
+    public func wrappingAdd(_ operand: Int, ordering: AtomicUpdateOrdering) -> (
+      oldValue: Int,
+      newValue: Int
+    ) {
+      (
+        loadThenWrappingIncrement(by: operand, ordering: ordering),
+        load(ordering: .relaxed)
+      )
+    }
+  }
+
+  @available(SwiftStdlib 5.9, *)
+  extension Atomic where Value == UInt32 {
+
+    @_semantics("atomics.requires_constant_orderings")
+    @_transparent @_alwaysEmitIntoClient
+    @discardableResult
+    public func wrappingAdd(_ operand: UInt32, ordering: AtomicUpdateOrdering) -> (
+      oldValue: UInt32,
+      newValue: UInt32
+    ) {
+      (
+        loadThenWrappingIncrement(by: operand, ordering: ordering),
+        load(ordering: .relaxed)
+      )
+    }
+  }
+
+  @available(SwiftStdlib 5.9, *)
+  extension Atomic where Value == UInt64 {
+
+    @_semantics("atomics.requires_constant_orderings")
+    @_transparent @_alwaysEmitIntoClient
+    @discardableResult
+    public func wrappingAdd(_ operand: UInt64, ordering: AtomicUpdateOrdering) -> (
+      oldValue: UInt64,
+      newValue: UInt64
+    ) {
+      (
+        loadThenWrappingIncrement(by: operand, ordering: ordering),
+        load(ordering: .relaxed)
+      )
+    }
+  }
+
+  @available(SwiftStdlib 5.9, *)
+  extension Mutex {
     /// Add a wrap function to make it easier to migrate to Mutex in the future.
     public func withLock<Result>(_ body: (inout Value) throws -> Result) rethrows -> Result {
       try withLockedValue(body)

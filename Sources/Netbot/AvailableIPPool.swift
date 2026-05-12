@@ -12,13 +12,19 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Atomics
 import NEAddressProcessing
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
 #else
   import Foundation
+#endif
+
+#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  import Atomics
+  import NetbotLiteData
+#else
+  import Synchronization
 #endif
 
 #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -52,7 +58,25 @@ extension IPv4Address {
 #endif
 public struct AvailableIPPool: Sendable {
 
-  private let _storage: ManagedAtomic<UInt32>
+  final private class _Storage: Sendable {
+    private let storage: Atomic<UInt32>
+
+    init(_ initialValue: UInt32) {
+      storage = Atomic(initialValue)
+    }
+
+    @_semantics("atomics.requires_constant_orderings")
+    func store(_ desired: UInt32, ordering: AtomicStoreOrdering) {
+      storage.store(desired, ordering: ordering)
+    }
+
+    @_semantics("atomics.requires_constant_orderings")
+    func loadThenWrappingIncrement(ordering: AtomicUpdateOrdering) -> UInt32 {
+      storage.wrappingAdd(1, ordering: ordering).oldValue
+    }
+  }
+
+  private let _storage: _Storage
   private let bounds: (lower: UInt32, upper: UInt32)
 
   public var lower: IPv4Address {

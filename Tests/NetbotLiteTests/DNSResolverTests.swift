@@ -12,7 +12,6 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Atomics
 import Logging
 import NIOCore
 import Testing

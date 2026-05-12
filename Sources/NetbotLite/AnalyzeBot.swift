@@ -12,7 +12,6 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Atomics
 import Dispatch
 import Logging
 import NEAddressProcessing
@@ -21,12 +20,12 @@ import NESOCKS
 import NIOCore
 import NIOExtras
 import NIOHTTP1
-import NIOHTTPCompression
 import NIOSSL
 import NetbotLiteData
 import Tracing
 
 #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  import Atomics
   import NIOConcurrencyHelpers
 #else
   import Synchronization
@@ -113,7 +112,7 @@ import Tracing
   final public var isActive: Bool {
     _isActive.load(ordering: .relaxed)
   }
-  private let _isActive = ManagedAtomic<Bool>(false)
+  private let _isActive = Atomic<Bool>(false)
 
   private var quiescing: [ServerQuiescingHelper]
 

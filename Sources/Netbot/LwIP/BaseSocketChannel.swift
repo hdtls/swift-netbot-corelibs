@@ -13,13 +13,14 @@
 // ===----------------------------------------------------------------------===//
 
 #if NETBOT_REQUIRES_LWIP
-  import Atomics
   import Dispatch
   import NEAddressProcessing
   import NIOCore
 
   #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    import Atomics
     import NIOConcurrencyHelpers
+    import NetbotLiteData
   #else
     import Synchronization
   #endif
@@ -43,11 +44,7 @@
     let eventLoop: any EventLoop
     private let closePromise: EventLoopPromise<Void>
 
-    #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      internal let _offEventLoopLock = NIOLockedValueBox(Void())
-    #else
-      internal let _offEventLoopLock = Mutex(Void())
-    #endif
+    internal let _offEventLoopLock = Mutex(Void())
 
     // please use `self.addressesCached` instead.
     private var _addressCache = AddressCache(local: nil, remote: nil)
@@ -103,9 +100,9 @@
 
     private var autoRead = true
 
-    private let _isActive = ManagedAtomic(false)
+    private let _isActive = Atomic(false)
 
-    private let _isOpen = ManagedAtomic(true)
+    private let _isOpen = Atomic(true)
 
     private var isFlushPending = false
 
