@@ -14,6 +14,7 @@
 
 #if canImport(Darwin)
   import Alamofire
+  import NetbotDNS
   import NetbotLite
   import NetbotLiteData
   import Combine
@@ -23,8 +24,8 @@
   import NIOCore
   import NIOSSL
   import Preference
-  import _PreferenceSupport
-  import _ProfileSupport
+  import NetbotPreferences
+  import NetbotProfile
 
   #if canImport(FoundationNetworking)
     import FoundationNetworking

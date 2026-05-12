@@ -20,7 +20,7 @@ import NIOCore
 import NIOTLS
 import NetbotLite
 import NetbotLiteData
-import _ProfileSupport
+import NetbotProfile
 
 #if canImport(Network)
   import Network

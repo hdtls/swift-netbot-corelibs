@@ -27,10 +27,10 @@ let package = Package(
     .macCatalyst(.v13),
   ],
   products: [
-    .library(name: "Dashboard", targets: ["Dashboard"]),
+    .library(name: "NetbotDashboard", targets: ["NetbotDashboard"]),
     .library(name: "Netbot", targets: ["Netbot"]),
     .library(name: "NetbotDaemons", targets: ["NetbotDaemons"]),
-    .library(name: "NetbotKit", targets: ["NetbotKit"]),
+    .library(name: "NetbotFrontend", targets: ["NetbotFrontend"]),
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-atomics.git", from: "1.3.0"),
@@ -47,14 +47,14 @@ let package = Package(
   ],
   targets: [
     .macro(
-      name: "_EditableMacros",
+      name: "CoWOptimizationMacros",
       dependencies: [
         .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
         .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
       ]
     ),
     .macro(
-      name: "CoWOptimizationMacros",
+      name: "NetbotFrontendMacros",
       dependencies: [
         .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
         .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
@@ -67,45 +67,14 @@ let package = Package(
         .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
       ]
     ),
-    .target(
-      name: "_DNSSupport",
-      dependencies: [
-        .product(name: "NIOCore", package: "swift-nio"),
-        .product(name: "NEAddressProcessing", package: "swift-netbot-protoimpl"),
-      ]
-    ),
-    .target(
-      name: "_PreferenceSupport",
-      dependencies: [
-        .product(name: "Logging", package: "swift-log"),
-        .product(name: "Preference", package: "swift-preference"),
-      ]
-    ),
-    .target(name: "_PrivilegeSupport"),
-    .target(
-      name: "_ProfileSupport",
-      dependencies: [
-        "CoWOptimization",
-        .product(name: "HTTPTypes", package: "swift-http-types"),
-        .product(name: "Logging", package: "swift-log"),
-      ]
-    ),
     .target(name: "CNELwIP"),
     .target(name: "CoWOptimization", dependencies: ["CoWOptimizationMacros"]),
     .target(
-      name: "Dashboard",
-      dependencies: [
-        "_PreferenceSupport",
-        "NetbotLiteData",
-        .product(name: "NIOCore", package: "swift-nio"),
-      ]
-    ),
-    .target(
       name: "Netbot",
       dependencies: [
-        "_DNSSupport",
-        "_PreferenceSupport",
-        "_ProfileSupport",
+        "NetbotDNS",
+        "NetbotPreferences",
+        "NetbotProfile",
         "NetbotLite",
         "NetbotLiteData",
         "CoWOptimization",
@@ -135,17 +104,39 @@ let package = Package(
         .product(name: "NESOCKS", package: "swift-netbot-protoimpl"),
         .product(name: "NESS", package: "swift-netbot-protoimpl"),
         .product(name: "NEVMESS", package: "swift-netbot-protoimpl"),
+      ],
+      exclude: ["DNS", "Profile"]
+    ),
+    .target(name: "NetbotDaemons"),
+    .target(
+      name: "NetbotDashboard",
+      dependencies: [
+        "NetbotPreferences",
+        "NetbotLiteData",
+        .product(name: "NIOCore", package: "swift-nio"),
       ]
     ),
-    .target(name: "NetbotDaemons", dependencies: ["_PrivilegeSupport"]),
     .target(
-      name: "NetbotKit",
+      name: "NetbotDNS",
       dependencies: [
-        "_EditableMacros",
-        "_PreferenceSupport",
-        "_ProfileSupport",
+        "NetbotLite",
         "NetbotLiteData",
-        "Dashboard",
+        "NetbotProfile",
+        .product(name: "Atomics", package: "swift-atomics"),
+        .product(name: "Logging", package: "swift-log"),
+        .product(name: "NIOCore", package: "swift-nio"),
+        .product(name: "NEAddressProcessing", package: "swift-netbot-protoimpl"),
+      ],
+      path: "Sources/Netbot/DNS"
+    ),
+    .target(
+      name: "NetbotFrontend",
+      dependencies: [
+        "NetbotDashboard",
+        "NetbotFrontendMacros",
+        "NetbotLiteData",
+        "NetbotPreferences",
+        "NetbotProfile",
         .product(name: "_CryptoExtras", package: "swift-crypto"),
         .product(name: "Crypto", package: "swift-crypto"),
         .product(name: "NIOSSL", package: "swift-nio-ssl"),
@@ -177,7 +168,9 @@ let package = Package(
         .product(name: "NESOCKS", package: "swift-netbot-protoimpl"),
         .product(name: "NESS", package: "swift-netbot-protoimpl"),
         .product(name: "NEVMESS", package: "swift-netbot-protoimpl"),
-      ]),
+      ],
+      exclude: ["Data"]
+    ),
     .target(
       name: "NetbotLiteData",
       dependencies: [
@@ -186,17 +179,25 @@ let package = Package(
         .product(name: "HTTPTypes", package: "swift-http-types"),
         .product(name: "NEAddressProcessing", package: "swift-netbot-protoimpl"),
         .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
-      ]
+      ],
+      path: "Sources/NetbotLite/Data"
     ),
-    .testTarget(name: "_DNSSupportTests", dependencies: ["_DNSSupport"]),
-    .testTarget(
-      name: "_EditableMacrosTests",
+    .target(
+      name: "NetbotPreferences",
       dependencies: [
-        "_EditableMacros",
-        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
+        .product(name: "Logging", package: "swift-log"),
+        .product(name: "Preference", package: "swift-preference"),
       ]
     ),
-    .testTarget(name: "_ProfileSupportTests", dependencies: ["_ProfileSupport"]),
+    .target(
+      name: "NetbotProfile",
+      dependencies: [
+        "CoWOptimization",
+        .product(name: "HTTPTypes", package: "swift-http-types"),
+        .product(name: "Logging", package: "swift-log"),
+      ],
+      path: "Sources/Netbot/Profile"
+    ),
     .testTarget(
       name: "CoWOptimizationMacrosTests",
       dependencies: [
@@ -204,7 +205,19 @@ let package = Package(
         .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
       ]
     ),
-    .testTarget(name: "DashboardTests", dependencies: ["Dashboard"]),
+    .testTarget(name: "NetbotDashboardTests", dependencies: ["NetbotDashboard"]),
+    .testTarget(name: "NetbotDNSTests", dependencies: ["NetbotDNS"]),
+    .testTarget(
+      name: "NetbotFrontendMacrosTests",
+      dependencies: [
+        "NetbotFrontendMacros",
+        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
+      ]
+    ),
+    .testTarget(name: "NetbotFrontendTests", dependencies: ["NetbotFrontend"]),
+    .testTarget(name: "NetbotLiteDataTests", dependencies: ["NetbotLiteData"]),
+    .testTarget(name: "NetbotLiteTests", dependencies: ["NetbotLite"]),
+    .testTarget(name: "NetbotProfileTests", dependencies: ["NetbotProfile"]),
     .testTarget(
       name: "NetbotTests",
       dependencies: [
@@ -216,9 +229,6 @@ let package = Package(
       ],
       exclude: ["External Resource"]
     ),
-    .testTarget(name: "NetbotKitTests", dependencies: ["NetbotKit"]),
-    .testTarget(name: "NetbotLiteDataTests", dependencies: ["NetbotLiteData"]),
-    .testTarget(name: "NetbotLiteTests", dependencies: ["NetbotLite"]),
     .testTarget(
       name: "SynchronizationMacrosTests",
       dependencies: [
@@ -268,6 +278,10 @@ for target in package.targets {
   settings.append(
     .enableExperimentalFeature(
       "AvailabilityMacro=SwiftStdlib 6.0:iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0"
+    ))
+  settings.append(
+    .enableExperimentalFeature(
+      "AvailabilityMacro=SwiftStdlib 6.2:macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, visionOS 26.0"
     ))
   target.swiftSettings = settings
 }

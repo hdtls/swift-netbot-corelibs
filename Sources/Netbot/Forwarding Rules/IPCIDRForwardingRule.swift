@@ -13,6 +13,7 @@
 // ===----------------------------------------------------------------------===//
 
 import NEAddressProcessing
+import NetbotDNS
 import NetbotLite
 import NetbotLiteData
 import Synchronization

@@ -14,7 +14,6 @@
 
 #if os(macOS)
   import Foundation
-  import _PrivilegeSupport
 
   /// PHTHandleProtocol is the NSXPCConnection-based protocol implemented by the helper tool
   /// and called by the app.
@@ -44,6 +43,6 @@
     ///
     /// - Parameter address: Socket address the process running on.
     /// - Returns: Any mached process else return nil.
-    func processInfo(address: UInt16) async throws -> _PrivilegeSupport.ProcessInfo?
+    func processInfo(address: UInt16) async throws -> ProcessInfo?
   }
 #endif

@@ -16,9 +16,10 @@ import Logging
 import NEAddressProcessing
 import NIOCore
 import NIOSSL
+import NetbotDNS
 import NetbotLite
 import NetbotLiteData
-import _ProfileSupport
+import NetbotProfile
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
@@ -41,7 +42,6 @@ import _ProfileSupport
 
 #if os(macOS)
   import NetbotDaemons
-  import _PrivilegeSupport
 #endif
 
 /// Assistant to manage PacketTunnelProvider and NIO proxy servers backend.

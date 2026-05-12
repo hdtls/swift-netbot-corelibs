@@ -19,7 +19,6 @@
   import SecurityFoundation
   import os
   import SystemConfiguration
-  import _PrivilegeSupport
 
   /// This object implements the protocol which we have defined. It provides the actual behavior for the service. It is 'exported' by the
   /// service to make it available to the process hosting the service over an NSXPCConnection.
@@ -186,9 +185,9 @@
       }
     }
 
-    public func processInfo(address: UInt16) async throws -> _PrivilegeSupport.ProcessInfo? {
-      func processInfo(processIdentifier: pid_t) -> _PrivilegeSupport.ProcessInfo {
-        let processInfo = _PrivilegeSupport.ProcessInfo()
+    public func processInfo(address: UInt16) async throws -> ProcessInfo? {
+      func processInfo(processIdentifier: pid_t) -> ProcessInfo {
+        let processInfo = ProcessInfo()
         processInfo.processIdentifier = processIdentifier
 
         if let app = NSRunningApplication(processIdentifier: processIdentifier) {

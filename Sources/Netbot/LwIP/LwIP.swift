@@ -21,7 +21,7 @@
   import NIOExtras
   import NetbotLite
   import NetbotLiteData
-  import _DNSSupport
+  import NetbotDNS
 
   #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     import NIOConcurrencyHelpers

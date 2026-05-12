@@ -23,7 +23,7 @@ import NIOTLS
 import NIOWebSocket
 import NetbotLite
 import NetbotLiteData
-import _ProfileSupport
+import NetbotProfile
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

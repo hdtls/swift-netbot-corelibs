@@ -18,6 +18,9 @@
 @_exported import NIOSSL
 @_exported import NetbotLite
 @_exported import NetbotLiteData
-@_exported import _PreferenceSupport
-@_exported import _PrivilegeSupport
-@_exported import _ProfileSupport
+@_exported import NetbotPreferences
+@_exported import NetbotProfile
+
+#if os(macOS)
+  @_exported import NetbotDaemons
+#endif

@@ -15,10 +15,10 @@
 import NESS
 import NIOSSL
 import NetbotLite
+import NetbotPreferences
+import NetbotProfile
 import SwiftASN1
 import X509
-import _PreferenceSupport
-import _ProfileSupport
 
 #if canImport(CryptoKit)
   import CryptoExtras

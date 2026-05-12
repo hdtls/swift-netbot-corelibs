@@ -15,7 +15,7 @@
 import Dispatch
 import Logging
 import NIOCore
-import _ProfileSupport
+import NetbotProfile
 
 #if canImport(Network)
   import Foundation

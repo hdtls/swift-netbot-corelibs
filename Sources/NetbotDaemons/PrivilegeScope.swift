@@ -16,7 +16,6 @@
   import Foundation
   import ServiceManagement
   import os
-  import _PrivilegeSupport
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -195,7 +194,7 @@
       }
     }
 
-    public func processInfo(address: UInt16) async throws -> _PrivilegeSupport.ProcessInfo? {
+    public func processInfo(address: UInt16) async throws -> ProcessInfo? {
       try await submit { tool, _ in
         try await tool.processInfo(address: address)
       }
