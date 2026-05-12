@@ -108,19 +108,12 @@ import Tracing
   @LockableTracked(accessors: .get)
   final public var decryptionSSLPKCS12Bundle: NIOSSLPKCS12Bundle?
 
-  /// True if this `AnalyzeBot` is currently active. Active is defined as the period of time after the `run` and before
-  /// `shutdownGracefully` has fired.
+  /// True if this `AnalyzeBot` is currently active. `isActive` is defined as the period
+  /// of time after the `run` and before `shutdownGracefully` has fired.
   final public var isActive: Bool {
     _isActive.load(ordering: .relaxed)
   }
   private let _isActive = ManagedAtomic<Bool>(false)
-
-  final public var closeFuture: EventLoopFuture<Void>? {
-    _closePromise.withLock {
-      $0?.futureResult
-    }
-  }
-  private let _closePromise = Mutex<EventLoopPromise<Void>?>(nil)
 
   private var quiescing: [ServerQuiescingHelper]
 
@@ -251,7 +244,6 @@ import Tracing
           return
         }
         _isActive.store(true, ordering: .relaxed)
-        _closePromise.withLock { $0 = eventLoopGroup.next().makePromise() }
 
         try await withThrowingDiscardingTaskGroup { g in
           g.addTask {
@@ -269,7 +261,6 @@ import Tracing
         }
       } catch {
         _isActive.store(false, ordering: .relaxed)
-        _closePromise.withLock { $0?.fail(error) }
         throw error
       }
     }
@@ -304,12 +295,10 @@ import Tracing
         try await g.waitForAll()
       }
     } catch {
-      _closePromise.withLock { $0?.fail(error) }
       throw error
     }
 
     _isActive.store(false, ordering: .relaxed)
-    _closePromise.withLock { $0?.succeed() }
 
     logger.trace("\(processName) fully shutdown complete.")
   }
