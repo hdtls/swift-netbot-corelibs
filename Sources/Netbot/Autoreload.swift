@@ -254,7 +254,16 @@
         .store(in: &cancellables)
     }
 
-    nonisolated private func downloadMaxmindDBs(_ url: URL) async throws {
+    #if swift(>=6.2)
+      @concurrent private func downloadMaxmindDBs(_ url: URL) async throws {
+        try await _downloadMaxmindDBs(url)
+      }
+    #else
+      nonisolated private func downloadMaxmindDBs(_ url: URL) async throws {
+        try await _downloadMaxmindDBs(url)
+      }
+    #endif
+    nonisolated private func _downloadMaxmindDBs(_ url: URL) async throws {
       let session = try await self.session
       let fileURL = await URL(fileURLWithPath: maxminddbFile)
 
@@ -279,7 +288,16 @@
       await setForwardingRules(profile.asForwardingRules())
     }
 
-    nonisolated private func downloadExternalRules() async throws {
+    #if swift(>=6.2)
+      @concurrent private func downloadExternalRules() async throws {
+        try await _downloadExternalRules()
+      }
+    #else
+      nonisolated private func downloadExternalRules() async throws {
+        try await _downloadExternalRules()
+      }
+    #endif
+    nonisolated private func _downloadExternalRules() async throws {
       var profile = try await Profile(contentsOf: profileURL)
 
       try await withThrowingTaskGroup(of: Void.self) { g in
