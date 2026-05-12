@@ -305,14 +305,44 @@ import _ProfileSupport
   }
 
   func query(msg message: Message) async throws -> Message {
+    // Reject response messages.
+    guard !message.headerFields.flags.isResponse else {
+      return Message(
+        transactionID: message.headerFields.transactionID,
+        response: true,
+        operationCode: .query,
+        responseCode: .formErr,
+        questions: message.questions
+      )
+    }
+
+    // Standard DNS servers handle only query operations.
+    guard message.headerFields.flags.opcode == .query else {
+      return Message(
+        transactionID: message.headerFields.transactionID,
+        response: true,
+        operationCode: .query,
+        responseCode: .notImp,
+        questions: message.questions
+      )
+    }
+
+    // Standard DNS servers only handle messages with exactly one question.
+    guard message.questions.count == 1 else {
+      return Message(
+        transactionID: message.headerFields.transactionID,
+        response: true,
+        operationCode: .query,
+        responseCode: .formErr,
+        questions: message.questions
+      )
+    }
+
     // The `additionalServers` may changed, if our dns mappings contains dns server map.
     var additionalServers = options.additionalServers
     var lastError: any Error = DNSError.operationRefused
 
-    // For current version, DNS mapping requires that the query contains
-    // only one question.
-    if message.questions.count == 1,
-      let question = message.questions.first,
+    if let question = message.questions.first,
       let mapping = self.options.mappings.first(where: { $0.domainName == question.domainName })
     {
       @inline(__always) func response(_ record: any ResourceRecord) -> Message {

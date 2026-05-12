@@ -998,7 +998,9 @@ public struct Message: Sendable {
         }
       }
 
-      public struct OpCode: RawRepresentable, Hashable, Sendable, CustomDebugStringConvertible {
+      public struct OperationCode: RawRepresentable, Hashable, Sendable,
+        CustomDebugStringConvertible
+      {
 
         public var rawValue: UInt8
 
@@ -1018,22 +1020,22 @@ public struct Message: Sendable {
           self.rawValue = rawValue
         }
 
-        public static let query = OpCode(rawValue: 0)
+        public static let query = OperationCode(rawValue: 0)
 
-        public static let inverseQuery = OpCode(rawValue: 1)
+        public static let inverseQuery = OperationCode(rawValue: 1)
 
-        public static let status = OpCode(rawValue: 2)
+        public static let status = OperationCode(rawValue: 2)
 
-        public static let notify = OpCode(rawValue: 4)
+        public static let notify = OperationCode(rawValue: 4)
 
-        public static let update = OpCode(rawValue: 5)
+        public static let update = OperationCode(rawValue: 5)
 
         /// DNS stateful operations.
-        public static let dso = OpCode(rawValue: 6)
+        public static let dso = OperationCode(rawValue: 6)
       }
 
-      public var opcode: OpCode {
-        get { OpCode(rawValue: UInt8((rawValue & 0x7800) >> 11)) }
+      public var opcode: OperationCode {
+        get { OperationCode(rawValue: UInt8((rawValue & 0x7800) >> 11)) }
         set {
           rawValue = (rawValue & ~0x7800) | ((UInt16(newValue.rawValue) << 11) & 0x7800)
         }
@@ -1069,7 +1071,8 @@ public struct Message: Sendable {
         set { if newValue { rawValue |= 0x0010 } else { rawValue &= ~0x0010 } }
       }
 
-      public struct RCode: RawRepresentable, Hashable, Sendable, CustomDebugStringConvertible {
+      public struct ResponseCode: RawRepresentable, Hashable, Sendable, CustomDebugStringConvertible
+      {
 
         public var rawValue: UInt8
 
@@ -1089,23 +1092,23 @@ public struct Message: Sendable {
           self.rawValue = rawValue
         }
 
-        public static let noError = RCode(rawValue: 0)
+        public static let noError = ResponseCode(rawValue: 0)
 
-        public static let formErr = RCode(rawValue: 1)
+        public static let formErr = ResponseCode(rawValue: 1)
 
-        public static let servFail = RCode(rawValue: 2)
+        public static let servFail = ResponseCode(rawValue: 2)
 
-        public static let notImp = RCode(rawValue: 4)
+        public static let notImp = ResponseCode(rawValue: 4)
 
-        public static let refused = RCode(rawValue: 5)
+        public static let refused = ResponseCode(rawValue: 5)
 
-        public static let notAuth = RCode(rawValue: 9)
+        public static let notAuth = ResponseCode(rawValue: 9)
 
-        public static let notZone = RCode(rawValue: 10)
+        public static let notZone = ResponseCode(rawValue: 10)
       }
 
-      public var responseCode: RCode {
-        get { RCode(rawValue: UInt8(rawValue & 0x000F)) }
+      public var responseCode: ResponseCode {
+        get { ResponseCode(rawValue: UInt8(rawValue & 0x000F)) }
         set { rawValue = (rawValue & 0xFFF0) | (UInt16(newValue.rawValue) & 0x000F) }
       }
 
@@ -1115,14 +1118,14 @@ public struct Message: Sendable {
 
       public init(
         response: Bool,
-        opcode: OpCode,
+        opcode: OperationCode,
         authoritative: Bool,
         truncated: Bool,
         recursionDesired: Bool,
         recursionAvailable: Bool,
         authenticatedData: Bool,
         checkingDisabled: Bool,
-        responseCode: RCode
+        responseCode: ResponseCode
       ) {
         self.init(rawValue: 0)
         self.isResponse = response
@@ -1197,10 +1200,10 @@ public struct Message: Sendable {
 
   public init(
     headerFields: HeaderFields,
-    questions: [Question],
-    answerRRs: [any ResourceRecord],
-    authorityRRs: [any ResourceRecord],
-    additionalRRs: [any ResourceRecord]
+    questions: [Question] = [],
+    answerRRs: [any ResourceRecord] = [],
+    authorityRRs: [any ResourceRecord] = [],
+    additionalRRs: [any ResourceRecord] = []
   ) {
     self.headerFields = headerFields
     precondition(headerFields.qestionCount == questions.count)
@@ -1212,5 +1215,45 @@ public struct Message: Sendable {
     self.answerRRs = answerRRs
     self.authorityRRs = authorityRRs
     self.additionalRRs = additionalRRs
+  }
+
+  public init(
+    transactionID: UInt16 = 0,
+    response: Bool = false,
+    operationCode: Message.HeaderFields.Flags.OperationCode = .query,
+    authoritative: Bool = false,
+    truncated: Bool = false,
+    recursionDesired: Bool = false,
+    recursionAvailable: Bool = false,
+    responseCode: Message.HeaderFields.Flags.ResponseCode = .noError,
+    questions: [Question] = [],
+    answerRRs: [any ResourceRecord] = [],
+    authorityRRs: [any ResourceRecord] = [],
+    additionalRRs: [any ResourceRecord] = []
+  ) {
+    self.init(
+      headerFields: .init(
+        transactionID: transactionID,
+        flags: .init(
+          response: response,
+          opcode: operationCode,
+          authoritative: authoritative,
+          truncated: truncated,
+          recursionDesired: recursionDesired,
+          recursionAvailable: recursionAvailable,
+          authenticatedData: false,
+          checkingDisabled: false,
+          responseCode: responseCode
+        ),
+        qestionCount: UInt16(questions.count),
+        answerCount: UInt16(answerRRs.count),
+        authorityCount: UInt16(authorityRRs.count),
+        additionCount: UInt16(additionalRRs.count)
+      ),
+      questions: questions,
+      answerRRs: answerRRs,
+      authorityRRs: authorityRRs,
+      additionalRRs: additionalRRs
+    )
   }
 }

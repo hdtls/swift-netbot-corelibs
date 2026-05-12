@@ -707,6 +707,98 @@ struct LocalDNSProxyTests {
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
+  @Test func rejectResponseMessage() async throws {
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [],
+        mappings: [],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        )
+      )
+    )
+
+    let message = Message(
+      response: true,
+      questions: [.init(domainName: "swift.org", queryType: .a)]
+    )
+
+    await #expect(throws: Never.self) {
+      let result = try await p.query(msg: message)
+      #expect(result.headerFields.flags.responseCode == .formErr)
+    }
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func handleOnlyQueryOperations() async throws {
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [],
+        mappings: [],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        )
+      )
+    )
+
+    let message = Message(
+      response: false,
+      operationCode: .notify,
+      questions: [.init(domainName: "swift.org", queryType: .a)]
+    )
+
+    await #expect(throws: Never.self) {
+      let result = try await p.query(msg: message)
+      #expect(result.headerFields.flags.responseCode == .notImp)
+    }
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func standardServerOnlyHandleMessageWithExactlyOneQuestion() async throws {
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [],
+        mappings: [],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        )
+      )
+    )
+
+    let message = Message(
+      response: false,
+      operationCode: .query,
+      questions: [
+        .init(domainName: "swift.org", queryType: .a),
+        .init(domainName: "swift.org", queryType: .aaaa),
+      ]
+    )
+
+    await #expect(throws: Never.self) {
+      let result = try await p.query(msg: message)
+      #expect(result.headerFields.flags.responseCode == .formErr)
+    }
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @Test func aAddressMapping() async throws {
     let mapping = ProtocolDNS.Mapping(
       strategy: .mapping, domainName: "localhost", value: "127.0.0.1", note: "")
@@ -753,18 +845,9 @@ struct LocalDNSProxyTests {
     )
     let response = try await p.query(
       msg: .init(
-        headerFields: .init(
-          transactionID: 0x1165,
-          flags: .init(rawValue: 0x8180),
-          qestionCount: 1,
-          answerCount: 0,
-          authorityCount: 0,
-          additionCount: 0
-        ),
-        questions: expected.questions,
-        answerRRs: [],
-        authorityRRs: [],
-        additionalRRs: []
+        transactionID: 0x1165,
+        response: false,
+        questions: expected.questions
       )
     )
 
@@ -825,18 +908,9 @@ struct LocalDNSProxyTests {
     )
     let response = try await p.query(
       msg: .init(
-        headerFields: .init(
-          transactionID: 0x1165,
-          flags: .init(rawValue: 0x8180),
-          qestionCount: 1,
-          answerCount: 0,
-          authorityCount: 0,
-          additionCount: 0
-        ),
-        questions: expected.questions,
-        answerRRs: [],
-        authorityRRs: [],
-        additionalRRs: []
+        transactionID: 0x1165,
+        response: false,
+        questions: expected.questions
       )
     )
 
@@ -893,18 +967,9 @@ struct LocalDNSProxyTests {
     )
     let response = try await p.query(
       msg: .init(
-        headerFields: .init(
-          transactionID: 0x1165,
-          flags: .init(rawValue: 0x8180),
-          qestionCount: 1,
-          answerCount: 0,
-          authorityCount: 0,
-          additionCount: 0
-        ),
-        questions: expected.questions,
-        answerRRs: [],
-        authorityRRs: [],
-        additionalRRs: []
+        transactionID: 0x1165,
+        response: false,
+        questions: expected.questions
       )
     )
 
