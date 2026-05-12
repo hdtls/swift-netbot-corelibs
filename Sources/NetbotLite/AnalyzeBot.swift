@@ -437,133 +437,26 @@ import Tracing
 
         // Setup HTTP capabilities pipeline
         try await inputStream.eventLoop.submit {
-          // Because the capabilities may change, we need temporary variables to maintain
-          // capabilities consistency.
-          let capabilities = self.capabilities
-          let decryptionDNSNames = self.decryptionDNSNames
-          let decryptionSSLPKCS12Bundle = self.decryptionSSLPKCS12Bundle
+          self.capabilities
+            .buildTLS(
+              logger: self.logger,
+              application: self,
+              connection: session,
+              decryptionDNSNames: self.decryptionDNSNames,
+              decryptionSSLPKCS12Bundle: self.decryptionSSLPKCS12Bundle,
+              inputStream: inputStream,
+              outputStream: outputStream
+            )
 
-          inputStream.eventLoop.assertInEventLoop()
-
-          try? inputStream.pipeline.syncOperations.addHandler(
-            Recognizer.Handler<Recognizer.TLS> { result in
-              var mayBeTLS = false
-              if case .identified(let proto) = result {
-                mayBeTLS = proto == "TLS"
-              }
-              session.tls = mayBeTLS
-
-              // To continue the TLS decryption pipeline setup, we need to confirm that the
-              // current session contains a clear host name and is transmitted through TLS.
-              // At the same time, we must ensure that https decryption has been enabled and
-              // the relevant certificates used for decryption are valid.
-              guard mayBeTLS,
-                capabilities.contains(.httpsDecryption),
-                let decryptionSSLPKCS12Bundle,
-                let host = session.originalRequest?.host(percentEncoded: false)
-              else {
-                return inputStream.eventLoop.makeSucceededVoidFuture()
-              }
-
-              // Check whether the hostname should support TLS decryption.
-              let decryptionRequired = decryptionDNSNames.contains {
-                guard $0.hasPrefix("*.") else { return host == $0 }
-                return host.hasSuffix(String($0.dropFirst()))
-              }
-              guard decryptionRequired else {
-                return inputStream.eventLoop.makeSucceededVoidFuture()
-              }
-
-              return EventLoopFuture.andAllComplete(
-                [
-                  SSLContextCache.shared.sslContext(
-                    configuration: .makeServerConfiguration(
-                      certificateChain: decryptionSSLPKCS12Bundle.certificateChain.map {
-                        .certificate($0)
-                      },
-                      privateKey: .privateKey(decryptionSSLPKCS12Bundle.privateKey)
-                    ),
-                    eventLoop: inputStream.eventLoop,
-                    logger: self.logger
-                  )
-                  .flatMap { sslContext in
-                    inputStream.eventLoop.makeCompletedFuture {
-                      let position = try inputStream.pipeline.syncOperations.context(
-                        name: Recognizer.TLS.name
-                      ).handler
-                      try inputStream.pipeline.syncOperations.addHandler(
-                        NIOSSLServerHandler(context: sslContext), position: .after(position)
-                      )
-                    }
-                  },
-
-                  // Because we have decrypted HTTPS stream, so we need set up client channel to encode decrypted
-                  // plain HTTP request to HTTPS request.
-                  SSLContextCache.shared.sslContext(
-                    configuration: .makeClientConfiguration(),
-                    eventLoop: outputStream.eventLoop,
-                    logger: self.logger
-                  )
-                  .flatMap { sslContext in
-                    outputStream.eventLoop.makeCompletedFuture {
-                      let handler = try NIOSSLClientHandler(
-                        context: sslContext, serverHostname: host)
-                      try outputStream.pipeline.syncOperations.addHandler(handler)
-                    }
-                  },
-                ], on: inputStream.eventLoop)
-            },
-            name: Recognizer.TLS.name
-          )
-
-          try? inputStream.pipeline.syncOperations.addHandler(
-            Recognizer.Handler<Recognizer.HTTP> { result in
-              var mayBeHTTP = false
-              if case .identified(let proto) = result {
-                mayBeHTTP = proto == "HTTP"
-              }
-
-              // Try to setup TLS decryption if current connection is over TLS and enabled
-              // capabilities contains httpsDecryption.
-              guard mayBeHTTP,
-                capabilities.contains(.httpCapture) || capabilities.contains(.rewrite)
-              else { return inputStream.eventLoop.makeSucceededVoidFuture() }
-
-              return EventLoopFuture.andAllComplete(
-                [
-                  inputStream.eventLoop.makeCompletedFuture {
-                    let position = try inputStream.pipeline.syncOperations.context(
-                      name: Recognizer.HTTP.name
-                    ).handler
-                    try inputStream.pipeline.syncOperations.addHandlers(
-                      [
-                        HTTPResponseEncoder(),
-                        ByteToMessageHandler(HTTPRequestDecoder()),
-                        HTTPResponseCompressor(),
-                        __CapabilitiesProcessingHandler<HTTPRequestHead>(
-                          application: self,
-                          connection: session,
-                          enabledHTTPCapabilities: capabilities
-                        ),
-                      ], position: .after(position))
-                  },
-
-                  outputStream.eventLoop.makeCompletedFuture {
-                    try outputStream.pipeline.syncOperations.addHandlers([
-                      HTTPRequestEncoder(),
-                      ByteToMessageHandler(HTTPResponseDecoder()),
-                      NIOHTTPResponseDecompressor(limit: .none),
-                      __CapabilitiesProcessingHandler<HTTPResponseHead>(
-                        application: self,
-                        connection: session,
-                        enabledHTTPCapabilities: capabilities
-                      ),
-                    ])
-                  },
-                ], on: inputStream.eventLoop)
-            },
-            name: Recognizer.HTTP.name
-          )
+          self.capabilities
+            .buildHTTP(
+              logger: self.logger,
+              connection: session,
+              inMemoryHTTPCaptureFilters: [],
+              onDiskHTTPCaptureFilters: [],
+              inputStream: inputStream,
+              outputStream: outputStream
+            )
 
           // Exchange server and client data over GlueHandler.
           let (localGlue, peerGlue) = GlueHandler.matchedPair()

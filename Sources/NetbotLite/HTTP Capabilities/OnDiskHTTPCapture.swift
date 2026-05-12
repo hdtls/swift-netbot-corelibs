@@ -1,0 +1,65 @@
+// ===----------------------------------------------------------------------===//
+//
+// This source file is part of the Netbot open source project
+//
+// Copyright (c) 2026 Junfeng Zhang and the Netbot project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+// See CONTRIBUTORS.txt for the list of Netbot project authors
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+// ===----------------------------------------------------------------------===//
+
+import HTTPTypes
+import NIOCore
+import NIOHTTP1
+import NIOHTTPTypesHTTP1
+import NetbotLiteData
+
+#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  import NIOConcurrencyHelpers
+#else
+  import Synchronization
+#endif
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+final class OnDiskHTTPCapature<HeadT: Equatable & Sendable>: ChannelInboundHandler, Sendable {
+
+  typealias InboundIn = HTTPPart<HeadT, ByteBuffer>
+  typealias InboundOut = HTTPPart<HeadT, IOData>
+
+  private let onDiskHTTPCaptureFilters: [String]
+  private let connection: Connection
+
+  init(connection: Connection, captureFilters: [String]) {
+    self.connection = connection
+    self.onDiskHTTPCaptureFilters = captureFilters
+
+    guard HeadT.self == HTTPRequestHead.self || HeadT.self == HTTPResponseHead.self else {
+      preconditionFailure("unknown HTTP head part type \(HeadT.self)")
+    }
+  }
+
+  func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+    let unwrapped = unwrapInboundIn(data)
+    Task {
+      if HeadT.self == HTTPRequestHead.self {
+        await onDiskHTTPRequestCapture(unwrapped)
+      } else {
+        await onDiskHTTPResponseCapture(unwrapped)
+      }
+    }
+
+    context.fireChannelRead(data)
+  }
+
+  func onDiskHTTPRequestCapture(_ unwrapped: InboundIn) async {}
+
+  func onDiskHTTPResponseCapture(_ unwrapped: InboundIn) async {}
+}

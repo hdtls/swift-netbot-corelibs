@@ -82,11 +82,13 @@ import Testing
     #expect(source.httpRequest == httpRequest)
     #expect(source.address == httpRequest.address)
     #expect(source.body == nil)
+    #expect(source.trailers == nil)
 
     source = Request(address: .hostPort(host: "swift.org", port: 443))
     #expect(source.httpRequest == nil)
     #expect(source.address == .hostPort(host: "swift.org", port: 443))
     #expect(source.body == nil)
+    #expect(source.trailers == nil)
   }
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -209,11 +211,13 @@ import Testing
     source.httpRequest = httpRequest
     source.address = .hostPort(host: "swift.org", port: 443)
     source.body = Data([0])
+    source.trailers = [.init("Digest")!: "sha-256=abc123..."]
 
     let data = Request(persistentModel: source)
 
     #expect(data.httpRequest == httpRequest)
     #expect(data.address == .hostPort(host: "swift.org", port: 443))
     #expect(data.body == Data([0]))
+    #expect(data.trailers == source.trailers)
   }
 }

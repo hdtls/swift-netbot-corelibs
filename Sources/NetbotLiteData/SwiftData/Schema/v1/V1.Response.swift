@@ -56,6 +56,24 @@ extension V1 {
       }
       public var _httpResponse: Data?
 
+      /// The HTTP message trailer headers (Trailer / chunked encoding).
+      public var trailers: HTTPFields? {
+        get {
+          guard let _trailers else {
+            return nil
+          }
+          return try? JSONDecoder().decode(HTTPFields.self, from: _trailers)
+        }
+        set {
+          guard let trailers = newValue else {
+            _trailers = nil
+            return
+          }
+          _trailers = try? JSONEncoder().encode(trailers)
+        }
+      }
+      public var _trailers: Data?
+
       /// The data is sent as the message body of the request.
       @Attribute(.externalStorage)
       public var body: Data?
@@ -70,6 +88,9 @@ extension V1 {
 
       /// The HTTP request object if present. otherwise returns `nil`.
       public var httpResponse: HTTPResponse?
+
+      /// The HTTP message trailer headers (Trailer / chunked encoding).
+      public var trailers: HTTPFields?
 
       /// The data is sent as the message body of the request.
       public var body: Data?
@@ -91,10 +112,14 @@ extension V1._Response {
   public func mergeValues(_ data: Response) {
     #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
       httpResponse = data.httpResponse
+      trailers = data.trailers
       body = data.body
     #else
       if httpResponse != data.httpResponse {
         httpResponse = data.httpResponse
+      }
+      if trailers != data.trailers {
+        trailers = data.trailers
       }
       if body != data.body {
         body = data.body

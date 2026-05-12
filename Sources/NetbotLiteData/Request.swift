@@ -37,6 +37,9 @@ public struct Request: Codable, Hashable, Sendable {
   /// The data is sent as the message body of the request.
   public var body: Data?
 
+  /// The HTTP message trailer headers (Trailer / chunked encoding).
+  public var trailers: HTTPFields?
+
   public init(httpRequest: HTTPRequest) {
     self.httpRequest = httpRequest
     self.address = httpRequest.address
@@ -80,6 +83,7 @@ extension Request {
     httpRequest = persistentModel.httpRequest
     address = persistentModel.address
     body = persistentModel.body
+    trailers = persistentModel.trailers
   }
 }
 

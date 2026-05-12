@@ -34,6 +34,7 @@ import Testing
     let source = V1._Response()
     #expect(source.httpResponse == nil)
     #expect(source.body == nil)
+    #expect(source.trailers == nil)
   }
 
   #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
@@ -76,11 +77,13 @@ import Testing
     let httpResponse = HTTPResponse(status: .ok)
     var data = Response(httpResponse: httpResponse)
     data.body = Data([0])
+    data.trailers = [.init("Digest")!: "sha-256=abc123..."]
 
     let source = V1._Response()
     source.mergeValues(data)
 
     #expect(source.httpResponse == httpResponse)
     #expect(source.body == Data([0]))
+    #expect(source.trailers == data.trailers)
   }
 }

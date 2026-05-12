@@ -38,6 +38,7 @@ import Testing
     #expect(source.hostname == nil)
     #expect(source.absoluteURLString == nil)
     #expect(source.body == nil)
+    #expect(source.trailers == nil)
   }
 
   #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
@@ -67,6 +68,7 @@ import Testing
     #expect(source.httpRequest == nil)
     #expect(source.address == .hostPort(host: "swift.org", port: 443))
     #expect(source.body == nil)
+    #expect(source.trailers == nil)
   }
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -82,6 +84,7 @@ import Testing
     #expect(source.httpRequest == httpRequest)
     //      #expect(source.address == .hostPort(host: "swift.org", port: 443))
     #expect(source.body == nil)
+    #expect(source.trailers == nil)
   }
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -127,6 +130,7 @@ import Testing
       method: .get, scheme: "https", authority: "swift.org:443", path: nil)
     var data = Request(httpRequest: httpRequest)
     data.body = Data([0])
+    data.trailers = [.init("Digest")!: "sha-256=abc123..."]
 
     let source = V1._Request()
     source.mergeValues(data)
@@ -136,6 +140,7 @@ import Testing
     #expect(source.hostname == "swift.org")
     #expect(source.absoluteURLString == "swift.org")
     #expect(source.body == Data([0]))
+    #expect(source.trailers == data.trailers)
 
     httpRequest.authority = "example.com:8080"
     data.httpRequest = httpRequest

@@ -35,10 +35,12 @@ import Testing
     var source = Response(httpResponse: httpResponse)
     #expect(source.httpResponse == httpResponse)
     #expect(source.body == nil)
+    #expect(source.trailers == nil)
 
     source = Response()
     #expect(source.httpResponse == nil)
     #expect(source.body == nil)
+    #expect(source.trailers == nil)
   }
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -91,7 +93,11 @@ import Testing
   @Test func initializeResponseFromPersistentModel() async throws {
     let persistentModel = V1._Response()
     persistentModel.httpResponse = .init(status: .ok)
+    persistentModel.trailers = [.init("Digest")!: "sha-256=abc123..."]
+
     let response = Response(persistentModel: persistentModel)
-    #expect(response == Response(httpResponse: .init(status: .ok)))
+    #expect(response.httpResponse == .init(status: .ok))
+    #expect(response.body == persistentModel.body)
+    #expect(response.trailers == persistentModel.trailers)
   }
 }

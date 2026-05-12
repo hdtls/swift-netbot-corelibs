@@ -33,6 +33,9 @@ public struct Response: Codable, Hashable, Sendable {
   /// The data is received as the message body of the response.
   public var body: Data?
 
+  /// The HTTP message trailer headers (Trailer / chunked encoding).
+  public var trailers: HTTPFields?
+
   public init(httpResponse: HTTPResponse) {
     self.httpResponse = httpResponse
   }
@@ -51,6 +54,7 @@ extension Response {
 
   public init(persistentModel: Model) {
     httpResponse = persistentModel.httpResponse
+    trailers = persistentModel.trailers
     body = persistentModel.body
   }
 }

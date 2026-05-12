@@ -86,17 +86,14 @@ final class __CapabilitiesProcessingHandler<HeadT: Equatable & Sendable>: Channe
   private let connection: Connection
   private let enabledHTTPCapabilities: CapabilityFlags
   private let modifiers: [any HTTPModifier]
-  private let application: AnalyzeBot
 
   init(
-    application: AnalyzeBot,
     connection: Connection,
     enabledHTTPCapabilities: CapabilityFlags
   ) {
     self.connection = connection
     self.enabledHTTPCapabilities = enabledHTTPCapabilities
     self.modifiers = []
-    self.application = application
 
     guard HeadT.self == HTTPRequestHead.self || HeadT.self == HTTPResponseHead.self else {
       preconditionFailure("unknown HTTP head part type \(HeadT.self)")
@@ -142,11 +139,6 @@ final class __CapabilitiesProcessingHandler<HeadT: Equatable & Sendable>: Channe
           }
         }
 
-        // Capture modified HTTP request.
-        if enabledHTTPCapabilities.contains(.httpCapture) {
-          connection.currentRequest?.httpRequest = partialResult
-        }
-
         let finalize = try HTTPRequestHead(partialResult) as! HeadT
         return wrapInboundOut(.head(finalize))
       } catch {
@@ -157,15 +149,6 @@ final class __CapabilitiesProcessingHandler<HeadT: Equatable & Sendable>: Channe
         // Modify HTTP request body.
         partialResult = modifiers.reduce(partialResult) { partialResult, modifier in
           modifier.modify(partialResult)
-        }
-      }
-
-      // Capature HTTP request body.
-      if enabledHTTPCapabilities.contains(.httpCapture) {
-        connection._currentRequest.withLock {
-          let body = $0?.body ?? .init()
-          $0?.body = body
-          $0?.body?.append(contentsOf: Array(buffer: partialResult))
         }
       }
 
@@ -215,11 +198,6 @@ final class __CapabilitiesProcessingHandler<HeadT: Equatable & Sendable>: Channe
           }
         }
 
-        // Capture modified HTTP response
-        if enabledHTTPCapabilities.contains(.httpCapture) {
-          connection.response = Response(httpResponse: partialResult)
-        }
-
         let finalize = HTTPResponseHead(partialResult) as! HeadT
         return wrapInboundOut(.head(finalize))
       } catch {
@@ -232,13 +210,6 @@ final class __CapabilitiesProcessingHandler<HeadT: Equatable & Sendable>: Channe
         }
       }
 
-      if enabledHTTPCapabilities.contains(.httpCapture) {
-        connection._response.withLock {
-          let body = $0?.body ?? .init()
-          $0?.body = body
-          $0?.body?.append(contentsOf: Array(buffer: partialResult))
-        }
-      }
       return wrapInboundOut(.body(.byteBuffer(partialResult)))
     case .end(let trailers):
       connection.duration = .seconds(-connection.earliestBeginDate.timeIntervalSinceNow)

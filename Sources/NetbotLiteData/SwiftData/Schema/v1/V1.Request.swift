@@ -73,6 +73,23 @@ extension V1 {
       }
       public var _address: Data?
 
+      public var trailers: HTTPFields? {
+        get {
+          guard let _trailers else {
+            return nil
+          }
+          return try? JSONDecoder().decode(HTTPFields.self, from: _trailers)
+        }
+        set {
+          guard let trailers = newValue else {
+            _trailers = nil
+            return
+          }
+          _trailers = try? JSONEncoder().encode(trailers)
+        }
+      }
+      public var _trailers: Data?
+
       /// The host of the receiver.
       public var hostname: String?
 
@@ -95,6 +112,9 @@ extension V1 {
 
       /// The address of the receiver.
       public var address: Address?
+
+      /// The HTTP message trailer headers (Trailer / chunked encoding).
+      public var trailers: HTTPFields?
 
       /// The host of the receiver.
       public var hostname: String?
@@ -141,9 +161,10 @@ extension V1._Request {
     #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
       self.httpRequest = data.httpRequest
       self.address = data.address
+      self.trailers = data.trailers
+      self.body = data.body
       self.hostname = data.host(percentEncoded: false)
       self.absoluteURLString = absoluteURLString
-      self.body = data.body
     #else
       #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
         if let httpRequest = data.httpRequest {
@@ -158,12 +179,21 @@ extension V1._Request {
             self._address = _address
           }
         }
+        if let trailers = data.trailers {
+          let _trailers = try? JSONEncoder().encode(trailers)
+          if self._trailers != _trailers {
+            self._trailers = _trailers
+          }
+        }
       #else
         if self.httpRequest != data.httpRequest {
           self.httpRequest = data.httpRequest
         }
         if self.address != data.address {
           self.address = data.address
+        }
+        if self.trailers != data.trailers {
+          self.trailers = data.trailers
         }
       #endif
 
