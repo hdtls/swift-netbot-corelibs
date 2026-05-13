@@ -183,8 +183,18 @@ extension ForwardProtocolVMESS: ProxiableForwardProtocol {
               ),
               upgraders: [
                 NIOTypedWebSocketClientUpgrader { channel, _ in
-                  channel.pipeline.addHandler(WebSocketFrameAggregator())
-                    .map { channel }
+                  channel.eventLoop.makeCompletedFuture {
+                    try channel.pipeline.syncOperations.addHandlers([
+                      NIOWebSocketFrameAggregator(
+                        minNonFinalFragmentSize: 1024,
+                        maxAccumulatedFrameCount: 16,
+                        maxAccumulatedFrameSize: 1 << 20
+                      ),
+                      WebSocketAutoReply(),
+                      WebSocketFrameToByteBufferCodec(),
+                    ])
+                  }
+                  .map { channel }
                 }
               ],
               notUpgradingCompletionHandler: { channel in
@@ -196,9 +206,6 @@ extension ForwardProtocolVMESS: ProxiableForwardProtocol {
           )
         )
         .get()
-
-        // Walkaround for
-        channel.pipeline.fireChannelActive()
 
         _ = try await finalize.get()
       }
