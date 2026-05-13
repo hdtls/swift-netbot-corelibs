@@ -186,7 +186,14 @@
       }
     }
 
-    public func setNWProtocolProxies(processName: String, options: NEProtocolProxies.Options)
+    /// Update system proxy settings using specify options.
+    ///
+    /// This function is called by daemons to set the system proxy settings,
+    /// including web proxy secury web proxy and socks proxy. It is not
+    /// necessary to call this function with nil to clear out the existing
+    /// settings before calling this function with a non-nil configuration.
+    ///
+    public func setNWProtocolProxies(processName: String, options: NEProtocolProxies.Options?)
       async throws
     {
       try await submit { tool, _ in
