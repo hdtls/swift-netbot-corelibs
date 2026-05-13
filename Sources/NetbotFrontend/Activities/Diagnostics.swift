@@ -22,6 +22,13 @@
     import Network
   #endif
 
+  #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    import NIOConcurrencyHelpers
+    import NetbotLiteData
+  #else
+    import Synchronization
+  #endif
+
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
   #else
@@ -89,13 +96,27 @@
         await withCheckedContinuation { continuation in
           let connection = NWConnection(to: .hostPort(host: address, port: 53), using: .tcp)
 
+          let onceToken = Mutex(false)
+          @Sendable func resume(returning duration: Duration) {
+            let resume = onceToken.withLock {
+              if $0 {
+                return false
+              } else {
+                $0 = true
+                return true
+              }
+            }
+            guard resume else { return }
+            continuation.resume(returning: duration)
+          }
+
           let timeoutTask = Task {
             try await Task.sleep(for: .seconds(5))
             try Task.checkCancellation()
 
             guard case .ready = connection.state else {
               connection.forceCancel()
-              continuation.resume(returning: .max)
+              resume(returning: .max)
               return
             }
           }
@@ -103,12 +124,17 @@
           let startTime: Date = .now
 
           connection.stateUpdateHandler = {
-            guard case .ready = $0 else {
-              return
+            switch $0 {
+            case .ready:
+              resume(returning: .seconds(startTime.distance(to: .now)))
+              timeoutTask.cancel()
+              connection.forceCancel()
+            case .failed, .cancelled:
+              resume(returning: .max)
+              timeoutTask.cancel()
+            default:
+              break
             }
-            continuation.resume(returning: .seconds(startTime.distance(to: .now)))
-            timeoutTask.cancel()
-            connection.forceCancel()
           }
           connection.start(queue: .global())
         }
