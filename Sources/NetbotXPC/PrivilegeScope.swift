@@ -15,7 +15,7 @@
 #if os(macOS)
   import Foundation
   import ServiceManagement
-  import os
+  import Logging
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -30,101 +30,166 @@
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
+  enum ServiceName: String {
+    case assistantService = "com.tenbits.netbot.AssistantService"
+    case assistantd = "com.tenbits.netbot.assistantd"
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
   @globalActor public actor PrivilegeScope {
 
     public static let shared = PrivilegeScope()
 
     private var authorizationExternalForm: Data?
 
-    private var privileges: NSXPCConnection!
-    private var tc: NSXPCConnection!
+    private var assistantService: NSXPCConnection!
+    private var assistantd: NSXPCConnection!
     private var isActive = false
 
-    public let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "com.apple.xpc")
+    public let logger = Logger(label: "assistantd")
 
     /// Ensures that we're connected to our XPC service.
-    private func setAppServiceHandleIfNeeded() async throws {
-      guard privileges == nil else {
+    private func setAssistantServiceIfNeeded() async throws {
+      guard assistantService == nil else {
         return
       }
-      let privileges = NSXPCConnection(serviceName: "com.tenbits.netbot.privileges")
-      privileges.remoteObjectInterface = NSXPCInterface(with: (any AppServiceHandleProtocol).self)
+      assistantService = NSXPCConnection(serviceName: ServiceName.assistantService.rawValue)
+      assistantService.remoteObjectInterface = NSXPCInterface(
+        with: (any AppServiceHandleProtocol).self)
 
       // We can ignore the retain cycle warning because the retain taken by the
       // invalidation handler block is released by us setting it to nil when the block
       // actually runs.
-      privileges.invalidationHandler = {
+      assistantService.invalidationHandler = {
         // If the connection gets invalidated then, on the main thread, nil out our
         // reference to it.  This ensures that we attempt to rebuild it the next time around.
         Task {
-          self.privileges.invalidationHandler = nil
-          self.privileges = nil
+          self.assistantService.invalidationHandler = nil
+          self.assistantService = nil
         }
-        self.logger.debug("Service com.tenbits.netbot.privileges connection invalidated")
+        self.logger.debug(
+          "Connection to service \(ServiceName.assistantService.rawValue) invalidated")
       }
-      self.privileges = privileges
-      privileges.activate()
+      assistantService.activate()
+      logger.debug("Connection to service \(ServiceName.assistantService.rawValue) activated")
 
-      try await self.privileges.remoteAppServiceHandle().setupAuthorizationRights()
+      try await assistantService.assistantService().setupAuthorizationRights()
     }
 
     /// Ensures that we're connected to our helper tool service.
-    private func setToolIfNeeded() async throws {
-      guard tc == nil else {
+    private func setAssistantdIfNeeded() async throws {
+      guard assistantd == nil else {
         return
       }
 
       // There's no helper tool connection in place.  Create on XPC service and ask
       // it to give us an endpoint for the helper tool.
-      try await setAppServiceHandleIfNeeded()
-      let proxy = try privileges.remoteAppServiceHandle()
-      let endpoint = try await proxy.connect(matchService: "com.tenbits.netbot.sbd")
-
+      try await setAssistantServiceIfNeeded()
+      let proxy = try assistantService.assistantService()
+      let endpoint = try await proxy.connect(matchService: ServiceName.assistantd.rawValue)
+      logger.debug(
+        "Service \(ServiceName.assistantService.rawValue) successfully connected to daemon \(ServiceName.assistantd.rawValue)"
+      )
       // The XPC service gave us an endpoint for the helper tool.  Create a connection from that.
       // Also, save the authorization information returned by the helper tool so that the command
       // block can send requests that act like they're coming from the XPC service (which is allowed
       // to use authorization services) and not the app (which isn't, because it's sandboxed).
-      tc = NSXPCConnection(listenerEndpoint: endpoint)
-      tc.remoteObjectInterface = NSXPCInterface(with: (any PHTHandleProtocol).self)
+      assistantd = NSXPCConnection(listenerEndpoint: endpoint)
+      assistantd.remoteObjectInterface = NSXPCInterface(with: (any PHTHandleProtocol).self)
 
       // We can ignore the retain cycle warning because the retain taken by the
       // invalidation handler block is released by us setting it to nil when the block
       // actually runs.
-      tc.invalidationHandler = {
+      assistantd.invalidationHandler = {
         // If the connection gets invalidated then, on the main thread, nil out our
         // reference to it.  This ensures that we attempt to rebuild it the next time around.
         Task {
-          self.tc.invalidationHandler = nil
-          self.tc = nil
+          self.assistantd.invalidationHandler = nil
+          self.assistantd = nil
         }
-        self.logger.debug("Service com.tenbits.netbot.sbd connection invalidated")
+        self.logger.debug("Connection to daemon \(ServiceName.assistantd.rawValue) invalidated")
       }
-      tc.activate()
-
+      assistantd.activate()
+      logger.debug("Connection to daemon \(ServiceName.assistantd.rawValue) activated")
       authorizationExternalForm = try await proxy.authorizationExternalForm()
     }
 
-    /// Activate helper tool launch daemon.
+    /// Activate privileged helper.
     ///
     /// Call this function to register helper tool.
     public func activate() async throws {
-      guard !isActive else {
-        return
-      }
+      guard !isActive else { return }
 
-      let plistName = "com.tenbits.netbot.sbd.plist"
+      let plistName = "\(ServiceName.assistantd.rawValue).plist"
 
       do {
-        try await setAppServiceHandleIfNeeded()
-        let proxy = try privileges.remoteAppServiceHandle()
+        try await setAssistantServiceIfNeeded()
+        let proxy = try assistantService.assistantService()
 
-        if case .enabled = await proxy.status(daemon: plistName) {
-          return
+        let status = await proxy.status(daemon: plistName)
+
+        switch status {
+        case .notRegistered:
+          try await proxy.register(daemon: plistName)
+          guard case .enabled = await proxy.status(daemon: plistName) else {
+            logger.error(
+              "Daemon \(ServiceName.assistantd.rawValue) has been successfully registered, but we need take action in System Settings before the service is eligible to run"
+            )
+            throw NSError(
+              domain: "SMAppServiceDomain",
+              code: kSMErrorLaunchDeniedByUser,
+              userInfo: [
+                NSLocalizedFailureErrorKey:
+                  "Launch daemon \(plistName) has been successfully registered, but we need take action in System Settings before the service is eligible to run"
+              ]
+            )
+          }
+          isActive = true
+          logger.debug("Daemon \(ServiceName.assistantd.rawValue) successfully registered")
+        case .enabled:
+          isActive = true
+        case .requiresApproval:
+          logger.error(
+            "Daemon \(ServiceName.assistantd.rawValue) has been successfully registered, but we need take action in System Settings before the service is eligible to run"
+          )
+          throw NSError(
+            domain: "SMAppServiceDomain",
+            code: kSMErrorLaunchDeniedByUser,
+            userInfo: [
+              NSLocalizedFailureErrorKey:
+                "Launch daemon \(plistName) has been successfully registered, but we need take action in System Settings before the service is eligible to run"
+            ]
+          )
+        case .notFound:
+          logger.error(
+            "Daemon \(ServiceName.assistantd.rawValue) not found"
+          )
+          throw NSError(
+            domain: "SMAppServiceDomain",
+            code: kSMErrorJobPlistNotFound,
+            userInfo: [
+              NSLocalizedFailureErrorKey:
+                "Launch daemon \(plistName) not found"
+            ]
+          )
+        @unknown default:
+          logger.error(
+            "Daemon \(ServiceName.assistantd.rawValue) run into unhandled @unknown default status")
+          throw NSError(
+            domain: "SMAppServiceDomain",
+            code: kSMErrorInternalFailure,
+            userInfo: [
+              NSLocalizedFailureErrorKey:
+                "Launch daemon \(plistName) run into unhandled @unknown default status"
+            ]
+          )
         }
-        try await proxy.register(daemon: plistName)
-        isActive = true
       } catch {
-        self.logger.error("Launch daemon \(plistName) register failure with error: \(error)")
+        logger.error("Daemon \(ServiceName.assistantd.rawValue) failed to register \(error)")
         throw error
       }
     }
@@ -133,20 +198,22 @@
     ///
     /// Call this function to unregister helper tool.
     public func invalidate() async throws {
+      guard isActive else { return }
       isActive = false
 
-      try await setAppServiceHandleIfNeeded()
+      try await setAssistantServiceIfNeeded()
 
-      let plistName = "com.tenbits.netbot.sbd.plist"
+      let plistName = "\(ServiceName.assistantd.rawValue).plist"
 
       do {
-        let proxy = try privileges.remoteAppServiceHandle()
+        let proxy = try assistantService.assistantService()
         guard case .enabled = await proxy.status(daemon: plistName) else {
           return
         }
         try await proxy.unregister(daemon: plistName)
+        logger.debug("Daemon \(ServiceName.assistantd.rawValue) successfully unregistered")
       } catch {
-        self.logger.error("Launch daemon \(plistName) unregister failure with error: \(error)")
+        logger.error("Daemon \(ServiceName.assistantd.rawValue) failed to unregister \(error)")
         throw error
       }
     }
@@ -164,14 +231,14 @@
       try await activate()
 
       // Ensure that we have helper tool connected.
-      try await setToolIfNeeded()
+      try await setAssistantdIfNeeded()
 
       // The helper tool connection is already in place
-      let tool = try tc.remotePHTHandle()
+      let tool = try assistantd.assistantd()
 
       // We also pass authorization data to block, because some of tool request require authorization.
       if authorizationExternalForm == nil {
-        authorizationExternalForm = try await privileges.remoteAppServiceHandle()
+        authorizationExternalForm = try await assistantService.assistantService()
           .authorizationExternalForm()
       }
 
@@ -219,7 +286,7 @@
     ///
     /// Throw operationUnsupported if remote object proxy is not a `any AppServiceHandleProtocol` object, or
     /// error that `remoteObjectProxyWithErrorHandler` throws.
-    func remoteAppServiceHandle() throws -> any AppServiceHandleProtocol {
+    func assistantService() throws -> any AppServiceHandleProtocol {
       try remoteObjectProxy(as: (any AppServiceHandleProtocol).self)
     }
   }

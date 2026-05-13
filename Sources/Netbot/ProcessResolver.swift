@@ -17,7 +17,7 @@ import NetbotLite
 import NetbotLiteData
 
 #if os(macOS)
-  import NetbotDaemons
+  import NetbotXPC
 #endif
 
 #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -37,7 +37,7 @@ final class ProcessResolver: ProcessReporting {
   private var table: [Address: Address]
 
   #if os(macOS)
-    private let privileged = PrivilegeScope.shared
+    private let assistantd = PrivilegeScope.shared
   #endif
 
   static let shared = ProcessResolver()
@@ -73,7 +73,7 @@ final class ProcessResolver: ProcessReporting {
       }
 
       #if os(macOS)
-        let processInfo = try await privileged.processInfo(address: UInt16(port))
+        let processInfo = try await assistantd.processInfo(address: UInt16(port))
         return ProcessReport(
           processIdentifier: processInfo?.processIdentifier,
           program: Program(

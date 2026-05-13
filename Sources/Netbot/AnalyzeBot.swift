@@ -41,7 +41,7 @@ import NetbotProfile
 #endif
 
 #if canImport(NetworkExtension)
-  import NetbotDaemons
+  import NetbotXPC
   import NetworkExtension
 #endif
 
@@ -171,9 +171,15 @@ public actor AnalyzeBot {
           processName: ProcessInfo.processInfo.processName,
           options: enabled ? proxySettings : nil
         )
-        logger.trace("System proxies has been changed to \(enabled ? proxySettings : nil)")
+        if enabled, let proxySettings {
+          logger.debug(
+            "System configuration has successfully changed the network proxy settings to \(proxySettings)"
+          )
+        } else {
+          logger.debug("System configuration has successfully clear the network proxy settings")
+        }
       } catch {
-        logger.error("System proxies modification failure with error: \(error)")
+        logger.error("System configuration failed to change network proxy settings \(error)")
       }
     }
   #endif

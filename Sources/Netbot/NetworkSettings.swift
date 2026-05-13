@@ -13,7 +13,7 @@
 // ===----------------------------------------------------------------------===//
 
 #if canImport(NetworkExtension)
-  import NetbotDaemons
+  import NetbotXPC
   import NetworkExtension
 
   // swift-format-ignore: AvoidRetroactiveConformances
@@ -29,7 +29,7 @@
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  public typealias NEProxySettings = NetbotDaemons.NEProxySettings
+  public typealias NEProxySettings = NetbotXPC.NEProxySettings
 
   // swift-format-ignore: AvoidRetroactiveConformances
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

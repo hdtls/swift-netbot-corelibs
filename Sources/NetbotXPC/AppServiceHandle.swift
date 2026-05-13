@@ -34,7 +34,10 @@
 
     private var authorizationRef: AuthorizationRef?
 
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "com.apple.xpc")
+    private let logger = Logger(
+      subsystem: ServiceName.assistantService.rawValue,
+      category: "AssistantService"
+    )
 
     public init() {
       var err = errAuthorizationSuccess
@@ -60,61 +63,21 @@
 
     private func register(plistName: String, service: SMAppService) async throws {
       do {
-        let status = service.status
         try service.register()
-        switch status {
-        case .notRegistered:
-          try service.register()
-        case .enabled:
-          logger.debug(
-            "Launch service \(plistName) already enabled"
-          )
-        case .requiresApproval:
-          // Replace throw error with open system settings login items panel.
-          logger.debug(
-            "Launch service \(plistName) has been successfully registered, but we need take action in System Settings before the service is eligible to run"
-          )
-          SMAppService.openSystemSettingsLoginItems()
-        case .notFound:
-          try service.register()
-        @unknown default:
-          throw NSError(
-            domain: "SMAppServiceDomain", code: -1,
-            userInfo: [
-              NSLocalizedFailureErrorKey:
-                "Launch service \(plistName) run into unhandled @unknown default status"
-            ])
-        }
+        logger
+          .debug("Launch service \(plistName, privacy: .public) has been successfully registered")
       } catch {
-        switch service.status {
-        case .enabled:
-          // How it is possible for service that register failed and become enabled at the same time.
-          break
-        case .notFound:
-          logger.error("Launch service \(plistName) not found")
-          throw error
-        case .notRegistered:
-          logger.error("Launch service \(plistName) register failure with error: \(error)")
-          throw error
-        case .requiresApproval:
-          // Replace throw error with open system settings login items panel.
-          logger.debug(
-            "Launch service \(plistName) has been successfully registered, but we need take action in System Settings before the service is eligible to run"
-          )
-          SMAppService.openSystemSettingsLoginItems()
-        @unknown default:
-          logger.fault("Launch service \(plistName) run into unhandled @unknown default status")
-          throw error
-        }
+        logger.error("Launch service \(plistName, privacy: .public) register failed \(error)")
       }
     }
 
     private func unregister(plistName: String, service: SMAppService) async throws {
       do {
         try await SMAppService.daemon(plistName: plistName).unregister()
-        logger.debug("Launch service \(plistName) has been successfully unregistered")
+        logger
+          .debug("Launch service \(plistName, privacy: .public) has been successfully unregistered")
       } catch {
-        logger.error("Launch service \(plistName) unregister failure with error: \(error)")
+        logger.error("Launch service \(plistName, privacy: .public) unregister failed \(error)")
         throw error
       }
     }
@@ -204,7 +167,7 @@
 
       // Call the helper tool to get the endpoint we need.
       let tool = try lock.withLock {
-        try connection.remotePHTHandle()
+        try connection.assistantd()
       }
       let endpoint = await tool.listenerEndpoint()
       return endpoint
@@ -234,7 +197,7 @@
     ///
     /// Throw operationUnsupported if remote object proxy is not a `any PHTHandleProtocol` object, or
     /// error that `remoteObjectProxyWithErrorHandler` throws.
-    func remotePHTHandle() throws -> any PHTHandleProtocol {
+    func assistantd() throws -> any PHTHandleProtocol {
       try remoteObjectProxy(as: (any PHTHandleProtocol).self)
     }
 

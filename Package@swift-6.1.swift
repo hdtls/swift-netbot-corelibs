@@ -29,7 +29,7 @@ let package = Package(
   products: [
     .library(name: "NetbotDashboard", targets: ["NetbotDashboard"]),
     .library(name: "Netbot", targets: ["Netbot"]),
-    .library(name: "NetbotDaemons", targets: ["NetbotDaemons"]),
+    .library(name: "NetbotXPC", targets: ["NetbotXPC"]),
     .library(name: "NetbotFrontend", targets: ["NetbotFrontend"]),
   ],
   dependencies: [
@@ -72,13 +72,13 @@ let package = Package(
     .target(
       name: "Netbot",
       dependencies: [
-        "NetbotDaemons",
+        "CoWOptimization",
         "NetbotDNS",
-        "NetbotPreferences",
-        "NetbotProfile",
         "NetbotLite",
         "NetbotLiteData",
-        "CoWOptimization",
+        "NetbotPreferences",
+        "NetbotProfile",
+        "NetbotXPC",
 
         .target(name: "CNELwIP", condition: .when(platforms: [.macOS])),
 
@@ -107,12 +107,11 @@ let package = Package(
       ],
       exclude: ["DNS", "Profile"]
     ),
-    .target(name: "NetbotDaemons"),
     .target(
       name: "NetbotDashboard",
       dependencies: [
-        "NetbotPreferences",
         "NetbotLiteData",
+        "NetbotPreferences",
         .product(name: "NIOCore", package: "swift-nio"),
       ]
     ),
@@ -198,6 +197,7 @@ let package = Package(
       ],
       path: "Sources/Netbot/Profile"
     ),
+    .target(name: "NetbotXPC", dependencies: [.product(name: "Logging", package: "swift-log")]),
     .testTarget(
       name: "CoWOptimizationMacrosTests",
       dependencies: [

@@ -31,7 +31,10 @@
 
     private let listener: NSXPCListener
 
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "com.apple.xpc")
+    private let logger = Logger(
+      subsystem: ServiceName.assistantd.rawValue,
+      category: "assistantd"
+    )
 
     public init(listener: NSXPCListener) {
       self.listener = listener

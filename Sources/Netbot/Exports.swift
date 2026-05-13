@@ -22,5 +22,5 @@
 @_exported import NetbotProfile
 
 #if os(macOS)
-  @_exported import NetbotDaemons
+  @_exported import NetbotXPC
 #endif

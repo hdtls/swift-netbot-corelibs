@@ -1,4 +1,4 @@
 version: 1
 builder:
   configs:
-    - documentation_targets: [NetbotPreferences, NetbotProfile, NetbotLiteData, NetbotLite, NetbotDNS, NetbotDashboard, NetbotDaemons, Netbot, NetbotFrontend]
+    - documentation_targets: [NetbotPreferences, NetbotProfile, NetbotLiteData, NetbotLite, NetbotDNS, NetbotDashboard, NetbotXPC, Netbot, NetbotFrontend]
