@@ -1,0 +1,10 @@
+
+This source file is part of the Netbot open source project
+
+Copyright ©{{ " " }}{%- set created = attrs.git_file_created_year or attrs.disk_file_created_year -%}{%- set modified = attrs.git_file_modified_year or created -%}{%- if created != modified -%} {{created}}-{{modified}}{%- else -%}{{created}}{%- endif -%}{{ " " }}{{ props["copyrightOwner"] }}
+Licensed under Apache License v2.0
+
+See https://www.apache.org/licenses/LICENSE-2.0 for license information
+
+SPDX-License-Identifier: Apache-2.0
+
