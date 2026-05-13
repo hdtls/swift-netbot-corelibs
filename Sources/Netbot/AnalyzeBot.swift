@@ -89,8 +89,8 @@ public actor AnalyzeBot {
 
   /// Stop current running analyze tunnel.
   public func shutdownGracefully() async {
-    let publisher = self.core.connectionPublisher as! ConnectionPulse
-    try? await publisher.shutdownGracefully()
+    let publisher = self.core.connectionPublisher as? ConnectionPulse
+    try? await publisher?.shutdownGracefully()
     try? await self.core.shutdownGracefully()
   }
 
