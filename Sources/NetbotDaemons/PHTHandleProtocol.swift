@@ -37,7 +37,7 @@
     /// - Parameters:
     ///   - processName: A string that describes the name of the calling process.
     ///   - options: Options for system network proxies.
-    func setNWProtocolProxies(processName: String, options: NEProtocolProxies.Options?) async throws
+    func setNWProtocolProxies(processName: String, options: NEProxySettings?) async throws
 
     /// Returns the process info with address.
     ///

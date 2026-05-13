@@ -12,8 +12,9 @@
 //
 // ===----------------------------------------------------------------------===//
 
-#if os(macOS)
+#if canImport(NetworkExtension)
   import Foundation
+  import NetworkExtension
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
@@ -120,15 +121,6 @@
     @available(SwiftStdlib 6.0, *)
   #endif
   extension NEProxySettings: @unchecked Sendable {}
-
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  public class NEProtocolProxies {
-    public typealias Options = NEProxySettings
-  }
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)

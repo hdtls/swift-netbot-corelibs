@@ -72,6 +72,7 @@ let package = Package(
     .target(
       name: "Netbot",
       dependencies: [
+        "NetbotDaemons",
         "NetbotDNS",
         "NetbotPreferences",
         "NetbotProfile",
@@ -80,7 +81,6 @@ let package = Package(
         "CoWOptimization",
 
         .target(name: "CNELwIP", condition: .when(platforms: [.macOS])),
-        .target(name: "NetbotDaemons", condition: .when(platforms: [.macOS])),
 
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "Preference", package: "swift-preference"),

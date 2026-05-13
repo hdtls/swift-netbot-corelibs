@@ -33,12 +33,90 @@ import X509
   import Foundation
 #endif
 
+#if canImport(NetworkExtension)
+  import NetworkExtension
+#endif
+
 #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   @available(SwiftStdlib 5.9, *)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
 extension Profile {
+
+  func asTunnelNetworkSettings(mode: ProxyMode) -> NEPacketTunnelNetworkSettings? {
+    var tunnelNetworkSettings: NEPacketTunnelNetworkSettings?
+    var proxySettings: NEProxySettings?
+    var ipv4Settings: NEIPv4Settings?
+    var dnsSettings: NEDNSSettings?
+
+    if mode.contains(.webProxy) || mode.contains(.systemProxy) {
+      if let httpListenPort {
+        tunnelNetworkSettings = tunnelNetworkSettings ?? .init(tunnelRemoteAddress: "127.0.0.1")
+
+        proxySettings = proxySettings ?? .init()
+        proxySettings?.httpEnabled = true
+        proxySettings?.httpServer = .init(address: httpListenAddress, port: httpListenPort)
+        proxySettings?.httpsEnabled = true
+        proxySettings?.httpsServer = .init(address: httpListenAddress, port: httpListenPort)
+        proxySettings?.excludeSimpleHostnames = excludeSimpleHostnames
+        proxySettings?.exceptionList = exceptions
+
+        tunnelNetworkSettings?.proxySettings = proxySettings
+      }
+
+      #if os(macOS)
+        if let socksListenPort {
+          tunnelNetworkSettings = tunnelNetworkSettings ?? .init(tunnelRemoteAddress: "127.0.0.1")
+
+          proxySettings = proxySettings ?? .init()
+          proxySettings?.socksEnabled = true
+          proxySettings?.socksServer = .init(address: socksListenAddress, port: socksListenPort)
+          proxySettings?.excludeSimpleHostnames = excludeSimpleHostnames
+          proxySettings?.exceptionList = exceptions
+
+          tunnelNetworkSettings?.proxySettings = proxySettings
+        }
+      #endif
+    }
+
+    if mode.contains(.enhanced) {
+      tunnelNetworkSettings = tunnelNetworkSettings ?? .init(tunnelRemoteAddress: "127.0.0.1")
+
+      ipv4Settings = NEIPv4Settings(addresses: ["198.18.0.1"], subnetMasks: ["255.254.0.0"])
+      ipv4Settings?.includedRoutes = [NEIPv4Route.default()]
+      ipv4Settings?.excludedRoutes = [
+        NEIPv4Route(destinationAddress: "255.255.255.255", subnetMask: "255.255.255.255"),
+
+        // 10.0.0.0/8 used for local communications within a private network.
+        NEIPv4Route(destinationAddress: "10.0.0.0", subnetMask: "255.0.0.0"),
+
+        // 100.64.0.0/10 shared address space for communications between a service provider and its
+        // subscribers when using a carrier-grade NAT.
+        NEIPv4Route(destinationAddress: "100.64.0.0", subnetMask: "255.192.0.0"),
+
+        // 169.254.0.0/16 used for link-local addresses between two hosts on a single link when no
+        // IP address is otherwise specified, such as would have normally been retrieved from a
+        // DHCP server.
+        NEIPv4Route(destinationAddress: "169.254.0.0", subnetMask: "255.255.0.0"),
+
+        // 172.16.0.0/12 used for local communications within a private network.
+        NEIPv4Route(destinationAddress: "172.16.0.0", subnetMask: "255.240.0.0"),
+
+        // 192.168.0.0/16 used for local communications within a private network.
+        NEIPv4Route(destinationAddress: "192.168.0.0", subnetMask: "255.255.0.0"),
+
+        NEIPv4Route(destinationAddress: "223.5.5.5", subnetMask: "255.255.255.255"),
+      ]
+      tunnelNetworkSettings?.ipv4Settings = ipv4Settings
+
+      dnsSettings = NEDNSSettings(servers: ["198.18.0.2"])
+      dnsSettings?.matchDomains = [""]
+      tunnelNetworkSettings?.dnsSettings = dnsSettings
+    }
+
+    return tunnelNetworkSettings
+  }
 
   func asForwardingRules() -> [any ForwardingRuleConvertible] {
     var lazyProxies = self.lazyProxies

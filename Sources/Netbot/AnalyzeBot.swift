@@ -40,8 +40,9 @@ import NetbotProfile
   import NIOPosix
 #endif
 
-#if os(macOS)
+#if canImport(NetworkExtension)
   import NetbotDaemons
+  import NetworkExtension
 #endif
 
 /// Assistant to manage PacketTunnelProvider and NIO proxy servers backend.
@@ -50,7 +51,7 @@ import NetbotProfile
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
-public actor AnalyzeBot: Actor {
+public actor AnalyzeBot {
 
   nonisolated private let dns: LocalDNSProxy
   nonisolated private let core: NetbotLite.AnalyzeBot
@@ -61,6 +62,8 @@ public actor AnalyzeBot: Actor {
 
   nonisolated public let group: any EventLoopGroup
   public var logger: Logger = Logger(label: "AnalyzeBot")
+
+  private var proxySettings: NEProxySettings?
 
   public init(group: any EventLoopGroup = .shared) {
     self.group = group
@@ -86,9 +89,6 @@ public actor AnalyzeBot: Actor {
 
   /// Stop current running analyze tunnel.
   public func shutdownGracefully() async {
-    #if os(macOS)
-      try? await self.setSystemProxySettings(.init())
-    #endif
     let publisher = self.core.connectionPublisher as! ConnectionPulse
     try? await publisher.shutdownGracefully()
     try? await self.core.shutdownGracefully()
@@ -96,18 +96,6 @@ public actor AnalyzeBot: Actor {
 
   public func setLogger(_ logger: Logger) async {
     self.logger = logger
-  }
-
-  public func setLwIPEnabled(_ enabled: Bool, packetFlow: any PacketTunnelFlow) async throws {
-    #if NETBOT_REQUIRES_LWIP
-      if enabled {
-        self.coreLwIP = LwIP(group: group, packetFlow: packetFlow, dns: dns)
-        try await self.coreLwIP?.run()
-      } else {
-        try await self.coreLwIP?.shutdownGracefully()
-        self.coreLwIP = nil
-      }
-    #endif
   }
 
   /// Modify outbound mode.
@@ -138,35 +126,28 @@ public actor AnalyzeBot: Actor {
     await self.core.setDecryptionSSLPKCS12Bundle(sslPKCS12Bundle)
   }
 
-  #if os(macOS)
-    public func setSystemProxySettings(_ options: NEProtocolProxies.Options) async throws {
-      do {
-        try await PHT.setNWProtocolProxies(
-          processName: ProcessInfo.processInfo.processName,
-          options: options
-        )
-        logger.trace("System proxies has been changed to \(options)")
-      } catch {
-        logger.error("System proxies modification failure with error: \(error)")
-      }
-    }
-  #endif
-
   /// Modify settings using specific profile.
-  public func setTunnelNetworkSettings(_ newProfile: Profile) async throws {
+  public func setTunnelNetworkSettings(_ tunnelNetworkSettings: NEPacketTunnelNetworkSettings?)
+    async throws
+  {
+    let proxySettings = tunnelNetworkSettings?.proxySettings
+
     try await core.setTunnelNetworkSettings(
       (
         SocketAddress(
-          ipAddress: newProfile.httpListenAddress, port: newProfile.httpListenPort ?? 6152),
+          ipAddress: proxySettings?.httpsServer?.address ?? "127.0.0.1",
+          port: proxySettings?.httpsServer?.port ?? 6152),
         SocketAddress(
-          ipAddress: newProfile.socksListenAddress, port: newProfile.socksListenPort ?? 6153)
-      ))
+          ipAddress: proxySettings?.socksServer?.address ?? "127.0.0.1",
+          port: proxySettings?.socksServer?.port ?? 6153)
+      )
+    )
 
     var additionalServers = [Address.hostPort(host: "192.168.124.1", port: 53)]
     additionalServers.append(
-      contentsOf: newProfile.dnsSettings.servers.map {
+      contentsOf: tunnelNetworkSettings?.dnsSettings?.servers.map {
         Address.hostPort(host: .init($0), port: 53)
-      })
+      } ?? [])
     dns._options.withLock {
       $0 = .init(
         group: $0.group,
@@ -179,5 +160,33 @@ public actor AnalyzeBot: Actor {
         maxRetryAttempts: $0.maxRetryAttempts
       )
     }
+
+    self.proxySettings = proxySettings
+  }
+
+  #if os(macOS)
+    public func setSystemProxyEnabled(_ enabled: Bool) async throws {
+      do {
+        try await PHT.setNWProtocolProxies(
+          processName: ProcessInfo.processInfo.processName,
+          options: enabled ? proxySettings : nil
+        )
+        logger.trace("System proxies has been changed to \(enabled ? proxySettings : nil)")
+      } catch {
+        logger.error("System proxies modification failure with error: \(error)")
+      }
+    }
+  #endif
+
+  public func setLwIPEnabled(_ enabled: Bool, packetFlow: any PacketTunnelFlow) async throws {
+    #if NETBOT_REQUIRES_LWIP
+      if enabled {
+        self.coreLwIP = LwIP(group: group, packetFlow: packetFlow, dns: dns)
+        try await self.coreLwIP?.run()
+      } else {
+        try await self.coreLwIP?.shutdownGracefully()
+        self.coreLwIP = nil
+      }
+    #endif
   }
 }

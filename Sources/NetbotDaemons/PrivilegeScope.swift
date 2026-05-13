@@ -193,7 +193,7 @@
     /// necessary to call this function with nil to clear out the existing
     /// settings before calling this function with a non-nil configuration.
     ///
-    public func setNWProtocolProxies(processName: String, options: NEProtocolProxies.Options?)
+    public func setNWProtocolProxies(processName: String, options: NEProxySettings?)
       async throws
     {
       try await submit { tool, _ in

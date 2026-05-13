@@ -12,7 +12,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-#if canImport(Darwin)
+#if canImport(NetworkExtension)
   import Alamofire
   import NetbotDNS
   import NetbotLite
@@ -46,7 +46,8 @@
     func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) async
     func setOutboundMode(_ mode: OutboundMode) async
     func setDecryptionPKCS12Bundle(_ bundle: NIOSSLPKCS12Bundle?) async
-    func setTunnelNetworkSettings(_ profile: Profile, mode: ProxyMode) async throws
+    func setTunnelNetworkSettings(_ tunnelNetworkSettings: NEPacketTunnelNetworkSettings?)
+      async throws
   }
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -184,7 +185,7 @@
       await delegate?.setForwardProtocol(profile.asForwardProtocol())
       await delegate?.setDecryptionPKCS12Bundle(try? profile.asDecryptionPKCS12Bundle())
       await setForwardingRules(profile.asForwardingRules())
-      try await delegate?.setTunnelNetworkSettings(profile, mode: proxyMode)
+      try await delegate?.setTunnelNetworkSettings(profile.asTunnelNetworkSettings(mode: proxyMode))
 
       $profileURL
         .combineLatest($proxyMode, $profileLastContentModificationDate, $selectionRecords)
@@ -196,7 +197,8 @@
             await setForwardingRules(profile.asForwardingRules())
             await delegate?.setForwardProtocol(profile.asForwardProtocol())
             await delegate?.setDecryptionPKCS12Bundle(try? profile.asDecryptionPKCS12Bundle())
-            try? await delegate?.setTunnelNetworkSettings(profile, mode: mode)
+            try? await delegate?.setTunnelNetworkSettings(
+              profile.asTunnelNetworkSettings(mode: mode))
           }
         }
         .store(in: &cancellables)

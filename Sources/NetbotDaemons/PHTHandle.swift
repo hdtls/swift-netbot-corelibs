@@ -141,7 +141,7 @@
       Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as! String
     }
 
-    public func setNWProtocolProxies(processName: String, options: NEProtocolProxies.Options?)
+    public func setNWProtocolProxies(processName: String, options: NEProxySettings?)
       async throws
     {
       guard let prefs = SCPreferencesCreate(nil, processName as CFString, nil) else {
