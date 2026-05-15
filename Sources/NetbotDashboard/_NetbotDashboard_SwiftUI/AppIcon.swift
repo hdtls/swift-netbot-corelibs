@@ -23,11 +23,11 @@
   #endif
   @_spi(SwiftUI) extension V1._ProcessReport {
 
-    nonisolated(unsafe) private static let cache = NSCache<NSString, NSImage>()
+    @MainActor private static let cache = NSCache<NSString, NSImage>()
 
-    @MainActor public var processImage: NSImage {
+    @MainActor public var applicationIconImage: NSImage? {
       guard let localizedName = program?.localizedName else {
-        return NSImage()
+        return nil
       }
 
       let cacheKey = localizedName as NSString
@@ -72,11 +72,11 @@
         return image
       }
 
-      return NSImage()
+      return nil
     }
 
-    @MainActor public var processIcon: EquatableView<ProcessImage> {
-      ProcessImage(data: self).equatable()
+    @MainActor public var applicationIcon: EquatableView<ApplicationIcon> {
+      ApplicationIcon(data: self).equatable()
     }
   }
 
@@ -85,19 +85,42 @@
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @_spi(SwiftUI) public struct ProcessImage: View, @MainActor Equatable {
-    public static func == (lhs: ProcessImage, rhs: ProcessImage) -> Bool {
-      lhs.data.program?.localizedName == rhs.data.program?.localizedName
+  @_spi(SwiftUI) extension V1._Program {
+
+    @MainActor public var applicationIconImage: NSImage? {
+      processReports.first(where: { $0.applicationIconImage != nil })?.applicationIconImage
     }
 
-    private let data: V1._ProcessReport
+    @MainActor public var applicationIcon: EquatableView<ApplicationIcon> {
+      ApplicationIcon(data: self).equatable()
+    }
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @_spi(SwiftUI) public struct ApplicationIcon: View, @MainActor Equatable {
+    public static func == (lhs: ApplicationIcon, rhs: ApplicationIcon) -> Bool {
+      lhs.localizedName == rhs.localizedName
+    }
+
+    private let localizedName: String?
+    private let nsImage: NSImage
 
     public init(data: V1._ProcessReport) {
-      self.data = data
+      self.localizedName = data.program?.localizedName
+      self.nsImage = data.applicationIconImage ?? .init()
+    }
+
+    public init(data: V1._Program) {
+      self.localizedName = data.localizedName
+      self.nsImage = data.applicationIconImage ?? .init()
     }
 
     public var body: some View {
-      Image(nsImage: data.processImage)
+      Image(nsImage: nsImage)
         .resizable()
         .aspectRatio(contentMode: .fit)
     }
