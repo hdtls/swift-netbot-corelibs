@@ -12,8 +12,8 @@
 // ===----------------------------------------------------------------------=== //
 
 #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import Atomics
-  import NIOConcurrencyHelpers
+  @_exported public import Atomics
+  @_exported public import NIOConcurrencyHelpers
 
   @available(SwiftStdlib 5.9, *)
   public typealias Atomic = ManagedAtomic
@@ -80,7 +80,7 @@
     }
   }
 #else
-  import Synchronization
+  @_exported public import Synchronization
 #endif
 
 #if compiler(>=6.2)

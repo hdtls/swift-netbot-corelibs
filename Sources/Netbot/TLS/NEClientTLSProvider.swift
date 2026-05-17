@@ -24,6 +24,7 @@ import NetbotProfile
   import SwiftASN1
   import X509
 #else
+  import NetbotLite
   import NIOSSL
 #endif
 

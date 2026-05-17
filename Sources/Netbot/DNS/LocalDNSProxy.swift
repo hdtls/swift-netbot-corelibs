@@ -16,12 +16,10 @@ import Logging
 import NEAddressProcessing
 import NIOCore
 import NetbotLite
-import NetbotLiteData
 import NetbotProfile
+import SynchronizationExtras
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import NIOConcurrencyHelpers
-#else
+#if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   import Synchronization
 #endif
 

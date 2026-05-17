@@ -13,6 +13,7 @@
 
 #if os(macOS)
   import AppKit
+  import NetbotLiteData
   import SwiftUI
   import UniformTypeIdentifiers
 

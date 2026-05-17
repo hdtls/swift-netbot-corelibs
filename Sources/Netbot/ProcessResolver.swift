@@ -14,14 +14,13 @@
 import NEAddressProcessing
 import NetbotLite
 import NetbotLiteData
+import SynchronizationExtras
 
 #if os(macOS)
   import NetbotXPC
 #endif
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import NIOConcurrencyHelpers
-#else
+#if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   import Synchronization
 #endif
 

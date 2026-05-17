@@ -12,17 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import NIOConcurrencyHelpers
-
-  private typealias Mutex = NIOLockedValueBox
-
-  extension NIOLockedValueBox {
-
-    /// Add a wrap function to make it easier to migrate to Mutex in the future.
-    fileprivate func withLock<Result>(_ body: (inout Value) throws -> Result) rethrows -> Result {
-      try withLockedValue(body)
-    }
-  }
+  import SynchronizationExtras
 #else
   import Synchronization
 #endif

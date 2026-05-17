@@ -12,6 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 import HTTPTypes
+import SynchronizationExtras
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
@@ -19,10 +20,7 @@ import HTTPTypes
   import Foundation
 #endif
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import Atomics
-  import NIOConcurrencyHelpers
-#else
+#if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   import Synchronization
 #endif
 

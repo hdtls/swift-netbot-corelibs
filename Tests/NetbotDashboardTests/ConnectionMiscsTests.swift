@@ -11,9 +11,9 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+import NetbotDashboard
+import NetbotLiteData
 import Testing
-
-@testable import NetbotDashboard
 
 struct ConnectionMiscsTests {
 

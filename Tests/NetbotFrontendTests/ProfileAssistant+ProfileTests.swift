@@ -12,6 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 import Logging
+import NetbotProfile
 import Testing
 
 @testable import NetbotFrontend

@@ -77,19 +77,16 @@ let package = Package(
         "NetbotPreferences",
         "NetbotProfile",
         "NetbotXPC",
-
+        "SynchronizationExtras",
         .target(name: "CNELwIP", condition: .when(platforms: [.macOS])),
-
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "Preference", package: "swift-preference"),
         .product(name: "X509", package: "swift-certificates"),
         .product(name: "Alamofire", package: "Alamofire"),
         .product(name: "_CryptoExtras", package: "swift-crypto"),
-        .product(name: "Atomics", package: "swift-atomics"),
         .product(name: "Tracing", package: "swift-distributed-tracing"),
         .product(name: "Logging", package: "swift-log"),
         .product(name: "NIOCore", package: "swift-nio"),
-        .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
         .product(name: "NIOPosix", package: "swift-nio"),
         .product(name: "NIOHTTP1", package: "swift-nio"),
         .product(name: "NIOWebSocket", package: "swift-nio"),
@@ -119,7 +116,7 @@ let package = Package(
         "NetbotLite",
         "NetbotLiteData",
         "NetbotProfile",
-        .product(name: "Atomics", package: "swift-atomics"),
+        "SynchronizationExtras",
         .product(name: "Logging", package: "swift-log"),
         .product(name: "NIOCore", package: "swift-nio"),
         .product(name: "NEAddressProcessing", package: "swift-netbot-protoimpl"),
@@ -134,6 +131,7 @@ let package = Package(
         "NetbotLiteData",
         "NetbotPreferences",
         "NetbotProfile",
+        "SynchronizationExtras",
         .product(name: "_CryptoExtras", package: "swift-crypto"),
         .product(name: "Crypto", package: "swift-crypto"),
         .product(name: "NIOSSL", package: "swift-nio-ssl"),
@@ -147,12 +145,11 @@ let package = Package(
       name: "NetbotLite",
       dependencies: [
         "NetbotLiteData",
+        "SynchronizationExtras",
         .product(name: "_CryptoExtras", package: "swift-crypto"),
-        .product(name: "Atomics", package: "swift-atomics"),
         .product(name: "Tracing", package: "swift-distributed-tracing"),
         .product(name: "Logging", package: "swift-log"),
         .product(name: "NIOCore", package: "swift-nio"),
-        .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
         .product(name: "NIOPosix", package: "swift-nio"),
         .product(name: "NIOHTTP1", package: "swift-nio"),
         .product(name: "NIOWebSocket", package: "swift-nio"),
@@ -171,11 +168,9 @@ let package = Package(
     .target(
       name: "NetbotLiteData",
       dependencies: [
-        "SynchronizationMacros",
-        .product(name: "Atomics", package: "swift-atomics"),
+        "SynchronizationExtras",
         .product(name: "HTTPTypes", package: "swift-http-types"),
         .product(name: "NEAddressProcessing", package: "swift-netbot-protoimpl"),
-        .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
       ],
       path: "Sources/NetbotLite/Data"
     ),
@@ -195,7 +190,19 @@ let package = Package(
       ],
       path: "Sources/Netbot/Profile"
     ),
-    .target(name: "NetbotXPC", dependencies: [.product(name: "Logging", package: "swift-log")]),
+    .target(
+      name: "NetbotXPC",
+      dependencies: [
+        "SynchronizationExtras",
+        .product(name: "Logging", package: "swift-log"),
+      ]),
+    .target(
+      name: "SynchronizationExtras",
+      dependencies: [
+        "SynchronizationMacros",
+        .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
+        .product(name: "Atomics", package: "swift-atomics"),
+      ]),
     .testTarget(
       name: "CoWOptimizationMacrosTests",
       dependencies: [

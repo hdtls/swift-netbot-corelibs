@@ -16,8 +16,8 @@
   import Foundation
   import Logging
   import NIOCore
-  import NetbotLiteData
   import Network
+  import SynchronizationExtras
   import UserNotifications
 
   #if os(iOS)
@@ -26,9 +26,7 @@
     import CoreWLAN
   #endif
 
-  #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    import NIOConcurrencyHelpers
-  #else
+  #if !canImport(Darwin) && !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     import Synchronization
   #endif
 

@@ -15,6 +15,12 @@ import Testing
 
 @testable import NetbotDashboard
 
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
 struct ConnectionAddressReportTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

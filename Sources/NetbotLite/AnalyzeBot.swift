@@ -21,12 +21,10 @@ import NIOExtras
 import NIOHTTP1
 import NIOSSL
 import NetbotLiteData
+import SynchronizationExtras
 import Tracing
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import Atomics
-  import NIOConcurrencyHelpers
-#else
+#if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   import Synchronization
 #endif
 

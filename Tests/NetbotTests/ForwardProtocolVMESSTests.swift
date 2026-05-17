@@ -11,6 +11,7 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+import NetbotProfile
 import Testing
 
 @testable import Netbot

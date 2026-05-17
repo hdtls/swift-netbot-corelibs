@@ -11,6 +11,7 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+import NetbotDashboard
 import Testing
 
 @testable import NetbotFrontend

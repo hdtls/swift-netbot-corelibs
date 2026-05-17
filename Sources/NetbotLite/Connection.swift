@@ -19,7 +19,7 @@ import NetbotLiteData
 import Tracing
 
 #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import NIOConcurrencyHelpers
+  import SynchronizationExtras
 #else
   import Synchronization
 #endif

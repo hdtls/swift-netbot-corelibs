@@ -13,52 +13,31 @@
 
 #if os(macOS)
   import Foundation
+  import SynchronizationExtras
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  public class ProcessInfo: NSObject, NSSecureCoding {
+  @Lockable public class ProcessInfo: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
     /// Indicates the name of the application.
     /// This is dependent on the current localization of the referenced app, and is suitable for presentation to the user.
-    public var processName: String? {
-      get { _lock.withLock { _processName } }
-      set { _lock.withLock { _processName = newValue } }
-    }
-    private var _processName: String?
+    public var processName: String?
 
     /// Indicates the URL to the application's bundle, or nil if the application does not have a bundle.
-    public var processBundleURL: URL? {
-      get { _lock.withLock { _processBundleURL } }
-      set { _lock.withLock { _processBundleURL = newValue } }
-    }
-    private var _processBundleURL: URL?
+    public var processBundleURL: URL?
 
     /// Indicates the URL to the application's executable.
-    public var processExecutableURL: URL? {
-      get { _lock.withLock { _processExecutableURL } }
-      set { _lock.withLock { _processExecutableURL = newValue } }
-    }
-    private var _processExecutableURL: URL?
+    public var processExecutableURL: URL?
 
     /// Indicates the process identifier (pid) of the application.
-    public var processIdentifier: Int32? {
-      get { _lock.withLock { _processIdentifier } }
-      set { _lock.withLock { _processIdentifier = newValue } }
-    }
-    private var _processIdentifier: Int32?
+    public var processIdentifier: Int32?
 
     /// Indicates the icon TIFF representation data of the application.
-    public var processIconTIFFRepresentation: Data? {
-      get { _lock.withLock { _processIconTIFFRepresentation } }
-      set { _lock.withLock { _processIconTIFFRepresentation = newValue } }
-    }
-    private var _processIconTIFFRepresentation: Data?
-
-    private let _lock = NSLock()
+    public var processIconTIFFRepresentation: Data?
 
     private enum CodingKeys: String {
       case processName
@@ -68,21 +47,28 @@
       case processIconTIFFRepresentation
     }
 
-    public override init() {}
+    public override init() {
+      self._processName = .init(nil)
+      self._processBundleURL = .init(nil)
+      self._processExecutableURL = .init(nil)
+      self._processIdentifier = .init(nil)
+      self._processIconTIFFRepresentation = .init(nil)
+    }
 
     public required init?(coder: NSCoder) {
-      _processName =
-        coder.decodeObject(of: NSString.self, forKey: CodingKeys.processName.rawValue) as String?
-      _processBundleURL =
-        coder.decodeObject(of: NSURL.self, forKey: CodingKeys.processBundleURL.rawValue) as URL?
-      _processExecutableURL =
+      self._processName = .init(
+        coder.decodeObject(of: NSString.self, forKey: CodingKeys.processName.rawValue) as String?)
+      self._processBundleURL = .init(
+        coder.decodeObject(of: NSURL.self, forKey: CodingKeys.processBundleURL.rawValue) as URL?)
+      self._processExecutableURL = .init(
         coder.decodeObject(of: NSURL.self, forKey: CodingKeys.processExecutableURL.rawValue) as URL?
-      _processIdentifier =
+      )
+      self._processIdentifier = .init(
         coder.decodeObject(of: NSNumber.self, forKey: CodingKeys.processIdentifier.rawValue)?
-        .int32Value
-      _processIconTIFFRepresentation =
+          .int32Value)
+      self._processIconTIFFRepresentation = .init(
         coder.decodeObject(
-          of: NSData.self, forKey: CodingKeys.processIconTIFFRepresentation.rawValue) as Data?
+          of: NSData.self, forKey: CodingKeys.processIconTIFFRepresentation.rawValue) as Data?)
     }
 
     public func encode(with coder: NSCoder) {

@@ -15,6 +15,7 @@ import NEAddressProcessing
 import NIOCore
 import NetbotLite
 import NetbotLiteData
+import SynchronizationExtras
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
@@ -31,9 +32,7 @@ import NetbotLiteData
   import NIOWebSocket
 #endif
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import NIOConcurrencyHelpers
-#else
+#if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   import Synchronization
 #endif
 

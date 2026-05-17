@@ -11,6 +11,8 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+import HTTPTypes
+import NetbotLiteData
 import Testing
 
 @testable import NetbotDashboard

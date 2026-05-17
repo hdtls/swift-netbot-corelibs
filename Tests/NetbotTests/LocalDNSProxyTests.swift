@@ -20,10 +20,7 @@ import Testing
 @testable import Netbot
 
 #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import Atomics
-  import NIOConcurrencyHelpers
-
-  typealias Atomic = ManagedAtomic
+  import SynchronizationExtras
 #else
   import Synchronization
 #endif

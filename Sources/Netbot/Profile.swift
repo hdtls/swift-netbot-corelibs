@@ -16,6 +16,7 @@ import NIOSSL
 import NetbotLite
 import NetbotPreferences
 import NetbotProfile
+import NetbotXPC
 import SwiftASN1
 import X509
 

@@ -14,64 +14,31 @@
 #if canImport(NetworkExtension)
   import Foundation
   import NetworkExtension
+  import SynchronizationExtras
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  public class NEProxySettings: NSObject, NSSecureCoding {
+  @Lockable public class NEProxySettings: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
-    public var httpEnabled: Bool {
-      get { _lock.withLock { _httpEnabled } }
-      set { _lock.withLock { _httpEnabled = newValue } }
-    }
-    private var _httpEnabled = false
+    public var httpEnabled: Bool
 
-    public var httpServer: NEProxyServer? {
-      get { _lock.withLock { _httpServer } }
-      set { _lock.withLock { _httpServer = newValue } }
-    }
-    private var _httpServer: NEProxyServer?
+    public var httpServer: NEProxyServer?
 
-    public var httpsEnabled: Bool {
-      get { _lock.withLock { _httpsEnabled } }
-      set { _lock.withLock { _httpsEnabled = newValue } }
-    }
-    private var _httpsEnabled = false
+    public var httpsEnabled: Bool
 
-    public var httpsServer: NEProxyServer? {
-      get { _lock.withLock { _httpsServer } }
-      set { _lock.withLock { _httpsServer = newValue } }
-    }
-    private var _httpsServer: NEProxyServer?
+    public var httpsServer: NEProxyServer?
 
-    public var socksEnabled: Bool {
-      get { _lock.withLock { _socksEnabled } }
-      set { _lock.withLock { _socksEnabled = newValue } }
-    }
-    private var _socksEnabled = false
+    public var socksEnabled: Bool
 
-    public var socksServer: NEProxyServer? {
-      get { _lock.withLock { _socksServer } }
-      set { _lock.withLock { _socksServer = newValue } }
-    }
-    private var _socksServer: NEProxyServer?
+    public var socksServer: NEProxyServer?
 
-    public var excludeSimpleHostnames: Bool {
-      get { _lock.withLock { _excludeSimpleHostnames } }
-      set { _lock.withLock { _excludeSimpleHostnames = newValue } }
-    }
-    private var _excludeSimpleHostnames = false
+    public var excludeSimpleHostnames: Bool
 
-    public var exceptionList: [String]? {
-      get { _lock.withLock { _exceptionList } }
-      set { _lock.withLock { _exceptionList = newValue } }
-    }
-    private var _exceptionList: [String]?
-
-    private let _lock = NSLock()
+    public var exceptionList: [String]?
 
     private enum CodingKeys: String {
       case httpEnabled
@@ -84,22 +51,32 @@
       case exceptionList
     }
 
-    public override init() {}
+    public override init() {
+      self._httpEnabled = .init(false)
+      self._httpServer = .init(nil)
+      self._httpsEnabled = .init(false)
+      self._httpsServer = .init(nil)
+      self._socksEnabled = .init(false)
+      self._socksServer = .init(nil)
+      self._excludeSimpleHostnames = .init(false)
+      self._exceptionList = .init(nil)
+    }
 
     public required init?(coder: NSCoder) {
-      _httpEnabled = coder.decodeBool(forKey: CodingKeys.httpEnabled.rawValue)
-      _httpServer = coder.decodeObject(
-        of: NEProxyServer.self, forKey: CodingKeys.httpServer.rawValue)
-      _httpsEnabled = coder.decodeBool(forKey: CodingKeys.httpsEnabled.rawValue)
-      _httpsServer = coder.decodeObject(
-        of: NEProxyServer.self, forKey: CodingKeys.httpsServer.rawValue)
-      _socksEnabled = coder.decodeBool(forKey: CodingKeys.socksEnabled.rawValue)
-      _socksServer = coder.decodeObject(
-        of: NEProxyServer.self, forKey: CodingKeys.socksServer.rawValue)
-      _excludeSimpleHostnames = coder.decodeBool(forKey: CodingKeys.excludeSimpleHostnames.rawValue)
-      _exceptionList =
+      self._httpEnabled = .init(coder.decodeBool(forKey: CodingKeys.httpEnabled.rawValue))
+      self._httpServer = .init(
+        coder.decodeObject(of: NEProxyServer.self, forKey: CodingKeys.httpServer.rawValue))
+      self._httpsEnabled = .init(coder.decodeBool(forKey: CodingKeys.httpsEnabled.rawValue))
+      self._httpsServer = .init(
+        coder.decodeObject(of: NEProxyServer.self, forKey: CodingKeys.httpsServer.rawValue))
+      self._socksEnabled = .init(coder.decodeBool(forKey: CodingKeys.socksEnabled.rawValue))
+      self._socksServer = .init(
+        coder.decodeObject(of: NEProxyServer.self, forKey: CodingKeys.socksServer.rawValue))
+      self._excludeSimpleHostnames = .init(
+        coder.decodeBool(forKey: CodingKeys.excludeSimpleHostnames.rawValue))
+      self._exceptionList = .init(
         coder.decodeArrayOfObjects(
-          ofClasses: [NSString.self], forKey: CodingKeys.exceptionList.rawValue) as? [String]
+          ofClasses: [NSString.self], forKey: CodingKeys.exceptionList.rawValue) as? [String])
     }
 
     public func encode(with coder: NSCoder) {

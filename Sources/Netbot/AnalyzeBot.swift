@@ -17,7 +17,6 @@ import NIOCore
 import NIOSSL
 import NetbotDNS
 import NetbotLite
-import NetbotLiteData
 import NetbotProfile
 
 #if canImport(FoundationEssentials)
@@ -28,7 +27,7 @@ import NetbotProfile
 #endif
 
 #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import NIOConcurrencyHelpers
+  import SynchronizationExtras
 #else
   import Synchronization
 #endif
