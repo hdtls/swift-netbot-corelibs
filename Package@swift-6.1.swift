@@ -273,7 +273,6 @@ if Context.environment["NETBOT_REQUIRES_LOCAL_PACKAGE_DEPENDENCIES"] != nil {
 
 for target in package.targets {
   var settings = target.swiftSettings ?? []
-  settings.append(.enableExperimentalFeature("StrictConcurrency=complete"))
   settings.append(.define("NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9"))
   settings.append(.define("NETBOT_REQUIRES_LWIP", .when(platforms: [.macOS])))
   settings.append(
