@@ -80,15 +80,7 @@ extension CoWOptimizationMacro: MemberAttributeMacro {
     providingAttributesFor member: MemberDeclaration,
     in context: Context
   ) throws -> [AttributeSyntax] {
-    guard let property = member.as(VariableDeclSyntax.self),
-      property.optimizable,
-      property.identifier != nil
-    else {
-      return []
-    }
-
-    // dont apply to ignored properties or properties that are already flagged as tracked
-    guard !property.hasMacro(named: CoWOptimizationMacro.optimizationIgnored) else {
+    guard let property = member.as(VariableDeclSyntax.self), property.optimizable else {
       return []
     }
 
@@ -128,10 +120,6 @@ public struct CoWOptimizationTrackedMacro: AccessorMacro, Sendable {
       property.optimizable,
       let label = property.identifier?.trimmed
     else {
-      return []
-    }
-
-    if property.hasMacro(named: CoWOptimizationMacro.optimizationIgnored) {
       return []
     }
 

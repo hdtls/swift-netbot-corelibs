@@ -74,13 +74,6 @@ extension VariableDeclSyntax {
     return bindingSpecifier.tokenKind == .keyword(.let)
   }
 
-  func isEquivalent(to other: VariableDeclSyntax) -> Bool {
-    if isInstance != other.isInstance {
-      return false
-    }
-    return identifier?.text == other.identifier?.text
-  }
-
   func hasMacro(named name: String) -> Bool {
     for attribute in attributes {
       switch attribute {
