@@ -28,14 +28,12 @@ struct MessageTests {
       domainName: "swift.org",
       ttl: 300,
       dataClass: .internet,
-      dataLength: .determined(4),
       data: IPv4Address("17.253.144.12")!
     )
     #expect(rr.domainName == "swift.org")
     #expect(rr.ttl == 300)
     #expect(rr.dataType == .a)
     #expect(rr.dataClass == .internet)
-    #expect(rr.dataLength == .determined(4))
     #expect(rr.data == IPv4Address("17.253.144.12")!)
   }
 
@@ -46,12 +44,11 @@ struct MessageTests {
   #endif
   @Test func createNSRecord() {
     let rr = NSRecord(
-      domainName: "swift.org", ttl: 3251, dataLength: .determined(16), data: "c.ns.apple.com")
+      domainName: "swift.org", ttl: 3251, data: "c.ns.apple.com")
     #expect(rr.domainName == "swift.org")
     #expect(rr.ttl == 3251)
     #expect(rr.dataType == .ns)
     #expect(rr.dataClass == .internet)
-    #expect(rr.dataLength == .determined(16))
     #expect(rr.data == "c.ns.apple.com")
   }
 
@@ -64,14 +61,12 @@ struct MessageTests {
     let rr = CNAMERecord(
       domainName: "www.swift.org",
       ttl: 3600,
-      dataLength: .determined(31),
       data: "swift.lb-apple.com.akadns.net"
     )
     #expect(rr.domainName == "www.swift.org")
     #expect(rr.ttl == 3600)
     #expect(rr.dataType == .cname)
     #expect(rr.dataClass == .internet)
-    #expect(rr.dataLength == .determined(31))
     #expect(rr.data == "swift.lb-apple.com.akadns.net")
   }
 
@@ -98,7 +93,6 @@ struct MessageTests {
     #expect(rr.ttl == 3600)
     #expect(rr.dataType == .soa)
     #expect(rr.dataClass == .internet)
-    #expect(rr.dataLength == .flexible)
     #expect(rr.data.primaryNameServer == "ns-ext-prod.jackfruit.apple.com")
     #expect(rr.data.responsibleMailbox == "hostmaster.apple.com")
     #expect(rr.data.serialNumber == 2_025_021_800)
@@ -123,7 +117,6 @@ struct MessageTests {
     #expect(rr.ttl == 43200)
     #expect(rr.dataType == .ptr)
     #expect(rr.dataClass == .internet)
-    #expect(rr.dataLength == .flexible)
     #expect(rr.data == "appleid.org")
   }
 
@@ -142,7 +135,6 @@ struct MessageTests {
     #expect(rr.ttl == 3600)
     #expect(rr.dataType == .mx)
     #expect(rr.dataClass == .internet)
-    #expect(rr.dataLength == .flexible)
     #expect(rr.data.preference == 20)
     #expect(rr.data.exchange == "mx-in-sg.apple.com")
   }
@@ -162,7 +154,6 @@ struct MessageTests {
     #expect(rr.ttl == 1800)
     #expect(rr.dataType == .txt)
     #expect(rr.dataClass == .internet)
-    #expect(rr.dataLength == .flexible)
     #expect(rr.data == "v=DMARC1; p=none; pct=100; rua=swift-infrastructure@swift.org")
   }
 
@@ -181,7 +172,6 @@ struct MessageTests {
     #expect(rr.ttl == 1)
     #expect(rr.dataType == .aaaa)
     #expect(rr.dataClass == .internet)
-    #expect(rr.dataLength == .flexible)
     #expect(rr.data == IPv6Address("2403:300:a04:f100::206")!)
   }
 
@@ -200,7 +190,6 @@ struct MessageTests {
     #expect(rr.ttl == 12475)
     #expect(rr.dataType == .srv)
     #expect(rr.dataClass == .internet)
-    #expect(rr.dataLength == .flexible)
     #expect(rr.data.priority == 5)
     #expect(rr.data.weight == 0)
     #expect(rr.data.port == 443)
@@ -224,7 +213,6 @@ struct MessageTests {
     #expect(rr.ttl == 60)
     #expect(rr.dataType == .naptr)
     #expect(rr.dataClass == .internet)
-    #expect(rr.dataLength == .flexible)
     #expect(rr.data.order == 100)
     #expect(rr.data.preference == 10)
     #expect(rr.data.flags == "u")
@@ -255,7 +243,6 @@ struct MessageTests {
       ARecord(
         domainName: "swift.org",
         ttl: 1,
-        dataLength: .determined(4),
         data: .init("17.253.144.12")!
       )
     ]
@@ -305,7 +292,6 @@ struct MessageTests {
       ARecord(
         domainName: "swift.org",
         ttl: 1,
-        dataLength: .determined(4),
         data: .init("17.253.144.12")!
       )
     ]

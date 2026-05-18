@@ -366,7 +366,6 @@ import SynchronizationExtras
               ARecord(
                 domainName: question.domainName,
                 ttl: 0,
-                dataLength: .determined(4),
                 data: address
               )
             )
@@ -377,7 +376,6 @@ import SynchronizationExtras
               AAAARecord(
                 domainName: question.domainName,
                 ttl: 0,
-                dataLength: .determined(16),
                 data: address
               )
             )

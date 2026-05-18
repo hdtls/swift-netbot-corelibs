@@ -100,7 +100,7 @@ struct LocalDNSProxyTests {
     let server = MockDNSServer(
       response: [
         ARecord(
-          domainName: "example.com", ttl: 300, dataLength: .determined(4),
+          domainName: "example.com", ttl: 300,
           data: .init("123.123.123.123")!)
       ]
     )
@@ -143,7 +143,7 @@ struct LocalDNSProxyTests {
     let server = MockDNSServer(
       response: [
         ARecord(
-          domainName: "example.com", ttl: 1, dataLength: .determined(4),
+          domainName: "example.com", ttl: 1,
           data: .init("123.123.123.123")!)
       ]
     )
@@ -186,7 +186,7 @@ struct LocalDNSProxyTests {
     let server = MockDNSServer(
       response: [
         AAAARecord(
-          domainName: "example.com", ttl: 300, dataLength: .determined(16), data: .init("::1")!)
+          domainName: "example.com", ttl: 300, data: .init("::1")!)
       ]
     )
     let address = try #require(await server.start())
@@ -265,7 +265,7 @@ struct LocalDNSProxyTests {
   @Test func queryNS() async throws {
     let server = MockDNSServer(
       response: [
-        NSRecord(domainName: "example.com", ttl: 300, dataLength: .determined(8), data: "1.exp.com")
+        NSRecord(domainName: "example.com", ttl: 300, data: "1.exp.com")
       ]
     )
     let address = try #require(await server.start())
@@ -306,7 +306,7 @@ struct LocalDNSProxyTests {
     let server = MockDNSServer(
       response: [
         CNAMERecord(
-          domainName: "example.com", ttl: 300, dataLength: .determined(8), data: "1.exp.com")
+          domainName: "example.com", ttl: 300, data: "1.exp.com")
       ]
     )
     let address = try #require(await server.start())
@@ -348,7 +348,6 @@ struct LocalDNSProxyTests {
       response: [
         SOARecord(
           domainName: "example.com", ttl: 300,
-          dataLength: .determined(35),
           data: .init(
             primaryNameServer: "primary.example.com", responsibleMailbox: "mx.example.com",
             serialNumber: 0, refreshInterval: 0, retryInterval: 0, expirationTime: 0, ttl: 300))
@@ -396,7 +395,7 @@ struct LocalDNSProxyTests {
     let server = MockDNSServer(
       response: [
         PTRRecord(
-          domainName: query, ttl: 300, dataLength: .determined(13), data: response)
+          domainName: query, ttl: 300, data: response)
       ]
     )
     let address = try #require(await server.start())
@@ -462,7 +461,7 @@ struct LocalDNSProxyTests {
 
     let response = [
       PTRRecord(
-        domainName: "6.1.18.198.in-addr.arpa", ttl: 0, dataLength: .flexible,
+        domainName: "6.1.18.198.in-addr.arpa", ttl: 0,
         data: "example.com")
     ]
     p.disguisedARecords
@@ -492,7 +491,6 @@ struct LocalDNSProxyTests {
         MXRecord(
           domainName: "example.com",
           ttl: 300,
-          dataLength: .determined(10),
           data: .init(
             preference: 10,
             exchange: "1.exp.com"
@@ -538,7 +536,7 @@ struct LocalDNSProxyTests {
     let server = MockDNSServer(
       response: [
         TXTRecord(
-          domainName: "example.com", ttl: 300, dataLength: .determined(10), data: "1.exp.com")
+          domainName: "example.com", ttl: 300, data: "1.exp.com")
       ]
     )
     let address = try #require(await server.start())
@@ -580,7 +578,6 @@ struct LocalDNSProxyTests {
       response: [
         SRVRecord(
           domainName: "example.com", ttl: 300,
-          dataLength: .determined(14),
           data: .init(priority: 0, weight: 0, port: 33, hostname: "1.exp.com"))
       ]
     )
@@ -622,7 +619,7 @@ struct LocalDNSProxyTests {
     let server = MockDNSServer(
       response: [
         ARecord(
-          domainName: "example.com", ttl: 300, dataLength: .determined(4),
+          domainName: "example.com", ttl: 300,
           data: .init("123.123.123.123")!)
       ]
     )
@@ -665,7 +662,7 @@ struct LocalDNSProxyTests {
     let server = MockDNSServer(
       response: [
         AAAARecord(
-          domainName: "example.com", ttl: 300, dataLength: .determined(16), data: .init("::1")!)
+          domainName: "example.com", ttl: 300, data: .init("::1")!)
       ]
     )
     let address = try #require(await server.start())
@@ -832,7 +829,7 @@ struct LocalDNSProxyTests {
       questions: [.init(domainName: "localhost", queryType: .a)],
       answerRRs: [
         ARecord(
-          domainName: "localhost", ttl: 0, dataLength: .determined(4),
+          domainName: "localhost", ttl: 0,
           data: IPv4Address(mapping.value)!)
       ],
       authorityRRs: [],
@@ -895,7 +892,7 @@ struct LocalDNSProxyTests {
       questions: [.init(domainName: "localhost", queryType: .aaaa)],
       answerRRs: [
         AAAARecord(
-          domainName: "localhost", ttl: 0, dataLength: .determined(16),
+          domainName: "localhost", ttl: 0,
           data: IPv6Address(mapping.value)!)
       ],
       authorityRRs: [],
@@ -983,7 +980,7 @@ struct LocalDNSProxyTests {
     //    let server = MockDNSServer(
     //      response: [
     //        PTRRecord(
-    //          domainName: "example.com", ttl: 300, dataLength: .determined(8), data: "1.exp.com")
+    //          domainName: "example.com", ttl: 300, data: "1.exp.com")
     //      ]
     //    )
     //    let address = try #require(await server.start())

@@ -37,7 +37,6 @@ struct SerializationTests {
       ARecord(
         domainName: "swift.org",
         ttl: 1,
-        dataLength: .determined(4),
         data: .init("17.253.144.12")!
       )
     ]
@@ -86,7 +85,6 @@ struct SerializationTests {
       ARecord(
         domainName: "swift.org",
         ttl: 1,
-        dataLength: .determined(4),
         data: .init("17.253.144.12")!
       )
     ]
@@ -129,13 +127,13 @@ struct SerializationTests {
   @Test func parseNSResponse() async throws {
     let answerRRs = [
       NSRecord(
-        domainName: "swift.org", ttl: 3251, dataLength: .determined(16), data: "c.ns.apple.com"),
+        domainName: "swift.org", ttl: 3251, data: "c.ns.apple.com"),
       NSRecord(
-        domainName: "swift.org", ttl: 3251, dataLength: .determined(4), data: "b.ns.apple.com"),
+        domainName: "swift.org", ttl: 3251, data: "b.ns.apple.com"),
       NSRecord(
-        domainName: "swift.org", ttl: 3251, dataLength: .determined(4), data: "d.ns.apple.com"),
+        domainName: "swift.org", ttl: 3251, data: "d.ns.apple.com"),
       NSRecord(
-        domainName: "swift.org", ttl: 3251, dataLength: .determined(4), data: "a.ns.apple.com"),
+        domainName: "swift.org", ttl: 3251, data: "a.ns.apple.com"),
     ]
 
     let questions = [
@@ -230,7 +228,6 @@ struct SerializationTests {
       CNAMERecord(
         domainName: "www.swift.org",
         ttl: 3600,
-        dataLength: .determined(31),
         data: "swift.lb-apple.com.akadns.net"
       )
     ]
@@ -279,7 +276,6 @@ struct SerializationTests {
       CNAMERecord(
         domainName: "www.swift.org",
         ttl: 3600,
-        dataLength: .determined(31),
         data: "swift.lb-apple.com.akadns.net"
       )
     ]
@@ -324,7 +320,6 @@ struct SerializationTests {
       SOARecord(
         domainName: "swift.org",
         ttl: 3600,
-        dataLength: .determined(66),
         data: .init(
           primaryNameServer: "ns-ext-prod.jackfruit.apple.com",
           responsibleMailbox: "hostmaster.apple.com",
@@ -433,7 +428,6 @@ struct SerializationTests {
       PTRRecord(
         domainName: "47.224.172.17.in-addr.arpa",
         ttl: 43200,
-        dataLength: .determined(13),
         data: "appleid.org"
       )
     ]
@@ -526,37 +520,31 @@ struct SerializationTests {
       MXRecord(
         domainName: "apple.com",
         ttl: 3600,
-        dataLength: .determined(13),
         data: .init(preference: 20, exchange: "mx-in-sg.apple.com")
       ),
       MXRecord(
         domainName: "apple.com",
         ttl: 3600,
-        dataLength: .determined(14),
         data: .init(preference: 20, exchange: "mx-in-hfd.apple.com")
       ),
       MXRecord(
         domainName: "apple.com",
         ttl: 3600,
-        dataLength: .determined(13),
         data: .init(preference: 20, exchange: "mx-in-rn.apple.com")
       ),
       MXRecord(
         domainName: "apple.com",
         ttl: 3600,
-        dataLength: .determined(13),
         data: .init(preference: 20, exchange: "mx-in-ma.apple.com")
       ),
       MXRecord(
         domainName: "apple.com",
         ttl: 3600,
-        dataLength: .determined(12),
         data: .init(preference: 10, exchange: "mx-in.g.apple.com")
       ),
       MXRecord(
         domainName: "apple.com",
         ttl: 3600,
-        dataLength: .determined(14),
         data: .init(preference: 20, exchange: "mx-in-vib.apple.com")
       ),
     ]
@@ -674,19 +662,16 @@ struct SerializationTests {
       TXTRecord(
         domainName: "swift.org",
         ttl: 1800,
-        dataLength: .determined(62),
         data: "v=DMARC1; p=none; pct=100; rua=swift-infrastructure@swift.org"
       ),
       TXTRecord(
         domainName: "swift.org",
         ttl: 1800,
-        dataLength: .determined(12),
         data: "v=spf1 -all"
       ),
       TXTRecord(
         domainName: "swift.org",
         ttl: 1800,
-        dataLength: .determined(33),
         data: "cd60njgdwlpyyg36ptypc2jqhb1nrqt9"
       ),
     ]
@@ -789,25 +774,21 @@ struct SerializationTests {
       CNAMERecord(
         domainName: "www.swift.org",
         ttl: 1,
-        dataLength: .determined(31),
         data: "swift.lb-apple.com.akadns.net"
       ),
       CNAMERecord(
         domainName: "swift.lb-apple.com.akadns.net",
         ttl: 1,
-        dataLength: .determined(25),
         data: "world-gen.g.aaplimg.com"
       ),
       AAAARecord(
         domainName: "world-gen.g.aaplimg.com",
         ttl: 1,
-        dataLength: .determined(16),
         data: .init("2403:300:a04:f100::206")!
       ),
       AAAARecord(
         domainName: "world-gen.g.aaplimg.com",
         ttl: 1,
-        dataLength: .determined(16),
         data: .init("2403:300:a04:f100::204")!
       ),
     ]
@@ -919,7 +900,6 @@ struct SerializationTests {
       SRVRecord(
         domainName: "_caldavs._tcp.google.com",
         ttl: 12475,
-        dataLength: .determined(27),
         data: .init(priority: 5, weight: 0, port: 443, hostname: "calendar.google.com")
       )
     ]
@@ -1012,7 +992,6 @@ struct SerializationTests {
       NAPTRRecord(
         domainName: "example.com",
         ttl: 60,
-        dataLength: .determined(48),
         data: .init(
           order: 100, preference: 10, flags: "u", services: "E2U+sip",
           regExp: "!^.*$!sip:info@example.com!", replacement: "srv.example.com")
@@ -1063,7 +1042,6 @@ struct SerializationTests {
       NAPTRRecord(
         domainName: "example.com",
         ttl: 60,
-        dataLength: .determined(48),
         data: .init(
           order: 100, preference: 10, flags: "u", services: "E2U+sip",
           regExp: "!^.*$!sip:info@example.com!", replacement: "srv.example.com")
@@ -1110,7 +1088,6 @@ struct SerializationTests {
       CNAMERecord(
         domainName: "example.com",
         ttl: 60,
-        dataLength: .determined(0),
         data: ""
       )
     ]

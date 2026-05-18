@@ -458,7 +458,6 @@ public struct NLDNSParser: Sendable {
         domainName: name,
         ttl: ttl,
         dataClass: dataClass,
-        dataLength: .determined(dataLength),
         data: data
       )
     case .ns:
@@ -466,7 +465,6 @@ public struct NLDNSParser: Sendable {
         domainName: name,
         ttl: ttl,
         dataClass: dataClass,
-        dataLength: .determined(dataLength),
         data: try parseDomainName(parseInput, consumed: &consumed)
       )
     case .cname:
@@ -474,7 +472,6 @@ public struct NLDNSParser: Sendable {
         domainName: name,
         ttl: ttl,
         dataClass: dataClass,
-        dataLength: .determined(dataLength),
         data: try parseDomainName(parseInput, consumed: &consumed)
       )
     case .soa:
@@ -482,7 +479,6 @@ public struct NLDNSParser: Sendable {
         domainName: name,
         ttl: ttl,
         dataClass: dataClass,
-        dataLength: .determined(dataLength),
         data: try parseSOARData(parseInput, consumed: &consumed)
       )
     case .ptr:
@@ -490,7 +486,6 @@ public struct NLDNSParser: Sendable {
         domainName: name,
         ttl: ttl,
         dataClass: dataClass,
-        dataLength: .determined(dataLength),
         data: try parseDomainName(parseInput, consumed: &consumed)
       )
     case .mx:
@@ -498,7 +493,6 @@ public struct NLDNSParser: Sendable {
         domainName: name,
         ttl: ttl,
         dataClass: dataClass,
-        dataLength: .determined(dataLength),
         data: try parseMXRData(parseInput, consumed: &consumed)
       )
     case .txt:
@@ -506,7 +500,6 @@ public struct NLDNSParser: Sendable {
         domainName: name,
         ttl: ttl,
         dataClass: dataClass,
-        dataLength: .determined(dataLength),
         data: try parseLengthPrefixedString(parseInput, consumed: &consumed)
       )
     case .aaaa:
@@ -521,7 +514,6 @@ public struct NLDNSParser: Sendable {
         domainName: name,
         ttl: ttl,
         dataClass: dataClass,
-        dataLength: .determined(dataLength),
         data: data
       )
     case .srv:
@@ -529,7 +521,6 @@ public struct NLDNSParser: Sendable {
         domainName: name,
         ttl: ttl,
         dataClass: dataClass,
-        dataLength: .determined(dataLength),
         data: try parseSRVRData(parseInput, consumed: &consumed)
       )
     case .naptr:
@@ -537,7 +528,6 @@ public struct NLDNSParser: Sendable {
         domainName: name,
         ttl: ttl,
         dataClass: dataClass,
-        dataLength: .determined(dataLength),
         data: try parseNAPTRRData(parseInput, consumed: &consumed)
       )
     default:

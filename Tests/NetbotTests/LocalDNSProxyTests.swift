@@ -135,7 +135,7 @@ struct LocalDNSProxyTests {
       questions: [Question(domainName: "example.com", queryType: .a)],
       answerRRs: [
         ARecord(
-          domainName: "example.com", ttl: 300, dataLength: .determined(4),
+          domainName: "example.com", ttl: 300,
           data: IPv4Address("198.18.0.3")!)
       ],
       authorityRRs: [],

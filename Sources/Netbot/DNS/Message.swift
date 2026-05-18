@@ -220,16 +220,6 @@ public typealias TYPE = QTYPE
 #endif
 public typealias CLASS = QCLASS
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
-public enum RDATALength: Hashable, Sendable {
-  case determined(UInt16)
-  case flexible
-}
-
 /// Resource record defines information about a dns resource record,
 /// including pertains domain name, type, class, ttl, data length and
 /// data.
@@ -256,9 +246,6 @@ public protocol ResourceRecord: Hashable, Sendable {
 
   /// The class of the data in the `RDATA` field.
   var dataClass: CLASS { get }
-
-  /// The length in octets of the `RDATA` field.
-  var dataLength: RDATALength { get }
 
   /// The content of the `RDATA` field. The format of this information
   /// varies according to the TYPE and CLASS of the resource record.
@@ -291,21 +278,17 @@ public struct ARecord: ResourceRecord {
 
   public var dataClass: CLASS
 
-  public var dataLength: RDATALength
-
   public var data: Data
 
   public init(
     domainName: String,
     ttl: Int32,
     dataClass: CLASS = .internet,
-    dataLength: RDATALength = .flexible,
     data: Data
   ) {
     self.domainName = domainName
     self.ttl = ttl
     self.dataClass = dataClass
-    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -330,21 +313,17 @@ public struct NSRecord: ResourceRecord {
 
   public var dataClass: CLASS
 
-  public var dataLength: RDATALength
-
   public var data: Data
 
   public init(
     domainName: String,
     ttl: Int32,
     dataClass: CLASS = .internet,
-    dataLength: RDATALength = .flexible,
     data: Data
   ) {
     self.domainName = domainName
     self.ttl = ttl
     self.dataClass = dataClass
-    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -372,21 +351,17 @@ public struct CNAMERecord: ResourceRecord {
 
   public var dataClass: CLASS
 
-  public var dataLength: RDATALength
-
   public var data: Data
 
   public init(
     domainName: String,
     ttl: Int32,
     dataClass: CLASS = .internet,
-    dataLength: RDATALength = .flexible,
     data: Data
   ) {
     self.domainName = domainName
     self.ttl = ttl
     self.dataClass = dataClass
-    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -460,21 +435,17 @@ public struct SOARecord: ResourceRecord {
 
   public var dataClass: CLASS
 
-  public var dataLength: RDATALength
-
   public var data: Data
 
   public init(
     domainName: String,
     ttl: Int32,
     dataClass: CLASS = .internet,
-    dataLength: RDATALength = .flexible,
     data: Data
   ) {
     self.domainName = domainName
     self.ttl = ttl
     self.dataClass = dataClass
-    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -503,21 +474,17 @@ public struct PTRRecord: ResourceRecord {
 
   public var dataClass: CLASS
 
-  public var dataLength: RDATALength
-
   public var data: Data
 
   public init(
     domainName: String,
     ttl: Int32,
     dataClass: CLASS = .internet,
-    dataLength: RDATALength = .flexible,
     data: Data
   ) {
     self.domainName = domainName
     self.ttl = ttl
     self.dataClass = dataClass
-    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -559,21 +526,17 @@ public struct MXRecord: ResourceRecord {
 
   public var dataClass: CLASS
 
-  public var dataLength: RDATALength
-
   public var data: Data
 
   public init(
     domainName: String,
     ttl: Int32,
     dataClass: CLASS = .internet,
-    dataLength: RDATALength = .flexible,
     data: Data
   ) {
     self.domainName = domainName
     self.ttl = ttl
     self.dataClass = dataClass
-    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -601,21 +564,17 @@ public struct TXTRecord: ResourceRecord {
 
   public var ttl: Int32
 
-  public var dataLength: RDATALength
-
   public var data: Data
 
   public init(
     domainName: String,
     ttl: Int32,
     dataClass: CLASS = .internet,
-    dataLength: RDATALength = .flexible,
     data: Data
   ) {
     self.domainName = domainName
     self.ttl = ttl
     self.dataClass = dataClass
-    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -645,21 +604,17 @@ public struct AAAARecord: ResourceRecord {
 
   public var dataClass: CLASS
 
-  public var dataLength: RDATALength
-
   public var data: Data
 
   public init(
     domainName: String,
     ttl: Int32,
     dataClass: CLASS = .internet,
-    dataLength: RDATALength = .flexible,
     data: Data
   ) {
     self.domainName = domainName
     self.ttl = ttl
     self.dataClass = dataClass
-    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -707,21 +662,17 @@ public struct SRVRecord: ResourceRecord {
 
   public var dataClass: CLASS
 
-  public var dataLength: RDATALength
-
   public var data: Data
 
   public init(
     domainName: String,
     ttl: Int32,
     dataClass: CLASS = .internet,
-    dataLength: RDATALength = .flexible,
     data: Data
   ) {
     self.domainName = domainName
     self.ttl = ttl
     self.dataClass = dataClass
-    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -790,21 +741,17 @@ public struct NAPTRRecord: ResourceRecord {
 
   public var dataClass: CLASS
 
-  public var dataLength: RDATALength
-
   public var data: Data
 
   public init(
     domainName: String,
     ttl: Int32,
     dataClass: CLASS = .internet,
-    dataLength: RDATALength = .flexible,
     data: Data
   ) {
     self.domainName = domainName
     self.ttl = ttl
     self.dataClass = dataClass
-    self.dataLength = dataLength
     self.data = data
   }
 }
@@ -827,8 +774,6 @@ public struct RAWRecord: ResourceRecord {
 
   public var dataClass: CLASS
 
-  public var dataLength: RDATALength
-
   public var data: ByteBuffer
 
   public init(
@@ -836,14 +781,12 @@ public struct RAWRecord: ResourceRecord {
     ttl: Int32,
     dataType: TYPE,
     dataClass: CLASS = .internet,
-    dataLength: RDATALength = .flexible,
     data: Data
   ) {
     self.domainName = domainName
     self.ttl = ttl
     self.dataType = dataType
     self.dataClass = dataClass
-    self.dataLength = dataLength
     self.data = data
   }
 }
