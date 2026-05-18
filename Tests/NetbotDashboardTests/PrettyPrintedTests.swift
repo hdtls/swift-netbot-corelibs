@@ -48,7 +48,7 @@ struct PrettyPrintedTests {
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test func protocolName() {
+  @Test func connectionProtocolName() {
     let model = Connection.Model()
     #expect(model.protocolName == "TCP")
 
@@ -58,7 +58,7 @@ struct PrettyPrintedTests {
     #expect(model.protocolName == "HTTPS")
 
     model.currentRequest?.httpRequest = .init(method: .get, scheme: nil, authority: nil, path: nil)
-    #expect(model.protocolName == "TCP")
+    #expect(model.protocolName == "HTTP")
   }
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

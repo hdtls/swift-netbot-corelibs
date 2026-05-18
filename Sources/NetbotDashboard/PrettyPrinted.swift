@@ -42,7 +42,7 @@ extension Connection.Model {
     guard let httpRequest = currentRequest?.httpRequest else {
       return "TCP"
     }
-    return (httpRequest.scheme ?? "TCP").uppercased()
+    return (httpRequest.scheme ?? "HTTP").uppercased()
   }
 
   /// A boolean value determinse whether the connection is in an active state.
