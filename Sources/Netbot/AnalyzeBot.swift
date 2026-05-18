@@ -166,7 +166,7 @@ public actor AnalyzeBot {
     public func setSystemProxyEnabled(_ enabled: Bool) async throws {
       do {
         try await PHT.setNWProtocolProxies(
-          processName: ProcessInfo.processInfo.processName,
+          processName: Foundation.ProcessInfo.processInfo.processName,
           options: enabled ? proxySettings : nil
         )
         if enabled, let proxySettings {

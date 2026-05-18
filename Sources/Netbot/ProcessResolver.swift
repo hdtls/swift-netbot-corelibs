@@ -34,14 +34,21 @@ final class ProcessResolver: ProcessReporting {
   @LockableTracked(accessors: .get)
   private var table: [Address: Address]
 
-  #if os(macOS)
-    private let assistantd = PrivilegeScope.shared
-  #endif
+  private let assistantd: any _ProcessInspector
 
   static let shared = ProcessResolver()
 
-  private init() {
+  private convenience init() {
+    #if os(macOS)
+      self.init(backing: PrivilegeScope.shared)
+    #else
+      self.init(backing: OperationUnsupportedProcessInspector())
+    #endif
+  }
+
+  init(backing: some _ProcessInspector) {
     _table = .init([:])
+    assistantd = backing
   }
 
   func store(_ address: Address, to newAddress: Address) {
@@ -51,41 +58,98 @@ final class ProcessResolver: ProcessReporting {
   }
 
   func processInfo(connection: Connection) async throws -> ProcessReport {
-    do {
-      let port = try self._table.withLock {
-        guard var sourceEndpoint = connection.establishmentReport?.sourceEndpoint else {
-          throw AnalyzeError.operationUnsupported
-        }
-
-        if let endpoint = $0[sourceEndpoint] {
-          sourceEndpoint = endpoint
-          connection._establishmentReport.withLock {
-            $0?.sourceEndpoint = sourceEndpoint
-          }
-        }
-
-        guard let port = sourceEndpoint.port, port <= Int(UInt16.max), port >= 0 else {
-          throw AnalyzeError.operationUnsupported
-        }
-        return port
+    let port = try self._table.withLock {
+      guard var sourceEndpoint = connection.establishmentReport?.sourceEndpoint else {
+        throw AnalyzeError.operationUnsupported
       }
 
-      #if os(macOS)
-        let processInfo = try await assistantd.processInfo(address: UInt16(port))
-        return ProcessReport(
-          processIdentifier: processInfo?.processIdentifier,
-          program: Program(
-            localizedName: processInfo?.processName ?? "Unknown",
-            bundleURL: processInfo?.processBundleURL,
-            executableURL: processInfo?.processExecutableURL,
-            iconTIFFRepresentation: processInfo?.processIconTIFFRepresentation
-          )
-        )
-      #else
-        return ProcessReport()
-      #endif
-    } catch {
-      return ProcessReport()
+      if let endpoint = $0[sourceEndpoint] {
+        sourceEndpoint = endpoint
+        connection._establishmentReport.withLock {
+          $0?.sourceEndpoint = sourceEndpoint
+        }
+      }
+
+      guard let port = sourceEndpoint.port, port <= Int(UInt16.max), port >= 0 else {
+        throw AnalyzeError.operationUnsupported
+      }
+      return port
     }
+
+    let processInfo = try await assistantd.processInfo(address: UInt16(port))
+    return ProcessReport(
+      processIdentifier: processInfo?.processIdentifier,
+      program: Program(
+        localizedName: processInfo?.processName ?? "Unknown",
+        bundleURL: processInfo?.processBundleURL,
+        executableURL: processInfo?.processExecutableURL,
+        iconTIFFRepresentation: processInfo?.processIconTIFFRepresentation
+      )
+    )
+  }
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+protocol _ProcessInspector: Sendable {
+
+  /// Request process info with socket port.
+  #if os(macOS)
+    func processInfo(address: UInt16) async throws -> NetbotXPC.ProcessInfo?
+  #else
+    func processInfo(address: UInt16) async throws -> ProcessInfo?
+  #endif
+}
+
+#if os(macOS)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  extension PrivilegeScope: _ProcessInspector {}
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  typealias ProcessInfo = NetbotXPC.ProcessInfo
+#else
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  struct ProcessInfo: Hashable, Codable {
+    /// Indicates the name of the application.
+    /// This is dependent on the current localization of the referenced app, and is suitable for presentation to the user.
+    var processName: String?
+
+    /// Indicates the URL to the application's bundle, or nil if the application does not have a bundle.
+    var processBundleURL: URL?
+
+    /// Indicates the URL to the application's executable.
+    var processExecutableURL: URL?
+
+    /// Indicates the process identifier (pid) of the application.
+    var processIdentifier: Int32?
+
+    /// Indicates the icon TIFF representation data of the application.
+    var processIconTIFFRepresentation: Data?
+  }
+#endif
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+struct OperationUnsupportedProcessInspector: _ProcessInspector {
+  func processInfo(address: UInt16) async throws -> ProcessInfo? {
+    throw AnalyzeError.operationUnsupported
   }
 }
