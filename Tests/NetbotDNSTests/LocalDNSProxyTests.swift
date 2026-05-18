@@ -65,7 +65,7 @@ struct LocalDNSProxyTests {
               headerFields: .init(
                 transactionID: message.headerFields.transactionID,
                 flags: .init(rawValue: 0x8100),
-                qestionCount: 1,
+                questionCount: 1,
                 answerCount: UInt16(response.count),
                 authorityCount: 0,
                 additionCount: 0
@@ -815,7 +815,7 @@ struct LocalDNSProxyTests {
         transactionID: 0x1165,
         flags: .init(
           response: false,
-          opcode: .query,
+          operationCode: .query,
           authoritative: false,
           truncated: false,
           recursionDesired: false,
@@ -824,7 +824,7 @@ struct LocalDNSProxyTests {
           checkingDisabled: true,
           responseCode: .noError
         ),
-        qestionCount: 1,
+        questionCount: 1,
         answerCount: 1,
         authorityCount: 0,
         additionCount: 0
@@ -846,7 +846,7 @@ struct LocalDNSProxyTests {
       )
     )
 
-    #expect(response.headerFields.qestionCount == expected.headerFields.qestionCount)
+    #expect(response.headerFields.questionCount == expected.headerFields.questionCount)
     #expect(response.headerFields.answerCount == expected.headerFields.answerCount)
     #expect(response.questions == expected.questions)
     #expect(response.answerRRs as! [ARecord] == expected.answerRRs as! [ARecord])
@@ -878,7 +878,7 @@ struct LocalDNSProxyTests {
         transactionID: 0x1165,
         flags: .init(
           response: false,
-          opcode: .query,
+          operationCode: .query,
           authoritative: false,
           truncated: false,
           recursionDesired: false,
@@ -887,7 +887,7 @@ struct LocalDNSProxyTests {
           checkingDisabled: true,
           responseCode: .noError
         ),
-        qestionCount: 1,
+        questionCount: 1,
         answerCount: 1,
         authorityCount: 0,
         additionCount: 0
@@ -909,7 +909,7 @@ struct LocalDNSProxyTests {
       )
     )
 
-    #expect(response.headerFields.qestionCount == expected.headerFields.qestionCount)
+    #expect(response.headerFields.questionCount == expected.headerFields.questionCount)
     #expect(response.headerFields.answerCount == expected.headerFields.answerCount)
     #expect(response.questions == expected.questions)
     #expect(response.answerRRs as! [AAAARecord] == expected.answerRRs as! [AAAARecord])
@@ -941,7 +941,7 @@ struct LocalDNSProxyTests {
         transactionID: 0x1165,
         flags: .init(
           response: false,
-          opcode: .query,
+          operationCode: .query,
           authoritative: false,
           truncated: false,
           recursionDesired: false,
@@ -950,7 +950,7 @@ struct LocalDNSProxyTests {
           checkingDisabled: true,
           responseCode: .noError
         ),
-        qestionCount: 1,
+        questionCount: 1,
         answerCount: 1,
         authorityCount: 0,
         additionCount: 0
@@ -968,7 +968,7 @@ struct LocalDNSProxyTests {
       )
     )
 
-    #expect(response.headerFields.qestionCount == expected.headerFields.qestionCount)
+    #expect(response.headerFields.questionCount == expected.headerFields.questionCount)
     #expect(response.headerFields.answerCount == expected.headerFields.answerCount)
     #expect(response.questions == expected.questions)
     #expect(response.answerRRs as! [CNAMERecord] == expected.answerRRs as! [CNAMERecord])

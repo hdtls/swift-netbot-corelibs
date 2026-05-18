@@ -950,7 +950,7 @@ public struct Message: Sendable {
         public static let dso = OperationCode(rawValue: 6)
       }
 
-      public var opcode: OperationCode {
+      public var operationCode: OperationCode {
         get { OperationCode(rawValue: UInt8((rawValue & 0x7800) >> 11)) }
         set {
           rawValue = (rawValue & ~0x7800) | ((UInt16(newValue.rawValue) << 11) & 0x7800)
@@ -1021,7 +1021,7 @@ public struct Message: Sendable {
 
       public init(
         response: Bool,
-        opcode: OperationCode,
+        operationCode: OperationCode,
         authoritative: Bool,
         truncated: Bool,
         recursionDesired: Bool,
@@ -1032,7 +1032,7 @@ public struct Message: Sendable {
       ) {
         self.init(rawValue: 0)
         self.isResponse = response
-        self.opcode = opcode
+        self.operationCode = operationCode
         self.isAuthoritative = authoritative
         self.isTruncated = truncated
         self.recursionDesired = recursionDesired
@@ -1047,7 +1047,7 @@ public struct Message: Sendable {
           self,
           children: [
             "QR": isResponse,
-            "Opcode": opcode,
+            "Opcode": operationCode,
             "AA (Authoritative)": isAuthoritative,
             "TC (Truncated)": isTruncated,
             "RD (Recursion Desired)": recursionDesired,
@@ -1066,7 +1066,7 @@ public struct Message: Sendable {
 
     public var flags: Flags
 
-    public var qestionCount: UInt16
+    public var questionCount: UInt16
 
     public var answerCount: UInt16
 
@@ -1077,14 +1077,14 @@ public struct Message: Sendable {
     public init(
       transactionID: UInt16,
       flags: Flags,
-      qestionCount: UInt16,
+      questionCount: UInt16,
       answerCount: UInt16,
       authorityCount: UInt16,
       additionCount: UInt16
     ) {
       self.transactionID = transactionID
       self.flags = flags
-      self.qestionCount = qestionCount
+      self.questionCount = questionCount
       self.answerCount = answerCount
       self.authorityCount = authorityCount
       self.additionCount = additionCount
@@ -1109,7 +1109,7 @@ public struct Message: Sendable {
     additionalRRs: [any ResourceRecord] = []
   ) {
     self.headerFields = headerFields
-    precondition(headerFields.qestionCount == questions.count)
+    precondition(headerFields.questionCount == questions.count)
     precondition(headerFields.answerCount == answerRRs.count)
     precondition(headerFields.authorityCount == authorityRRs.count)
     precondition(headerFields.additionCount == additionalRRs.count)
@@ -1139,7 +1139,7 @@ public struct Message: Sendable {
         transactionID: transactionID,
         flags: .init(
           response: response,
-          opcode: operationCode,
+          operationCode: operationCode,
           authoritative: authoritative,
           truncated: truncated,
           recursionDesired: recursionDesired,
@@ -1148,7 +1148,7 @@ public struct Message: Sendable {
           checkingDisabled: false,
           responseCode: responseCode
         ),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: UInt16(authorityRRs.count),
         additionCount: UInt16(additionalRRs.count)

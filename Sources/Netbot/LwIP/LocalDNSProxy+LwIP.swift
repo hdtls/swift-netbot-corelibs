@@ -117,7 +117,7 @@ extension LocalDNSProxy {
             // message format, so we can modify query message to fake response message.
             message.headerFields.flags = .init(
               response: true,
-              opcode: .query,
+              operationCode: .query,
               authoritative: false,
               truncated: false,
               recursionDesired: false,

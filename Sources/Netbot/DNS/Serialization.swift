@@ -38,7 +38,7 @@ public struct NLDNSParser: Sendable {
     let headerFields = try parseHeaderFields(parseInput, consumed: &consumed)
 
     var questions: [Question] = []
-    var numberOfLoops = headerFields.qestionCount
+    var numberOfLoops = headerFields.questionCount
     while numberOfLoops > 0 {
       let question = try parseQuestion(parseInput, consumed: &consumed)
       questions.append(question)
@@ -228,7 +228,7 @@ public struct NLDNSParser: Sendable {
     let headerFields = Message.HeaderFields(
       transactionID: id,
       flags: .init(rawValue: flags),
-      qestionCount: qdCount,
+      questionCount: qdCount,
       answerCount: anCount,
       authorityCount: nsCount,
       additionCount: arCount
@@ -675,7 +675,7 @@ extension Message {
 
       serializedBytes._append(headerFields.transactionID)
       serializedBytes._append(headerFields.flags.rawValue)
-      serializedBytes._append(headerFields.qestionCount)
+      serializedBytes._append(headerFields.questionCount)
       serializedBytes._append(headerFields.answerCount)
       serializedBytes._append(headerFields.authorityCount)
       serializedBytes._append(headerFields.additionCount)

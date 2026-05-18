@@ -69,7 +69,7 @@ struct LocalDNSProxyTests {
       headerFields: .init(
         transactionID: 0,
         flags: .init(rawValue: 0x8180),
-        qestionCount: 1,
+        questionCount: 1,
         answerCount: 0,
         authorityCount: 0,
         additionCount: 0
@@ -127,7 +127,7 @@ struct LocalDNSProxyTests {
       headerFields: .init(
         transactionID: 0,
         flags: .init(rawValue: 0x8000),
-        qestionCount: 1,
+        questionCount: 1,
         answerCount: 1,
         authorityCount: 0,
         additionCount: 0

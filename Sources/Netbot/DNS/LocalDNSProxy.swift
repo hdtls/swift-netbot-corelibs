@@ -313,7 +313,7 @@ import SynchronizationExtras
     }
 
     // Standard DNS servers handle only query operations.
-    guard message.headerFields.flags.opcode == .query else {
+    guard message.headerFields.flags.operationCode == .query else {
       return Message(
         transactionID: message.headerFields.transactionID,
         response: true,
@@ -346,7 +346,7 @@ import SynchronizationExtras
           headerFields: .init(
             transactionID: message.headerFields.transactionID,
             flags: .init(rawValue: 0x8180),
-            qestionCount: UInt16(message.questions.count),
+            questionCount: UInt16(message.questions.count),
             answerCount: 1,
             authorityCount: 0,
             additionCount: 0
@@ -438,7 +438,7 @@ import SynchronizationExtras
       headerFields: .init(
         transactionID: UInt16.random(in: 0...UInt16.max),
         flags: .init(rawValue: 0x0100),
-        qestionCount: 1,
+        questionCount: 1,
         answerCount: 0,
         authorityCount: 0,
         additionCount: 0

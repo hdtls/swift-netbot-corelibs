@@ -267,7 +267,7 @@ struct MessageTests {
     let headerFields = Message.HeaderFields(
       transactionID: 0x1165,
       flags: .init(rawValue: 0x8180),
-      qestionCount: UInt16(questions.count),
+      questionCount: UInt16(questions.count),
       answerCount: UInt16(answerRRs.count),
       authorityCount: 0,
       additionCount: 0
@@ -277,7 +277,7 @@ struct MessageTests {
       headerFields: .init(
         transactionID: 0x1165,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -317,7 +317,7 @@ struct MessageTests {
     let headerFields = Message.HeaderFields(
       transactionID: 0x1165,
       flags: .init(rawValue: 0x8180),
-      qestionCount: UInt16(questions.count),
+      questionCount: UInt16(questions.count),
       answerCount: UInt16(answerRRs.count),
       authorityCount: 0,
       additionCount: 0
@@ -350,14 +350,14 @@ struct MessageTests {
     let fields = Message.HeaderFields(
       transactionID: 0,
       flags: .init(rawValue: 0x8181),
-      qestionCount: 0,
+      questionCount: 0,
       answerCount: 0,
       authorityCount: 0,
       additionCount: 0
     )
     #expect(fields.transactionID == 0)
     #expect(fields.flags == .init(rawValue: 0x8181))
-    #expect(fields.qestionCount == 0)
+    #expect(fields.questionCount == 0)
     #expect(fields.answerCount == 0)
     #expect(fields.authorityCount == 0)
     #expect(fields.additionCount == 0)
@@ -371,7 +371,7 @@ struct MessageTests {
   @Test func messageHeaderFlagsInitializer() {
     var flags = Message.HeaderFields.Flags(rawValue: 0x8180)
     #expect(flags.isResponse)
-    #expect(flags.opcode == .query)
+    #expect(flags.operationCode == .query)
     #expect(!flags.isAuthoritative)
     #expect(!flags.isTruncated)
     #expect(flags.recursionDesired)
@@ -382,7 +382,7 @@ struct MessageTests {
 
     flags = Message.HeaderFields.Flags(
       response: true,
-      opcode: .query,
+      operationCode: .query,
       authoritative: false,
       truncated: false,
       recursionDesired: true,
@@ -393,7 +393,7 @@ struct MessageTests {
     )
     #expect(flags.rawValue == 0x8180)
     #expect(flags.isResponse)
-    #expect(flags.opcode == .query)
+    #expect(flags.operationCode == .query)
     #expect(!flags.isAuthoritative)
     #expect(!flags.isTruncated)
     #expect(flags.recursionDesired)

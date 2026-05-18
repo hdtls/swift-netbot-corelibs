@@ -50,7 +50,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0x1165,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -99,7 +99,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0x1165,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -146,7 +146,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0x87da,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -193,7 +193,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0x87da,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -243,7 +243,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0xa819,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -292,7 +292,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0xa819,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -345,7 +345,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0xfb68,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -401,7 +401,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0xfb68,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -446,7 +446,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0xf2b9,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -494,7 +494,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0xf2b9,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -569,7 +569,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0xb441,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -642,7 +642,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0xb441,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -699,7 +699,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0x0ec5,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -757,7 +757,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0x0ec5,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -820,7 +820,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0x6bc8,
         flags: .init(rawValue: 0x8180),
-        qestionCount: 1,
+        questionCount: 1,
         answerCount: 4,
         authorityCount: 0,
         additionCount: 0
@@ -887,7 +887,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0x6bc8,
         flags: .init(rawValue: 0x8180),
-        qestionCount: 1,
+        questionCount: 1,
         answerCount: 4,
         authorityCount: 0,
         additionCount: 0
@@ -932,7 +932,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0xde83,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -980,7 +980,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0xde83,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -1027,7 +1027,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0xaaaa,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
@@ -1078,7 +1078,7 @@ struct SerializationTests {
       headerFields: .init(
         transactionID: 0xaaaa,
         flags: .init(rawValue: 0x8180),
-        qestionCount: UInt16(questions.count),
+        questionCount: UInt16(questions.count),
         answerCount: UInt16(answerRRs.count),
         authorityCount: 0,
         additionCount: 0
