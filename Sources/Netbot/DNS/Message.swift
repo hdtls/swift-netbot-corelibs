@@ -157,55 +157,6 @@ extension QTYPE {
   public static let any = QTYPE(rawValue: 255)
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
-extension QTYPE: CustomDebugStringConvertible {
-
-  public var debugDescription: String {
-    switch self {
-    case .a: return "A"
-    case .ns: return "NS"
-    case .md: return "MD"
-    case .mf: return "MF"
-    case .cname: return "CNAME"
-    case .soa: return "SOA"
-    case .mb: return "MB"
-    case .mg: return "MG"
-    case .mr: return "MR"
-    case .null: return "NULL"
-    case .wks: return "WKS"
-    case .ptr: return "PTR"
-    case .hinfo: return "HINFO"
-    case .minfo: return "MINFO"
-    case .mx: return "MX"
-    case .txt: return "TXT"
-    case .aaaa: return "AAAA"
-    case .srv: return "SRV"
-    case .naptr: return "NAPTR"
-    case .axfr: return "AXFR"
-    case .opt: return "OPT"
-    case .ds: return "DS"
-    case .rrsig: return "RRSIG"
-    case .nsec: return "NSEC"
-    case .nsec3: return "NSEC3"
-    case .nsec3Param: return "NSEC3PARAM"
-    case .tlsa: return "TLSA"
-    case .smimea: return "S/MIME cert association"
-    case .openPGPKey: return "OPENPGPKEY"
-    case .svcb: return "SVCB"
-    case .https: return "HTTPS"
-    case .ixfr: return "IXFR"
-    case .mailb: return "MAILB"
-    case .maila: return "MAILA"
-    case .any: return "*"
-    default: return "RAW(\(rawValue))"
-    }
-  }
-}
-
 /// `QCLASS` fields appear in the question section of a query, define the class of the question.
 #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   @available(SwiftStdlib 5.9, *)
@@ -247,26 +198,6 @@ extension QCLASS {
 
   /// QCLASS * (any).
   public static let any = QCLASS(rawValue: 255)
-}
-
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
-extension QCLASS: CustomDebugStringConvertible {
-
-  public var debugDescription: String {
-    switch self {
-    case .internet: return "IN"
-    case .csnet: return "CSNET"
-    case .chaos: return "CH"
-    case .hesiod: return "HS"
-    case .none: return "QCLASS NONE"
-    case .any: return "QCLASS * (Any)"
-    default: return "RAW(\(rawValue))"
-    }
-  }
 }
 
 /// `TYPE` fields are used in resource records.
@@ -997,23 +928,9 @@ public struct Message: Sendable {
         }
       }
 
-      public struct OperationCode: RawRepresentable, Hashable, Sendable,
-        CustomDebugStringConvertible
-      {
+      public struct OperationCode: RawRepresentable, Hashable, Sendable {
 
         public var rawValue: UInt8
-
-        public var debugDescription: String {
-          switch self {
-          case .query: return "Query"
-          case .inverseQuery: return "Inverse Query"
-          case .status: return "Status"
-          case .notify: return "Notify"
-          case .update: return "Update"
-          case .dso: return "DNS Stateful Operations (DSO)"
-          default: return "RAW(\(rawValue))"
-          }
-        }
 
         public init(rawValue: UInt8) {
           self.rawValue = rawValue
@@ -1070,22 +987,9 @@ public struct Message: Sendable {
         set { if newValue { rawValue |= 0x0010 } else { rawValue &= ~0x0010 } }
       }
 
-      public struct ResponseCode: RawRepresentable, Hashable, Sendable, CustomDebugStringConvertible
-      {
+      public struct ResponseCode: RawRepresentable, Hashable, Sendable {
 
         public var rawValue: UInt8
-
-        public var debugDescription: String {
-          switch self {
-          case .noError: return "No Error"
-          case .formErr: return "Format Error"
-          case .servFail: return "Server Failure"
-          case .refused: return "Query Refused"
-          case .notAuth: return "Not Authorized"
-          case .notZone: return "Name not contained in zone"
-          default: return "RAW(\(rawValue))"
-          }
-        }
 
         public init(rawValue: UInt8) {
           self.rawValue = rawValue
