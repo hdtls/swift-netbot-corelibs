@@ -45,7 +45,7 @@ extension ProfileAssistant {
     final class Permitted: Sendable {
       @LockableTracked fileprivate var isPermitted: Bool
       fileprivate init() {
-        self._isPermitted = .init(false)
+        self.$isPermitted = .init(false)
       }
 
       func enter() {

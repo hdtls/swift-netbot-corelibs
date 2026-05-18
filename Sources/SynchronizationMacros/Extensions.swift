@@ -15,12 +15,8 @@ import SwiftSyntax
 
 extension VariableDeclSyntax {
 
-  var identifierPattern: IdentifierPatternSyntax? {
-    bindings.first?.pattern.as(IdentifierPatternSyntax.self)
-  }
-
   var identifier: TokenSyntax? {
-    identifierPattern?.identifier
+    bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier
   }
 
   var accessLevel: TokenSyntax? {
@@ -105,37 +101,5 @@ extension VariableDeclSyntax {
       }
     }
     return false
-  }
-
-  var lockableTrackedMacroArguments: LabeledExprListSyntax? {
-    attributes.compactMap {
-      guard case .attribute(let attr) = $0 else {
-        return Optional<LabeledExprListSyntax>.none
-      }
-      guard
-        attr.attributeName
-          .tokens(viewMode: .all)
-          .map({ $0.tokenKind }) == [.identifier(LockableMacro.lockableTracked)]
-      else {
-        return Optional<LabeledExprListSyntax>.none
-      }
-      return attr.arguments?.as(LabeledExprListSyntax.self)
-    }.first
-  }
-}
-
-extension FunctionCallExprSyntax {
-
-  var parsedArguments: [(label: TokenSyntax?, value: TokenSyntax?)] {
-    arguments.compactMap {
-      guard let label = $0.label,
-        let value = $0.expression.as(
-          MemberAccessExprSyntax.self
-        )?.declName.baseName
-      else {
-        return nil
-      }
-      return (label, value)
-    }
   }
 }

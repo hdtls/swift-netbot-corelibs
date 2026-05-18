@@ -125,7 +125,7 @@ public macro Lockable() = #externalMacro(module: "SynchronizationMacros", type: 
   #endif
 #endif
 @attached(accessor, names: named(get), named(set))
-@attached(peer, names: prefixed(_))
+@attached(peer, names: prefixed(`$`))
 public macro LockableTracked(
   accessLevel: Lockable.AccessLevel = .private,
   accessors: Lockable.Accessor...

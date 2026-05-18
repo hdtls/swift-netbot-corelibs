@@ -55,11 +55,11 @@ public protocol RulesEngine: Sendable {
 
   init(logger: Logger) {
     self.logger = logger
-    self._forwardingRules = .init([])
+    self.$forwardingRules = .init([])
   }
 
   func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) {
-    _forwardingRules.withLock { $0 = forwardingRules }
+    $forwardingRules.withLock { $0 = forwardingRules }
 
     // ForwardingRules has changed, we should reset cache.
     cache.removeAllValues()
@@ -87,7 +87,7 @@ public protocol RulesEngine: Sendable {
       let task = Task<ForwardingReport, Never> {
         var savedForwardingRule: (any ForwardingRule)?
         var finalForwardingRule: any FinalForwardingRule = _FinalForwardingRule()
-        let forwardingRules = _forwardingRules.withLock { $0 }
+        let forwardingRules = $forwardingRules.withLock { $0 }
         for forwardingRule in forwardingRules {
           let forwardingRule = forwardingRule.asForwardingRule()
 

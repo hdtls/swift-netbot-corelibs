@@ -180,7 +180,7 @@ extension Connection {
             do {
               let resolutions: [DNSResolutionReport.Resolution] = try resolution.get()
               guard !resolutions.isEmpty else { continue }
-              _dnsResolutionReport.withLock {
+              $dnsResolutionReport.withLock {
                 if $0 == nil {
                   $0 = DNSResolutionReport(duration: .zero, resolutions: resolutions)
                 } else {
@@ -195,7 +195,7 @@ extension Connection {
 
           if let lastError {
             // Failed when both DNS resolutions is empty and an error is occured.
-            if _dnsResolutionReport.withLock({ $0?.resolutions.isEmpty ?? true }) {
+            if $dnsResolutionReport.withLock({ $0?.resolutions.isEmpty ?? true }) {
               promise.fail(lastError)
             }
           }
@@ -270,7 +270,7 @@ extension Connection {
       }
 
       if fallback is any ProxiableForwardProtocol {
-        _establishmentReport.withLock {
+        $establishmentReport.withLock {
           assert($0 != nil)
           $0?.usedProxy = true
         }
@@ -297,7 +297,7 @@ extension Connection {
       } while !state.isFinished
 
       // Reset the data transfer report metrics and publish changes.
-      _dataTransferReport.withLock { $0?.pathReport = .init() }
+      $dataTransferReport.withLock { $0?.pathReport = .init() }
       await publisher.send(self)
     }
   }

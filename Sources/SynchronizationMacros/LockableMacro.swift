@@ -17,7 +17,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 public struct LockableMacro: Sendable {
-  static let prefixed = "_"
+  static let prefixed = "$"
   static let lockable = "Lockable"
   static let lockableTracked = "LockableTracked"
   static let lockableIgnored = "LockableIgnored"

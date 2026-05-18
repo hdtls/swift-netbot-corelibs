@@ -54,18 +54,18 @@ import Testing
         class Tracked {
           var p1: String {
             get {
-              self._p1.withLock {
+              self.$p1.withLock {
                 $0
               }
             }
             set {
-              self._p1.withLock {
+              self.$p1.withLock {
                 $0 = newValue
               }
             }
           }
 
-          private let _p1: Mutex<String>
+          private let $p1: Mutex<String>
         }
         """
       assertMacroExpansion(
@@ -106,36 +106,36 @@ import Testing
         class Tracked {
           var p1: Int {
             get {
-              self._p1.withLock {
+              self.$p1.withLock {
                 $0
               }
             }
           }
 
-          private let _p1: Mutex<Int>
+          private let $p1: Mutex<Int>
           var p2: Int {
             get {
-              self._p2.withLock {
+              self.$p2.withLock {
                 $0
               }
             }
           }
 
-          private let _p2: Mutex<Int>
+          private let $p2: Mutex<Int>
           var p3: Int {
             get {
-              self._p3.withLock {
+              self.$p3.withLock {
                 $0
               }
             }
             set {
-              self._p3.withLock {
+              self.$p3.withLock {
                 $0 = newValue
               }
             }
           }
 
-          private let _p3: Mutex<Int>
+          private let $p3: Mutex<Int>
         }
         """
       assertMacroExpansion(
@@ -179,88 +179,88 @@ import Testing
         class Tracked {
           var p1: Int {
             get {
-              self._p1.withLock {
+              self.$p1.withLock {
                 $0
               }
             }
             set {
-              self._p1.withLock {
+              self.$p1.withLock {
                 $0 = newValue
               }
             }
           }
 
-          open let _p1: Mutex<Int>
+          open let $p1: Mutex<Int>
           var p2: Int {
             get {
-              self._p2.withLock {
+              self.$p2.withLock {
                 $0
               }
             }
             set {
-              self._p2.withLock {
+              self.$p2.withLock {
                 $0 = newValue
               }
             }
           }
 
-          public let _p2: Mutex<Int>
+          public let $p2: Mutex<Int>
           var p3: Int {
             get {
-              self._p3.withLock {
+              self.$p3.withLock {
                 $0
               }
             }
             set {
-              self._p3.withLock {
+              self.$p3.withLock {
                 $0 = newValue
               }
             }
           }
 
-          package let _p3: Mutex<Int>
+          package let $p3: Mutex<Int>
           var p4: Int {
             get {
-              self._p4.withLock {
+              self.$p4.withLock {
                 $0
               }
             }
             set {
-              self._p4.withLock {
+              self.$p4.withLock {
                 $0 = newValue
               }
             }
           }
 
-          internal let _p4: Mutex<Int>
+          internal let $p4: Mutex<Int>
           var p5: Int {
             get {
-              self._p5.withLock {
+              self.$p5.withLock {
                 $0
               }
             }
             set {
-              self._p5.withLock {
+              self.$p5.withLock {
                 $0 = newValue
               }
             }
           }
 
-          fileprivate let _p5: Mutex<Int>
+          fileprivate let $p5: Mutex<Int>
           var p6: Int {
             get {
-              self._p6.withLock {
+              self.$p6.withLock {
                 $0
               }
             }
             set {
-              self._p6.withLock {
+              self.$p6.withLock {
                 $0 = newValue
               }
             }
           }
 
-          private let _p6: Mutex<Int>
+          private let $p6: Mutex<Int>
         }
         """
       assertMacroExpansion(
@@ -337,32 +337,32 @@ import Testing
         class Contact {
           var givenName: String {
             get {
-              self._givenName.withLock {
+              self.$givenName.withLock {
                 $0
               }
             }
             set {
-              self._givenName.withLock {
+              self.$givenName.withLock {
                 $0 = newValue
               }
             }
           }
 
-          private let _givenName: Mutex<String>
+          private let $givenName: Mutex<String>
           var familyName: String {
             get {
-              self._familyName.withLock {
+              self.$familyName.withLock {
                 $0
               }
             }
             set {
-              self._familyName.withLock {
+              self.$familyName.withLock {
                 $0 = newValue
               }
             }
           }
 
-          private let _familyName: Mutex<String>
+          private let $familyName: Mutex<String>
         }
         """
       assertMacroExpansion(
@@ -402,18 +402,18 @@ import Testing
         class Contact {
           var givenName: String {
             get {
-              self._givenName.withLock {
+              self.$givenName.withLock {
                 $0
               }
             }
             set {
-              self._givenName.withLock {
+              self.$givenName.withLock {
                 $0 = newValue
               }
             }
           }
 
-          private let _givenName: Mutex<String>
+          private let $givenName: Mutex<String>
           var familyName: String
         }
         """
@@ -454,32 +454,32 @@ import Testing
         class Contact {
           var givenName: String {
             get {
-              self._givenName.withLock {
+              self.$givenName.withLock {
                 $0
               }
             }
             set {
-              self._givenName.withLock {
+              self.$givenName.withLock {
                 $0 = newValue
               }
             }
           }
 
-          private let _givenName: Mutex<String>
+          private let $givenName: Mutex<String>
           var familyName: String {
             get {
-              self._familyName.withLock {
+              self.$familyName.withLock {
                 $0
               }
             }
             set {
-              self._familyName.withLock {
+              self.$familyName.withLock {
                 $0 = newValue
               }
             }
           }
 
-          private let _familyName: Mutex<String>
+          private let $familyName: Mutex<String>
         }
         """
       assertMacroExpansion(
@@ -519,27 +519,27 @@ import Testing
         class Tracked {
           var p1: Int {
             get {
-              self._p1.withLock {
+              self.$p1.withLock {
                 $0
               }
             }
           }
 
-          private let _p1: Mutex<Int>
+          private let $p1: Mutex<Int>
           var p2: Int {
             get {
-              self._p2.withLock {
+              self.$p2.withLock {
                 $0
               }
             }
             set {
-              self._p2.withLock {
+              self.$p2.withLock {
                 $0 = newValue
               }
             }
           }
 
-          private let _p2: Mutex<Int>
+          private let $p2: Mutex<Int>
         }
         """
       assertMacroExpansion(
@@ -578,18 +578,18 @@ import Testing
         class Locked {
           var p1: Int {
             get {
-              self._p1.withLock {
+              self.$p1.withLock {
                 $0
               }
             }
             set {
-              self._p1.withLock {
+              self.$p1.withLock {
                 $0 = newValue
               }
             }
           }
 
-          private let _p1: Mutex<Int>
+          private let $p1: Mutex<Int>
         }
         """
       assertMacroExpansion(

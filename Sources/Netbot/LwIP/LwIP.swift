@@ -78,7 +78,7 @@
       self.dns = dns
       self.listener = LwIPListener(eventLoop: eventLoop, group: group)
       self.quiescing = ServerQuiescingHelper(group: group)
-      self._packetsReadLoop = .init(nil)
+      self.$packetsReadLoop = .init(nil)
       self.device = UnsafeMutablePointer.allocate(capacity: MemoryLayout<netif>.size)
       self.device.initialize(to: .init())
 

@@ -47,25 +47,25 @@ final class ProcessResolver: ProcessReporting {
   }
 
   init(backing: some _ProcessInspector) {
-    _table = .init([:])
+    $table = .init([:])
     assistantd = backing
   }
 
   func store(_ address: Address, to newAddress: Address) {
-    self._table.withLock {
+    self.$table.withLock {
       $0[address] = newAddress
     }
   }
 
   func processInfo(connection: Connection) async throws -> ProcessReport {
-    let port = try self._table.withLock {
+    let port = try self.$table.withLock {
       guard var sourceEndpoint = connection.establishmentReport?.sourceEndpoint else {
         throw AnalyzeError.operationUnsupported
       }
 
       if let endpoint = $0[sourceEndpoint] {
         sourceEndpoint = endpoint
-        connection._establishmentReport.withLock {
+        connection.$establishmentReport.withLock {
           $0?.sourceEndpoint = sourceEndpoint
         }
       }

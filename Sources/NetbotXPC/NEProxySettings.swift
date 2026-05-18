@@ -52,29 +52,29 @@
     }
 
     public override init() {
-      self._httpEnabled = .init(false)
-      self._httpServer = .init(nil)
-      self._httpsEnabled = .init(false)
-      self._httpsServer = .init(nil)
-      self._socksEnabled = .init(false)
-      self._socksServer = .init(nil)
-      self._excludeSimpleHostnames = .init(false)
-      self._exceptionList = .init(nil)
+      self.$httpEnabled = .init(false)
+      self.$httpServer = .init(nil)
+      self.$httpsEnabled = .init(false)
+      self.$httpsServer = .init(nil)
+      self.$socksEnabled = .init(false)
+      self.$socksServer = .init(nil)
+      self.$excludeSimpleHostnames = .init(false)
+      self.$exceptionList = .init(nil)
     }
 
     public required init?(coder: NSCoder) {
-      self._httpEnabled = .init(coder.decodeBool(forKey: CodingKeys.httpEnabled.rawValue))
-      self._httpServer = .init(
+      self.$httpEnabled = .init(coder.decodeBool(forKey: CodingKeys.httpEnabled.rawValue))
+      self.$httpServer = .init(
         coder.decodeObject(of: NEProxyServer.self, forKey: CodingKeys.httpServer.rawValue))
-      self._httpsEnabled = .init(coder.decodeBool(forKey: CodingKeys.httpsEnabled.rawValue))
-      self._httpsServer = .init(
+      self.$httpsEnabled = .init(coder.decodeBool(forKey: CodingKeys.httpsEnabled.rawValue))
+      self.$httpsServer = .init(
         coder.decodeObject(of: NEProxyServer.self, forKey: CodingKeys.httpsServer.rawValue))
-      self._socksEnabled = .init(coder.decodeBool(forKey: CodingKeys.socksEnabled.rawValue))
-      self._socksServer = .init(
+      self.$socksEnabled = .init(coder.decodeBool(forKey: CodingKeys.socksEnabled.rawValue))
+      self.$socksServer = .init(
         coder.decodeObject(of: NEProxyServer.self, forKey: CodingKeys.socksServer.rawValue))
-      self._excludeSimpleHostnames = .init(
+      self.$excludeSimpleHostnames = .init(
         coder.decodeBool(forKey: CodingKeys.excludeSimpleHostnames.rawValue))
-      self._exceptionList = .init(
+      self.$exceptionList = .init(
         coder.decodeArrayOfObjects(
           ofClasses: [NSString.self], forKey: CodingKeys.exceptionList.rawValue) as? [String])
     }

@@ -63,24 +63,24 @@ final class InMemoryHTTPCapature<HeadT: Equatable & Sendable>: ChannelInboundHan
           secure: connection.tls,
           splitCookie: false
         )
-        connection._currentRequest.withLock {
+        connection.$currentRequest.withLock {
           $0?.httpRequest = partialResult
         }
       } else {
         let partialResult = try? HTTPResponse(head as! HTTPResponseHead)
-        connection._response.withLock {
+        connection.$response.withLock {
           $0?.httpResponse = partialResult
         }
       }
     case .body(let partialResult):
       if HeadT.self == HTTPRequestHead.self {
-        connection._currentRequest.withLock {
+        connection.$currentRequest.withLock {
           let body = $0?.body ?? .init()
           $0?.body = body
           $0?.body?.append(contentsOf: Array(buffer: partialResult))
         }
       } else {
-        connection._response.withLock {
+        connection.$response.withLock {
           let body = $0?.body ?? .init()
           $0?.body = body
           $0?.body?.append(contentsOf: Array(buffer: partialResult))
@@ -90,11 +90,11 @@ final class InMemoryHTTPCapature<HeadT: Equatable & Sendable>: ChannelInboundHan
       guard let headers else { return }
       let trailers = HTTPFields(headers, splitCookie: false)
       if HeadT.self == HTTPRequestHead.self {
-        connection._currentRequest.withLock {
+        connection.$currentRequest.withLock {
           $0?.trailers = trailers
         }
       } else {
-        connection._response.withLock {
+        connection.$response.withLock {
           $0?.trailers = trailers
         }
       }

@@ -48,25 +48,25 @@
     }
 
     public override init() {
-      self._processName = .init(nil)
-      self._processBundleURL = .init(nil)
-      self._processExecutableURL = .init(nil)
-      self._processIdentifier = .init(nil)
-      self._processIconTIFFRepresentation = .init(nil)
+      self.$processName = .init(nil)
+      self.$processBundleURL = .init(nil)
+      self.$processExecutableURL = .init(nil)
+      self.$processIdentifier = .init(nil)
+      self.$processIconTIFFRepresentation = .init(nil)
     }
 
     public required init?(coder: NSCoder) {
-      self._processName = .init(
+      self.$processName = .init(
         coder.decodeObject(of: NSString.self, forKey: CodingKeys.processName.rawValue) as String?)
-      self._processBundleURL = .init(
+      self.$processBundleURL = .init(
         coder.decodeObject(of: NSURL.self, forKey: CodingKeys.processBundleURL.rawValue) as URL?)
-      self._processExecutableURL = .init(
+      self.$processExecutableURL = .init(
         coder.decodeObject(of: NSURL.self, forKey: CodingKeys.processExecutableURL.rawValue) as URL?
       )
-      self._processIdentifier = .init(
+      self.$processIdentifier = .init(
         coder.decodeObject(of: NSNumber.self, forKey: CodingKeys.processIdentifier.rawValue)?
           .int32Value)
-      self._processIconTIFFRepresentation = .init(
+      self.$processIconTIFFRepresentation = .init(
         coder.decodeObject(
           of: NSData.self, forKey: CodingKeys.processIconTIFFRepresentation.rawValue) as Data?)
     }

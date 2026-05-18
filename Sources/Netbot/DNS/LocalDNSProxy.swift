@@ -135,13 +135,13 @@ import SynchronizationExtras
   public var options: Options
 
   public init(options: Options) {
-    self._options = .init(options)
+    self.$options = .init(options)
     self.availableAQueries = .init(capacity: 200)
     self.availableAAAAQueries = .init(capacity: 200)
     self.availableSOAQueries = .init(capacity: 50)
     self.availablePTRQueries = .init(capacity: 200)
     self.disguisedARecords = .init(capacity: 200)
-    self._queries = .init([:])
+    self.$queries = .init([:])
   }
 
   public convenience init(
@@ -173,7 +173,7 @@ import SynchronizationExtras
   public func run0() async throws {}
 
   public func shutdownGracefully() async throws {
-    self._queries.withLock {
+    self.$queries.withLock {
       for queries in $0.values {
         for query in queries.queries {
           // Fail all in-progress queries with CancellationError.
@@ -192,13 +192,13 @@ import SynchronizationExtras
     promise: EventLoopPromise<Message>,
     continuation: AsyncStream<Message>.Continuation?
   ) {
-    if let (continuation, queries) = self._queries.withLock({ $0[server] }) {
+    if let (continuation, queries) = self.$queries.withLock({ $0[server] }) {
       if let promise = queries[transactionID] {
         return (promise, continuation)
       }
 
       let promise = self.group.next().makePromise(of: Message.self)
-      self._queries.withLock {
+      self.$queries.withLock {
         $0[server]?.queries[transactionID] = promise
       }
       return (promise, continuation)
@@ -207,7 +207,7 @@ import SynchronizationExtras
     let promise = self.group.next().makePromise(of: Message.self)
     let (stream, continuation) = AsyncStream<Message>.makeStream()
     let query = (promise: promise, continuation: continuation)
-    self._queries.withLock {
+    self.$queries.withLock {
       $0[server] = (continuation, [transactionID: promise])
     }
 
@@ -239,7 +239,7 @@ import SynchronizationExtras
       }
 
     channel.channel.closeFuture.whenComplete { _ in
-      self._queries.withLock {
+      self.$queries.withLock {
         guard let (continuation, queries) = $0.removeValue(forKey: server) else {
           return
         }
@@ -266,7 +266,7 @@ import SynchronizationExtras
                 try await outbound.write(envelope)
               } catch {
                 // Notify that we are failed to write dns query message to the server.
-                self._queries.withLock {
+                self.$queries.withLock {
                   let promise = $0[server]?.queries[query.headerFields.transactionID]
                   promise?.fail(error)
                 }
@@ -281,7 +281,7 @@ import SynchronizationExtras
                 let message = try self.parser.parse(envelop.data)
 
                 // Notify that we have received dns response if needed.
-                self._queries.withLock {
+                self.$queries.withLock {
                   let promise = $0[server]?.queries[message.headerFields.transactionID]
                   promise?.succeed(message)
                 }
@@ -416,7 +416,7 @@ import SynchronizationExtras
 
           return result
         } catch {
-          self._queries.withLock {
+          self.$queries.withLock {
             let promise = $0[server]?.queries.removeValue(
               forKey: message.headerFields.transactionID)
             promise?.fail(error)

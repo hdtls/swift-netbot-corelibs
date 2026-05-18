@@ -62,8 +62,8 @@
     /// general use by applications.
     public init() {
       self.pathMonitor = NWPathMonitor()
-      self._pathUpdateHandler = .init(nil)
-      self._expiredPath = .init(("", ""))
+      self.$pathUpdateHandler = .init(nil)
+      self.$expiredPath = .init(("", ""))
       self.pathMonitor.pathUpdateHandler = pathUpdateHandler0
     }
 

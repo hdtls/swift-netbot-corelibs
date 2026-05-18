@@ -60,14 +60,14 @@ import SynchronizationExtras
   init(group: any EventLoopGroup, address: Address) {
     self.group = group
     self.address = address
-    self._outboundStreams = .init([:])
+    self.$outboundStreams = .init([:])
     #if canImport(Network)
       self.closePromise = group.next().makePromise()
-      self._listener = .init(nil)
+      self.$listener = .init(nil)
     #else
       self.quiescing = ServerQuiescingHelper(group: group)
     #endif
-    self._connections = .init([:])
+    self.$connections = .init([:])
   }
 
   func run() async throws {
@@ -109,11 +109,11 @@ import SynchronizationExtras
           case .setup, .waiting, .preparing:
             break
           case .ready:
-            self._outboundStreams.withLock {
+            self.$outboundStreams.withLock {
               $0[ObjectIdentifier(connection)] = connection
             }
           case .failed, .cancelled:
-            self._outboundStreams.withLock {
+            self.$outboundStreams.withLock {
               _ = $0.removeValue(forKey: ObjectIdentifier(connection))
             }
           @unknown default:
@@ -176,7 +176,7 @@ import SynchronizationExtras
 
               let key = ObjectIdentifier(childChannel.channel)
               let (stream, continuation) = AsyncStream.makeStream(of: ByteBuffer.self)
-              self._outboundStreams.withLock {
+              self.$outboundStreams.withLock {
                 $0[key] = continuation
               }
 
@@ -193,7 +193,7 @@ import SynchronizationExtras
                 }
               }
 
-              self._outboundStreams.withLock {
+              self.$outboundStreams.withLock {
                 _ = $0.removeValue(forKey: key)
               }
             }
@@ -216,7 +216,7 @@ import SynchronizationExtras
   #endif
 
   func shutdownGracefully() async throws {
-    self._outboundStreams.withLock { outboundStreams in
+    self.$outboundStreams.withLock { outboundStreams in
       for outboundStream in outboundStreams {
         #if canImport(Network)
           outboundStream.value.cancel()
@@ -240,7 +240,7 @@ import SynchronizationExtras
   }
 
   func send(_ conn: Connection) async {
-    self._connections.withLock {
+    self.$connections.withLock {
       $0[conn.taskIdentifier] = conn
 
       guard !outboundStreams.isEmpty else {

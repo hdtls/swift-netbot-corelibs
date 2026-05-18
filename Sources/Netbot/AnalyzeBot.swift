@@ -146,7 +146,7 @@ public actor AnalyzeBot {
       contentsOf: tunnelNetworkSettings?.dnsSettings?.servers.map {
         Address.hostPort(host: .init($0), port: 53)
       } ?? [])
-    dns._options.withLock {
+    dns.$options.withLock {
       $0 = .init(
         group: $0.group,
         logger: $0.logger,
