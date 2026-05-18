@@ -12,9 +12,9 @@
 // ===----------------------------------------------------------------------=== //
 
 import NetbotDashboard
+import NetbotFrontend
+import Preference
 import Testing
-
-@testable import NetbotFrontend
 
 struct CapabilityFlagsTests {
 
@@ -23,22 +23,9 @@ struct CapabilityFlagsTests {
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test(
-    arguments: zip(
-      CapabilityFlags.allCases,
-      ["Enable HTTP Capture", "Enable HTTPS MitM", "Enable Rewrite", "Enable Scripting"]
-    )
-  )
-  func localizedName(_ capability: CapabilityFlags, _ localizedName: String) {
-    #expect(capability.localizedName == localizedName)
-  }
-
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  @Test func caseIterableConformance() {
-    #expect(CapabilityFlags.allCases == [.httpCapture, .httpsDecryption, .rewrite, .scripting])
+  @Test func preferenceRepresentable() {
+    let capability = CapabilityFlags(preferenceValue: 1)
+    #expect(capability == .httpCapture)
+    #expect(CapabilityFlags.httpCapture.preferenceValue as? Int == 1)
   }
 }

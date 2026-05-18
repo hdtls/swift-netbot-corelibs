@@ -38,7 +38,7 @@ struct LocalDNSProxyTests {
   #endif
   final class MockDNSServer: @unchecked Sendable {
     let queryCalls: Atomic<Int> = .init(0)
-    let response: [any ResourceRecord]
+    var response: [any ResourceRecord]
     let parser = NLDNSParser()
     private var channel: LocalDNSProxy.AsyncChannel!
 
@@ -388,11 +388,15 @@ struct LocalDNSProxyTests {
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test func queryPTR() async throws {
+  @Test(
+    arguments: zip(
+      ["92.82.12.172.in-addr.arpa", "2001:0db8:1234:1a00:0000:0000:0000:0001.in6-addr.arpa"],
+      ["example.com", "example.com"]))
+  func queryPTR(query: String, response: String) async throws {
     let server = MockDNSServer(
       response: [
         PTRRecord(
-          domainName: "example.com", ttl: 300, dataLength: .determined(8), data: "1.exp.com")
+          domainName: query, ttl: 300, dataLength: .determined(13), data: response)
       ]
     )
     let address = try #require(await server.start())
@@ -410,14 +414,67 @@ struct LocalDNSProxyTests {
     try await p.run()
 
     await #expect(throws: Never.self) {
-      let result = try await p.queryPTR(name: "example.com")
+      let result = try await p.queryPTR(name: query)
       #expect(!result.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
       #expect(result == server.response as? [PTRRecord])
 
-      _ = try await p.queryPTR(name: "example.com")
+      _ = try await p.queryPTR(name: query)
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
       #expect(result == server.response as? [PTRRecord])
+    }
+
+    server.close(promise: nil)
+    try await p.shutdownGracefully()
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func queryDisguisedIPv4PTR() async throws {
+    let server = MockDNSServer(
+      response: []
+    )
+    let address = try #require(await server.start())
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        mappings: [],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        )
+      )
+    )
+    try await p.run()
+
+    await #expect(throws: Never.self) {
+      let result = try await p.queryPTR(name: "6.1.18.169.in-addr.arpa")
+      #expect(result.isEmpty)
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+
+      _ = try await p.queryPTR(name: "6.1.18.169.in-addr.arpa")
+      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
+    }
+
+    let response = [
+      PTRRecord(
+        domainName: "6.1.18.198.in-addr.arpa", ttl: 0, dataLength: .flexible,
+        data: "example.com")
+    ]
+    p.disguisedARecords
+      .setValue(
+        .init(.init(domainName: "example.com", ttl: 0, data: IPv4Address("198.18.1.6")!)),
+        forKey: "example.com")
+
+    await #expect(throws: Never.self) {
+      let result = try await p.queryPTR(name: "6.1.18.198.in-addr.arpa")
+      #expect(!result.isEmpty)
+      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
+      #expect(result == response)
     }
 
     server.close(promise: nil)
@@ -550,6 +607,90 @@ struct LocalDNSProxyTests {
       _ = try await p.querySRV(name: "example.com")
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
       #expect(result == server.response as? [SRVRecord])
+    }
+
+    server.close(promise: nil)
+    try await p.shutdownGracefully()
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func initiateAQuery() async throws {
+    let server = MockDNSServer(
+      response: [
+        ARecord(
+          domainName: "example.com", ttl: 300, dataLength: .determined(4),
+          data: .init("123.123.123.123")!)
+      ]
+    )
+    let address = try #require(await server.start())
+
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        mappings: [],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        )
+      )
+    )
+    try await p.run()
+
+    await #expect(throws: Never.self) {
+      let result = try await p.initiateAQuery(host: "example.com", port: 443).get()
+      #expect(!result.isEmpty)
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+
+      let expected = try (server.response as? [ARecord])?.compactMap {
+        try SocketAddress(ipAddress: "\($0.data)", port: 443)
+      }
+      #expect(result == expected)
+    }
+
+    server.close(promise: nil)
+    try await p.shutdownGracefully()
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func initiateAAAAQuery() async throws {
+    let server = MockDNSServer(
+      response: [
+        AAAARecord(
+          domainName: "example.com", ttl: 300, dataLength: .determined(16), data: .init("::1")!)
+      ]
+    )
+    let address = try #require(await server.start())
+    let p = LocalDNSProxy(
+      options: .init(
+        group: .shared,
+        bindAddress: IPv4Address("198.18.0.2")!,
+        additionalServers: [try address.asAddress()],
+        mappings: [],
+        availableIPPool: AvailableIPPool(
+          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
+        )
+      )
+    )
+    try await p.run()
+
+    await #expect(throws: Never.self) {
+      let result = try await p.initiateAAAAQuery(host: "example.com", port: 443).get()
+      #expect(!result.isEmpty)
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
+
+      let expected = try (server.response as? [AAAARecord])?.compactMap {
+        try SocketAddress(ipAddress: "\($0.data)", port: 443)
+      }
+      #expect(result == expected)
     }
 
     server.close(promise: nil)

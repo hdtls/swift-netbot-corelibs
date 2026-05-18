@@ -40,4 +40,23 @@ struct CapabilityFlagsTests {
   @Test func caseIterableConformance() {
     #expect(CapabilityFlags.allCases == [.httpCapture, .httpsDecryption, .rewrite, .scripting])
   }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func equalityAndHashing() async throws {
+    let capability1 = CapabilityFlags.httpCapture
+    let capability2 = CapabilityFlags.httpCapture
+    let capability3 = CapabilityFlags.httpsDecryption
+    let capability4 = CapabilityFlags.rewrite
+    let capability5 = CapabilityFlags.scripting
+
+    #expect(capability1 == capability2)
+    #expect(capability1 != capability3)
+
+    let set = Set([capability1, capability2, capability3, capability4, capability5])
+    #expect(set.count == 4)
+  }
 }

@@ -22,10 +22,13 @@ struct ConnectionFilterTests {
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test func hashable() async throws {
+  @Test func equalityAndHashing() async throws {
     let h1 = ConnectionFilter.hostname("swift.org")
-    let h2 = h1
+    let h2 = ConnectionFilter.hostname("swift.org")
     let h3 = ConnectionFilter.client("ssh")
+
+    #expect(h1 == h2)
+    #expect(h1 != h3)
 
     let set = Set([h1, h2, h3])
     #expect(set.count == 2, "Set should contain only 2 unique filters")

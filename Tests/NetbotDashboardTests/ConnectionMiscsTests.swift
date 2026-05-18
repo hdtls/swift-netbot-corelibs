@@ -22,7 +22,7 @@ struct ConnectionMiscsTests {
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test func stateLocalizedName() {
+  @Test func localizedConnectionStateName() {
     #expect(Connection.State.establishing.localizedName == "Establishing")
     #expect(Connection.State.active.localizedName == "Active")
     #expect(Connection.State.completed.localizedName == "Completed")

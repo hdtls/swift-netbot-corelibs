@@ -31,7 +31,7 @@ struct PrettyPrintedTests {
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test func forwardProtocolFormatted() {
+  @Test func formattedConnectionForwardProtocol() {
     let model = Connection.Model()
     #expect(model.forwardingReport == nil)
     #expect(model.forwardProtocolFormatted == "FINAL (*)")
@@ -66,24 +66,11 @@ struct PrettyPrintedTests {
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test func isActive() {
+  @Test(arguments: zip(Connection.State.allCases, [true, true, false, false, false]))
+  func connectionIsActive(state: Connection.State, isActive: Bool) {
     let model = Connection.Model()
-    #expect(model.isActive)
-
-    model.state = .completed
-    #expect(!model.isActive)
-
-    model.state = .establishing
-    #expect(model.isActive)
-
-    model.state = .failed
-    #expect(!model.isActive)
-
-    model.state = .active
-    #expect(model.isActive)
-
-    model.state = .cancelled
-    #expect(!model.isActive)
+    model.state = state
+    #expect(model.isActive == isActive)
   }
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -92,7 +79,81 @@ struct PrettyPrintedTests {
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func dataFormatted() {
-    let data = Data()
+    var data = Data()
     #expect(data.formatted() == "No Data".localizedCapitalized)
+
+    data.append(contentsOf: [72, 69, 76, 76, 79, 32, 87, 79, 82, 76, 68, 33, 33, 33])
+    #expect(data.formatted() == "HELLO WORLD!!!")
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func responseFormatted() {
+    let response = HTTPResponse(
+      status: .ok,
+      headerFields: [.contentType: "text/plain; charset=utf-8", .contentLength: "2"]
+    )
+
+    let formatted = """
+      HTTP/1.1 200 OK
+      Content-Type: text/plain; charset=utf-8
+      Content-Length: 2
+      """
+    #expect(response.formatted() == formatted)
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func reponseContentTypeCheck() {
+    let response = Response.Model()
+    #expect(!response.isImage)
+    #expect(!response.isText)
+    #expect(!response.isForm)
+    #expect(!response.isJSON)
+
+    response.httpResponse = HTTPResponse(status: .ok, headerFields: [.accessControlMaxAge: "0"])
+    #expect(!response.isImage)
+    #expect(!response.isText)
+    #expect(!response.isForm)
+    #expect(!response.isJSON)
+
+    response.httpResponse = HTTPResponse(
+      status: .ok,
+      headerFields: [.contentType: "image/png"]
+    )
+    #expect(response.isImage)
+    #expect(!response.isText)
+    #expect(!response.isForm)
+    #expect(!response.isJSON)
+
+    response.httpResponse?.headerFields = [.contentType: "text/plain"]
+    #expect(!response.isImage)
+    #expect(response.isText)
+    #expect(!response.isForm)
+    #expect(!response.isJSON)
+
+    response.httpResponse?.headerFields = [.contentType: "multipart/form-data"]
+    #expect(!response.isImage)
+    #expect(!response.isText)
+    #expect(response.isForm)
+    #expect(!response.isJSON)
+
+    response.httpResponse?.headerFields = [.contentType: "application/x-www-form-urlencoded"]
+    #expect(!response.isImage)
+    #expect(!response.isText)
+    #expect(response.isForm)
+    #expect(!response.isJSON)
+
+    response.httpResponse?.headerFields = [.contentType: "application/json"]
+    #expect(!response.isImage)
+    #expect(!response.isText)
+    #expect(!response.isForm)
+    #expect(response.isJSON)
   }
 }

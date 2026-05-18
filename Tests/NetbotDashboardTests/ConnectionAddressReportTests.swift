@@ -117,7 +117,7 @@ struct ConnectionAddressReportTests {
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test func testCodable() throws {
+  @Test func codable() throws {
     let report = ConnectionAddressReport(
       hostname: "example.com",
       port: 8080,
