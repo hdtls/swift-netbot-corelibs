@@ -188,7 +188,7 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
 
   public typealias Data = Connection.Model
 
-  nonisolated public static let shared = RecentConnectionsStore()
+  nonisolated public static let `default` = RecentConnectionsStore()
 
   #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     /// The ModelContainer for the ModelActor.

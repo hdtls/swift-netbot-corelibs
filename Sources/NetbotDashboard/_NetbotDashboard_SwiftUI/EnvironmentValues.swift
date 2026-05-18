@@ -21,6 +21,6 @@
   #endif
   @_spi(SwiftUI) extension EnvironmentValues {
 
-    @Entry public var recentConnections = RecentConnectionsStore.shared
+    @Entry public var recentConnections = RecentConnectionsStore.default
   }
 #endif

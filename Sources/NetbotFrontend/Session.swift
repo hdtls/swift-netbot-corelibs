@@ -22,9 +22,9 @@
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @globalActor public actor VPNSession {
+  @globalActor public actor Session {
 
-    public static let shared = VPNSession()
+    public static let shared = Session()
 
     public enum Message: Sendable {
       case data(Data)

@@ -39,7 +39,7 @@ import NetbotProfile
 public actor ProfileAssistant {
 
   #if canImport(SwiftData)
-    public static let shared = ProfileAssistant(modelContainer: modelContainer)
+    public static let `default` = ProfileAssistant(modelContainer: modelContainer)
 
     /// Default model container for `Profile`.
     private static var modelContainer: ModelContainer {
@@ -49,7 +49,7 @@ public actor ProfileAssistant {
       return modelContainer
     }
   #else
-    public static let shared = ProfileAssistant()
+    public static let `default` = ProfileAssistant()
 
     public init() {}
   #endif

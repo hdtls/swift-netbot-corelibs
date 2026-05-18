@@ -185,7 +185,7 @@
       configuration.proxyConfigurations = []
       configuration.connectionProxyDictionary = [:]
 
-      let session = Session(configuration: configuration)
+      let session = Alamofire.Session(configuration: configuration)
       let addresses = try await session.request("https://icanhazip.com").serializingString().value
         .components(separatedBy: .whitespacesAndNewlines)
 

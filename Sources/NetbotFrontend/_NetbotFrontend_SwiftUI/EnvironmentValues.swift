@@ -22,9 +22,9 @@
   #endif
   @_spi(SwiftUI) extension EnvironmentValues {
 
-    @Entry public var urlSession = Session.default
+    @Entry public var urlSession = Alamofire.Session.default
 
-    @Entry public var vpnSession = VPNSession.shared
+    @Entry public var session = Session.shared
 
     #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
       @available(SwiftStdlib 5.9, *)
@@ -34,6 +34,6 @@
     #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
       @available(SwiftStdlib 5.9, *)
     #endif
-    @Entry public var profileAssistant = ProfileAssistant.shared
+    @Entry public var profileAssistant = ProfileAssistant.default
   }
 #endif

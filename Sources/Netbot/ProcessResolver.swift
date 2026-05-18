@@ -40,7 +40,7 @@ final class ProcessResolver: ProcessReporting {
 
   static let shared = ProcessResolver()
 
-  init() {
+  private init() {
     _table = .init([:])
   }
 

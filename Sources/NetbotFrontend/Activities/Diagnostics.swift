@@ -151,7 +151,7 @@
       configuration.proxyConfigurations = []
       configuration.timeoutIntervalForRequest = timeoutInterval ?? 5.0
 
-      let session = Session(configuration: configuration)
+      let session = Alamofire.Session(configuration: configuration)
       let metrics = await session.request(urlConvertible, method: .head).serializingData().response
         .metrics
 
@@ -175,7 +175,7 @@
       configuration.proxyConfigurations = []
       configuration.timeoutIntervalForRequest = timeoutInterval ?? 5.0
 
-      let session = Session(configuration: configuration)
+      let session = Alamofire.Session(configuration: configuration)
       let metrics = await session.request(urlConvertible, method: .head).serializingData().response
         .metrics
 
