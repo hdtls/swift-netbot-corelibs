@@ -46,28 +46,25 @@ import SynchronizationExtras
   private let group: any EventLoopGroup
   private let address: Address
   #if canImport(Network)
-    private var outboundStreams: [ObjectIdentifier: NWConnection]
+    private var outboundStreams: [ObjectIdentifier: NWConnection] = [:]
     private let closePromise: EventLoopPromise<Void>
-    private var listener: NWListener?
+    private var listener: NWListener? = nil
   #else
-    private var outboundStreams: [ObjectIdentifier: AsyncStream<ByteBuffer>.Continuation]
+    private var outboundStreams: [ObjectIdentifier: AsyncStream<ByteBuffer>.Continuation] = [:]
     private let quiescing: ServerQuiescingHelper
   #endif
   private let jsonEncoder = JSONEncoder()
 
-  private var connections: [UInt64: Connection]
+  private var connections: [UInt64: Connection] = [:]
 
   init(group: any EventLoopGroup, address: Address) {
     self.group = group
     self.address = address
-    self.$outboundStreams = .init([:])
     #if canImport(Network)
       self.closePromise = group.next().makePromise()
-      self.$listener = .init(nil)
     #else
       self.quiescing = ServerQuiescingHelper(group: group)
     #endif
-    self.$connections = .init([:])
   }
 
   func run() async throws {

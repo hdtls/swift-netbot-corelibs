@@ -129,7 +129,7 @@ import SynchronizationExtras
   private var queries:
     [SocketAddress: (
       continuation: AsyncStream<Message>.Continuation, queries: [UInt16: EventLoopPromise<Message>]
-    )]
+    )] = [:]
 
   @LockableTracked(accessLevel: .public, accessors: .get)
   public var options: Options
@@ -141,7 +141,6 @@ import SynchronizationExtras
     self.availableSOAQueries = .init(capacity: 50)
     self.availablePTRQueries = .init(capacity: 200)
     self.disguisedARecords = .init(capacity: 200)
-    self.$queries = .init([:])
   }
 
   public convenience init(

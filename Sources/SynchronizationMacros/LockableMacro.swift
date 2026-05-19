@@ -100,28 +100,36 @@ public struct LockableTrackedMacro: AccessorMacro, Sendable {
     if accessors.contains(.set) && !accessors.contains(.get) {
       throw MacroExpansionErrorMessage("Variable with a setter must also have a getter")
     }
-    return accessors.map {
-      switch $0 {
-      case .get:
-        let accessor: AccessorDeclSyntax = """
-          get {
-            self.\(raw: LockableMacro.prefixed)\(label).withLock {
-              $0
-            }
-          }
-          """
-        return accessor
-      case .set:
-        let accessor: AccessorDeclSyntax = """
-          set {
-            self.\(raw: LockableMacro.prefixed)\(label).withLock {
-              $0 = newValue
-            }
-          }
-          """
-        return accessor
+    return [
+      """
+      @storageRestrictions(initializes: \(raw: LockableMacro.prefixed)\(label))
+      init(initialValue) {
+        \(raw: LockableMacro.prefixed)\(label) = .init(initialValue)
       }
-    }
+      """
+    ]
+      + accessors.map {
+        switch $0 {
+        case .get:
+          let accessor: AccessorDeclSyntax = """
+            get {
+              self.\(raw: LockableMacro.prefixed)\(label).withLock {
+                $0
+              }
+            }
+            """
+          return accessor
+        case .set:
+          let accessor: AccessorDeclSyntax = """
+            set {
+              self.\(raw: LockableMacro.prefixed)\(label).withLock {
+                $0 = newValue
+              }
+            }
+            """
+          return accessor
+        }
+      }
   }
 }
 

@@ -46,14 +46,14 @@
     }
 
     /// Set a block to be called when the network path changes. pathUpdateHandler will not be called until `start` is called.
-    @preconcurrency final public var pathUpdateHandler: (@Sendable (_ newPath: NWPath) -> Void)?
+    final public var pathUpdateHandler: (@Sendable (_ newPath: NWPath) -> Void)? = nil
 
     /// Get queue used for delivering the pathUpdateHandler block.
     /// If the path monitor has not yet been started, the queue will be nil. Once the
     /// path monitor has been started, the queue will be non-nil.
     final public var queue: DispatchQueue? { pathMonitor.queue }
 
-    private var expiredPath: (String, String)
+    private var expiredPath: (String, String) = ("", "")
 
     private let logger = Logger(label: "path-monitor")
 
@@ -62,8 +62,6 @@
     /// general use by applications.
     public init() {
       self.pathMonitor = NWPathMonitor()
-      self.$pathUpdateHandler = .init(nil)
-      self.$expiredPath = .init(("", ""))
       self.pathMonitor.pathUpdateHandler = pathUpdateHandler0
     }
 

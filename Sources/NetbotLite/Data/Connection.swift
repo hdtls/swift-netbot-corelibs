@@ -56,58 +56,45 @@ public let SQL_lastInsertedID = Atomic<UInt64>(0)
       }
     }
   }
-  private let _originalRequest: Mutex<Request?>
+  private let _originalRequest: Mutex<Request?> = .init(nil)
 
   /// The current request of the connection.
   @LockableTracked(accessLevel: .package)
-  public var currentRequest: Request?
+  public var currentRequest: Request? = nil
 
   @LockableTracked(accessLevel: .package)
-  public var response: Response?
+  public var response: Response? = nil
 
-  public var earliestBeginDate: Date
+  public var earliestBeginDate: Date = .now
 
-  public var duration: Duration
+  public var duration: Duration = .zero
 
-  public var taskDescription: String
+  public var taskDescription: String = ""
 
   /// A bool value determine whether this sesion transport over TLS.
-  public var tls: Bool
+  public var tls: Bool = false
 
   /// Access the current state of the connection
-  public var state: State
+  public var state: State = .establishing
 
   @LockableTracked(accessLevel: .package)
-  public var dnsResolutionReport: DNSResolutionReport?
+  public var dnsResolutionReport: DNSResolutionReport? = nil
 
   /// A establishment report.
   @LockableTracked(accessLevel: .package)
-  public var establishmentReport: EstablishmentReport?
+  public var establishmentReport: EstablishmentReport? = nil
 
-  public var forwardingReport: ForwardingReport?
+  public var forwardingReport: ForwardingReport? = nil
 
   @LockableTracked(accessLevel: .package)
-  public var dataTransferReport: DataTransferReport?
+  public var dataTransferReport: DataTransferReport? = nil
 
-  public var processReport: ProcessReport?
+  public var processReport: ProcessReport? = nil
 
   public init(
     taskIdentifier: UInt64 = SQL_lastInsertedID.wrappingAdd(1, ordering: .relaxed).oldValue
   ) {
     self.taskIdentifier = taskIdentifier
-    self._originalRequest = .init(nil)
-    self.$currentRequest = .init(nil)
-    self.$response = .init(nil)
-    self.$earliestBeginDate = .init(.now)
-    self.$duration = .init(.zero)
-    self.$taskDescription = .init("")
-    self.$tls = .init(false)
-    self.$state = .init(.establishing)
-    self.$dnsResolutionReport = .init(nil)
-    self.$establishmentReport = .init(nil)
-    self.$forwardingReport = .init(nil)
-    self.$dataTransferReport = .init(nil)
-    self.$processReport = .init(nil)
   }
 }
 

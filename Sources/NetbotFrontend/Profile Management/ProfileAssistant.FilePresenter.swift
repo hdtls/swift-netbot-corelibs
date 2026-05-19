@@ -43,10 +43,7 @@ extension ProfileAssistant {
 
     /// An object store identity of operation.
     final class Permitted: Sendable {
-      @LockableTracked fileprivate var isPermitted: Bool
-      fileprivate init() {
-        self.$isPermitted = .init(false)
-      }
+      @LockableTracked fileprivate var isPermitted: Bool = false
 
       func enter() {
         isPermitted = true

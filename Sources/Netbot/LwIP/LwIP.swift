@@ -67,7 +67,7 @@
     private let dns: LocalDNSProxy
     private let device: UnsafeMutablePointer<netif>
 
-    private var packetsReadLoop: Task<Void, any Error>?
+    private var packetsReadLoop: Task<Void, any Error>? = nil
 
     init(group: any EventLoopGroup = .shared, packetFlow: any PacketTunnelFlow, dns: LocalDNSProxy)
     {
@@ -78,7 +78,6 @@
       self.dns = dns
       self.listener = LwIPListener(eventLoop: eventLoop, group: group)
       self.quiescing = ServerQuiescingHelper(group: group)
-      self.$packetsReadLoop = .init(nil)
       self.device = UnsafeMutablePointer.allocate(capacity: MemoryLayout<netif>.size)
       self.device.initialize(to: .init())
 

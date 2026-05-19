@@ -48,27 +48,33 @@
     }
 
     public override init() {
-      self.$processName = .init(nil)
-      self.$processBundleURL = .init(nil)
-      self.$processExecutableURL = .init(nil)
-      self.$processIdentifier = .init(nil)
-      self.$processIconTIFFRepresentation = .init(nil)
+      super.init()
     }
 
     public required init?(coder: NSCoder) {
-      self.$processName = .init(
-        coder.decodeObject(of: NSString.self, forKey: CodingKeys.processName.rawValue) as String?)
-      self.$processBundleURL = .init(
-        coder.decodeObject(of: NSURL.self, forKey: CodingKeys.processBundleURL.rawValue) as URL?)
-      self.$processExecutableURL = .init(
-        coder.decodeObject(of: NSURL.self, forKey: CodingKeys.processExecutableURL.rawValue) as URL?
-      )
-      self.$processIdentifier = .init(
-        coder.decodeObject(of: NSNumber.self, forKey: CodingKeys.processIdentifier.rawValue)?
-          .int32Value)
-      self.$processIconTIFFRepresentation = .init(
-        coder.decodeObject(
-          of: NSData.self, forKey: CodingKeys.processIconTIFFRepresentation.rawValue) as Data?)
+      self.$processName.withLock {
+        $0 =
+          coder.decodeObject(of: NSString.self, forKey: CodingKeys.processName.rawValue) as String?
+      }
+      self.$processBundleURL.withLock {
+        $0 =
+          coder.decodeObject(of: NSURL.self, forKey: CodingKeys.processBundleURL.rawValue) as URL?
+      }
+      self.$processExecutableURL.withLock {
+        $0 =
+          coder.decodeObject(of: NSURL.self, forKey: CodingKeys.processExecutableURL.rawValue)
+          as URL?
+      }
+      self.$processIdentifier.withLock {
+        $0 =
+          coder.decodeObject(of: NSNumber.self, forKey: CodingKeys.processIdentifier.rawValue)?
+          .int32Value
+      }
+      self.$processIconTIFFRepresentation.withLock {
+        $0 =
+          coder.decodeObject(
+            of: NSData.self, forKey: CodingKeys.processIconTIFFRepresentation.rawValue) as Data?
+      }
     }
 
     public func encode(with coder: NSCoder) {

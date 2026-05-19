@@ -48,14 +48,13 @@ public protocol RulesEngine: Sendable {
 
   let logger: Logger
 
-  var forwardingRules: [any ForwardingRuleConvertible]
+  var forwardingRules: [any ForwardingRuleConvertible] = []
 
   let cache = LRUCache<String, any ForwardingRule>(capacity: 100)
   private let inFlightLookups = Mutex<[String: Task<ForwardingReport, Never>]>([:])
 
   init(logger: Logger) {
     self.logger = logger
-    self.$forwardingRules = .init([])
   }
 
   func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) {

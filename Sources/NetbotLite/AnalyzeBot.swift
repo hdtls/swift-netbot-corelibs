@@ -69,7 +69,7 @@ import Tracing
 
   /// Forward protocol used in global proxy outbound mode.
   @LockableTracked(accessors: .get)
-  final public var forwardProtocol: any ForwardProtocolConvertible
+  final public var forwardProtocol: any ForwardProtocolConvertible = .direct
 
   /// The rules used to make outbound stream.
   final public var forwardingRules: [any ForwardingRuleConvertible] {
@@ -90,19 +90,19 @@ import Tracing
 
   /// A service help detect the process that the current connection is created.
   @LockableTracked(accessors: .get)
-  final public var processInfo: any ProcessReporting
+  final public var processInfo: any ProcessReporting = DefaultProcessReporting()
 
   /// A publisher publish connection states.
   @LockableTracked(accessors: .get)
-  final public var connectionPublisher: any ConnectionPublisher
+  final public var connectionPublisher: any ConnectionPublisher = DefaultConnectionPublisher()
 
   /// DNS names that allow HTTPS decryption.
   @LockableTracked(accessors: .get)
-  final public var decryptionDNSNames: [String]
+  final public var decryptionDNSNames: [String] = []
 
   /// `NIOSSLPKCS12Bundle` used to decrypt HTTPS connections.
   @LockableTracked(accessors: .get)
-  final public var decryptionSSLPKCS12Bundle: NIOSSLPKCS12Bundle?
+  final public var decryptionSSLPKCS12Bundle: NIOSSLPKCS12Bundle? = nil
 
   /// True if this `AnalyzeBot` is currently active. `isActive` is defined as the period
   /// of time after the `run` and before `shutdownGracefully` has fired.
@@ -111,7 +111,7 @@ import Tracing
   }
   private let _isActive = Atomic<Bool>(false)
 
-  private var quiescing: [ServerQuiescingHelper]
+  private var quiescing: [ServerQuiescingHelper] = []
 
   private let eventLoopGroup: any EventLoopGroup
 
@@ -130,16 +130,8 @@ import Tracing
     self.logger = logger
     self.$webProxyListenAddress = .init(webProxyListenAddress)
     self.$socksProxyListenAddress = .init(socksProxyListenAddress)
-    self.$outboundMode = .init(.direct)
-    self.$forwardProtocol = .init(.direct)
-    self.$capabilities = .init([])
     self.$resolver = .init(DefaultResolver(eventLoop: group.next()))
     self.$rulesEngine = .init(DefaultRulesEngine(logger: logger))
-    self.$processInfo = .init(DefaultProcessReporting())
-    self.$connectionPublisher = .init(DefaultConnectionPublisher())
-    self.$decryptionDNSNames = .init([])
-    self.$decryptionSSLPKCS12Bundle = .init(nil)
-    self.$quiescing = .init([])
   }
 
   /// Modify Web and SOCKS proxy settings.

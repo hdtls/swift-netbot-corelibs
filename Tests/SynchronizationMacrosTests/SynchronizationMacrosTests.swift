@@ -53,6 +53,10 @@ import Testing
       let expectedExpandedSource = """
         class Tracked {
           var p1: String {
+            @storageRestrictions(initializes: $p1)
+            init(initialValue) {
+              $p1 = .init(initialValue)
+            }
             get {
               self.$p1.withLock {
                 $0
@@ -105,6 +109,10 @@ import Testing
       let expectedExpandedSource = """
         class Tracked {
           var p1: Int {
+            @storageRestrictions(initializes: $p1)
+            init(initialValue) {
+              $p1 = .init(initialValue)
+            }
             get {
               self.$p1.withLock {
                 $0
@@ -114,6 +122,10 @@ import Testing
 
           private let $p1: Mutex<Int>
           var p2: Int {
+            @storageRestrictions(initializes: $p2)
+            init(initialValue) {
+              $p2 = .init(initialValue)
+            }
             get {
               self.$p2.withLock {
                 $0
@@ -123,6 +135,10 @@ import Testing
 
           private let $p2: Mutex<Int>
           var p3: Int {
+            @storageRestrictions(initializes: $p3)
+            init(initialValue) {
+              $p3 = .init(initialValue)
+            }
             get {
               self.$p3.withLock {
                 $0
@@ -178,6 +194,10 @@ import Testing
       let expectedExpandedSource = """
         class Tracked {
           var p1: Int {
+            @storageRestrictions(initializes: $p1)
+            init(initialValue) {
+              $p1 = .init(initialValue)
+            }
             get {
               self.$p1.withLock {
                 $0
@@ -192,6 +212,10 @@ import Testing
 
           open let $p1: Mutex<Int>
           var p2: Int {
+            @storageRestrictions(initializes: $p2)
+            init(initialValue) {
+              $p2 = .init(initialValue)
+            }
             get {
               self.$p2.withLock {
                 $0
@@ -206,6 +230,10 @@ import Testing
 
           public let $p2: Mutex<Int>
           var p3: Int {
+            @storageRestrictions(initializes: $p3)
+            init(initialValue) {
+              $p3 = .init(initialValue)
+            }
             get {
               self.$p3.withLock {
                 $0
@@ -220,6 +248,10 @@ import Testing
 
           package let $p3: Mutex<Int>
           var p4: Int {
+            @storageRestrictions(initializes: $p4)
+            init(initialValue) {
+              $p4 = .init(initialValue)
+            }
             get {
               self.$p4.withLock {
                 $0
@@ -234,6 +266,10 @@ import Testing
 
           internal let $p4: Mutex<Int>
           var p5: Int {
+            @storageRestrictions(initializes: $p5)
+            init(initialValue) {
+              $p5 = .init(initialValue)
+            }
             get {
               self.$p5.withLock {
                 $0
@@ -248,6 +284,10 @@ import Testing
 
           fileprivate let $p5: Mutex<Int>
           var p6: Int {
+            @storageRestrictions(initializes: $p6)
+            init(initialValue) {
+              $p6 = .init(initialValue)
+            }
             get {
               self.$p6.withLock {
                 $0
@@ -336,6 +376,10 @@ import Testing
       let expectedExpandedSource = """
         class Contact {
           var givenName: String {
+            @storageRestrictions(initializes: $givenName)
+            init(initialValue) {
+              $givenName = .init(initialValue)
+            }
             get {
               self.$givenName.withLock {
                 $0
@@ -350,6 +394,10 @@ import Testing
 
           private let $givenName: Mutex<String>
           var familyName: String {
+            @storageRestrictions(initializes: $familyName)
+            init(initialValue) {
+              $familyName = .init(initialValue)
+            }
             get {
               self.$familyName.withLock {
                 $0
@@ -401,6 +449,10 @@ import Testing
       let expectedExpandedSource = """
         class Contact {
           var givenName: String {
+            @storageRestrictions(initializes: $givenName)
+            init(initialValue) {
+              $givenName = .init(initialValue)
+            }
             get {
               self.$givenName.withLock {
                 $0
@@ -453,6 +505,10 @@ import Testing
       let expectedExpandedSource = """
         class Contact {
           var givenName: String {
+            @storageRestrictions(initializes: $givenName)
+            init(initialValue) {
+              $givenName = .init(initialValue)
+            }
             get {
               self.$givenName.withLock {
                 $0
@@ -467,6 +523,10 @@ import Testing
 
           private let $givenName: Mutex<String>
           var familyName: String {
+            @storageRestrictions(initializes: $familyName)
+            init(initialValue) {
+              $familyName = .init(initialValue)
+            }
             get {
               self.$familyName.withLock {
                 $0
@@ -518,6 +578,10 @@ import Testing
       let expectedExpandedSource = """
         class Tracked {
           var p1: Int {
+            @storageRestrictions(initializes: $p1)
+            init(initialValue) {
+              $p1 = .init(initialValue)
+            }
             get {
               self.$p1.withLock {
                 $0
@@ -527,6 +591,10 @@ import Testing
 
           private let $p1: Mutex<Int>
           var p2: Int {
+            @storageRestrictions(initializes: $p2)
+            init(initialValue) {
+              $p2 = .init(initialValue)
+            }
             get {
               self.$p2.withLock {
                 $0
@@ -577,6 +645,10 @@ import Testing
       let expectedExpandedSource = """
         class Locked {
           var p1: Int {
+            @storageRestrictions(initializes: $p1)
+            init(initialValue) {
+              $p1 = .init(initialValue)
+            }
             get {
               self.$p1.withLock {
                 $0

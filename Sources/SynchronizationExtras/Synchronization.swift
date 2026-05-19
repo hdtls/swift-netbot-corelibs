@@ -124,7 +124,7 @@ public macro Lockable() = #externalMacro(module: "SynchronizationMacros", type: 
     @available(SwiftStdlib 6.0, *)
   #endif
 #endif
-@attached(accessor, names: named(get), named(set))
+@attached(accessor, names: named(init), named(get), named(set))
 @attached(peer, names: prefixed(`$`))
 public macro LockableTracked(
   accessLevel: Lockable.AccessLevel = .private,

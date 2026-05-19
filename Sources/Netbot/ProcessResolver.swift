@@ -32,7 +32,7 @@ import SynchronizationExtras
 final class ProcessResolver: ProcessReporting {
 
   @LockableTracked(accessors: .get)
-  private var table: [Address: Address]
+  private var table: [Address: Address] = [:]
 
   private let assistantd: any _ProcessInspector
 
@@ -47,7 +47,6 @@ final class ProcessResolver: ProcessReporting {
   }
 
   init(backing: some _ProcessInspector) {
-    $table = .init([:])
     assistantd = backing
   }
 
@@ -124,7 +123,7 @@ protocol _ProcessInspector: Sendable {
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  struct ProcessInfo: Hashable, Codable {
+  struct ProcessInfo: Hashable, Codable, Sendable {
     /// Indicates the name of the application.
     /// This is dependent on the current localization of the referenced app, and is suitable for presentation to the user.
     var processName: String?
