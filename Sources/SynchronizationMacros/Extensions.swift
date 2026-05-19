@@ -19,21 +19,6 @@ extension VariableDeclSyntax {
     bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier
   }
 
-  var accessLevel: TokenSyntax? {
-    modifiers.first {
-      switch $0.name.tokenKind {
-      case .keyword(.open),
-        .keyword(.public),
-        .keyword(.package),
-        .keyword(.private),
-        .keyword(.fileprivate),
-        .keyword(.internal):
-        return true
-      default: return false
-      }
-    }?.name
-  }
-
   var type: TypeSyntax? {
     bindings.first?.typeAnnotation?.type
   }

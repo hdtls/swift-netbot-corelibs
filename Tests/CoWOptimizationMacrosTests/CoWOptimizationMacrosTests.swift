@@ -12,26 +12,8 @@
 // ===----------------------------------------------------------------------=== //
 
 #if canImport(CoWOptimizationMacros)
-  import SwiftSyntax
-  import SwiftSyntaxBuilder
-  import SwiftSyntaxMacroExpansion
-  import SwiftSyntaxMacros
-  import SwiftSyntaxMacrosGenericTestSupport
-  import Testing
-
-  // Macro implementations build for the host, so the corresponding module is not available when cross-compiling. Cross-compiled tests may still make use of the macro itself in end-to-end tests.
   import CoWOptimizationMacros
-
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  let testMacros: [String: (Macro & Sendable).Type] = [
-    "_cowOptimization": CoWOptimizationMacro.self,
-    "_cowOptimizationIgnored": CoWOptimizationIgnoredMacro.self,
-    "_cowOptimizationTracked": CoWOptimizationTrackedMacro.self,
-  ]
+  import Testing
 
   @Suite(.tags(.swiftmacros))
   struct CopyonWriteMacrosTests {
@@ -42,82 +24,127 @@
       @available(SwiftStdlib 6.0, *)
     #endif
     @Test func coWOptimizationMacro() throws {
-      let originalSource =
+      assertMacroExpansion(
         """
         @_cowOptimization struct Contact {
           var givenName: String
           var familyName: String
         }
-        """
+        """,
+        expandedSource: """
+          struct Contact {
+            @_cowOptimizationTracked @inlinable
+            var givenName: String
+            @_cowOptimizationTracked @inlinable
+            var familyName: String
 
-      let expectedExpandedSource = """
-        struct Contact {
-          @inlinable
-          var givenName: String {
-            get {
-              return self._storage.givenName
-            }
-            _modify {
-              if !isKnownUniquelyReferenced(&self._storage) {
-                self._storage = self._storage.copy()
+            @usableFromInline final class _Storage {
+
+              @usableFromInline var givenName: String
+              @usableFromInline var familyName: String
+
+              @inlinable init(
+                givenName: String,
+                familyName: String
+              ) {
+                self.givenName = givenName
+                self.familyName = familyName
               }
-              yield &self._storage.givenName
-            }
-          }
-          @inlinable
-          var familyName: String {
-            get {
-              return self._storage.familyName
-            }
-            _modify {
-              if !isKnownUniquelyReferenced(&self._storage) {
-                self._storage = self._storage.copy()
+
+              @inlinable func copy() -> _Storage {
+                _Storage(
+                  givenName: givenName,
+                  familyName: familyName
+                )
               }
-              yield &self._storage.familyName
             }
+
+            @usableFromInline var _storage: _Storage
           }
+          """,
+        macros: ["_cowOptimization": CoWOptimizationMacro.self]
+      )
+    }
 
-          @usableFromInline final class _Storage {
-
-            @usableFromInline var givenName: String
-            @usableFromInline var familyName: String
-
-            @inlinable init(
-              givenName: String,
-              familyName: String
-            ) {
-              self.givenName = givenName
-              self.familyName = familyName
-            }
-
-            @inlinable func copy() -> _Storage {
-              _Storage(
-                givenName: givenName,
-                familyName: familyName
-              )
-            }
-          }
-
-          @usableFromInline var _storage: _Storage
-        }
-        """
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
+    @Test func coWOptimizationMacroIgnoreNonStructDecl() throws {
       assertMacroExpansion(
-        originalSource,
-        expandedSource: expectedExpandedSource,
-        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
-        indentationWidth: .spaces(2)
-      ) {
-        #expect(
-          Bool(false),
-          "\($0.message)",
-          sourceLocation: SourceLocation(
-            fileID: $0.location.fileID,
-            filePath: $0.location.filePath,
-            line: $0.location.line,
-            column: $0.location.column
-          )
-        )
-      }
+        """
+        @_cowOptimization class Contact {
+          var givenName: String
+          var familyName: String
+        }
+        """,
+        expandedSource: """
+          class Contact {
+            @_cowOptimizationTracked @inlinable
+            var givenName: String
+            @_cowOptimizationTracked @inlinable
+            var familyName: String
+          }
+          """,
+        macros: ["_cowOptimization": CoWOptimizationMacro.self]
+      )
+    }
+
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
+    @Test func coWOptimizationMacroIgnoreUnOptimizableMembers() throws {
+      assertMacroExpansion(
+        """
+        @_cowOptimization struct Contact {
+          static var name: String { "name" }
+          var name: String { Self.name }
+          let con: Int = 0
+          func dialog() {}
+          var givenName: String
+          var familyName: String
+        }
+        """,
+        expandedSource: """
+          struct Contact {
+            static var name: String { "name" }
+            var name: String { Self.name }
+            let con: Int = 0
+            func dialog() {}
+            @_cowOptimizationTracked @inlinable
+            var givenName: String
+            @_cowOptimizationTracked @inlinable
+            var familyName: String
+
+            @usableFromInline final class _Storage {
+
+              @usableFromInline var givenName: String
+              @usableFromInline var familyName: String
+
+              @inlinable init(
+                givenName: String,
+                familyName: String
+              ) {
+                self.givenName = givenName
+                self.familyName = familyName
+              }
+
+              @inlinable func copy() -> _Storage {
+                _Storage(
+                  givenName: givenName,
+                  familyName: familyName
+                )
+              }
+            }
+
+            @usableFromInline var _storage: _Storage
+          }
+          """,
+        macros: ["_cowOptimization": CoWOptimizationMacro.self]
+      )
     }
 
     #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -126,81 +153,46 @@
       @available(SwiftStdlib 6.0, *)
     #endif
     @Test func coWOptimizationApplyinlinableAttributeCorrectly() throws {
-      let originalSource =
+      assertMacroExpansion(
         """
         @_cowOptimization struct Contact {
           @inlinable var givenName: String
           var familyName: String
         }
-        """
-      let expectedExpandedSource = """
-        struct Contact {
-          @inlinable
-          var givenName: String {
-            get {
-              return self._storage.givenName
-            }
-            _modify {
-              if !isKnownUniquelyReferenced(&self._storage) {
-                self._storage = self._storage.copy()
+        """,
+        expandedSource: """
+          struct Contact {
+            @inlinable
+            @_cowOptimizationTracked var givenName: String
+            @_cowOptimizationTracked @inlinable
+            var familyName: String
+
+            @usableFromInline final class _Storage {
+
+              @usableFromInline var givenName: String
+              @usableFromInline var familyName: String
+
+              @inlinable init(
+                givenName: String,
+                familyName: String
+              ) {
+                self.givenName = givenName
+                self.familyName = familyName
               }
-              yield &self._storage.givenName
-            }
-          }
-          @inlinable
-          var familyName: String {
-            get {
-              return self._storage.familyName
-            }
-            _modify {
-              if !isKnownUniquelyReferenced(&self._storage) {
-                self._storage = self._storage.copy()
+
+              @inlinable func copy() -> _Storage {
+                _Storage(
+                  givenName: givenName,
+                  familyName: familyName
+                )
               }
-              yield &self._storage.familyName
             }
+
+            @usableFromInline var _storage: _Storage
           }
-
-          @usableFromInline final class _Storage {
-
-            @usableFromInline var givenName: String
-            @usableFromInline var familyName: String
-
-            @inlinable init(
-              givenName: String,
-              familyName: String
-            ) {
-              self.givenName = givenName
-              self.familyName = familyName
-            }
-
-            @inlinable func copy() -> _Storage {
-              _Storage(
-                givenName: givenName,
-                familyName: familyName
-              )
-            }
-          }
-
-          @usableFromInline var _storage: _Storage
-        }
-        """
-      assertMacroExpansion(
-        originalSource,
-        expandedSource: expectedExpandedSource,
-        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
-        indentationWidth: .spaces(2)
-      ) {
-        #expect(
-          Bool(false),
-          "\($0.message)",
-          sourceLocation: SourceLocation(
-            fileID: $0.location.fileID,
-            filePath: $0.location.filePath,
-            line: $0.location.line,
-            column: $0.location.column
-          )
-        )
-      }
+          """,
+        macros: ["_cowOptimization": CoWOptimizationMacro.self]
+      )
     }
 
     #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -208,68 +200,42 @@
     #else
       @available(SwiftStdlib 6.0, *)
     #endif
-    @Test func coWOptimizationIgnoredMacro() throws {
-      let originalSource =
+    @Test func coWOptimizationIgnoreMembersAlreadyContainsTrackedAndIgnoredMacro() throws {
+      assertMacroExpansion(
         """
         @_cowOptimization struct Contact {
           @_cowOptimizationIgnored var givenName: String
-          var familyName: String
+          @_cowOptimizationTracked var familyName: String
         }
-        """
+        """,
+        expandedSource: """
+          struct Contact {
+            @_cowOptimizationIgnored var givenName: String
+            @_cowOptimizationTracked
+            @inlinable var familyName: String
 
-      let expectedExpandedSource = """
-        struct Contact {
-          var givenName: String
-          @inlinable
-          var familyName: String {
-            get {
-              return self._storage.familyName
-            }
-            _modify {
-              if !isKnownUniquelyReferenced(&self._storage) {
-                self._storage = self._storage.copy()
+            @usableFromInline final class _Storage {
+
+              @usableFromInline var familyName: String
+
+              @inlinable init(
+                familyName: String
+              ) {
+                self.familyName = familyName
               }
-              yield &self._storage.familyName
+
+              @inlinable func copy() -> _Storage {
+                _Storage(
+                  familyName: familyName
+                )
+              }
             }
+
+            @usableFromInline var _storage: _Storage
           }
-
-          @usableFromInline final class _Storage {
-
-            @usableFromInline var familyName: String
-
-            @inlinable init(
-              familyName: String
-            ) {
-              self.familyName = familyName
-            }
-
-            @inlinable func copy() -> _Storage {
-              _Storage(
-                familyName: familyName
-              )
-            }
-          }
-
-          @usableFromInline var _storage: _Storage
-        }
-        """
-      assertMacroExpansion(
-        originalSource,
-        expandedSource: expectedExpandedSource,
-        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
-        indentationWidth: .spaces(2)
-      ) {
-        #expect(
-          Bool(false),
-          "\($0.message)",
-          sourceLocation: SourceLocation(
-            fileID: $0.location.fileID,
-            filePath: $0.location.filePath,
-            line: $0.location.line,
-            column: $0.location.column
-          )
-        )
-      }
+          """,
+        macros: ["_cowOptimization": CoWOptimizationMacro.self]
+      )
     }
 
     #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -278,81 +244,31 @@
       @available(SwiftStdlib 6.0, *)
     #endif
     @Test func coWOptimizationTrackedMacro() throws {
-      let originalSource =
+      assertMacroExpansion(
         """
-        @_cowOptimization struct Contact {
+        struct Contact {
           @_cowOptimizationTracked var givenName: String
           var familyName: String
         }
-        """
-
-      let expectedExpandedSource = """
-        struct Contact {
-          @inlinable var givenName: String {
-            get {
-              return self._storage.givenName
-            }
-            _modify {
-              if !isKnownUniquelyReferenced(&self._storage) {
-                self._storage = self._storage.copy()
+        """,
+        expandedSource: """
+          struct Contact {
+            var givenName: String {
+              get {
+                return self._storage.givenName
               }
-              yield &self._storage.givenName
-            }
-          }
-          @inlinable
-          var familyName: String {
-            get {
-              return self._storage.familyName
-            }
-            _modify {
-              if !isKnownUniquelyReferenced(&self._storage) {
-                self._storage = self._storage.copy()
+              _modify {
+                if !isKnownUniquelyReferenced(&self._storage) {
+                  self._storage = self._storage.copy()
+                }
+                yield &self._storage.givenName
               }
-              yield &self._storage.familyName
             }
+            var familyName: String
           }
-
-          @usableFromInline final class _Storage {
-
-            @usableFromInline var givenName: String
-            @usableFromInline var familyName: String
-
-            @inlinable init(
-              givenName: String,
-              familyName: String
-            ) {
-              self.givenName = givenName
-              self.familyName = familyName
-            }
-
-            @inlinable func copy() -> _Storage {
-              _Storage(
-                givenName: givenName,
-                familyName: familyName
-              )
-            }
-          }
-
-          @usableFromInline var _storage: _Storage
-        }
-        """
-      assertMacroExpansion(
-        originalSource,
-        expandedSource: expectedExpandedSource,
-        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
-        indentationWidth: .spaces(2)
-      ) {
-        #expect(
-          Bool(false),
-          "\($0.message)",
-          sourceLocation: SourceLocation(
-            fileID: $0.location.fileID,
-            filePath: $0.location.filePath,
-            line: $0.location.line,
-            column: $0.location.column
-          )
-        )
-      }
+          """,
+        macros: ["_cowOptimizationTracked": CoWOptimizationTrackedMacro.self]
+      )
     }
 
     #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -361,36 +277,21 @@
       @available(SwiftStdlib 6.0, *)
     #endif
     @Test func cowOptimizationTrackedIgnoreComputedProperty() {
-      let originalSource =
+      assertMacroExpansion(
         """
         struct Contact {
           @_cowOptimizationTracked var givenName: String { "Jackson" }
           var familyName: String
         }
-        """
-      let expectedExpandedSource = """
-        struct Contact {
-          var givenName: String { "Jackson" }
-          var familyName: String
-        }
-        """
-      assertMacroExpansion(
-        originalSource,
-        expandedSource: expectedExpandedSource,
-        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
-        indentationWidth: .spaces(2)
-      ) {
-        #expect(
-          Bool(false),
-          "\($0.message)",
-          sourceLocation: SourceLocation(
-            fileID: $0.location.fileID,
-            filePath: $0.location.filePath,
-            line: $0.location.line,
-            column: $0.location.column
-          )
-        )
-      }
+        """,
+        expandedSource: """
+          struct Contact {
+            var givenName: String { "Jackson" }
+            var familyName: String
+          }
+          """,
+        macros: ["_cowOptimizationTracked": CoWOptimizationTrackedMacro.self]
+      )
     }
 
     #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -399,36 +300,21 @@
       @available(SwiftStdlib 6.0, *)
     #endif
     @Test func cowOptimizationTrackedIgnoreImmutableProperty() {
-      let originalSource =
+      assertMacroExpansion(
         """
         struct Contact {
           @_cowOptimizationTracked let givenName: String = "Jackson"
           var familyName: String
         }
-        """
-      let expectedExpandedSource = """
-        struct Contact {
-          let givenName: String = "Jackson"
-          var familyName: String
-        }
-        """
-      assertMacroExpansion(
-        originalSource,
-        expandedSource: expectedExpandedSource,
-        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
-        indentationWidth: .spaces(2)
-      ) {
-        #expect(
-          Bool(false),
-          "\($0.message)",
-          sourceLocation: SourceLocation(
-            fileID: $0.location.fileID,
-            filePath: $0.location.filePath,
-            line: $0.location.line,
-            column: $0.location.column
-          )
-        )
-      }
+        """,
+        expandedSource: """
+          struct Contact {
+            let givenName: String = "Jackson"
+            var familyName: String
+          }
+          """,
+        macros: ["_cowOptimizationTracked": CoWOptimizationTrackedMacro.self]
+      )
     }
 
     #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -437,36 +323,21 @@
       @available(SwiftStdlib 6.0, *)
     #endif
     @Test func cowOptimizationTrackedIgnoreNonInstanceProperty() {
-      let originalSource =
+      assertMacroExpansion(
         """
         struct Contact {
           @_cowOptimizationTracked static var givenName: String
           var familyName: String
         }
-        """
-      let expectedExpandedSource = """
-        struct Contact {
-          static var givenName: String
-          var familyName: String
-        }
-        """
-      assertMacroExpansion(
-        originalSource,
-        expandedSource: expectedExpandedSource,
-        macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
-        indentationWidth: .spaces(2)
-      ) {
-        #expect(
-          Bool(false),
-          "\($0.message)",
-          sourceLocation: SourceLocation(
-            fileID: $0.location.fileID,
-            filePath: $0.location.filePath,
-            line: $0.location.line,
-            column: $0.location.column
-          )
-        )
-      }
+        """,
+        expandedSource: """
+          struct Contact {
+            static var givenName: String
+            var familyName: String
+          }
+          """,
+        macros: ["_cowOptimizationTracked": CoWOptimizationTrackedMacro.self]
+      )
     }
 
     #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -474,85 +345,22 @@
     #else
       @available(SwiftStdlib 6.0, *)
     #endif
-    @Test func coWOptimizationTrackedApplyinlinableAttributeCorrectly() throws {
-      let originalSources = [
+    @Test func cowOptimizationIgnoreMacro() {
+      assertMacroExpansion(
         """
-        @_cowOptimization struct Contact {
-          @inlinable @_cowOptimizationTracked var givenName: String
+        struct Contact {
+          @_cowOptimizationIgnored var givenName: String
           var familyName: String
         }
-        """
-      ]
-      let expectedExpandedSource = """
-        struct Contact {
-          @inlinable var givenName: String {
-            get {
-              return self._storage.givenName
-            }
-            _modify {
-              if !isKnownUniquelyReferenced(&self._storage) {
-                self._storage = self._storage.copy()
-              }
-              yield &self._storage.givenName
-            }
+        """,
+        expandedSource: """
+          struct Contact {
+            var givenName: String
+            var familyName: String
           }
-          @inlinable
-          var familyName: String {
-            get {
-              return self._storage.familyName
-            }
-            _modify {
-              if !isKnownUniquelyReferenced(&self._storage) {
-                self._storage = self._storage.copy()
-              }
-              yield &self._storage.familyName
-            }
-          }
-
-          @usableFromInline final class _Storage {
-
-            @usableFromInline var givenName: String
-            @usableFromInline var familyName: String
-
-            @inlinable init(
-              givenName: String,
-              familyName: String
-            ) {
-              self.givenName = givenName
-              self.familyName = familyName
-            }
-
-            @inlinable func copy() -> _Storage {
-              _Storage(
-                givenName: givenName,
-                familyName: familyName
-              )
-            }
-          }
-
-          @usableFromInline var _storage: _Storage
-        }
-        """
-      for originalSource in originalSources {
-        assertMacroExpansion(
-          originalSource,
-          expandedSource: expectedExpandedSource,
-          macroSpecs: testMacros.mapValues { MacroSpec(type: $0) },
-          indentationWidth: .spaces(2)
-        ) {
-          #expect(
-            Bool(false),
-            "\($0.message)",
-            sourceLocation: SourceLocation(
-              fileID: $0.location.fileID,
-              filePath: $0.location.filePath,
-              line: $0.location.line,
-              column: $0.location.column
-            )
-          )
-        }
-      }
+          """,
+        macros: ["_cowOptimizationIgnored": CoWOptimizationIgnoredMacro.self]
+      )
     }
-
   }
 #endif
