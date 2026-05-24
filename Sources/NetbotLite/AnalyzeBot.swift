@@ -376,7 +376,7 @@ import Tracing
           resolutions: []
         )
 
-        await session.publish(with: connectionPublisher)
+        await session.publish(using: connectionPublisher)
 
         try await session.evalProtocolLookup(
           logger: logger,

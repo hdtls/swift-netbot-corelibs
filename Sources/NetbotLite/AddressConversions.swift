@@ -28,9 +28,9 @@ extension SocketAddress {
   public func asAddress() throws -> Address {
     switch self {
     case .v4:
-      return .hostPort(host: .init(ipAddress!), port: .init(rawValue: UInt16(port ?? 0)))
+      return .hostPort(host: .init(ipAddress!), port: .init(rawValue: UInt16(port!)))
     case .v6:
-      return .hostPort(host: .init(ipAddress!), port: .init(rawValue: UInt16(port ?? 0)))
+      return .hostPort(host: .init(ipAddress!), port: .init(rawValue: UInt16(port!)))
     case .unixDomainSocket:
       return .unix(path: pathname!)
     }
@@ -48,8 +48,8 @@ extension Address {
     switch self {
     case .hostPort(let host, let port):
       switch host {
-      case .name(let string):
-        return try SocketAddress.makeAddressResolvingHost(string, port: Int(port.rawValue))
+      case .name:
+        throw AnalyzeError.operationUnsupported
       case .ipv4(let address):
         return try SocketAddress(ipAddress: "\(address)", port: Int(port.rawValue))
       case .ipv6(let address):

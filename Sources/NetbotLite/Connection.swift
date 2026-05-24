@@ -63,9 +63,9 @@ extension Connection.State {
 #endif
 extension Connection {
 
-  private func processInfoLookup(logger: Logger, proc: any ProcessReporting) async throws {
+  func processInfoLookup(logger: Logger, proc: any ProcessReporting) async throws {
     // We don't care error of process report generating, so we can use optional try.
-    try? await withSpan("process-report gen") { _ in
+    try await withSpan("process-report gen") { _ in
       assert(establishmentReport != nil)
       guard establishmentReport?.sourceEndpoint != nil else {
         return
@@ -82,20 +82,13 @@ extension Connection {
   /// resolution accordingly. Completion is signaled via a promise and the function returns only after at least one query
   /// path has produced a result (or both have failed). The entire process runs within a tracing span named "dns query".
   ///
-  private func dnsLookup(logger: Logger, resolver: any Resolver, on eventLoop: any EventLoop)
-    async throws
-  {
+  func dnsLookup(logger: Logger, resolver: any Resolver, on eventLoop: any EventLoop) async throws {
     try await withSpan("dns query") { _ in
       let startTime = DispatchTime.now()
       let hostname: String
-      guard let address = originalRequest?.address, let port = originalRequest?.port
-      else {
-        dnsResolutionReport = DNSResolutionReport(
-          duration: startTime.distance(to: .now()).duration,
-          resolutions: []
-        )
-        return
-      }
+
+      let address = originalRequest?.address
+      let port = originalRequest?.port ?? 0
 
       switch address {
       case .hostPort(let host, _):
@@ -110,7 +103,7 @@ extension Connection {
                 source: .cache,
                 duration: startTime.distance(to: .now()).duration,
                 dnsProtocol: .unknown,
-                endpoints: [address]
+                endpoints: [address!]
               )
             ]
           )
@@ -124,6 +117,12 @@ extension Connection {
         return
       case .url:
         // Not supported yet.
+        dnsResolutionReport = DNSResolutionReport(
+          duration: startTime.distance(to: .now()).duration,
+          resolutions: []
+        )
+        return
+      case .none:
         dnsResolutionReport = DNSResolutionReport(
           duration: startTime.distance(to: .now()).duration,
           resolutions: []
@@ -179,7 +178,7 @@ extension Connection {
           for await resolution in g {
             do {
               let resolutions: [DNSResolutionReport.Resolution] = try resolution.get()
-              guard !resolutions.isEmpty else { continue }
+              guard !resolutions.map(\.endpoints).joined().isEmpty else { continue }
               $dnsResolutionReport.withLock {
                 if $0 == nil {
                   $0 = DNSResolutionReport(duration: .zero, resolutions: resolutions)
@@ -210,7 +209,7 @@ extension Connection {
     }
   }
 
-  private func ruleLookup(logger: Logger, rulesEngine: any RulesEngine) async throws {
+  func ruleLookup(logger: Logger, rulesEngine: any RulesEngine) async throws {
     await withSpan("forwarding-rule lookup") { _ in
       let startTime = DispatchTime.now()
 
@@ -283,7 +282,7 @@ extension Connection {
     }
   }
 
-  func publish(with publisher: any ConnectionPublisher) async {
+  func publish(using publisher: any ConnectionPublisher) async {
     Task {
       // Publish initial state of session.
       await publisher.send(self)

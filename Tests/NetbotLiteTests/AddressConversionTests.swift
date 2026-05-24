@@ -57,15 +57,19 @@ import Testing
     @available(SwiftStdlib 6.0, *)
   #endif
   @Test func convertAddressToSocketAddress() async throws {
-    #expect(throws: Never.self) {
-      let sa = try Address.hostPort(host: "::1", port: 0).asAddress()
-      let a = try SocketAddress(ipAddress: "::1", port: 0)
-      #expect(sa == a)
+    #expect(throws: AnalyzeError.operationUnsupported) {
+      _ = try Address.hostPort(host: "swift.org", port: 443).asAddress()
     }
 
     #expect(throws: Never.self) {
       let sa = try Address.hostPort(host: "127.0.0.1", port: 0).asAddress()
       let a = try SocketAddress(ipAddress: "127.0.0.1", port: 0)
+      #expect(sa == a)
+    }
+
+    #expect(throws: Never.self) {
+      let sa = try Address.hostPort(host: "::1", port: 0).asAddress()
+      let a = try SocketAddress(ipAddress: "::1", port: 0)
       #expect(sa == a)
     }
 
