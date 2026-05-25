@@ -11,6 +11,7 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+import CryptoExtras
 import NESS
 import NIOSSL
 import NetbotLite
@@ -19,12 +20,6 @@ import NetbotProfile
 import NetbotXPC
 import SwiftASN1
 import X509
-
-#if canImport(CryptoKit)
-  import CryptoExtras
-#else
-  import _CryptoExtras
-#endif
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

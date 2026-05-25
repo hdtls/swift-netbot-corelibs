@@ -33,6 +33,7 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/apple/swift-atomics.git", from: "1.3.0"),
     .package(url: "https://github.com/apple/swift-asn1.git", from: "1.6.0"),
+    .package(url: "https://github.com/apple/swift-crypto.git", from: "4.3.0"),
     .package(url: "https://github.com/apple/swift-certificates.git", from: "1.18.0"),
     .package(url: "https://github.com/apple/swift-log.git", from: "1.11.0"),
     .package(url: "https://github.com/apple/swift-nio.git", from: "2.97.1"),
@@ -83,7 +84,7 @@ let package = Package(
         .product(name: "Preference", package: "swift-preference"),
         .product(name: "X509", package: "swift-certificates"),
         .product(name: "Alamofire", package: "Alamofire"),
-        .product(name: "_CryptoExtras", package: "swift-crypto"),
+        .product(name: "CryptoExtras", package: "swift-crypto"),
         .product(name: "Tracing", package: "swift-distributed-tracing"),
         .product(name: "Logging", package: "swift-log"),
         .product(name: "NIOCore", package: "swift-nio"),
@@ -132,7 +133,7 @@ let package = Package(
         "NetbotPreferences",
         "NetbotProfile",
         "SynchronizationExtras",
-        .product(name: "_CryptoExtras", package: "swift-crypto"),
+        .product(name: "CryptoExtras", package: "swift-crypto"),
         .product(name: "Crypto", package: "swift-crypto"),
         .product(name: "NIOSSL", package: "swift-nio-ssl"),
         .product(name: "Preference", package: "swift-preference"),
@@ -146,7 +147,7 @@ let package = Package(
       dependencies: [
         "NetbotLiteData",
         "SynchronizationExtras",
-        .product(name: "_CryptoExtras", package: "swift-crypto"),
+        .product(name: "CryptoExtras", package: "swift-crypto"),
         .product(name: "Tracing", package: "swift-distributed-tracing"),
         .product(name: "Logging", package: "swift-log"),
         .product(name: "NIOCore", package: "swift-nio"),
@@ -260,16 +261,6 @@ if Context.environment["NETBOT_REQUIRES_LOCAL_PACKAGE_DEPENDENCIES"] != nil {
     .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
   ]
 }
-
-#if canImport(Darwin)
-  package.dependencies += [
-    .package(url: "https://github.com/apple/swift-crypto.git", from: "4.3.0")
-  ]
-#else
-  package.dependencies += [
-    .package(url: "https://github.com/apple/swift-crypto.git", "3.12.0"..<"3.13.0")
-  ]
-#endif
 
 for target in package.targets {
   var settings = target.swiftSettings ?? []
