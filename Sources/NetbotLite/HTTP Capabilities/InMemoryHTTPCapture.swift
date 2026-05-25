@@ -73,7 +73,10 @@ final class InMemoryHTTPCapture<HeadT: Equatable & Sendable>: ChannelInboundHand
         let partialResult = try? HTTPResponse(head as! HTTPResponseHead)
         connection.withMutation(keyPath: \.response) {
           connection.$response.withLock {
-            $0?.httpResponse = partialResult
+            assert($0 == nil)
+            var response = Response()
+            response.httpResponse = partialResult
+            $0 = response
           }
         }
       }
