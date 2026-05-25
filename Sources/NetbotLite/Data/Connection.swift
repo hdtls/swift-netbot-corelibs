@@ -20,6 +20,10 @@ import SynchronizationExtras
   import Foundation
 #endif
 
+#if canImport(Darwin) || swift(>=6.3)
+  import Observation
+#endif
+
 #if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   import Synchronization
 #endif
@@ -37,7 +41,7 @@ public let SQL_lastInsertedID = Atomic<UInt64>(0)
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
-@Lockable final public class Connection: Identifiable, Sendable {
+@ObservationLockable final public class Connection: Identifiable, Sendable {
 
   public var id: UInt64 {
     taskIdentifier
@@ -47,22 +51,13 @@ public let SQL_lastInsertedID = Atomic<UInt64>(0)
   public let taskIdentifier: UInt64
 
   /// The original request of the sesion.
-  public var originalRequest: Request? {
-    get { self._originalRequest.withLock { $0 } }
-    set {
-      self._originalRequest.withLock { $0 = newValue }
-      if self.currentRequest == nil {
-        self.currentRequest = newValue
-      }
-    }
-  }
-  private let _originalRequest: Mutex<Request?> = .init(nil)
+  public var originalRequest: Request? = nil
 
   /// The current request of the connection.
-  @LockableTracked(accessLevel: .package)
+  @ObservationLockableTracked(accessLevel: .package)
   public var currentRequest: Request? = nil
 
-  @LockableTracked(accessLevel: .package)
+  @ObservationLockableTracked(accessLevel: .package)
   public var response: Response? = nil
 
   public var earliestBeginDate: Date = .now
@@ -77,16 +72,16 @@ public let SQL_lastInsertedID = Atomic<UInt64>(0)
   /// Access the current state of the connection
   public var state: State = .establishing
 
-  @LockableTracked(accessLevel: .package)
+  @ObservationLockableTracked(accessLevel: .package)
   public var dnsResolutionReport: DNSResolutionReport? = nil
 
   /// A establishment report.
-  @LockableTracked(accessLevel: .package)
+  @ObservationLockableTracked(accessLevel: .package)
   public var establishmentReport: EstablishmentReport? = nil
 
   public var forwardingReport: ForwardingReport? = nil
 
-  @LockableTracked(accessLevel: .package)
+  @ObservationLockableTracked(accessLevel: .package)
   public var dataTransferReport: DataTransferReport? = nil
 
   public var processReport: ProcessReport? = nil

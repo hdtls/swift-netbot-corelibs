@@ -15,7 +15,7 @@
   import SynchronizationMacros
   import Testing
 
-  struct SynchronizationMacrosTests {
+  struct LockableMacrosTests {
 
     #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
       @available(SwiftStdlib 5.9, *)

@@ -141,3 +141,58 @@ public macro LockableTracked(
 @attached(peer)
 public macro LockableIgnored() =
   #externalMacro(module: "SynchronizationMacros", type: "LockableIgnoredMacro")
+
+#if canImport(Darwin) || swift(>=6.3)
+  import Observation
+
+  #if compiler(>=6.2)
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
+  #endif
+  @attached(
+    member, names: named(_$observationRegistrar), named(access), named(withMutation),
+    named(shouldNotifyObservers)) @attached(memberAttribute)
+  @attached(
+    extension, conformances: Observable)
+  public macro ObservationLockable() =
+    #externalMacro(module: "SynchronizationMacros", type: "ObservationLockableMacro")
+#else
+  #if compiler(>=6.2)
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
+  #endif
+  @attached(member, names: named(access), named(withMutation))
+  @attached(memberAttribute)
+  public macro ObservationLockable() =
+    #externalMacro(module: "SynchronizationMacros", type: "ObservationLockableMacro")
+#endif
+
+#if compiler(>=6.2)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+#endif
+@attached(accessor, names: named(init), named(get), named(set))
+@attached(peer, names: prefixed(`$`))
+public macro ObservationLockableTracked(
+  accessLevel: Lockable.AccessLevel = .private
+) = #externalMacro(module: "SynchronizationMacros", type: "ObservationLockableTrackedMacro")
+
+#if compiler(>=6.2)
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+#endif
+@attached(peer)
+public macro ObservationLockableIgnored() =
+  #externalMacro(module: "SynchronizationMacros", type: "ObservationLockableIgnoredMacro")

@@ -60,23 +60,6 @@ import Testing
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test func setOriginalRequest() {
-    let originalRequest = Request(address: .hostPort(host: "example.com", port: 443))
-    let connection = Connection()
-    #expect(connection.originalRequest == nil)
-    #expect(connection.currentRequest == nil)
-    connection.originalRequest = originalRequest
-    #expect(connection.currentRequest == originalRequest)
-    connection.originalRequest = nil
-    #expect(connection.originalRequest == nil)
-    #expect(connection.currentRequest == originalRequest)
-  }
-
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
   @Test func identifiableConformance() async throws {
     let c = Connection()
     #expect(c.id == c.taskIdentifier)

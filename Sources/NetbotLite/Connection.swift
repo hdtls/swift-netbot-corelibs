@@ -323,7 +323,7 @@ extension Connection {
           continue
         }
         if let old = dataTransferReport {
-          self.dataTransferReport = .init(
+          dataTransferReport = .init(
             duration: old.duration + new.duration,
             aggregatePathReport: old.aggregatePathReport &+ new.aggregatePathReport,
             pathReport: new.aggregatePathReport

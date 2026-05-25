@@ -363,6 +363,7 @@ import Tracing
       let session = Connection()
       do {
         session.originalRequest = originalRequest
+        session.currentRequest = originalRequest
         guard let sourceEndpoint = try inputStream.remoteAddress?.asAddress() else {
           throw AnalyzeError.inputStreamEndpointInvalid
         }

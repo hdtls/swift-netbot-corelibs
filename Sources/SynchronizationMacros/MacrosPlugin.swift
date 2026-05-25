@@ -22,6 +22,9 @@ struct MacrosPlugin: CompilerPlugin {
       LockableMacro.self,
       LockableTrackedMacro.self,
       LockableIgnoredMacro.self,
+      ObservationLockableMacro.self,
+      ObservationLockableTrackedMacro.self,
+      ObservationLockableIgnoredMacro.self,
     ]
   }
 }
