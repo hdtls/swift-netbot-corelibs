@@ -22,7 +22,7 @@ import NetbotLiteData
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
-final class OnDiskHTTPCapature<HeadT: Equatable & Sendable>: ChannelInboundHandler, Sendable {
+final class OnDiskHTTPCapture<HeadT: Equatable & Sendable>: ChannelInboundHandler, Sendable {
 
   typealias InboundIn = HTTPPart<HeadT, ByteBuffer>
   typealias InboundOut = HTTPPart<HeadT, IOData>

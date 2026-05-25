@@ -34,7 +34,7 @@ import NetbotLiteData
 #else
   @available(SwiftStdlib 6.0, *)
 #endif
-final class InMemoryHTTPCapature<HeadT: Equatable & Sendable>: ChannelInboundHandler, Sendable {
+final class InMemoryHTTPCapture<HeadT: Equatable & Sendable>: ChannelInboundHandler, Sendable {
 
   typealias InboundIn = HTTPPart<HeadT, ByteBuffer>
   typealias InboundOut = HTTPPart<HeadT, IOData>
@@ -63,39 +63,52 @@ final class InMemoryHTTPCapature<HeadT: Equatable & Sendable>: ChannelInboundHan
           secure: connection.tls,
           splitCookie: false
         )
-        connection.$currentRequest.withLock {
-          $0?.httpRequest = partialResult
+
+        connection.withMutation(keyPath: \.currentRequest) {
+          connection.$currentRequest.withLock {
+            $0?.httpRequest = partialResult
+          }
         }
       } else {
         let partialResult = try? HTTPResponse(head as! HTTPResponseHead)
-        connection.$response.withLock {
-          $0?.httpResponse = partialResult
+        connection.withMutation(keyPath: \.response) {
+          connection.$response.withLock {
+            $0?.httpResponse = partialResult
+          }
         }
       }
     case .body(let partialResult):
       if HeadT.self == HTTPRequestHead.self {
-        connection.$currentRequest.withLock {
-          let body = $0?.body ?? .init()
-          $0?.body = body
-          $0?.body?.append(contentsOf: Array(buffer: partialResult))
+        connection.withMutation(keyPath: \.currentRequest) {
+          connection.$currentRequest.withLock {
+            let body = $0?.body ?? .init()
+            $0?.body = body
+            $0?.body?.append(contentsOf: Array(buffer: partialResult))
+          }
         }
       } else {
-        connection.$response.withLock {
-          let body = $0?.body ?? .init()
-          $0?.body = body
-          $0?.body?.append(contentsOf: Array(buffer: partialResult))
+        connection.withMutation(keyPath: \.response) {
+          connection.$response.withLock {
+            let body = $0?.body ?? .init()
+            $0?.body = body
+            $0?.body?.append(contentsOf: Array(buffer: partialResult))
+          }
         }
       }
     case .end(let headers):
       guard let headers else { return }
       let trailers = HTTPFields(headers, splitCookie: false)
       if HeadT.self == HTTPRequestHead.self {
-        connection.$currentRequest.withLock {
-          $0?.trailers = trailers
+        connection.withMutation(keyPath: \.currentRequest) {
+          connection.$currentRequest.withLock {
+            $0?.trailers = trailers
+          }
         }
       } else {
-        connection.$response.withLock {
-          $0?.trailers = trailers
+        connection.withMutation(keyPath: \.response) {
+          connection.$response.withLock {
+            $0?.trailers = trailers
+          }
         }
       }
     }

@@ -27,7 +27,6 @@ extension CapabilityFlags {
 
   func buildTLS(
     logger: Logger,
-    application: AnalyzeBot,
     connection session: Connection,
     decryptionDNSNames: [String],
     decryptionSSLPKCS12Bundle: NIOSSLPKCS12Bundle?,
@@ -145,11 +144,11 @@ extension CapabilityFlags {
                     connection: session,
                     enabledHTTPCapabilities: self
                   ),
-                  InMemoryHTTPCapature<HTTPRequestHead>(
+                  InMemoryHTTPCapture<HTTPRequestHead>(
                     connection: session,
                     captureFilters: inMemoryHTTPCaptureFilters
                   ),
-                  OnDiskHTTPCapature<HTTPRequestHead>(
+                  OnDiskHTTPCapture<HTTPRequestHead>(
                     connection: session,
                     captureFilters: onDiskHTTPCaptureFilters
                   ),
@@ -168,11 +167,11 @@ extension CapabilityFlags {
                     connection: session,
                     enabledHTTPCapabilities: self
                   ),
-                  InMemoryHTTPCapature<HTTPResponseHead>(
+                  InMemoryHTTPCapture<HTTPResponseHead>(
                     connection: session,
                     captureFilters: inMemoryHTTPCaptureFilters
                   ),
-                  OnDiskHTTPCapature<HTTPResponseHead>(
+                  OnDiskHTTPCapture<HTTPResponseHead>(
                     connection: session,
                     captureFilters: onDiskHTTPCaptureFilters
                   ),

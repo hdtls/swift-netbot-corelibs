@@ -405,19 +405,21 @@ import Tracing
           // generation error.
           let establishmentReport = try? await outputStream.establishmentReport().get()
           if let establishmentReport {
-            session.$establishmentReport.withLock {
-              assert($0 != nil)
+            session.withMutation(keyPath: \.establishmentReport) {
+              session.$establishmentReport.withLock {
+                assert($0 != nil)
 
-              // `EstablishmentReport.sourceEndpoint` is requested from server channel, but
-              // establishment report is requested from client channel, so we need update sourceEndpoint
-              // to use original value.
-              let usedProxy = $0?.usedProxy ?? false
+                // `EstablishmentReport.sourceEndpoint` is requested from server channel, but
+                // establishment report is requested from client channel, so we need update sourceEndpoint
+                // to use original value.
+                let usedProxy = $0?.usedProxy ?? false
 
-              $0?.duration = establishmentReport.duration
-              $0?.attemptStartedAfterInterval = establishmentReport.attemptStartedAfterInterval
-              $0?.previousAttemptCount = establishmentReport.previousAttemptCount
-              $0?.proxyEndpoint = usedProxy ? (try? outputStream.remoteAddress?.asAddress()) : nil
-              $0?.resolutions = establishmentReport.resolutions
+                $0?.duration = establishmentReport.duration
+                $0?.attemptStartedAfterInterval = establishmentReport.attemptStartedAfterInterval
+                $0?.previousAttemptCount = establishmentReport.previousAttemptCount
+                $0?.proxyEndpoint = usedProxy ? (try? outputStream.remoteAddress?.asAddress()) : nil
+                $0?.resolutions = establishmentReport.resolutions
+              }
             }
           }
         }
@@ -429,7 +431,6 @@ import Tracing
           self.capabilities
             .buildTLS(
               logger: self.logger,
-              application: self,
               connection: session,
               decryptionDNSNames: self.decryptionDNSNames,
               decryptionSSLPKCS12Bundle: self.decryptionSSLPKCS12Bundle,

@@ -18,6 +18,10 @@ import NIOCore
 import NetbotLiteData
 import Tracing
 
+#if canImport(Darwin) || swift(>=6.3)
+  import Observation
+#endif
+
 #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
   import SynchronizationExtras
 #else
@@ -179,11 +183,13 @@ extension Connection {
             do {
               let resolutions: [DNSResolutionReport.Resolution] = try resolution.get()
               guard !resolutions.map(\.endpoints).joined().isEmpty else { continue }
-              $dnsResolutionReport.withLock {
-                if $0 == nil {
-                  $0 = DNSResolutionReport(duration: .zero, resolutions: resolutions)
-                } else {
-                  $0?.resolutions.append(contentsOf: resolutions)
+              withMutation(keyPath: \.dnsResolutionReport) {
+                $dnsResolutionReport.withLock {
+                  if $0 == nil {
+                    $0 = DNSResolutionReport(duration: .zero, resolutions: resolutions)
+                  } else {
+                    $0?.resolutions.append(contentsOf: resolutions)
+                  }
                 }
               }
               promise.succeed()
@@ -194,6 +200,7 @@ extension Connection {
 
           if let lastError {
             // Failed when both DNS resolutions is empty and an error is occured.
+            access(keyPath: \.dnsResolutionReport)
             if $dnsResolutionReport.withLock({ $0?.resolutions.isEmpty ?? true }) {
               promise.fail(lastError)
             }
@@ -269,9 +276,11 @@ extension Connection {
       }
 
       if fallback is any ProxiableForwardProtocol {
-        $establishmentReport.withLock {
-          assert($0 != nil)
-          $0?.usedProxy = true
+        withMutation(keyPath: \.establishmentReport) {
+          $establishmentReport.withLock {
+            assert($0 != nil)
+            $0?.usedProxy = true
+          }
         }
       }
 
@@ -283,22 +292,76 @@ extension Connection {
   }
 
   func publish(using publisher: any ConnectionPublisher) async {
-    Task {
-      // Publish initial state of session.
-      await publisher.send(self)
+    #if canImport(Darwin) || swift(>=6.3)
+      Task { [weak self] in
+        guard let self else { return }
 
-      repeat {
-        try? await Task.sleep(nanoseconds: 1_000_000_000)
-        duration += .seconds(1)
+        if #available(SwiftStdlib 6.2, *) {
+          let observations = Observations {
+            (
+              self.currentRequest,
+              self.response,
+              self.duration,
+              self.tls,
+              self.state,
+              self.dnsResolutionReport,
+              self.establishmentReport,
+              self.forwardingReport,
+              self.dataTransferReport,
+              self.processReport
+            )
+          }
 
-        // Publish session changes.
+          for await _ in observations {
+            await publisher.send(self)
+          }
+        } else {
+          @Sendable func observe() {
+            withObservationTracking {
+              _ = (
+                self.currentRequest,
+                self.response,
+                self.duration,
+                self.tls,
+                self.state,
+                self.dnsResolutionReport,
+                self.establishmentReport,
+                self.forwardingReport,
+                self.dataTransferReport,
+                self.processReport
+              )
+            } onChange: {
+              Task {
+                await publisher.send(self)
+
+                // re-register observation
+                observe()
+              }
+            }
+          }
+          observe()
+        }
+      }
+    #else
+      Task {
+        // Publish initial state of session.
         await publisher.send(self)
-      } while !state.isFinished
 
-      // Reset the data transfer report metrics and publish changes.
-      $dataTransferReport.withLock { $0?.pathReport = .init() }
-      await publisher.send(self)
-    }
+        repeat {
+          try? await Task.sleep(for: .seconds(1))
+          duration += .seconds(1)
+
+          // Publish session changes.
+          await publisher.send(self)
+        } while !state.isFinished
+
+        // Reset the data transfer report metrics and publish changes.
+        withMutation(keyPath: \.dataTransferReport) {
+          $dataTransferReport.withLock { $0?.pathReport = .init() }
+        }
+        await publisher.send(self)
+      }
+    #endif
   }
 
   func collectDataTransferMetrics(on channel: any Channel) async {
@@ -317,7 +380,7 @@ extension Connection {
           break
         }
 
-        try? await Task.sleep(nanoseconds: 1_000_000_000)
+        try? await Task.sleep(for: .seconds(1))
         // We don't care about failure here ignore errors by optional try.
         guard let new = try? await channel.dataTransferReport(collector).get() else {
           continue

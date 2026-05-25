@@ -64,8 +64,10 @@ final class ProcessResolver: ProcessReporting {
 
       if let endpoint = $0[sourceEndpoint] {
         sourceEndpoint = endpoint
-        connection.$establishmentReport.withLock {
-          $0?.sourceEndpoint = sourceEndpoint
+        connection.withMutation(keyPath: \.establishmentReport) {
+          connection.$establishmentReport.withLock {
+            $0?.sourceEndpoint = sourceEndpoint
+          }
         }
       }
 
