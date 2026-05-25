@@ -21,7 +21,6 @@ import NetbotProfile
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
-  import class Foundation.UserDefaults
 #else
   import Foundation
 #endif

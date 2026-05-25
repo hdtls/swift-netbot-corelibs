@@ -45,6 +45,8 @@ import SynchronizationExtras
 
   private let group: any EventLoopGroup
   private let address: Address
+  var localAddress: Address? = nil
+
   #if canImport(Network)
     private var outboundStreams: [ObjectIdentifier: NWConnection] = [:]
     private let closePromise: EventLoopPromise<Void>
@@ -53,9 +55,9 @@ import SynchronizationExtras
     private var outboundStreams: [ObjectIdentifier: AsyncStream<ByteBuffer>.Continuation] = [:]
     private let quiescing: ServerQuiescingHelper
   #endif
-  private let jsonEncoder = JSONEncoder()
+  private let coder = JSONEncoder()
 
-  private var connections: [UInt64: Connection] = [:]
+  private var requestTaskMap: [UInt64: Connection] = [:]
 
   init(group: any EventLoopGroup, address: Address) {
     self.group = group
@@ -68,13 +70,6 @@ import SynchronizationExtras
   }
 
   func run() async throws {
-    // FIXME: [#NoUseUnstructuredThrowingTask]
-    _ = Task {
-      try await run0()
-    }
-  }
-
-  func run0() async throws {
     #if canImport(Network)
       let parameters = NWParameters.tcp
       parameters.requiredLocalEndpoint = try address.asEndpoint()
@@ -85,16 +80,68 @@ import SynchronizationExtras
       }
       parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
 
+      let promise = group.next().makePromise(of: Void.self)
+
+      let _once = Mutex(false)
+      @Sendable func once(_ execute: () -> Void) {
+        let onceToken = _once.withLock {
+          if $0 {
+            return false
+          } else {
+            $0 = true
+            return true
+          }
+        }
+        guard onceToken else { return }
+        execute()
+      }
+
+      let task = Task {
+        try await Task.sleep(for: .seconds(5))
+        try Task.checkCancellation()
+
+        guard listener?.state != .ready else { return }
+        listener?.cancel()
+        once {
+          promise.fail(NWError.posix(.ETIMEDOUT))
+        }
+      }
+
       listener = try NWListener(using: parameters)
-      listener?.stateUpdateHandler = { [self] in
+      listener?.stateUpdateHandler = { [weak self] in
+        guard let self else { return }
         switch $0 {
-        case .setup, .ready:
+        case .setup:
           break
-        case .waiting(let error):
-          closePromise.fail(error)
+        case .ready:
+          // Update local address if needed.
+          if address.port == 0 {
+            switch address {
+            case .hostPort(let host, _):
+              guard let port = listener?.port?.rawValue else { return }
+              localAddress = .hostPort(host: host, port: .init(rawValue: port))
+            case .unix:
+              localAddress = address
+            case .url:
+              break
+            }
+          } else {
+            localAddress = address
+          }
+          task.cancel()
+          once {
+            promise.succeed()
+          }
+        case .waiting:
+          break
         case .failed(let error):
-          closePromise.fail(error)
+          listener?.cancel()
+          listener = nil
+          once {
+            promise.fail(error)
+          }
         case .cancelled:
+          listener = nil
           closePromise.succeed()
         @unknown default:
           break
@@ -109,6 +156,7 @@ import SynchronizationExtras
             self.$outboundStreams.withLock {
               $0[ObjectIdentifier(connection)] = connection
             }
+            self.syncHistory()
           case .failed, .cancelled:
             self.$outboundStreams.withLock {
               _ = $0.removeValue(forKey: ObjectIdentifier(connection))
@@ -120,7 +168,7 @@ import SynchronizationExtras
         connection.start(queue: .global())
       }
       listener?.start(queue: .global())
-      try await closePromise.futureResult.get()
+      try await promise.futureResult.get()
     #else
       let channel = try await ServerBootstrap(group: group)
         .serverChannelInitializer { channel in
@@ -165,33 +213,36 @@ import SynchronizationExtras
             )
         }
 
-      try await withThrowingDiscardingTaskGroup { g in
-        try await channel.executeThenClose { inbound in
-          for try await negotiationResult in inbound {
-            g.addTask {
-              let childChannel = try await negotiationResult.get()
+      localAddress = try channel.channel.localAddress?.asAddress()
+      _ = Task {
+        try await withThrowingDiscardingTaskGroup { g in
+          try await channel.executeThenClose { inbound in
+            for try await negotiationResult in inbound {
+              g.addTask {
+                let childChannel = try await negotiationResult.get()
 
-              let key = ObjectIdentifier(childChannel.channel)
-              let (stream, continuation) = AsyncStream.makeStream(of: ByteBuffer.self)
-              self.$outboundStreams.withLock {
-                $0[key] = continuation
-              }
-
-              try await childChannel.executeThenClose { _, outbound in
-                try await withThrowingTaskGroup(of: Void.self) { g in
-                  g.addTask {
-                    for try await frame in stream {
-                      try? await outbound.write(frame)
-                    }
-                  }
-
-                  try await g.next()
-                  g.cancelAll()
+                let key = ObjectIdentifier(childChannel.channel)
+                let (stream, continuation) = AsyncStream.makeStream(of: ByteBuffer.self)
+                self.$outboundStreams.withLock {
+                  $0[key] = continuation
                 }
-              }
 
-              self.$outboundStreams.withLock {
-                _ = $0.removeValue(forKey: key)
+                try await childChannel.executeThenClose { _, outbound in
+                  try await withThrowingTaskGroup(of: Void.self) { g in
+                    g.addTask {
+                      for try await frame in stream {
+                        try? await outbound.write(frame)
+                      }
+                    }
+
+                    try await g.next()
+                    g.cancelAll()
+                  }
+                }
+
+                self.$outboundStreams.withLock {
+                  _ = $0.removeValue(forKey: key)
+                }
               }
             }
           }
@@ -226,27 +277,31 @@ import SynchronizationExtras
 
     let promise = group.next().makePromise(of: Void.self)
     #if canImport(Network)
-      promise.futureResult.cascade(to: self.closePromise)
+      self.closePromise.futureResult.cascade(to: promise)
       self.listener?.cancel()
-      self.listener = nil
-      self.closePromise.succeed()
     #else
-      quiescing.initiateShutdown(promise: promise)
+      self.quiescing.initiateShutdown(promise: promise)
     #endif
     try await promise.futureResult.get()
   }
 
   func send(_ conn: Connection) async {
-    self.$connections.withLock {
+    self.$requestTaskMap.withLock {
       $0[conn.taskIdentifier] = conn
+    }
+    syncHistory()
+  }
 
-      guard !outboundStreams.isEmpty else {
+  private func syncHistory() {
+    self.$requestTaskMap.withLock {
+      guard !outboundStreams.isEmpty, !$0.isEmpty else {
         return
       }
 
-      guard let data = try? jsonEncoder.encode(Array($0.values)) else {
+      guard let data = try? coder.encode(Array($0.values)) else {
         return
       }
+
       $0.removeAll()
 
       for outboundStream in outboundStreams {
