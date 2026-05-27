@@ -11,9 +11,9 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+import Alamofire
 import Dispatch
 import Logging
-import NEAddressProcessing
 import NetbotLiteData
 
 #if canImport(FoundationEssentials)
@@ -23,21 +23,17 @@ import NetbotLiteData
   import Foundation
 #endif
 
-#if canImport(Darwin) || swift(>=6.3)
-  import Observation
-#endif
-
 #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
   import CoreData
   import SwiftData
 #endif
 
-#if canImport(Network)
-  import Network
-#endif
-
 #if canImport(NetworkExtension)
   import NetworkExtension
+#endif
+
+#if canImport(Darwin) || swift(>=6.3)
+  import Observation
 #endif
 
 #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -48,132 +44,6 @@ import NetbotLiteData
 public enum DataTransfer: Hashable, Sendable {
   case upload
   case download
-}
-
-#if canImport(Network)
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  public enum LocalizedError: Foundation.LocalizedError, Equatable {
-    case nw(NWError)
-    case operationUnsupported
-
-    public var errorDescription: String? {
-      switch self {
-      case .nw(let error):
-        switch error {
-        case .posix:
-          return error.localizedDescription
-        case .dns, .tls:
-          return error.localizedDescription
-        case .wifiAware:
-          return error.localizedDescription
-        @unknown default:
-          return error.localizedDescription
-        }
-      case .operationUnsupported:
-        return "Operation Unsupported"
-      }
-    }
-  }
-#else
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  public enum LocalizedError: Error, Equatable {
-    case operationUnsupported
-  }
-#endif
-
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
-public protocol ConnectionsDependency: Sendable {
-
-  var messages: AsyncThrowingStream<[Connection], any Error> { get }
-}
-
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
-final class DefaultConnectionsDependency: ConnectionsDependency {
-
-  #if canImport(Network)
-    public var messages: AsyncThrowingStream<[Connection], any Error> {
-      AsyncThrowingStream { [logger] continuation in
-        let parameters = NWParameters.tcp
-        let options = NWProtocolWebSocket.Options()
-        parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
-        let connection = NWConnection(
-          to: .url(URL(string: "ws://127.0.0.1:6170")!),
-          using: parameters
-        )
-
-        continuation.onTermination = { _ in
-          connection.cancel()
-        }
-
-        connection.stateUpdateHandler = { state in
-          switch state {
-          case .setup, .waiting, .preparing:
-            break
-          case .ready:
-            @Sendable func runReadLoop() {
-              guard connection.state == .ready else {
-                return
-              }
-
-              connection.receiveMessage { content, _, _, error in
-                guard let data = content else {
-                  return
-                }
-
-                do {
-                  let models = try JSONDecoder().decode([Connection].self, from: data)
-                  continuation.yield(models)
-                } catch {
-                  assertionFailure(
-                    "BUG IN NETBOT CORE, please report: illegal data format \(error)")
-                  logger.critical("decoding connection failure with error: \(error)")
-                }
-
-                runReadLoop()
-              }
-            }
-
-            runReadLoop()
-          case .failed(let error):
-            continuation.finish(throwing: LocalizedError.nw(error))
-          case .cancelled:
-            // We have finished continuation immediately when shutdown, so there we do nothing.
-            continuation.finish(throwing: LocalizedError.nw(.posix(.ECANCELED)))
-          @unknown default:
-            continuation.finish(throwing: LocalizedError.operationUnsupported)
-          }
-        }
-        connection.start(queue: .global())
-      }
-    }
-  #else
-    public var messages: AsyncThrowingStream<[Connection], any Error> {
-      // TODO: Messages on non-Darwin Platforms
-      AsyncThrowingStream { continuation in
-        continuation.finish(throwing: LocalizedError.operationUnsupported)
-      }
-    }
-  #endif
-
-  nonisolated private let logger = Logger(label: "com.tenbits.netbot.dashboard.messages")
-
-  public init() {}
 }
 
 #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -235,20 +105,22 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
 
   /// An error encountered during the most recent attempt to fetch data.
   ///
-  /// This value is `nil` unless an fetch attempt failed. It contains the
-  /// latest error from SwiftData.
-  public var fetchError: LocalizedError? {
-    _fetchError
+  /// This value is `nil` unless an fetch attempt failed.
+  public var fetchError: AFError? { _fetchError }
+  private var _fetchError: AFError?
+
+  /// A boolean value determine whether fech operation is interrupted by error.
+  public var isInterrupted: Bool {
+    _fetchError != nil
   }
-  private var _fetchError: LocalizedError?
 
   public var pathReportFormatted: DataTransferReport.Model.PathReportFormatted {
     _pathReportFormatted
   }
   private var _pathReportFormatted = DataTransferReport.Model.PathReportFormatted()
 
-  nonisolated private let logger = Logger(label: "com.tenbits.netbot.dashboard")
-  nonisolated private let dependency: any ConnectionsDependency
+  nonisolated private let logger = Logger(label: "dashboard")
+  nonisolated private let messenger: any MessengerProtocol
   private var earliestBeginDate = Date.distantPast
   private var _aggregatePathReportTable: [String: DataTransferReport.PathReport] = [:]
   private var timerSource: DispatchSourceTimer?
@@ -263,30 +135,30 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
   #endif
 
   nonisolated public convenience init() {
-    self.init(dependency: DefaultConnectionsDependency())
+    self.init(messenger: Messenger())
   }
 
   #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     nonisolated public convenience init(
-      modelContainer: ModelContainer, dependency: any ConnectionsDependency
+      modelContainer: ModelContainer, messenger: any ConnectionsDependency
     ) {
-      self.init(_modelContainer: modelContainer, dependency: dependency)
+      self.init(_modelContainer: modelContainer, messenger: messenger)
     }
   #endif
 
-  nonisolated public convenience init(dependency: any ConnectionsDependency) {
+  nonisolated public convenience init(messenger: any MessengerProtocol) {
     #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
       let schema = Schema(versionedSchema: V1.self)
       let configuration: ModelConfiguration = .init(isStoredInMemoryOnly: true)
       let modelContainer = try! ModelContainer(for: schema, configurations: [configuration])
-      self.init(_modelContainer: modelContainer, dependency: dependency)
+      self.init(_modelContainer: modelContainer, messenger: messenger)
     #else
-      self.init(_modelContainer: nil, dependency: dependency)
+      self.init(_modelContainer: nil, messenger: messenger)
     #endif
   }
 
-  nonisolated private init(_modelContainer: Any?, dependency: any ConnectionsDependency) {
-    self.dependency = dependency
+  nonisolated private init(_modelContainer: Any?, messenger: any MessengerProtocol) {
+    self.messenger = messenger
     #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
       self.modelContainer = _modelContainer as! ModelContainer
     #endif
@@ -332,10 +204,10 @@ final class DefaultConnectionsDependency: ConnectionsDependency {
       guard let self else { return }
 
       do {
-        for try await message in dependency.messages {
+        for try await message in messenger.messages {
           performBatchUpdates(message)
         }
-      } catch let error as LocalizedError {
+      } catch let error as AFError {
         self._fetchError = error
         self.fetchTask?.cancel()
         self.fetchTask = nil

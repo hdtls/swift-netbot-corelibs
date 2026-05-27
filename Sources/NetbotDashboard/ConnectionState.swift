@@ -20,6 +20,15 @@ import NetbotLiteData
 #endif
 extension Connection.State {
 
+  var isFinished: Bool {
+    switch self {
+    case .establishing, .active:
+      return false
+    case .completed, .failed, .cancelled:
+      return true
+    }
+  }
+
   public var localizedName: String {
     switch self {
     case .establishing:

@@ -108,6 +108,8 @@ let package = Package(
       dependencies: [
         "NetbotLiteData",
         "NetbotPreferences",
+        "SynchronizationExtras",
+        .product(name: "Alamofire", package: "Alamofire"),
         .product(name: "NIOCore", package: "swift-nio"),
       ]
     ),
