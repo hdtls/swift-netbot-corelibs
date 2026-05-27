@@ -269,6 +269,12 @@ import Testing
       )
     let report = try #require(connection.dnsResolutionReport)
     #expect(!report.resolutions.isEmpty)
+
+    // `dnsLookup(logger:resolver:on)` immediately returned if any of it's query
+    // success, so we sleep for a while (0.5 second should be enough as this is
+    // a mock dns resolver, it response very quickly) to wait for all query
+    // completed.
+    try await Task.sleep(for: .seconds(0.5))
     #expect(report.resolutions.count == 2)
 
     for resolution in report.resolutions {
