@@ -16,14 +16,6 @@
   import ServiceManagement
   import Logging
 
-  // swift-format-ignore: AlwaysUseLowerCamelCase
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  public var PHT: PrivilegeScope { PrivilegeScope.shared }
-
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
   #else
@@ -39,9 +31,9 @@
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @globalActor public actor PrivilegeScope {
+  @globalActor public actor PHTSession {
 
-    public static let shared = PrivilegeScope()
+    public static let shared = PHTSession()
 
     private var authorizationExternalForm: Data?
 
@@ -49,7 +41,7 @@
     private var assistantd: NSXPCConnection!
     private var isActive = false
 
-    public let logger = Logger(label: "assistantd")
+    public let logger = Logger(label: "PHT")
 
     /// Ensures that we're connected to our XPC service.
     private func setAssistantServiceIfNeeded() async throws {
@@ -125,9 +117,18 @@
 
       let plistName = "\(ServiceName.assistantd.rawValue).plist"
 
+      try await setAssistantServiceIfNeeded()
+      let proxy = try assistantService.assistantService()
+
       do {
-        try await setAssistantServiceIfNeeded()
-        let proxy = try assistantService.assistantService()
+        let errorDomain =
+          if #available(SwiftStdlib 6.0, *) {
+            SMAppServiceErrorDomain
+          } else {
+            "SMAppServiceErrorDomain"
+          }
+
+        try await proxy.register(daemon: plistName)
 
         let status = await proxy.status(daemon: plistName)
 
@@ -135,60 +136,46 @@
         case .notRegistered:
           try await proxy.register(daemon: plistName)
           guard case .enabled = await proxy.status(daemon: plistName) else {
-            logger.error(
-              "Daemon \(ServiceName.assistantd.rawValue) has been successfully registered, but we need take action in System Settings before the service is eligible to run"
-            )
             throw NSError(
-              domain: "SMAppServiceDomain",
+              domain: errorDomain,
               code: kSMErrorLaunchDeniedByUser,
               userInfo: [
-                NSLocalizedFailureErrorKey:
+                NSLocalizedDescriptionKey:
                   "Launch daemon \(plistName) has been successfully registered, but we need take action in System Settings before the service is eligible to run"
               ]
             )
           }
           isActive = true
-          logger.debug("Daemon \(ServiceName.assistantd.rawValue) successfully registered")
+          logger.debug("Daemon \(plistName) is activated")
         case .enabled:
           isActive = true
         case .requiresApproval:
-          logger.error(
-            "Daemon \(ServiceName.assistantd.rawValue) has been successfully registered, but we need take action in System Settings before the service is eligible to run"
-          )
           throw NSError(
-            domain: "SMAppServiceDomain",
+            domain: errorDomain,
             code: kSMErrorLaunchDeniedByUser,
             userInfo: [
-              NSLocalizedFailureErrorKey:
+              NSLocalizedDescriptionKey:
                 "Launch daemon \(plistName) has been successfully registered, but we need take action in System Settings before the service is eligible to run"
             ]
           )
         case .notFound:
-          logger.error(
-            "Daemon \(ServiceName.assistantd.rawValue) not found"
-          )
           throw NSError(
-            domain: "SMAppServiceDomain",
-            code: kSMErrorJobPlistNotFound,
-            userInfo: [
-              NSLocalizedFailureErrorKey:
-                "Launch daemon \(plistName) not found"
-            ]
+            domain: errorDomain,
+            code: kSMErrorJobNotFound,
+            userInfo: [NSLocalizedDescriptionKey: "Launch daemon \(plistName) not found"]
           )
         @unknown default:
-          logger.error(
-            "Daemon \(ServiceName.assistantd.rawValue) run into unhandled @unknown default status")
           throw NSError(
-            domain: "SMAppServiceDomain",
+            domain: errorDomain,
             code: kSMErrorInternalFailure,
             userInfo: [
-              NSLocalizedFailureErrorKey:
+              NSLocalizedDescriptionKey:
                 "Launch daemon \(plistName) run into unhandled @unknown default status"
             ]
           )
         }
       } catch {
-        logger.error("Daemon \(ServiceName.assistantd.rawValue) failed to register \(error)")
+        logger.error("Daemon \(plistName) failed to activated \(error)")
         throw error
       }
     }

@@ -40,7 +40,7 @@ final class ProcessResolver: ProcessReporting {
 
   private convenience init() {
     #if os(macOS)
-      self.init(backing: PrivilegeScope.shared)
+      self.init(backing: PHTSession.shared)
     #else
       self.init(backing: OperationUnsupportedProcessInspector())
     #endif
@@ -111,7 +111,7 @@ protocol _ProcessInspector: Sendable {
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  extension PrivilegeScope: _ProcessInspector {}
+  extension PHTSession: _ProcessInspector {}
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)

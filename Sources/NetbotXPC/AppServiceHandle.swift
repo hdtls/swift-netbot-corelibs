@@ -67,12 +67,13 @@
           .debug("Launch service \(plistName, privacy: .public) has been successfully registered")
       } catch {
         logger.error("Launch service \(plistName, privacy: .public) register failed \(error)")
+        throw error
       }
     }
 
     private func unregister(plistName: String, service: SMAppService) async throws {
       do {
-        try await SMAppService.daemon(plistName: plistName).unregister()
+        try await service.unregister()
         logger
           .debug("Launch service \(plistName, privacy: .public) has been successfully unregistered")
       } catch {

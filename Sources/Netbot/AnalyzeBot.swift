@@ -71,7 +71,7 @@ public actor AnalyzeBot {
   /// Start analyze tunnel.
   public func run() async throws {
     #if os(macOS)
-      let toolVersion = try await PHT.toolVersion()
+      let toolVersion = try await PHTSession.shared.toolVersion()
       logger.trace("PHT version: \(toolVersion)")
 
       await self.core.setProcessInfo(ProcessResolver.shared)
@@ -164,7 +164,7 @@ public actor AnalyzeBot {
   #if os(macOS)
     public func setSystemProxyEnabled(_ enabled: Bool) async throws {
       do {
-        try await PHT.setNWProtocolProxies(
+        try await PHTSession.shared.setNWProtocolProxies(
           processName: Foundation.ProcessInfo.processInfo.processName,
           options: enabled ? proxySettings : nil
         )
