@@ -12,6 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 import CryptoExtras
+import MaxMindDB
 import NESS
 import NIOSSL
 import NetbotLite
@@ -113,7 +114,7 @@ extension Profile {
     return tunnelNetworkSettings
   }
 
-  func asForwardingRules() -> [any ForwardingRuleConvertible] {
+  func asForwardingRules(maxminddb: MaxMindDB?) -> [any ForwardingRuleConvertible] {
     var lazyProxies = self.lazyProxies
     lazyProxies.append(contentsOf: [
       AnyProxy(name: "DIRECT", source: .builtin, kind: .direct),
@@ -144,7 +145,7 @@ extension Profile {
         return nil
       }
 
-      return data.asForwardingRule(forwardProtocol)
+      return data.asForwardingRule(maxminddb: maxminddb, forwardProtocol: forwardProtocol)
     }
   }
 
@@ -324,34 +325,41 @@ extension AnyProxy {
 #endif
 extension AnyForwardingRule {
 
-  func asForwardingRule(_ forwardProtocol: any ForwardProtocolConvertible)
-    -> any ForwardingRuleConvertible
-  {
+  func asForwardingRule(
+    maxminddb: MaxMindDB?,
+    forwardProtocol `protocol`: any ForwardProtocolConvertible
+  ) -> any ForwardingRuleConvertible {
     switch kind {
     case .domain:
-      return DomainForwardingRule(domain: value, forwardProtocol: forwardProtocol)
+      return DomainForwardingRule(domain: value, forwardProtocol: `protocol`)
     case .domainKeyword:
       return DomainKeywordForwardingRule(
-        domainKeyword: value, forwardProtocol: forwardProtocol)
+        domainKeyword: value, forwardProtocol: `protocol`)
     case .domainSuffix:
       return DomainSuffixForwardingRule(
-        domainSuffix: value, forwardProtocol: forwardProtocol)
+        domainSuffix: value, forwardProtocol: `protocol`)
     case .domainset:
       return DomainsetForwardingRule(
-        originalURLString: value, forwardProtocol: forwardProtocol)
+        originalURLString: value, forwardProtocol: `protocol`)
     case .ruleset:
-      return RulesetForwardingRule(
-        originalURLString: value, forwardProtocol: forwardProtocol)
+      var rule = RulesetForwardingRule(originalURLString: value, forwardProtocol: `protocol`)
+      let externalRules = rule.externalRules.map {
+        guard var element = $0 as? GeoIPForwardingRule else {
+          return $0
+        }
+        element.db = maxminddb
+        return element
+      }
+      rule.externalRules = externalRules
+      return rule
     case .geoip:
-      return GeoIPForwardingRule(
-        db: nil, countryCode: value, forwardProtocol: forwardProtocol)
+      return GeoIPForwardingRule(db: maxminddb, countryCode: value, forwardProtocol: `protocol`)
     case .ipcidr:
-      return IPCIDRForwardingRule(
-        uncheckedBounds: value, forwardProtocol: forwardProtocol)
+      return IPCIDRForwardingRule(uncheckedBounds: value, forwardProtocol: `protocol`)
     case .processName:
-      return ProcessForwardingRule(processName: value, forwardProtocol: forwardProtocol)
+      return ProcessForwardingRule(processName: value, forwardProtocol: `protocol`)
     case .final:
-      return FINALForwardingRule(value, forwardProtocol: forwardProtocol)
+      return FINALForwardingRule(value, forwardProtocol: `protocol`)
     }
   }
 }

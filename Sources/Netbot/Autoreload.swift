@@ -99,11 +99,19 @@
 
     private let group: any EventLoopGroup
 
-    private var maxminddbFile: String {
+    nonisolated private var profile: Profile {
+      get async throws {
+        try await Profile(contentsOf: profileURL)
+      }
+    }
+
+    nonisolated private var maxminddbFile: URL {
       let filename = "GeoLite2-Country.mmdb"
-      let filePath = URL.maxmind.appending(path: filename, directoryHint: .notDirectory).path(
-        percentEncoded: false)
+      let filePath = URL.maxmind.appending(path: filename, directoryHint: .notDirectory)
       return filePath
+    }
+    nonisolated private var maxminddb: MaxMindDB? {
+      try? MaxMindDB(file: maxminddbFile.path(percentEncoded: false), mode: .mmap)
     }
 
     public init(group: any EventLoopGroup = .shared, store: UserDefaults?) {
@@ -178,12 +186,12 @@
     }
 
     public func run() async throws {
-      let profile = try Profile(contentsOf: profileURL)
+      let profile = try await profile
       await delegate?.setOutboundMode(outboundMode)
       await delegate?.setEnabledHTTPCapabilities(enabledHTTPCapabilities)
       await delegate?.setForwardProtocol(profile.asForwardProtocol())
       await delegate?.setDecryptionPKCS12Bundle(try? profile.asDecryptionPKCS12Bundle())
-      await setForwardingRules(profile.asForwardingRules())
+      await delegate?.setForwardingRules(profile.asForwardingRules(maxminddb: maxminddb))
       try await delegate?.setTunnelNetworkSettings(profile.asTunnelNetworkSettings(mode: proxyMode))
 
       $profileURL
@@ -191,12 +199,13 @@
         .dropFirst()
         .map { ($0.0, $0.1) }
         .sink { url, mode in
-          Task { [weak self] in
-            guard let self, let profile = try? Profile(contentsOf: url) else { return }
-            await setForwardingRules(profile.asForwardingRules())
+          _ = Task { [weak self] in
+            guard let self else { return }
+            let profile = try await profile
+            await delegate?.setForwardingRules(profile.asForwardingRules(maxminddb: maxminddb))
             await delegate?.setForwardProtocol(profile.asForwardProtocol())
-            await delegate?.setDecryptionPKCS12Bundle(try? profile.asDecryptionPKCS12Bundle())
-            try? await delegate?.setTunnelNetworkSettings(
+            await delegate?.setDecryptionPKCS12Bundle(try profile.asDecryptionPKCS12Bundle())
+            try await delegate?.setTunnelNetworkSettings(
               profile.asTunnelNetworkSettings(mode: mode))
           }
         }
@@ -267,10 +276,9 @@
     #endif
     nonisolated private func _downloadMaxmindDBs(_ url: URL) async throws {
       let session = try await self.session
-      let fileURL = await URL(fileURLWithPath: maxminddbFile)
 
       let destination: DownloadRequest.Destination = { _, _ in
-        (fileURL, [.createIntermediateDirectories, .removePreviousFile])
+        (self.maxminddbFile, [.createIntermediateDirectories, .removePreviousFile])
       }
       _ = try await session.download(url, interceptor: .retryPolicy, to: destination)
         .serializingDownloadedFileURL()
@@ -278,7 +286,7 @@
 
       let now = Date.now
       let maxminddbLastUpdatedDate =
-        (try? fileURL.resourceValues(forKeys: [.contentModificationDateKey])
+        (try? self.maxminddbFile.resourceValues(forKeys: [.contentModificationDateKey])
           .contentModificationDate)
         ?? now
 
@@ -286,8 +294,7 @@
         self.maxminddbLastUpdatedDate = maxminddbLastUpdatedDate
       }
 
-      let profile = try await Profile(contentsOf: profileURL)
-      await setForwardingRules(profile.asForwardingRules())
+      try await delegate?.setForwardingRules(profile.asForwardingRules(maxminddb: maxminddb))
     }
 
     #if swift(>=6.2)
@@ -300,12 +307,11 @@
       }
     #endif
     nonisolated private func _downloadExternalRules() async throws {
-      var profile = try await Profile(contentsOf: profileURL)
+      let profile = try await profile
 
       try await withThrowingTaskGroup(of: Void.self) { g in
         let session = try await self.session
-
-        for forwardingRuleConvertible in profile.asForwardingRules() {
+        for forwardingRuleConvertible in profile.asForwardingRules(maxminddb: self.maxminddb) {
           let dstURL: URL
           let resourceURL: URL?
 
@@ -343,34 +349,7 @@
         forwardingRuleResourcesLastUpdatedDate = Date.now
       }
 
-      profile = try await Profile(contentsOf: profileURL)
-      await delegate?.setForwardingRules(profile.asForwardingRules())
-    }
-
-    private func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) async {
-      let maxminddb = try? MaxMindDB(file: maxminddbFile, mode: .mmap)
-      await delegate?.setForwardingRules(
-        forwardingRules.map {
-          if var forwardingRule = $0 as? GeoIPForwardingRule {
-            forwardingRule.db = maxminddb
-            return forwardingRule
-          }
-
-          if var forwardingRule = $0 as? RulesetForwardingRule {
-            let externalRules: [any ForwardingRule] = forwardingRule.externalRules.map {
-              guard var element = $0 as? GeoIPForwardingRule else {
-                return $0
-              }
-              element.db = maxminddb
-              return element
-            }
-            forwardingRule.externalRules = externalRules
-            return forwardingRule
-          }
-
-          return $0
-        }
-      )
+      await delegate?.setForwardingRules(profile.asForwardingRules(maxminddb: maxminddb))
     }
 
     public func shutdownGracefully() async {
