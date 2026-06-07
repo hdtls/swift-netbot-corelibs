@@ -106,10 +106,8 @@ import Tracing
 
   /// True if this `AnalyzeBot` is currently active. `isActive` is defined as the period
   /// of time after the `run` and before `shutdownGracefully` has fired.
-  final public var isActive: Bool {
-    _isActive.load(ordering: .relaxed)
-  }
-  private let _isActive = Atomic<Bool>(false)
+  @LockableTracked(accessors: .get)
+  final public var isActive: Bool = false
 
   private var quiescing: [ServerQuiescingHelper] = []
 
@@ -145,8 +143,8 @@ import Tracing
     $socksProxyListenAddress.withLock { $0 = networkSettings.1 }
 
     if isActive {
-      try await shutdownGracefully()
-      try await run()
+      try await shutdownGracefully0()
+      try await run0()
     }
   }
 
@@ -171,22 +169,22 @@ import Tracing
   }
 
   /// Modify the DNS resolver.
-  public func setResolver(_ resolver: Resolver) async {
+  public func setResolver(_ resolver: some Resolver) async {
     self.$resolver.withLock { $0 = resolver }
   }
 
   /// Modify forwarding rules engine.
-  public func setRulesEngine(_ rulesEngine: RulesEngine) async {
+  public func setRulesEngine(_ rulesEngine: some RulesEngine) async {
     self.$rulesEngine.withLock { $0 = rulesEngine }
   }
 
   /// Modify default process info detector.
-  public func setProcessInfo(_ processInfo: ProcessReporting) async {
+  public func setProcessInfo(_ processInfo: some ProcessReporting) async {
     self.$processInfo.withLock { $0 = processInfo }
   }
 
   /// Modify default connection publisher.
-  public func setConnectionPublisher(_ publisher: ConnectionPublisher) async {
+  public func setConnectionPublisher(_ publisher: some ConnectionPublisher) async {
     self.$connectionPublisher.withLock { $0 = publisher }
   }
 
@@ -220,36 +218,34 @@ import Tracing
 
   /// Run analyze services.
   public func run() async throws {
-    // FIXME: [#NoUseUnstructuredThrowingTask]
-    _ = Task { try await run0() }
-  }
-
-  /// Run analyze services and block IO until closed.
-  public func run0() async throws {
     try await withSpan("run") { _ in
       do {
         guard !isActive else {
           return
         }
-        _isActive.store(true, ordering: .relaxed)
+        $isActive.withLock { $0 = true }
 
-        try await withThrowingDiscardingTaskGroup { g in
-          g.addTask {
-            try await withSpan("HTTP") { _ in
-              try await self.startVPNTunnel(protocol: .http, address: self.webProxyListenAddress)
-            }
-          }
-
-          g.addTask {
-            try await withSpan("SOCKS5") { _ in
-              try await self.startVPNTunnel(
-                protocol: .socks5, address: self.socksProxyListenAddress)
-            }
-          }
-        }
+        try await run0()
       } catch {
-        _isActive.store(false, ordering: .relaxed)
+        $isActive.withLock { $0 = false }
         throw error
+      }
+    }
+  }
+
+  private func run0() async throws {
+    try await withThrowingDiscardingTaskGroup { g in
+      g.addTask {
+        try await withSpan("HTTP") { _ in
+          try await self.startVPNTunnel(protocol: .http, address: self.webProxyListenAddress)
+        }
+      }
+
+      g.addTask {
+        try await withSpan("SOCKS5") { _ in
+          try await self.startVPNTunnel(
+            protocol: .socks5, address: self.socksProxyListenAddress)
+        }
       }
     }
   }
@@ -269,26 +265,26 @@ import Tracing
       return
     }
 
-    do {
-      // Wait until all channels closed.
-      try await withThrowingTaskGroup(of: Void.self) { g in
-        for quiescing in self.quiescing {
-          g.addTask {
-            let promise = self.eventLoopGroup.next().makePromise(of: Void.self)
-            quiescing.initiateShutdown(promise: promise)
-            // Wait until all child channels closed.
-            try await promise.futureResult.get()
-          }
-        }
-        try await g.waitForAll()
-      }
-    } catch {
-      throw error
-    }
+    $isActive.withLock { $0 = false }
 
-    _isActive.store(false, ordering: .relaxed)
+    try await shutdownGracefully0()
 
     logger.trace("\(processName) fully shutdown complete.")
+  }
+
+  private func shutdownGracefully0() async throws {
+    // Wait until all channels closed.
+    try await withThrowingTaskGroup(of: Void.self) { g in
+      for quiescing in self.quiescing {
+        g.addTask {
+          let promise = self.eventLoopGroup.next().makePromise(of: Void.self)
+          quiescing.initiateShutdown(promise: promise)
+          // Wait until all child channels closed.
+          try await promise.futureResult.get()
+        }
+      }
+      try await g.waitForAll()
+    }
   }
 
   private typealias Flow = (
@@ -345,11 +341,13 @@ import Tracing
       $0.append(quiescing)
     }
 
-    try await withThrowingDiscardingTaskGroup { g in
-      try await channel.executeThenClose { inbound in
-        for try await _ in inbound {
-          g.addTask {
+    _ = Task {
+      try await withThrowingDiscardingTaskGroup { g in
+        try await channel.executeThenClose { inbound in
+          for try await _ in inbound {
+            g.addTask {
 
+            }
           }
         }
       }
