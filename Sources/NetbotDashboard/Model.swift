@@ -519,10 +519,10 @@ public enum DataTransfer: Hashable, Sendable {
             persistentModel: persistentModel.dataTransferReport!.aggregatePathReport!
           )
 
+          persistentModel.dataTransferReport?.mergeValues(backingData)
           persistentModel.dataTransferReport?.aggregatePathReport?.mergeValues(
             backingData.aggregatePathReport)
           persistentModel.dataTransferReport?.pathReport?.mergeValues(backingData.pathReport)
-          persistentModel.dataTransferReport?.mergeValues(backingData)
 
           let key = model.forwardingReport?.forwardProtocol ?? "DIRECT"
           self._aggregatePathReportTable[key, default: .init()] &+=
