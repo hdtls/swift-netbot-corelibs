@@ -140,7 +140,7 @@ public actor AnalyzeBot {
       )
     )
 
-    var additionalServers = [Address.hostPort(host: "192.168.124.1", port: 53)]
+    var additionalServers = [Address.hostPort(host: "116.116.116.116", port: 53)]
     additionalServers.append(
       contentsOf: tunnelNetworkSettings?.dnsSettings?.servers.map {
         Address.hostPort(host: .init($0), port: 53)

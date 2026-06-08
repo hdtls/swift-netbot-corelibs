@@ -346,7 +346,7 @@ import Tracing
         try await channel.executeThenClose { inbound in
           for try await _ in inbound {
             g.addTask {
-
+              await Task.yield()
             }
           }
         }
@@ -377,14 +377,14 @@ import Tracing
 
         await session.publish(using: connectionPublisher)
 
-        try await session.evalProtocolLookup(
+        try await session.protocolLookup(
           logger: logger,
           outboundMode: outboundMode,
           forwardProtocol: forwardProtocol,
           proc: processInfo,
           resolver: resolver,
           rules: rulesEngine,
-          on: inputStream.eventLoop
+          eventLoop: inputStream.eventLoop
         )
 
         // Create peer channel.

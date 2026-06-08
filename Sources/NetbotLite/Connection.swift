@@ -236,10 +236,10 @@ extension Connection {
     }
   }
 
-  func evalProtocolLookup(
+  func protocolLookup(
     logger: Logger, outboundMode: OutboundMode, forwardProtocol: any ForwardProtocolConvertible,
     proc: any ProcessReporting, resolver: any Resolver, rules: any RulesEngine,
-    on eventLoop: any EventLoop
+    eventLoop: any EventLoop
   ) async throws {
     try await withSpan("forward-protocol lookup") { _ in
       try await withThrowingTaskGroup(of: Void.self) { g in
@@ -292,13 +292,20 @@ extension Connection {
   }
 
   func publish(using publisher: any ConnectionPublisher) async {
-    #if canImport(Darwin) || swift(>=6.3)
-      Task { [weak self] in
-        guard let self else { return }
+    @Sendable func finish() async {
+      // Reset the data transfer report metrics and publish changes.
+      $dataTransferReport.withLock { $0?.pathReport = .init() }
+      await publisher.send(self)
+    }
 
+    Task {
+      #if canImport(Darwin) || swift(>=6.3)
         if #available(SwiftStdlib 6.2, *) {
-          let observations = Observations {
-            (
+          let observations = Observations<Void, Never>.untilFinished {
+            guard !self.state.isFinished else {
+              return .finish
+            }
+            _ = (
               self.currentRequest,
               self.response,
               self.duration,
@@ -310,95 +317,104 @@ extension Connection {
               self.dataTransferReport,
               self.processReport
             )
+            return .next(())
           }
-
           for await _ in observations {
             await publisher.send(self)
           }
+          await finish()
         } else {
-          @Sendable func observe() {
-            withObservationTracking {
-              _ = (
-                self.currentRequest,
-                self.response,
-                self.duration,
-                self.tls,
-                self.state,
-                self.dnsResolutionReport,
-                self.establishmentReport,
-                self.forwardingReport,
-                self.dataTransferReport,
-                self.processReport
-              )
-            } onChange: {
-              Task {
-                await publisher.send(self)
-
-                // re-register observation
-                observe()
+          let observations = AsyncStream<Void>(
+            bufferingPolicy: .bufferingNewest(1)
+          ) { continuation in
+            @Sendable func installTracking() {
+              withObservationTracking {
+                _ = (
+                  self.currentRequest,
+                  self.response,
+                  self.duration,
+                  self.tls,
+                  self.state,
+                  self.dnsResolutionReport,
+                  self.establishmentReport,
+                  self.forwardingReport,
+                  self.dataTransferReport,
+                  self.processReport
+                )
+              } onChange: {
+                guard !self.state.isFinished else {
+                  continuation.finish()
+                  return
+                }
+                continuation.yield()
+                installTracking()
               }
             }
+            installTracking()
           }
-          observe()
+          for await _ in observations {
+            await publisher.send(self)
+          }
+          await finish()
         }
-      }
-    #else
-      Task {
-        // Publish initial state of session.
-        await publisher.send(self)
-
-        repeat {
-          try? await Task.sleep(for: .seconds(1))
-          duration += .seconds(1)
-
-          // Publish session changes.
+      #else
+        let observations = AsyncStream<Void>(
+          bufferingPolicy: .bufferingNewest(1)
+        ) { continuation in
+          while true {
+            guard !self.state.isFinished else {
+              continuation.finish()
+              break
+            }
+            continuation.yield()
+            try? await Task.sleep(for: .seconds(1))
+          }
+        }
+        for await _ in observations {
           await publisher.send(self)
-        } while !state.isFinished
-
-        // Reset the data transfer report metrics and publish changes.
-        withMutation(keyPath: \.dataTransferReport) {
-          $dataTransferReport.withLock { $0?.pathReport = .init() }
         }
-        await publisher.send(self)
-      }
-    #endif
+        await finish()
+      #endif
+    }
   }
 
   func collectDataTransferMetrics(on channel: any Channel) async {
     Task {
       assert(dataTransferReport == nil)
+      while true {
+        guard !self.state.isFinished else { break }
 
-      repeat {
         guard let collector = try? await channel.pendingDataTransferReport().get() else {
           // There are two situations that prevent us from geting the pending
           // data transfer report, The first is that the channel has been closed,
           // and the second is that the channel.connection is missing. Both
           // situations indicate that the connection has ended, so we mark it
           // `completed` here.
-          duration = .seconds(-earliestBeginDate.timeIntervalSinceNow)
-          state = .completed
+          if !state.isFinished {
+            duration = .seconds(-earliestBeginDate.timeIntervalSinceNow)
+            state = .completed
+          }
           break
         }
 
         try? await Task.sleep(for: .seconds(1))
+
         // We don't care about failure here ignore errors by optional try.
         guard let new = try? await channel.dataTransferReport(collector).get() else {
           continue
         }
-        if let old = dataTransferReport {
-          dataTransferReport = .init(
-            duration: old.duration + new.duration,
-            aggregatePathReport: old.aggregatePathReport &+ new.aggregatePathReport,
-            pathReport: new.aggregatePathReport
-          )
-        } else {
-          dataTransferReport = .init(
-            duration: new.duration,
-            aggregatePathReport: new.aggregatePathReport,
-            pathReport: new.aggregatePathReport
-          )
+
+        guard let dataTransferReport else {
+          self.dataTransferReport = new
+          continue
         }
-      } while !state.isFinished
+
+        self.dataTransferReport = .init(
+          duration: dataTransferReport.duration + new.duration,
+          aggregatePathReport: dataTransferReport.aggregatePathReport &+ new.aggregatePathReport,
+          pathReport: self.state.isFinished ? .init() : new.aggregatePathReport
+        )
+      }
     }
   }
 }

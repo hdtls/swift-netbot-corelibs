@@ -511,7 +511,7 @@ import Testing
 
     await #expect(throws: CancellationError.self) {
       try await connection
-        .evalProtocolLookup(
+        .protocolLookup(
           logger: .init(label: "proto"),
           outboundMode: .direct,
           forwardProtocol: .direct,
@@ -522,7 +522,7 @@ import Testing
             v6Result: .success([])
           ),
           rules: MockRuleEngine(forwardingReport: .init()),
-          on: eventLoop
+          eventLoop: eventLoop
         )
     }
   }
@@ -562,7 +562,7 @@ import Testing
 
     await #expect(throws: CancellationError.self) {
       try await connection
-        .evalProtocolLookup(
+        .protocolLookup(
           logger: .init(label: "proto"),
           outboundMode: .direct,
           forwardProtocol: .direct,
@@ -573,7 +573,7 @@ import Testing
             v6Result: .success([])
           ),
           rules: MockRuleEngine(forwardingReport: .init()),
-          on: eventLoop
+          eventLoop: eventLoop
         )
     }
   }
@@ -604,7 +604,7 @@ import Testing
     connection.establishmentReport = .init()
 
     try await connection
-      .evalProtocolLookup(
+      .protocolLookup(
         logger: .init(label: "proto"),
         outboundMode: .direct,
         forwardProtocol: .direct,
@@ -615,7 +615,7 @@ import Testing
           v6Result: .success([])
         ),
         rules: MockRuleEngine(forwardingReport: .init()),
-        on: eventLoop
+        eventLoop: eventLoop
       )
 
     let report = try #require(connection.forwardingReport)
@@ -650,7 +650,7 @@ import Testing
     connection.establishmentReport = .init()
 
     try await connection
-      .evalProtocolLookup(
+      .protocolLookup(
         logger: .init(label: "proto"),
         outboundMode: .globalProxy,
         forwardProtocol: .rejectTinyGIF,
@@ -661,7 +661,7 @@ import Testing
           v6Result: .success([])
         ),
         rules: MockRuleEngine(forwardingReport: .init()),
-        on: eventLoop
+        eventLoop: eventLoop
       )
 
     let report = try #require(connection.forwardingReport)
@@ -705,7 +705,7 @@ import Testing
     connection.establishmentReport = .init()
 
     try await connection
-      .evalProtocolLookup(
+      .protocolLookup(
         logger: .init(label: "proto"),
         outboundMode: .ruleBased,
         forwardProtocol: .direct,
@@ -716,7 +716,7 @@ import Testing
           v6Result: .success([])
         ),
         rules: MockRuleEngine(forwardingReport: .init(forwardingRule: MockForwardingRule())),
-        on: eventLoop
+        eventLoop: eventLoop
       )
 
     let report = try #require(connection.forwardingReport)
