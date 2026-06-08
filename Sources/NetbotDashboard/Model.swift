@@ -140,13 +140,13 @@ public enum DataTransfer: Hashable, Sendable {
 
   #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     nonisolated public convenience init(
-      modelContainer: ModelContainer, messenger: any ConnectionsDependency
+      modelContainer: ModelContainer, messenger: some MessengerProtocol
     ) {
       self.init(_modelContainer: modelContainer, messenger: messenger)
     }
   #endif
 
-  nonisolated public convenience init(messenger: any MessengerProtocol) {
+  nonisolated public convenience init(messenger: some MessengerProtocol) {
     #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
       let schema = Schema(versionedSchema: V1.self)
       let configuration: ModelConfiguration = .init(isStoredInMemoryOnly: true)
@@ -157,7 +157,7 @@ public enum DataTransfer: Hashable, Sendable {
     #endif
   }
 
-  nonisolated private init(_modelContainer: Any?, messenger: any MessengerProtocol) {
+  nonisolated private init(_modelContainer: Any?, messenger: some MessengerProtocol) {
     self.messenger = messenger
     #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
       self.modelContainer = _modelContainer as! ModelContainer
@@ -204,7 +204,7 @@ public enum DataTransfer: Hashable, Sendable {
       guard let self else { return }
 
       do {
-        for try await message in messenger.messages {
+        for try await message in messenger.openStream() {
           performBatchUpdates(message)
         }
       } catch let error as AFError {

@@ -32,7 +32,7 @@ import SynchronizationExtras
 #endif
 public protocol MessengerProtocol: Sendable {
 
-  var messages: AsyncThrowingStream<[Connection], any Error> { get }
+  func openStream() -> AsyncThrowingStream<[Connection], any Error>
 }
 
 #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -46,16 +46,29 @@ final class Messenger: MessengerProtocol {
 
   @LockableTracked private var rateLimited: [Model.ID: Model] = [:]
 
-  public var messages: AsyncThrowingStream<[Connection], any Error> {
+  enum RateLimiting: Sendable {
+    case immediately
+    case seconds(Int)
+  }
+
+  private let rateLimiting: RateLimiting
+
+  init(rateLimiting: RateLimiting = .seconds(1)) {
+    self.rateLimiting = rateLimiting
+  }
+
+  public func openStream() -> AsyncThrowingStream<[Connection], any Error> {
     AsyncThrowingStream { continuation in
-      _ = Task.detached {
-        while true {
-          self.$rateLimited.withLock {
-            if !$0.isEmpty {
-              continuation.yield(Array($0.values))
+      if case .seconds(let seconds) = self.rateLimiting {
+        _ = Task.detached {
+          while true {
+            self.$rateLimited.withLock {
+              if !$0.isEmpty {
+                continuation.yield(Array($0.values))
+              }
             }
+            try await Task.sleep(for: .seconds(seconds))
           }
-          try await Task.sleep(for: .seconds(1))
         }
       }
 
@@ -76,87 +89,44 @@ final class Messenger: MessengerProtocol {
               return
             }
 
-            self.$rateLimited.withLock { rateLimited in
-              var models: [Model] = []
-              for model in value {
-                // If `rateLimited` does not contains `model`, we should immediately
-                // yield this model as it's a new request.
-                guard rateLimited[model.id] != nil else {
-                  models.append(model)
+            switch self.rateLimiting {
+            case .immediately:
+              continuation.yield(value)
+            case .seconds:
+              self.$rateLimited.withLock { rateLimited in
+                var models: [Model] = []
+                for model in value {
+                  guard rateLimited[model.id] != nil else {
+                    // If `rateLimited` does not contains `model`, we should immediately
+                    // yield this model as it's a new request.
+                    models.append(model)
 
-                  if !model.state.isFinished {
-                    rateLimited[model.id] = model
+                    // We don't store request that is finished.
+                    if !model.state.isFinished {
+                      rateLimited[model.id] = model
+                    }
+                    continue
                   }
-                  continue
+
+                  guard model.state.isFinished else {
+                    // Store incoming request which is not finished.
+                    rateLimited[model.id] = model
+                    continue
+                  }
+
+                  models.append(model)
+                  // The incoming request is finished and no longer changed, so we can remove it
+                  // from `rateLimited`.
+                  rateLimited.removeValue(forKey: model.id)
                 }
 
-                guard model.state.isFinished else {
-                  rateLimited[model.id] = model
-                  continue
-                }
-
-                models.append(model)
-                rateLimited.removeValue(forKey: model.id)
+                continuation.yield(models)
               }
-
-              continuation.yield(models)
             }
           }
-      //        let parameters = NWParameters.tcp
-      //        let options = NWProtocolWebSocket.Options()
-      //        parameters.defaultProtocolStack.applicationProtocols.insert(options, at: 0)
-      //        let connection = NWConnection(
-      //          to: .url(URL(string: "ws://127.0.0.1:6170")!),
-      //          using: parameters
-      //        )
-      //
-      //        continuation.onTermination = { _ in
-      //          connection.cancel()
-      //        }
-      //
-      //        connection.stateUpdateHandler = { state in
-      //          switch state {
-      //          case .setup, .waiting, .preparing:
-      //            break
-      //          case .ready:
-      //            @Sendable func runReadLoop() {
-      //              guard connection.state == .ready else {
-      //                return
-      //              }
-      //
-      //              connection.receiveMessage { content, _, _, error in
-      //                guard let data = content else {
-      //                  return
-      //                }
-      //
-      //                do {
-      //                  let models = try JSONDecoder().decode([Connection].self, from: data)
-      //                  continuation.yield(models)
-      //                } catch {
-      //                  assertionFailure(
-      //                    "BUG IN NETBOT CORE, please report: illegal data format \(error)")
-      //                }
-      //
-      //                runReadLoop()
-      //              }
-      //            }
-      //
-      //            runReadLoop()
-      //          case .failed(let error):
-      //            continuation.finish(throwing: LocalizedError.nw(error))
-      //          case .cancelled:
-      //            // We have finished continuation immediately when shutdown, so there we do nothing.
-      //            continuation.finish(throwing: LocalizedError.nw(.posix(.ECANCELED)))
-      //          @unknown default:
-      //            continuation.finish(throwing: LocalizedError.operationUnsupported)
-      //          }
-      //        }
-      //        connection.start(queue: .global())
       #else
         continuation.finish()
       #endif
     }
   }
-
-  init() {}
 }
