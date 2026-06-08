@@ -298,8 +298,24 @@ extension Connection {
       await publisher.send(self)
     }
 
-    Task {
-      #if canImport(Darwin) || swift(>=6.3)
+    Task.detached {
+      while true {
+        try? await Task.sleep(for: .seconds(1))
+        guard !self.state.isFinished else {
+          #if !canImport(Darwin) && swift(<6.3)
+            await finish()
+          #endif
+          break
+        }
+        self.duration += .seconds(1)
+        #if !canImport(Darwin) && swift(<6.3)
+          await publisher.send(self)
+        #endif
+      }
+    }
+
+    #if canImport(Darwin) || swift(>=6.3)
+      Task {
         if #available(SwiftStdlib 6.2, *) {
           let observations = Observations<Void, Never>.untilFinished {
             guard !self.state.isFinished else {
@@ -357,33 +373,14 @@ extension Connection {
           }
           await finish()
         }
-      #else
-        let observations = AsyncStream<Void>(
-          bufferingPolicy: .bufferingNewest(1)
-        ) { continuation in
-          while true {
-            guard !self.state.isFinished else {
-              continuation.finish()
-              break
-            }
-            continuation.yield()
-            try? await Task.sleep(for: .seconds(1))
-          }
-        }
-        for await _ in observations {
-          await publisher.send(self)
-        }
-        await finish()
-      #endif
-    }
+      }
+    #endif
   }
 
   func collectDataTransferMetrics(on channel: any Channel) async {
     Task {
       assert(dataTransferReport == nil)
-      while true {
-        guard !self.state.isFinished else { break }
-
+      while !self.state.isFinished {
         guard let collector = try? await channel.pendingDataTransferReport().get() else {
           // There are two situations that prevent us from geting the pending
           // data transfer report, The first is that the channel has been closed,
