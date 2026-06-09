@@ -92,7 +92,7 @@
     nonisolated private func _testRouterLatency(address: NWEndpoint.Host) async -> Duration {
       #if canImport(Network)
         await withCheckedContinuation { continuation in
-          let connection = NWConnection(to: .hostPort(host: address, port: 53), using: .tcp)
+          let connection = NWConnection(to: .hostPort(host: address, port: 80), using: .tcp)
 
           let onceToken = Mutex(false)
           @Sendable func resume(returning duration: Duration) {

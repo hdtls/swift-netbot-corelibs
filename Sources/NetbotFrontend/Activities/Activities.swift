@@ -64,7 +64,7 @@
 
     public var events: [EventLog] = []
 
-    public let coreWLAN = WLANManager()
+    public let airPort = AirPort()
 
     private let diagnostics = Diagnostics()
 
@@ -129,7 +129,7 @@
       await withTaskGroup { g in
         g.addTask { [weak self] in
           guard let self else { return }
-          let router = await coreWLAN.networkService.v4.router
+          let router = await airPort.networkService.v4.router
           guard let router, let address = IPv4Address(router) else { return }
           let routerLatency = await diagnostics.testRouterLatency(address: .ipv4(address))
           #if canImport(SwiftUI)
