@@ -11,433 +11,408 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-#if canImport(Darwin)
-  import CryptoExtras
+import CryptoExtras
+import Logging
+import NIOCore
+import NIOSSL
+import SwiftASN1
+import X509
+
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
   import Foundation
-  import NIOCore
-  import Logging
+#endif
+
+#if canImport(Darwin) || swift(>=6.3)
   import Observation
+#endif
+
+#if canImport(Security)
   import Security
-  import SwiftASN1
-  import X509
-  import NIOSSL
+#endif
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  public enum CertbotError: Error {
+/// `CertbotError` is the error type returned by Certbot. It encompasses a few different
+/// types of errors, each with their own associated reasons.
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+public enum CertbotError: Error {
 
-    case dataCorrupted
-
-    case missingData
-
-    case syserr(code: any Sendable, description: String?)
-
-    case boringsslerr(description: String?)
-
-    case x509(description: String)
+  public enum LoadFailureReason: Sendable {
+    case inputFileNil
+    case inputFileReadFailed
+    case noValidCertificate
   }
 
-  /// Certificate managment object.
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  @MainActor @Observable final public class Certbot: @unchecked Sendable {
+  case certificateLoadFailed(reason: LoadFailureReason)
 
-    private struct Backing: Sendable {
+  public enum TrustFailureReason: Sendable {
+    case system(code: Int, reason: String?)
+    case iii
+  }
 
-      let representation: Certificate
-      var certificate: SecCertificate {
+  case certificateTrustFailed(reason: TrustFailureReason)
+
+  case operationUnsupported
+}
+
+/// An certificate managment object.
+///
+/// This object allow user to load, generate, install and trust certificates.
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+#if canImport(Darwin) || swift(>=6.3)
+  @Observable
+#endif
+@MainActor final public class Certbot: @unchecked Sendable {
+
+  private struct Backing: Sendable {
+
+    let representation: Certificate
+
+    #if canImport(Security)
+      var certificate: SecCertificate? {
         get throws {
           var serializer = DER.Serializer()
           try serializer.serialize(representation)
-          guard
-            let cert = SecCertificateCreateWithData(nil, Data(serializer.serializedBytes) as CFData)
-          else {
-            throw CertbotError.dataCorrupted
-          }
-          return cert
+          return SecCertificateCreateWithData(nil, Data(serializer.serializedBytes) as CFData)
         }
       }
+    #endif
 
-      let commonName: String
+    let commonName: String
 
-      let passphrase: String?
+    let passphrase: String?
 
-      let base64EncodedP12String: String
+    let base64EncodedP12String: String
+  }
+
+  /// Strategy describe how to make passphrase for PKCS#12 bundle.
+  public enum PassphraseStrategy: Sendable {
+    /// Automatically generate passphrase.
+    case auto
+
+    /// Use custom provided passphrase.
+    case custom(String)
+  }
+
+  private var backing: Backing?
+
+  /// Returns the common name of the loaded certificate.
+  public var commonName: String? {
+    backing?.commonName
+  }
+
+  /// Returns the date before which the loaded certificate is not valid.
+  public var notValidBefore: Date? {
+    backing?.representation.notValidBefore
+  }
+
+  /// Returns the date after which the loaded certificate is not valid.
+  public var notValidAfter: Date? {
+    backing?.representation.notValidAfter
+  }
+
+  /// Returns a boolean value determine whether the loaded certificate is expired.
+  public var isExpired: Bool {
+    guard let notValidBefore, let notValidAfter else {
+      return true
     }
+    let now = Date.now
+    return now > notValidAfter || now < notValidBefore
+  }
 
-    /// Strategy describe how to make passphrase for PKCS#12 bundle.
-    public enum PassphraseStrategy: Sendable {
-      /// Automatically generate passphrase.
-      case auto
+  /// Returns base64 encoded PKCS#12 bundle string of the loaded certificate.
+  public var base64EncodedP12String: String {
+    backing?.base64EncodedP12String ?? ""
+  }
 
-      /// Use custom provided passphrase.
-      case custom(String)
-    }
+  /// Returns the passphrase for  the loaded PKCS#12 bundle.
+  public var passphrase: String {
+    backing?.passphrase ?? ""
+  }
 
-    private var backing: Backing?
+  /// Returns a boolean value determine whether the loaded certificate is trusted by user or not.
+  public var isTrusted: Bool {
+    _isTrusted
+  }
+  private var _isTrusted: Bool = false
 
-    /// CA Certificate common name.
-    public var commonName: String? {
-      backing?.commonName
-    }
-
-    public var notValidBefore: Date? {
-      backing?.representation.notValidBefore
-    }
-
-    public var notValidAfter: Date? {
-      backing?.representation.notValidAfter
-    }
-
-    /// A boolean value determinse whether this certificate is expired.
-    public var isExpired: Bool {
-      guard let notValidBefore, let notValidAfter else {
-        return true
-      }
-      let now = Date.now
-      return now > notValidAfter || now < notValidBefore
-    }
-
-    /// Base64 encoded PKCS#12 bundle string.
-    public var base64EncodedP12String: String {
-      backing?.base64EncodedP12String ?? ""
-    }
-
-    /// Passphrase for PKCS#12 bundle.
-    public var passphrase: String {
-      backing?.passphrase ?? ""
-    }
-
-    public var isTrusted: Bool {
-      _isTrusted
-    }
-    private var _isTrusted: Bool = false
-
+  #if canImport(Security)
+    /// Returns the loaded certificate object for use in Security framework.
     public var certificate: SecCertificate? {
       try? backing?.certificate
     }
+  #endif
 
-    /// Logger for certbot.
-    nonisolated public let logger = Logger(label: "Certbot")
+  /// Logger for certbot.
+  nonisolated let logger = Logger(label: "Certbot")
 
+  #if canImport(Darwin) || swift(>=6.3)
     @ObservationIgnored private var generatingTask: Task<Backing, any Error>?
+  #else
+    private var generatingTask: Task<Backing, any Error>?
+  #endif
 
-    /// Create an instance of `Certbot`.
-    nonisolated public init() {
+  /// Create an new instance of `Certbot`.
+  nonisolated public init() {
 
-    }
+  }
 
+  #if swift(>=6.2)
     /// Load certificate from base64 encoded PKCS#12 bundle string.
-    #if swift(>=6.2)
-      @concurrent public func loadFromBase64EncodedP12String(
-        _ base64String: String?, passphrase: String?
-      )
-        async throws
-      {
-        try await _loadFromBase64EncodedP12String(base64String, passphrase: passphrase)
-      }
-    #else
-      nonisolated public func loadFromBase64EncodedP12String(
-        _ base64String: String?, passphrase: String?
-      )
-        async throws
-      {
-        try await _loadFromBase64EncodedP12String(base64String, passphrase: passphrase)
-      }
-    #endif
-    nonisolated private func _loadFromBase64EncodedP12String(
+    @concurrent public func loadFromBase64EncodedP12String(
       _ base64String: String?, passphrase: String?
     )
       async throws
     {
-      guard let base64String, let buffer = Data(base64Encoded: base64String), !buffer.isEmpty
-      else {
-        self.logger.trace(
-          "Load PKCS#12 bundle failed with error: data corrupted (\(base64String ?? "nil")")
-        throw CertbotError.dataCorrupted
-      }
-
-      let backing = try self.loadFromP12Data(buffer, passphrase: passphrase)
-      let isTrusted = try await self.trustEvaluate(certificate: backing.representation)
-
-      await MainActor.run {
-        self.backing = backing
-        self._isTrusted = isTrusted
-      }
+      try await _loadFromBase64EncodedP12String(base64String, passphrase: passphrase)
     }
-
-    /// Load certificate from url where PKCS#12 bundle saved.
-    #if swift(>=6.2)
-      @concurrent public func loadFromP12File(at url: URL, passphrase: String?) async throws {
-        try await _loadFromP12File(at: url, passphrase: passphrase)
-      }
-    #else
-      nonisolated public func loadFromP12File(at url: URL, passphrase: String?) async throws {
-        try await _loadFromP12File(at: url, passphrase: passphrase)
-      }
-    #endif
-    nonisolated private func _loadFromP12File(at url: URL, passphrase: String?) async throws {
-      guard let data = try? Data(contentsOf: url) else {
-        self.logger.trace(
-          "Load PKCS#12 bundle failed with error: data corrupted (unable to load contents from url: \(url)"
-        )
-        throw CertbotError.dataCorrupted
-      }
-      let backing = try self.loadFromP12Data(data, passphrase: passphrase)
-      let isTrusted = try await self.trustEvaluate(certificate: backing.representation)
-
-      await MainActor.run {
-        self.backing = backing
-        self._isTrusted = isTrusted
-      }
-    }
-
-    /// Load certificate from PKCS#12 bundle data.
-    ///
-    /// - Important: This operation will block IO.
-    nonisolated private func loadFromP12Data(_ pkcs12Data: Data, passphrase: String?) throws
-      -> Backing
+  #else
+    /// Load certificate from base64 encoded PKCS#12 bundle string.
+    nonisolated public func loadFromBase64EncodedP12String(
+      _ base64String: String?, passphrase: String?
+    )
+      async throws
     {
-      var options: [String: Any] = [:]
-      if let passphrase {
-        options = [kSecImportExportPassphrase as String: passphrase]
-      }
+      try await _loadFromBase64EncodedP12String(base64String, passphrase: passphrase)
+    }
+  #endif
 
-      var optionalItems: CFArray?
-      var status = SecPKCS12Import(pkcs12Data as CFData, options as CFDictionary, &optionalItems)
-      guard status == errSecSuccess else {
-        let message = SecCopyErrorMessageString(status, nil) as? String ?? ""
-        logger.trace("Load PKCS#12 bundle failed with error: \(message)")
-        throw CertbotError.syserr(code: status, description: message)
-      }
-
-      guard let optionalItems, CFArrayGetCount(optionalItems) > 0 else {
-        logger.trace("Load PKCS#12 bundle failed with error: data corrupted (empty bundle).")
-        throw CertbotError.missingData
-      }
-
-      let items = optionalItems as NSArray
-
-      guard let dictionary = items[0] as? NSDictionary else {
-        logger.trace("Load PKCS#12 bundle failed with error: data corrupted (data format error).")
-        throw CertbotError.dataCorrupted
-      }
-
-      guard let item = dictionary[kSecImportItemIdentity] else {
-        logger.trace(
-          "Load PKCS#12 bundle failed with error: data corrupted (missing identity data)."
-        )
-        throw CertbotError.missingData
-      }
-
-      let identity = item as! SecIdentity
-
-      var cert: SecCertificate?
-      status = SecIdentityCopyCertificate(identity, &cert)
-      guard status == errSecSuccess else {
-        let message = SecCopyErrorMessageString(status, nil) as? String ?? ""
-        logger.trace("Load PKCS#12 bundle failed with error: \(message)")
-        throw CertbotError.syserr(code: status, description: message)
-      }
-
-      guard let cert else {
-        logger.trace(
-          "Load PKCS#12 bundle failed with error: data corrupted (missing certificate data)."
-        )
-        throw CertbotError.missingData
-      }
-
-      var cn: CFString?
-      status = SecCertificateCopyCommonName(cert, &cn)
-      guard status == errSecSuccess else {
-        let message = SecCopyErrorMessageString(status, nil) as? String ?? ""
-        logger.trace("Load PKCS#12 bundle failed with error: \(message)")
-        throw CertbotError.syserr(code: status, description: message)
-      }
-
-      let data = SecCertificateCopyData(cert) as Data
-
-      let x509: Certificate
-      do {
-        x509 = try Certificate(derEncoded: ArraySlice(data))
-      } catch let error as CertificateError {
-        throw CertbotError.x509(description: error.localizedDescription)
-      } catch {
-        throw error
-      }
-
-      let commonName = cn != nil ? cn.unsafelyUnwrapped as String : ""
-
-      return Backing(
-        representation: x509,
-        commonName: commonName,
-        passphrase: passphrase,
-        base64EncodedP12String: pkcs12Data.base64EncodedString()
-      )
+  nonisolated private func _loadFromBase64EncodedP12String(
+    _ base64String: String?, passphrase: String?
+  )
+    async throws
+  {
+    guard let base64String else {
+      self.logger.error("Load PKCS#12 bundle failed data corrupted (nil)")
+      throw CertbotError.certificateLoadFailed(reason: .inputFileNil)
     }
 
+    guard let buffer = Data(base64Encoded: base64String), !buffer.isEmpty else {
+      self.logger.trace("Load PKCS#12 bundle failed with error: data corrupted (\(base64String)")
+      throw CertbotError.certificateLoadFailed(reason: .inputFileReadFailed)
+    }
+
+    let backing = try await self.loadFromP12Data(buffer, passphrase: passphrase)
+    let isTrusted = try self.trustEvaluate(certificate: backing.representation)
+
+    await MainActor.run {
+      self.backing = backing
+      self._isTrusted = isTrusted
+    }
+  }
+
+  #if swift(>=6.2)
+    /// Load certificate from url where PKCS#12 bundle saved.
+    @concurrent public func loadFromP12File(at url: URL, passphrase: String?) async throws {
+      try await _loadFromP12File(at: url, passphrase: passphrase)
+    }
+  #else
+    /// Load certificate from url where PKCS#12 bundle saved.
+    nonisolated public func loadFromP12File(at url: URL, passphrase: String?) async throws {
+      try await _loadFromP12File(at: url, passphrase: passphrase)
+    }
+  #endif
+
+  nonisolated private func _loadFromP12File(at url: URL, passphrase: String?) async throws {
+    let data = try Data(contentsOf: url)
+    let backing = try await self.loadFromP12Data(data, passphrase: passphrase)
+    let isTrusted = try self.trustEvaluate(certificate: backing.representation)
+
+    await MainActor.run {
+      self.backing = backing
+      self._isTrusted = isTrusted
+    }
+  }
+
+  /// Load certificate from PKCS#12 bundle data.
+  nonisolated private func loadFromP12Data(_ pkcs12Data: Data, passphrase: String?) async throws
+    -> Backing
+  {
+    let p12 = try NIOSSLPKCS12Bundle(buffer: Array(pkcs12Data), passphrase: passphrase?.utf8)
+    guard let cert = p12.certificateChain.first else {
+      throw CertbotError.certificateLoadFailed(reason: .noValidCertificate)
+    }
+    let x509 = try Certificate(derEncoded: cert.toDERBytes())
+    let commonName =
+      x509.subject
+      .compactMap { rdn in rdn.first(where: { $0.type == .RDNAttributeType.commonName }) }
+      .first?
+      .description ?? ""
+    return Backing(
+      representation: x509,
+      commonName: commonName,
+      passphrase: passphrase,
+      base64EncodedP12String: pkcs12Data.base64EncodedString()
+    )
+  }
+
+  #if swift(>=6.2)
     /// Generate new certificate using specified passphrase strategy.
     ///
     /// This will perform certificate generation, after success content will be updated.
     /// - Parameter strategy: Strategy for how to privide PKCS#12 passphrase. Defaults to `.auto`.
-    #if swift(>=6.2)
-      @concurrent public func generate(using strategy: PassphraseStrategy = .auto) async throws {
-        try await self._generate(using: strategy)
-      }
-    #else
-      nonisolated public func generate(using strategy: PassphraseStrategy = .auto) async throws {
-        try await self._generate(using: strategy)
-      }
-    #endif
-    private func _generate(using strategy: PassphraseStrategy = .auto) async throws {
-      if generatingTask == nil || generatingTask?.isCancelled == true {
-        generatingTask = Task {
-          try await self.generate0(using: strategy)
-        }
-      }
+    ///
+    @concurrent public func generate(using strategy: PassphraseStrategy = .auto) async throws {
+      try await self._generate(using: strategy)
+    }
+  #else
+    /// Generate new certificate using specified passphrase strategy.
+    ///
+    /// This will perform certificate generation, after success content will be updated.
+    /// - Parameter strategy: Strategy for how to privide PKCS#12 passphrase. Defaults to `.auto`.
+    ///
+    nonisolated public func generate(using strategy: PassphraseStrategy = .auto) async throws {
+      try await self._generate(using: strategy)
+    }
+  #endif
 
-      guard let task = generatingTask else { return }
-
-      do {
-        let backing = try await task.value
-        self.backing = backing
-        self._isTrusted = try await self.trustEvaluate(certificate: backing.representation)
-        generatingTask = nil
-        logger.trace("Generate certificate success")
-        return
-      } catch let error as CertificateError {
-        logger.trace("Generate certificate failed with error: \(error)")
-        throw CertbotError.x509(description: error.localizedDescription)
-      } catch let error as BoringSSLError {
-        logger.trace("Generate certificate failed with error: \(error)")
-        throw CertbotError.boringsslerr(description: error.localizedDescription)
-      } catch {
-        logger.trace("Generate certificate failed with error: \(error)")
-        throw error
+  private func _generate(using strategy: PassphraseStrategy = .auto) async throws {
+    if generatingTask == nil || generatingTask?.isCancelled == true {
+      generatingTask = Task {
+        try await self.generate0(using: strategy)
       }
     }
 
-    #if swift(>=6.2)
-      @concurrent private func generate0(using strategy: PassphraseStrategy = .auto) async throws
-        -> Backing
-      {
-        return try await self._generate0(using: strategy)
-      }
-    #else
-      nonisolated private func generate0(using strategy: PassphraseStrategy = .auto) async throws
-        -> Backing
-      {
-        return try await self._generate0(using: strategy)
-      }
-    #endif
-    nonisolated private func _generate0(using strategy: PassphraseStrategy = .auto) async throws
+    guard let task = generatingTask else { return }
+
+    do {
+      let backing = try await task.value
+      self.backing = backing
+      self._isTrusted = try self.trustEvaluate(certificate: backing.representation)
+      generatingTask = nil
+      logger.trace("Generate certificate success")
+      return
+    } catch {
+      logger.trace("Generate certificate failed with error: \(error)")
+      throw error
+    }
+  }
+
+  #if swift(>=6.2)
+    @concurrent private func generate0(using strategy: PassphraseStrategy = .auto) async throws
       -> Backing
     {
-      let privateKey = try _RSA.Signing.PrivateKey(keySize: .bits2048)
+      return try await self._generate0(using: strategy)
+    }
+  #else
+    nonisolated private func generate0(using strategy: PassphraseStrategy = .auto) async throws
+      -> Backing
+    {
+      return try await self._generate0(using: strategy)
+    }
+  #endif
 
-      let serialNumber = Certificate.SerialNumber()
-      let notValidBefore = Date()
+  nonisolated private func _generate0(using strategy: PassphraseStrategy = .auto) async throws
+    -> Backing
+  {
+    let privateKey = try _RSA.Signing.PrivateKey(keySize: .bits2048)
 
-      let passphrase: String
-      switch strategy {
-      case .auto:
-        passphrase = ByteBuffer(
-          bytes: Array(repeating: UInt8.zero, count: 4).map { _ in
-            UInt8.random(in: 0...UInt8.max)
-          }
-        ).hexDump(format: .compact).uppercased()
-      case .custom(let value):
-        passphrase = value
-      }
+    let serialNumber = Certificate.SerialNumber()
+    let notValidBefore = Date()
 
-      let commonName = CommonName("Netbot Generated CA \(passphrase)")
+    let passphrase: String
+    switch strategy {
+    case .auto:
+      passphrase = ByteBuffer(
+        bytes: Array(repeating: UInt8.zero, count: 4).map { _ in
+          UInt8.random(in: 0...UInt8.max)
+        }
+      ).hexDump(format: .compact).uppercased()
+    case .custom(let value):
+      passphrase = value
+    }
 
-      let issuer = try DistinguishedName {
-        OrganizationName("Netbot")
-        commonName
-      }
+    let commonName = CommonName("Netbot Generated CA \(passphrase)")
 
-      let subject = issuer
+    let issuer = try DistinguishedName {
+      OrganizationName("Netbot")
+      commonName
+    }
 
-      let extensions = try Certificate.Extensions {
-        Critical(
-          KeyUsage(digitalSignature: true, keyCertSign: true, cRLSign: true)
-        )
+    let subject = issuer
 
-        try ExtendedKeyUsage([.serverAuth, .clientAuth])
-
-        Critical(
-          BasicConstraints.isCertificateAuthority(maxPathLength: 0)
-        )
-      }
-
-      let x509 = try Certificate(
-        version: .v3,
-        serialNumber: serialNumber,
-        publicKey: .init(privateKey.publicKey),
-        notValidBefore: notValidBefore,
-        notValidAfter: notValidBefore.addingTimeInterval(60 * 60 * 24 * 365),
-        issuer: issuer,
-        subject: subject,
-        signatureAlgorithm: .sha256WithRSAEncryption,
-        extensions: extensions,
-        issuerPrivateKey: .init(privateKey)
+    let extensions = try Certificate.Extensions {
+      Critical(
+        KeyUsage(digitalSignature: true, keyCertSign: true, cRLSign: true)
       )
 
-      var serializer = DER.Serializer()
-      try serializer.serialize(x509)
+      try ExtendedKeyUsage([.serverAuth, .clientAuth])
 
-      return Backing(
-        representation: x509,
-        commonName: commonName.name,
-        passphrase: passphrase,
-        base64EncodedP12String: try self.base64EncodedString(
-          certBytes: serializer.serializedBytes,
-          key: privateKey,
-          passphrase: passphrase
-        )
+      Critical(
+        BasicConstraints.isCertificateAuthority(maxPathLength: 0)
       )
     }
 
-    /// Get base64 encoded PKCS#12 bundle string with specified cert key and passphrase.
-    ///
-    /// - Important: IO block operation.
-    nonisolated private func base64EncodedString(
-      certBytes: [UInt8],
-      key: _RSA.Signing.PrivateKey,
-      passphrase: String? = nil
-    ) throws -> String {
-      let p12 = try NIOSSLPKCS12Bundle(
-        certificateChain: [NIOSSLCertificate(bytes: certBytes, format: .der)],
-        privateKey: NIOSSLPrivateKey(bytes: Array(key.derRepresentation), format: .der)
-      )
-      let bytes = try p12.serialize(passphrase: [])
-      return Data(bytes).base64EncodedString()
-    }
+    let x509 = try Certificate(
+      version: .v3,
+      serialNumber: serialNumber,
+      publicKey: .init(privateKey.publicKey),
+      notValidBefore: notValidBefore,
+      notValidAfter: notValidBefore.addingTimeInterval(60 * 60 * 24 * 365),
+      issuer: issuer,
+      subject: subject,
+      signatureAlgorithm: .sha256WithRSAEncryption,
+      extensions: extensions,
+      issuerPrivateKey: .init(privateKey)
+    )
 
-    /// Install loaded or generated certificate and update trust settings.
-    #if swift(>=6.2)
-      @concurrent public func trustLoadedCertificate() async throws {
-        try await self._trustLoadedCertificate()
-      }
-    #else
-      nonisolated public func trustLoadedCertificate() async throws {
-        try await self._trustLoadedCertificate()
-      }
-    #endif
+    var serializer = DER.Serializer()
+    try serializer.serialize(x509)
+
+    return Backing(
+      representation: x509,
+      commonName: commonName.name,
+      passphrase: passphrase,
+      base64EncodedP12String: try self.base64EncodedString(
+        certBytes: serializer.serializedBytes,
+        key: privateKey,
+        passphrase: passphrase
+      )
+    )
+  }
+
+  /// Get base64 encoded PKCS#12 bundle string with specified cert key and passphrase.
+  nonisolated private func base64EncodedString(
+    certBytes: [UInt8],
+    key: _RSA.Signing.PrivateKey,
+    passphrase: String? = nil
+  ) throws -> String {
+    let p12 = try NIOSSLPKCS12Bundle(
+      certificateChain: [NIOSSLCertificate(bytes: certBytes, format: .der)],
+      privateKey: NIOSSLPrivateKey(bytes: Array(key.derRepresentation), format: .der)
+    )
+    let bytes = try p12.serialize(passphrase: [])
+    return Data(bytes).base64EncodedString()
+  }
+
+  #if swift(>=6.2)
+    /// Install and trust loaded or generated certificate.
+    @concurrent public func trustLoadedCertificate() async throws {
+      try await self._trustLoadedCertificate()
+    }
+  #else
+    /// Install and trust loaded or generated certificate.
+    nonisolated public func trustLoadedCertificate() async throws {
+      try await self._trustLoadedCertificate()
+    }
+  #endif
+
+  #if canImport(Security)
     nonisolated private func _trustLoadedCertificate() async throws {
-      guard let backing = await backing else { return }
+      guard let backing = await backing, let certificate = try backing.certificate else { return }
 
       var status: OSStatus
       let attributes: [CFString: Any] = [
         kSecClass: kSecClassCertificate,
-        kSecValueRef: try backing.certificate,
+        kSecValueRef: certificate,
         kSecAttrLabel: backing.commonName,
       ]
 
@@ -445,65 +420,61 @@
       guard status == errSecSuccess || status == errSecDuplicateItem else {
         let message = SecCopyErrorMessageString(status, nil) as? String ?? ""
         self.logger.trace("Install certificate failed with error: \(message)")
-        throw CertbotError.syserr(code: status, description: message)
+        throw
+          CertbotError
+          .certificateTrustFailed(reason: .system(code: Int(status), reason: message))
       }
 
       #if os(macOS)
         let trustSettings = [kSecTrustSettingsResult: SecTrustSettingsResult.trustRoot.rawValue]
-        status = SecTrustSettingsSetTrustSettings(
-          try backing.certificate,
-          .user,
-          trustSettings as CFTypeRef
-        )
+        status = SecTrustSettingsSetTrustSettings(certificate, .user, trustSettings as CFTypeRef)
         guard status == errSecSuccess else {
           let message = SecCopyErrorMessageString(status, nil) as? String ?? ""
           self.logger.trace("Trust certificate failed with error: \(message)")
-          throw CertbotError.syserr(code: status, description: message)
+          throw CertbotError.certificateTrustFailed(
+            reason: .system(code: Int(status), reason: message))
         }
 
         self.logger.trace("Install and trust certificate success")
       #endif
 
-      let isTrusted = try await self.trustEvaluate(certificate: backing.representation)
+      let isTrusted = try self.trustEvaluate(certificate: backing.representation)
 
       await MainActor.run {
         self._isTrusted = isTrusted
       }
     }
+  #else
+    nonisolated private func _trustLoadedCertificate() async throws {
+      // TODO: Trust Evaluation
+      throw CertbotError.operationUnsupported
+    }
+  #endif
 
-    /// Sectrust evaluate.
-    ///
-    /// - Important: This operation will block IO.
-    #if swift(>=6.2)
-      @concurrent private func trustEvaluate(certificate: Certificate) async throws -> Bool {
-        try self._trustEvaluate(certificate: certificate)
-      }
-    #else
-      nonisolated public func trustEvaluate(certificate: Certificate) async throws -> Bool {
-        try self._trustEvaluate(certificate: certificate)
-      }
-    #endif
-    nonisolated private func _trustEvaluate(certificate: Certificate) throws -> Bool {
+  /// Sectrust evaluate.
+  #if canImport(Security)
+    nonisolated private func trustEvaluate(certificate: Certificate) throws -> Bool {
       var serializer = DER.Serializer()
       try serializer.serialize(certificate)
       guard
         let cert = SecCertificateCreateWithData(nil, Data(serializer.serializedBytes) as CFData)
       else {
         self.logger.error("Generate certificate failed with error: data corrupted")
-        throw CertbotError.dataCorrupted
+        return false
       }
 
       var trust: SecTrust?
       let status = SecTrustCreateWithCertificates(cert, SecPolicyCreateBasicX509(), &trust)
       guard status == errSecSuccess else {
         let message = SecCopyErrorMessageString(status, nil) as? String ?? ""
-        logger.trace("Trust evaluating failed with error: \(message)")
-        throw CertbotError.syserr(code: status, description: message)
+        logger.error("Trust evaluating failed with error: \(message)")
+        throw CertbotError.certificateTrustFailed(
+          reason: .system(code: Int(status), reason: message))
       }
 
       guard let trust else {
-        logger.trace("Trust evaluating failed with error: unable to create trust")
-        throw CertbotError.missingData
+        logger.error("Trust evaluating failed with error: unable to create trust")
+        return false
       }
 
       var error: CFError?
@@ -517,7 +488,15 @@
 
       let message = CFErrorCopyDescription(error)
       logger.trace("Trust evaluating failed with error: \(String(describing: message))")
-      throw CertbotError.syserr(code: CFErrorGetCode(error), description: message as? String)
+      throw
+        CertbotError
+        .certificateTrustFailed(
+          reason: .system(code: CFErrorGetCode(error), reason: message as? String))
     }
-  }
-#endif
+  #else
+    nonisolated private func trustEvaluate(certificate: Certificate) throws -> Bool {
+      // TODO: Trust Evaluation
+      throw CertbotError.operationUnsupported
+    }
+  #endif
+}
