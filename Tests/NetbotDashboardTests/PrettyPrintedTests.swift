@@ -34,7 +34,7 @@ struct PrettyPrintedTests {
   @Test func formattedConnectionForwardProtocol() {
     let model = Connection.Model()
     #expect(model.forwardingReport == nil)
-    #expect(model.forwardProtocolFormatted == "FINAL (*)")
+    #expect(model.forwardProtocolFormatted == "")
 
     model.forwardingReport = .init()
     #expect(model.forwardProtocolFormatted == "DIRECT (*)")

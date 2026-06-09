@@ -30,7 +30,11 @@ extension Connection.Model {
 
   /// Pretty printed forwarding policy.
   public var forwardProtocolFormatted: String {
-    "\(forwardingReport?.forwardProtocol ?? "FINAL") (\(forwardingReport?.forwardingRule ?? "*"))"
+    guard let `protocol` = forwardingReport?.forwardProtocol else { return "" }
+    guard let rule = forwardingReport?.forwardingRule else {
+      return "\(`protocol`) (*)"
+    }
+    return "\(`protocol`) (\(rule))"
   }
 
   public var maximumUploadBandwidthString: String { "" }
