@@ -43,7 +43,7 @@ extension V1 {
       /// Indicates the name of the program.
       /// This is dependent on the current localization of the referenced program, and is suitable for presentation to the user.
       @Attribute(.unique)
-      public var localizedName: String = "Unknown"
+      public var localizedName: String = ""
 
       /// Indicates the URL to the application's bundle, or nil if the application does not have a bundle.
       public var bundleURL: URL?
@@ -71,7 +71,7 @@ extension V1 {
 
       /// Indicates the name of the program.
       /// This is dependent on the current localization of the referenced program, and is suitable for presentation to the user.
-      public var localizedName: String = "Unknown"
+      public var localizedName: String = ""
 
       /// Indicates the URL to the application's bundle, or nil if the application does not have a bundle.
       public var bundleURL: URL?

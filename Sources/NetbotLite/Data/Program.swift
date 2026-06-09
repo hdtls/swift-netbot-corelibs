@@ -26,7 +26,7 @@ public struct Program: Hashable, Codable, Sendable {
 
   /// Indicates the name of the program.
   /// This is dependent on the current localization of the referenced program, and is suitable for presentation to the user.
-  public var localizedName: String = "Unknown"
+  public var localizedName: String = ""
 
   /// Indicates the URL to the application's bundle, or nil if the application does not have a bundle.
   public var bundleURL: URL?
@@ -38,7 +38,7 @@ public struct Program: Hashable, Codable, Sendable {
   public var iconTIFFRepresentation: Data?
 
   public init(
-    localizedName: String = "Unknown",
+    localizedName: String = "",
     bundleURL: URL? = nil,
     executableURL: URL? = nil,
     iconTIFFRepresentation: Data? = nil

@@ -32,9 +32,9 @@ import Testing
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test func propertyInitialValues() async throws {
+  @Test func defaultProperties() async throws {
     let report = V1._Program()
-    #expect(report.localizedName == "Unknown")
+    #expect(report.localizedName == "")
     #expect(report.bundleURL == nil)
     #expect(report.executableURL == nil)
     #expect(report.iconTIFFRepresentation == nil)
@@ -45,7 +45,7 @@ import Testing
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test func programIdentifiable() async throws {
+  @Test func identifiableConformance() async throws {
     #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
       let program = Program()
       #expect(program.id == program.persistentModelID)

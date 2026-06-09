@@ -28,7 +28,61 @@ import Testing
   #else
     @available(SwiftStdlib 6.0, *)
   #endif
-  @Test func programInitFromPersistentModel() async throws {
+  @Test func defaultProperties() {
+    let program = Program()
+    #expect(program.localizedName == "")
+    #expect(program.bundleURL == nil)
+    #expect(program.executableURL == nil)
+    #expect(program.iconTIFFRepresentation == nil)
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func hashableConformance() {
+    let program1 = Program()
+    let program2 = Program()
+    let program3 = Program(localizedName: "ssh")
+    #expect(program1 == program2)
+    #expect(program1 != program3)
+
+    let programs = Set([program1, program2, program3])
+    #expect(programs == [program1, program3])
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func codableConformance() {
+    let program = Program()
+
+    #expect(throws: Never.self) {
+      let data = try JSONEncoder().encode(program)
+      let decoded = try JSONDecoder().decode(Program.self, from: data)
+      #expect(decoded == program)
+    }
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func identifiableConformance() {
+    let program = Program(localizedName: "ssh")
+    #expect(program.id == "ssh")
+  }
+
+  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+    @available(SwiftStdlib 5.9, *)
+  #else
+    @available(SwiftStdlib 6.0, *)
+  #endif
+  @Test func initFromPersistentModel() async throws {
     let bundleURL = URL(string: "file:///Applications/FakeApp.app")
     let execURL = URL(string: "file:///Applications/FakeApp.app/Contents/MacOS/FakeApp")
     let iconData = Data("icondata".utf8)
