@@ -201,7 +201,7 @@
         .sink { url, mode in
           _ = Task { [weak self] in
             guard let self else { return }
-            let profile = try await profile
+            let profile = try await self.profile
             await delegate?.setForwardingRules(profile.asForwardingRules(maxminddb: maxminddb))
             await delegate?.setForwardProtocol(profile.asForwardProtocol())
             await delegate?.setDecryptionPKCS12Bundle(try profile.asDecryptionPKCS12Bundle())
