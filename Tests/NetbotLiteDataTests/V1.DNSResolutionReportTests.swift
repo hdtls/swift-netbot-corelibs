@@ -16,10 +16,6 @@ import Testing
 
 @testable import NetbotLiteData
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
-  import SwiftData
-#endif
-
 @Suite struct V1_DNSResolutionReportTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -86,3 +82,44 @@ import Testing
       ])
   }
 }
+
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+  import SwiftData
+
+  extension V1_DNSResolutionReportTests {
+
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
+    @Test func query() async throws {
+      SQL_initialized()
+
+      let modelContainer = try ModelContainer(
+        for: V1._DNSResolutionReport.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+      )
+      let modelContext = ModelContext(modelContainer)
+
+      let data = DNSResolutionReport(
+        duration: .seconds(1),
+        resolutions: [
+          .init(
+            source: .query, duration: .seconds(1), dnsProtocol: .udp,
+            endpoints: [
+              .hostPort(host: "123.34.23.94", port: 443)
+            ])
+        ])
+
+      let model = V1._DNSResolutionReport()
+      model.mergeValues(data)
+      modelContext.insert(model)
+
+      let fetched = try modelContext.fetch(FetchDescriptor<V1._DNSResolutionReport>()).first
+      let persistentModel = try #require(fetched)
+      let result = DNSResolutionReport(persistentModel: persistentModel)
+      #expect(result == data)
+    }
+  }
+#endif

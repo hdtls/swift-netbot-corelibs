@@ -27,33 +27,42 @@
 extension V1 {
 
   #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
-    @Model
+    @Model public class _ForwardingReport {
+
+      /// The length of time duration on this matching step.
+      @Attribute(.transformable(by: SQLValueTransformer<Duration>.self))
+      public var duration: Duration = Duration.zero
+
+      /// Forward protocol used to forward requests.
+      public var forwardProtocol = "DIRECT"
+
+      /// Forwarding rule description for establishing connection.
+      public var forwardingRule: String?
+
+      public var connection: _Connection?
+
+      public init() {}
+    }
   #else
     #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
-  #endif
-  public class _ForwardingReport {
+    public class _ForwardingReport {
 
-    /// The length of time duration on this matching step.
-    public var duration: Duration {
-      get { .seconds(_duration) }
-      set { _duration = newValue.seconds }
+      /// The length of time duration on this matching step.
+      public var duration: Duration = Duration.zero
+
+      /// Forward protocol used to forward requests.
+      public var forwardProtocol = "DIRECT"
+
+      /// Forwarding rule description for establishing connection.
+      public var forwardingRule: String?
+
+      public var connection: _Connection?
+
+      public init() {}
     }
-
-    /// Length of time in seconds spent on forwarding rule matching.
-    public var _duration: Double = 0
-
-    /// Forward protocol used to forward requests.
-    public var forwardProtocol = "DIRECT"
-
-    /// Forwarding rule description for establishing connection.
-    public var forwardingRule: String?
-
-    public var connection: _Connection?
-
-    public init() {}
-  }
+  #endif
 }
 
 #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9

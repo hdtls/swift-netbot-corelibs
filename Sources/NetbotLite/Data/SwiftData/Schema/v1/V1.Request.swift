@@ -39,55 +39,16 @@ extension V1 {
     @Model final public class _Request {
 
       /// The HTTP request object if present. otherwise returns `nil`.
-      public var httpRequest: HTTPRequest? {
-        get {
-          guard let _httpRequest else {
-            return nil
-          }
-          return try? JSONDecoder().decode(HTTPRequest.self, from: _httpRequest)
-        }
-        set {
-          guard let httpRequest = newValue else {
-            _httpRequest = nil
-            return
-          }
-          _httpRequest = try? JSONEncoder().encode(httpRequest)
-        }
-      }
-      public var _httpRequest: Data?
+      @Attribute(.transformable(by: SQLValueTransformer<HTTPRequest>.self))
+      public var httpRequest: HTTPRequest?
 
       /// The address of the receiver.
-      public var address: Address? {
-        get {
-          guard let _address else { return nil }
-          return try? JSONDecoder().decode(Address.self, from: _address)
-        }
-        set {
-          guard let address = newValue else {
-            _address = nil
-            return
-          }
-          _address = try? JSONEncoder().encode(address)
-        }
-      }
-      public var _address: Data?
+      @Attribute(.transformable(by: SQLValueTransformer<Address>.self))
+      public var address: Address?
 
-      public var trailers: HTTPFields? {
-        get {
-          guard let _trailers else {
-            return nil
-          }
-          return try? JSONDecoder().decode(HTTPFields.self, from: _trailers)
-        }
-        set {
-          guard let trailers = newValue else {
-            _trailers = nil
-            return
-          }
-          _trailers = try? JSONEncoder().encode(trailers)
-        }
-      }
-      public var _trailers: Data?
+      /// The HTTP message trailer headers (Trailer / chunked encoding).
+      @Attribute(.transformable(by: SQLValueTransformer<HTTPFields>.self))
+      public var trailers: HTTPFields?
 
       /// The host of the receiver.
       public var hostname: String?
@@ -165,36 +126,15 @@ extension V1._Request {
       self.hostname = data.host(percentEncoded: false)
       self.absoluteURLString = absoluteURLString
     #else
-      #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
-        if let httpRequest = data.httpRequest {
-          let _httpRequest = try? JSONEncoder().encode(httpRequest)
-          if self._httpRequest != _httpRequest {
-            self._httpRequest = _httpRequest
-          }
-        }
-        if let address = data.address {
-          let _address = try? JSONEncoder().encode(address)
-          if self._address != _address {
-            self._address = _address
-          }
-        }
-        if let trailers = data.trailers {
-          let _trailers = try? JSONEncoder().encode(trailers)
-          if self._trailers != _trailers {
-            self._trailers = _trailers
-          }
-        }
-      #else
-        if self.httpRequest != data.httpRequest {
-          self.httpRequest = data.httpRequest
-        }
-        if self.address != data.address {
-          self.address = data.address
-        }
-        if self.trailers != data.trailers {
-          self.trailers = data.trailers
-        }
-      #endif
+      if self.httpRequest != data.httpRequest {
+        self.httpRequest = data.httpRequest
+      }
+      if self.address != data.address {
+        self.address = data.address
+      }
+      if self.trailers != data.trailers {
+        self.trailers = data.trailers
+      }
 
       if self.hostname != data.host(percentEncoded: false) {
         self.hostname = data.host(percentEncoded: false)

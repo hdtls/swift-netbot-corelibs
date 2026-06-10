@@ -225,3 +225,53 @@ import Testing
     #expect(establishmentReport.resolutions.count == data.resolutions.count)
   }
 }
+
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+  import SwiftData
+
+  extension V1_EstablishmentReportTests {
+
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
+    @Test func query() async throws {
+      SQL_initialized()
+
+      let modelContainer = try ModelContainer(
+        for: V1._EstablishmentReport.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+      )
+      let modelContext = ModelContext(modelContainer)
+
+      let data = EstablishmentReport(
+        duration: .seconds(12),
+        attemptStartedAfterInterval: 1,
+        previousAttemptCount: 3,
+        sourceEndpoint: .hostPort(host: "127.0.0.1", port: 1233),
+        usedProxy: true,
+        proxyEndpoint: .hostPort(host: "123.44.2.123", port: 2345),
+        resolutions: [
+          .init(
+            source: .cache,
+            duration: .seconds(0.2),
+            endpointCount: 1,
+            successfulEndpoint: .hostPort(host: "123.44.2.2", port: 443),
+            preferredEndpoint: .hostPort(host: "123.44.2.2", port: 443),
+            dnsProtocol: .udp
+          )
+        ]
+      )
+
+      let model = V1._EstablishmentReport()
+      model.mergeValues(data)
+      modelContext.insert(model)
+
+      let fetched = try modelContext.fetch(FetchDescriptor<V1._EstablishmentReport>()).first
+      let persistentModel = try #require(fetched)
+      let result = EstablishmentReport(persistentModel: persistentModel)
+      #expect(result == data)
+    }
+  }
+#endif

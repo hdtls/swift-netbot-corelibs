@@ -38,40 +38,12 @@ extension V1 {
     @Model final public class _Response {
 
       /// The HTTP request object if present. otherwise returns `nil`.
-      public var httpResponse: HTTPResponse? {
-        get {
-          guard let _httpResponse else {
-            return nil
-          }
-          return try? JSONDecoder().decode(HTTPResponse.self, from: _httpResponse)
-        }
-        set {
-          guard let httpResponse = newValue else {
-            _httpResponse = nil
-            return
-          }
-          _httpResponse = try? JSONEncoder().encode(httpResponse)
-        }
-      }
-      public var _httpResponse: Data?
+      @Attribute(.transformable(by: SQLValueTransformer<HTTPResponse>.self))
+      public var httpResponse: HTTPResponse?
 
       /// The HTTP message trailer headers (Trailer / chunked encoding).
-      public var trailers: HTTPFields? {
-        get {
-          guard let _trailers else {
-            return nil
-          }
-          return try? JSONDecoder().decode(HTTPFields.self, from: _trailers)
-        }
-        set {
-          guard let trailers = newValue else {
-            _trailers = nil
-            return
-          }
-          _trailers = try? JSONEncoder().encode(trailers)
-        }
-      }
-      public var _trailers: Data?
+      @Attribute(.transformable(by: SQLValueTransformer<HTTPFields>.self))
+      public var trailers: HTTPFields?
 
       /// The data is sent as the message body of the request.
       @Attribute(.externalStorage)

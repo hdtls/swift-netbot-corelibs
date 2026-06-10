@@ -32,43 +32,25 @@ extension V1 {
   #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
     @Model final public class _EstablishmentReport {
 
-      public var duration: Duration {
-        get { .seconds(_duration) }
-        set { _duration = newValue.seconds }
-      }
-
       /// The duration of the connection's establishment in seconds.
       /// This is the total time from when the successful connection
       /// attempt began until the connection becomes ready, including
       /// resolution, proxy evaluation, and protocol handshakes.
-      public var _duration: Double
+      @Attribute(.transformable(by: SQLValueTransformer<Duration>.self))
+      public var duration: Duration = Duration.zero
 
       /// The delay after calling start() before the successful connection
       /// attempt began. For connections that succeed on the first attempt,
       /// this value will be 0. For connections that move into the .waiting
       /// state, this value will be greater than 0.
-      public var attemptStartedAfterInterval: Double
+      public var attemptStartedAfterInterval: Double = 0
 
       /// The number of connection attempts made before the successful attempt.
-      public var previousAttemptCount: Int
+      public var previousAttemptCount: Int = 0
 
       /// The endpoint of the source.
-      public var sourceEndpoint: Address? {
-        get {
-          guard let _sourceEndpoint else {
-            return nil
-          }
-          return try? JSONDecoder().decode(Address.self, from: _sourceEndpoint)
-        }
-        set {
-          guard let sourceEndpoint = newValue else {
-            _sourceEndpoint = nil
-            return
-          }
-          _sourceEndpoint = try? JSONEncoder().encode(sourceEndpoint)
-        }
-      }
-      public var _sourceEndpoint: Data?
+      @Attribute(.transformable(by: SQLValueTransformer<Address>.self))
+      public var sourceEndpoint: Address?
 
       /// The endpoint of the remote.
       public var destinationEndpoint: Address? {
@@ -79,39 +61,19 @@ extension V1 {
       }
 
       /// A boolean indicating if the connection was established through a proxy.
-      public var usedProxy: Bool
+      public var usedProxy: Bool = false
 
       /// The endpoint of the proxy used by a connection, if applicable.
-      public var proxyEndpoint: Address? {
-        get {
-          guard let _proxyEndpoint else {
-            return nil
-          }
-          return try? JSONDecoder().decode(Address.self, from: _proxyEndpoint)
-        }
-        set {
-          guard let proxyEndpoint = newValue else {
-            _proxyEndpoint = nil
-            return
-          }
-          _proxyEndpoint = try? JSONEncoder().encode(proxyEndpoint)
-        }
-      }
-      public var _proxyEndpoint: Data?
+      @Attribute(.transformable(by: SQLValueTransformer<Address>.self))
+      public var proxyEndpoint: Address?
 
       /// An array of zero or more Resolution reports, in order from first resolved
       /// to last resolved.
-      public var resolutions: [Resolution]
+      public var resolutions: [Resolution] = []
 
       public var connection: _Connection?
 
-      public init() {
-        _duration = 0
-        attemptStartedAfterInterval = 0
-        previousAttemptCount = 0
-        usedProxy = false
-        resolutions = []
-      }
+      public init() {}
     }
   #else
     #if canImport(Darwin) || swift(>=6.3)
@@ -123,16 +85,16 @@ extension V1 {
       /// This is the total time from when the successful connection
       /// attempt began until the connection becomes ready, including
       /// resolution, proxy evaluation, and protocol handshakes.
-      public var duration: Duration
+      public var duration: Duration = Duration.zero
 
       /// The delay after calling start() before the successful connection
       /// attempt began. For connections that succeed on the first attempt,
       /// this value will be 0. For connections that move into the .waiting
       /// state, this value will be greater than 0.
-      public var attemptStartedAfterInterval: Double
+      public var attemptStartedAfterInterval: Double = 0
 
       /// The number of connection attempts made before the successful attempt.
-      public var previousAttemptCount: Int
+      public var previousAttemptCount: Int = 0
 
       /// The endpoint of the source.
       public var sourceEndpoint: Address?
@@ -146,24 +108,18 @@ extension V1 {
       }
 
       /// A boolean indicating if the connection was established through a proxy.
-      public var usedProxy: Bool
+      public var usedProxy: Bool = false
 
       /// The endpoint of the proxy used by a connection, if applicable.
       public var proxyEndpoint: Address?
 
       /// An array of zero or more Resolution reports, in order from first resolved
       /// to last resolved.
-      public var resolutions: [Resolution]
+      public var resolutions: [Resolution] = []
 
       public var connection: _Connection?
 
-      public init() {
-        duration = .zero
-        attemptStartedAfterInterval = 0
-        previousAttemptCount = 0
-        usedProxy = false
-        resolutions = []
-      }
+      public init() {}
     }
   #endif
 }

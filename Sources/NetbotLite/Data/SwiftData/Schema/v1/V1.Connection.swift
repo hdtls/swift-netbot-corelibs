@@ -66,11 +66,8 @@ import NEAddressProcessing
 
       public var earliestBeginDateFormatted = ""
 
-      public var duration: Duration {
-        get { .seconds(_duration) }
-        set { _duration = newValue.seconds }
-      }
-      public var _duration: Double = 0
+      @Attribute(.transformable(by: SQLValueTransformer<Duration>.self))
+      public var duration: Duration = Duration.zero
 
       public var durationFormatted = "0ms"
 

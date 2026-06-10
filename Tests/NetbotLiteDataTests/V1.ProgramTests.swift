@@ -21,10 +21,6 @@ import Testing
   import Foundation
 #endif
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
-  import SwiftData
-#endif
-
 @Suite struct V1_ProgramTests {
 
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
@@ -90,3 +86,41 @@ import Testing
     #expect(persistent.iconTIFFRepresentation == newIcon)
   }
 }
+
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+  import SwiftData
+
+  extension V1_ProgramTests {
+
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
+    @Test func query() async throws {
+      SQL_initialized()
+
+      let modelContainer = try ModelContainer(
+        for: V1._Program.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+      )
+      let modelContext = ModelContext(modelContainer)
+
+      let data = Program(
+        localizedName: "ssh",
+        bundleURL: URL(filePath: "/bin/bash/ssh"),
+        executableURL: URL(filePath: "/bin/bash/ssh"),
+        iconTIFFRepresentation: nil
+      )
+
+      let model = V1._Program()
+      model.mergeValues(data)
+      modelContext.insert(model)
+
+      let fetched = try modelContext.fetch(FetchDescriptor<V1._Program>()).first
+      let persistentModel = try #require(fetched)
+      let result = Program(persistentModel: persistentModel)
+      #expect(result == data)
+    }
+  }
+#endif

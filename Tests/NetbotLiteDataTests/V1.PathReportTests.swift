@@ -147,3 +147,49 @@ struct V1_PathReportTests {
     #expect(persistent.sentApplicationByteCount == 1212)
   }
 }
+
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+  import SwiftData
+
+  extension V1_PathReportTests {
+
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
+    @Test func query() async throws {
+      SQL_initialized()
+
+      let modelContainer = try ModelContainer(
+        for: V1._PathReport.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+      )
+      let modelContext = ModelContext(modelContainer)
+
+      let data = DataTransferReport.PathReport(
+        receivedIPPacketCount: 123,
+        sentIPPacketCount: 21,
+        receivedTransportByteCount: 123,
+        receivedTransportDuplicateByteCount: 123,
+        receivedTransportOutOfOrderByteCount: 12,
+        sentTransportByteCount: 2,
+        retransmittedTransportByteCount: 234,
+        transportSmoothedRTT: 23,
+        transportMinimumRTT: 123,
+        transportRTTVariance: 12,
+        receivedApplicationByteCount: 1,
+        sentApplicationByteCount: 241
+      )
+
+      let model = V1._PathReport()
+      model.mergeValues(data)
+      modelContext.insert(model)
+
+      let fetched = try modelContext.fetch(FetchDescriptor<V1._PathReport>()).first
+      let persistentModel = try #require(fetched)
+      let result = DataTransferReport.PathReport(persistentModel: persistentModel)
+      #expect(result == data)
+    }
+  }
+#endif

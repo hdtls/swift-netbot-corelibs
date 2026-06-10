@@ -29,68 +29,83 @@ import NEAddressProcessing
 extension V1 {
 
   #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
-    @Model
+    @Model final public class _DNSResolutionReport {
+
+      /// The duration of the connection's establishment in seconds.
+      /// This is the total time from when the successful connection
+      /// attempt began until the connection becomes ready, including
+      /// resolution, proxy evaluation, and protocol handshakes.
+      @Attribute(.transformable(by: SQLValueTransformer<Duration>.self))
+      public var duration: Duration = Duration.zero
+
+      /// An array of zero or more Resolution reports, in order from first resolved
+      /// to last resolved.
+      public var resolutions: [Resolution] = []
+
+      public var connection: _Connection?
+
+      public init() {}
+    }
   #else
     #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
+    final public class _DNSResolutionReport {
+
+      /// The duration of the connection's establishment in seconds.
+      /// This is the total time from when the successful connection
+      /// attempt began until the connection becomes ready, including
+      /// resolution, proxy evaluation, and protocol handshakes.
+      public var duration: Duration = Duration.zero
+
+      /// An array of zero or more Resolution reports, in order from first resolved
+      /// to last resolved.
+      public var resolutions: [Resolution] = []
+
+      public var connection: _Connection?
+
+      public init() {}
+    }
   #endif
-  final public class _DNSResolutionReport {
+}
 
-    public var duration: Duration {
-      get { .seconds(_duration) }
-      set { _duration = newValue.seconds }
-    }
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension V1._DNSResolutionReport {
+  /// A Resolution report represents one step of endpoint resolution.
+  public struct Resolution: Codable, Hashable, Sendable {
 
-    /// The duration of the connection's establishment in seconds.
-    /// This is the total time from when the successful connection
-    /// attempt began until the connection becomes ready, including
-    /// resolution, proxy evaluation, and protocol handshakes.
-    public var _duration: Double
+    public typealias Source = EstablishmentReport.Resolution.Source
 
-    /// A Resolution report represents one step of endpoint resolution.
-    public struct Resolution: Codable, Hashable, Sendable {
+    /// The source of this resolution.
+    public var source: Source
 
-      public typealias Source = EstablishmentReport.Resolution.Source
+    /// The duration spent on this resolution step.
+    public var duration: Duration
 
-      /// The source of this resolution.
-      public var source: Source
+    /// The number of resolved endpoints discovered by the resolution step.
+    public var endpointCount: Int { endpoints.count }
 
-      /// The duration spent on this resolution step.
-      public var duration: Duration
+    public typealias DNSProtocol = EstablishmentReport.Resolution.DNSProtocol
 
-      /// The number of resolved endpoints discovered by the resolution step.
-      public var endpointCount: Int { endpoints.count }
+    /// The protocl of this DNS resolution.
+    public var dnsProtocol: DNSProtocol
 
-      public typealias DNSProtocol = EstablishmentReport.Resolution.DNSProtocol
+    public var endpoints: [Address]
 
-      /// The protocl of this DNS resolution.
-      public var dnsProtocol: DNSProtocol
-
-      public var endpoints: [Address]
-
-      public init(
-        source: Source,
-        duration: Duration,
-        dnsProtocol: DNSProtocol,
-        endpoints: [Address]
-      ) {
-        self.source = source
-        self.duration = duration
-        self.dnsProtocol = dnsProtocol
-        self.endpoints = endpoints
-      }
-    }
-
-    /// An array of zero or more Resolution reports, in order from first resolved
-    /// to last resolved.
-    public var resolutions: [Resolution]
-
-    public var connection: _Connection?
-
-    public init() {
-      _duration = 0
-      resolutions = []
+    public init(
+      source: Source,
+      duration: Duration,
+      dnsProtocol: DNSProtocol,
+      endpoints: [Address]
+    ) {
+      self.source = source
+      self.duration = duration
+      self.dnsProtocol = dnsProtocol
+      self.endpoints = endpoints
     }
   }
 }

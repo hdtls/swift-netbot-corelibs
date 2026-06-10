@@ -40,22 +40,6 @@ import Testing
     #expect(source.trailers == nil)
   }
 
-  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
-    @Test func httpRequestCodableConformance() async throws {
-      let httpRequest = HTTPRequest(
-        method: .get, scheme: "https", authority: "swift.org:443", path: nil)
-      let request = V1._HTTPRequest(httpRequest: httpRequest)
-      let data = try JSONEncoder().encode(request)
-      let result = try JSONDecoder().decode(V1._HTTPRequest.self, from: data)
-      #expect(request == result)
-    }
-  #endif
-
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
   #else
@@ -155,3 +139,46 @@ import Testing
     #expect(source.absoluteURLString == "example.com:8080/path")
   }
 }
+
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+  import SwiftData
+
+  extension V1_RequestTests {
+
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
+    @Test func query() async throws {
+      SQL_initialized()
+
+      let modelContainer = try ModelContainer(
+        for: V1._Request.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+      )
+      let modelContext = ModelContext(modelContainer)
+
+      var data = Request(
+        httpRequest: .init(
+          method: .get,
+          scheme: "https",
+          authority: "example.com",
+          path: "/posts",
+          headerFields: [.connection: "keep-alive"]
+        )
+      )
+      data.body = Data([0])
+      data.trailers = [.init("Digest")!: "sha-256=abc123..."]
+
+      let model = V1._Request()
+      model.mergeValues(data)
+      modelContext.insert(model)
+
+      let fetched = try modelContext.fetch(FetchDescriptor<V1._Request>()).first
+      let persistentModel = try #require(fetched)
+      let result = Request(persistentModel: persistentModel)
+      #expect(result == data)
+    }
+  }
+#endif

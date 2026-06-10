@@ -36,21 +36,6 @@ import Testing
     #expect(source.trailers == nil)
   }
 
-  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
-    @Test func httpResponseCodableConformance() async throws {
-      let httpResponse = HTTPResponse(status: .ok)
-      let response = V1._HTTPResponse(httpResponse: httpResponse)
-      let data = try JSONEncoder().encode(response)
-      let result = try JSONDecoder().decode(V1._HTTPResponse.self, from: data)
-      #expect(response == result)
-    }
-  #endif
-
   #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
     @available(SwiftStdlib 5.9, *)
   #else
@@ -86,3 +71,38 @@ import Testing
     #expect(source.trailers == data.trailers)
   }
 }
+
+#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+  import SwiftData
+
+  extension V1_ResponseTests {
+
+    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+      @available(SwiftStdlib 5.9, *)
+    #else
+      @available(SwiftStdlib 6.0, *)
+    #endif
+    @Test func query() async throws {
+      SQL_initialized()
+
+      let modelContainer = try ModelContainer(
+        for: V1._Response.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+      )
+      let modelContext = ModelContext(modelContainer)
+
+      var data = Response(httpResponse: .init(status: .ok))
+      data.body = Data([0])
+      data.trailers = [.init("Digest")!: "sha-256=abc123..."]
+
+      let model = V1._Response()
+      model.mergeValues(data)
+      modelContext.insert(model)
+
+      let fetched = try modelContext.fetch(FetchDescriptor<V1._Response>()).first
+      let persistentModel = try #require(fetched)
+      let result = Response(persistentModel: persistentModel)
+      #expect(result == data)
+    }
+  }
+#endif

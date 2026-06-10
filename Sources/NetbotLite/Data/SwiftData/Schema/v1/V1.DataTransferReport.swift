@@ -39,15 +39,8 @@ extension V1 {
       /// Length of time over which the report collected
       /// information. This can be used to calculate throughput for
       /// application and transport bytes counts.
-      public var duration: Duration {
-        get { .seconds(_duration) }
-        set { _duration = newValue.seconds }
-      }
-
-      /// Length of time in seconds over which the report collected
-      /// information. This can be used to calculate throughput for
-      /// application and transport bytes counts.
-      public var _duration = Double.zero
+      @Attribute(.transformable(by: SQLValueTransformer<Duration>.self))
+      public var duration: Duration = Duration.zero
 
       public var durationFormatted = "0ms"
 
@@ -63,19 +56,6 @@ extension V1 {
       /// that cannot sum, the value of the primary path is used.
       @Relationship(deleteRule: .cascade, inverse: \_PathReport.dataTransferReport)
       public var aggregatePathReport: PathReport?
-
-      public struct PathReportFormatted: Hashable, Sendable, Codable {
-        public var sentApplicationByteCount = "0 bytes"
-        public var receivedApplicationByteCount = "0 bytes"
-
-        public init(
-          sentApplicationByteCount: String = "0 bytes",
-          receivedApplicationByteCount: String = "0 bytes"
-        ) {
-          self.sentApplicationByteCount = sentApplicationByteCount
-          self.receivedApplicationByteCount = receivedApplicationByteCount
-        }
-      }
 
       public var pathReportFormatted = PathReportFormatted()
 
@@ -111,19 +91,6 @@ extension V1 {
       /// that cannot sum, the value of the primary path is used.
       public var aggregatePathReport: PathReport?
 
-      public struct PathReportFormatted: Hashable, Sendable, Codable {
-        public var sentApplicationByteCount = "0 bytes"
-        public var receivedApplicationByteCount = "0 bytes"
-
-        public init(
-          sentApplicationByteCount: String = "0 bytes",
-          receivedApplicationByteCount: String = "0 bytes"
-        ) {
-          self.sentApplicationByteCount = sentApplicationByteCount
-          self.receivedApplicationByteCount = receivedApplicationByteCount
-        }
-      }
-
       public var pathReportFormatted = PathReportFormatted()
 
       public var aggregatePathReportFormatted = PathReportFormatted()
@@ -135,6 +102,26 @@ extension V1 {
       public init() {}
     }
   #endif
+}
+
+#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
+  @available(SwiftStdlib 5.9, *)
+#else
+  @available(SwiftStdlib 6.0, *)
+#endif
+extension V1._DataTransferReport {
+  public struct PathReportFormatted: Hashable, Sendable, Codable {
+    public var sentApplicationByteCount = "0 bytes"
+    public var receivedApplicationByteCount = "0 bytes"
+
+    public init(
+      sentApplicationByteCount: String = "0 bytes",
+      receivedApplicationByteCount: String = "0 bytes"
+    ) {
+      self.sentApplicationByteCount = sentApplicationByteCount
+      self.receivedApplicationByteCount = receivedApplicationByteCount
+    }
+  }
 }
 
 #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
