@@ -488,10 +488,15 @@ import Logging
 
       nonisolated private func update() {
         Task {
-          async let publicIPs = requestPublicIPs()
-          async let airPortInfo = requestAirPortInfo()
-
-          await [publicIPs, airPortInfo]
+          await withTaskGroup { g in
+            g.addTask {
+              await self.requestAirPortInfo()
+            }
+            g.addTask {
+              await self.requestPublicIPs()
+            }
+            await g.waitForAll()
+          }
 
           queue.async { [weak self] in
             guard let self else { return }
