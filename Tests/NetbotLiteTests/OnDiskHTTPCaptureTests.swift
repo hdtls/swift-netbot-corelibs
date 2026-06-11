@@ -19,11 +19,7 @@ import Testing
 struct OnDiskHTTPCaptureTests {
 
   #if swift(>=6.2)
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func unsupportedHeadT() async throws {
       await #expect(processExitsWith: .failure) {
         _ = OnDiskHTTPCapture<Int>(connection: .init(), captureFilters: [])

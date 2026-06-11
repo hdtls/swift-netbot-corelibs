@@ -18,11 +18,7 @@ import Testing
 @Suite(.tags(.dns))
 struct MessageTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createARecord() {
     let rr = ARecord(
       domainName: "swift.org",
@@ -37,11 +33,7 @@ struct MessageTests {
     #expect(rr.data == IPv4Address("17.253.144.12")!)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createNSRecord() {
     let rr = NSRecord(
       domainName: "swift.org", ttl: 3251, data: "c.ns.apple.com")
@@ -52,11 +44,7 @@ struct MessageTests {
     #expect(rr.data == "c.ns.apple.com")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createCNAMERecord() {
     let rr = CNAMERecord(
       domainName: "www.swift.org",
@@ -70,11 +58,7 @@ struct MessageTests {
     #expect(rr.data == "swift.lb-apple.com.akadns.net")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createSOARecord() {
     let rr = SOARecord(
       domainName: "swift.org",
@@ -102,11 +86,7 @@ struct MessageTests {
     #expect(rr.data.ttl == 1800)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createPTRRecord() {
     let rr = PTRRecord(
       domainName: "47.224.172.17.in-addr.arpa",
@@ -120,11 +100,7 @@ struct MessageTests {
     #expect(rr.data == "appleid.org")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createMXRecord() {
     let rr = MXRecord(
       domainName: "apple.com",
@@ -139,11 +115,7 @@ struct MessageTests {
     #expect(rr.data.exchange == "mx-in-sg.apple.com")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createTXTRecord() {
     let rr = TXTRecord(
       domainName: "swift.org",
@@ -157,11 +129,7 @@ struct MessageTests {
     #expect(rr.data == "v=DMARC1; p=none; pct=100; rua=swift-infrastructure@swift.org")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createAAAARecord() {
     let rr = AAAARecord(
       domainName: "world-gen.g.aaplimg.com",
@@ -175,11 +143,7 @@ struct MessageTests {
     #expect(rr.data == IPv6Address("2403:300:a04:f100::206")!)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createSRVRecord() {
     let rr = SRVRecord(
       domainName: "_caldavs._tcp.google.com",
@@ -196,11 +160,7 @@ struct MessageTests {
     #expect(rr.data.hostname == "calendar.google.com")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createNAPTRRecord() {
     let rr = NAPTRRecord(
       domainName: "example.com",
@@ -221,11 +181,7 @@ struct MessageTests {
     #expect(rr.data.replacement == "srv.example.com")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createQuestion() {
     let q = Question(domainName: "swift.org", queryType: .a, queryClass: .chaos)
     #expect(q.domainName == "swift.org")
@@ -233,11 +189,7 @@ struct MessageTests {
     #expect(q.queryClass == .chaos)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createMessage() {
     let answerRRs = [
       ARecord(
@@ -282,11 +234,7 @@ struct MessageTests {
     #expect(message.additionalRRs.isEmpty)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createMessageUsingConvenienceInitializer() {
     let answerRRs = [
       ARecord(
@@ -327,11 +275,7 @@ struct MessageTests {
     #expect(message.additionalRRs.isEmpty)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func headerFieldsInitializer() {
     let fields = Message.HeaderFields(
       transactionID: 0,
@@ -349,11 +293,7 @@ struct MessageTests {
     #expect(fields.additionCount == 0)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func messageHeaderFlagsInitializer() {
     var flags = Message.HeaderFields.Flags(rawValue: 0x8180)
     #expect(flags.isResponse)

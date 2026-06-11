@@ -28,19 +28,11 @@ import NetbotProfile
   import NIOSSL
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 private let offlineQueue = DispatchQueue(label: "com.tenbits.AnalyzeBot.tls.offline.queue")
 
 /// A TLS provider to bootstrap TLS-enabled connections with `NIOClientTCPBootstrap`.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 struct NEClientTLSProvider<Bootstrap: NIOClientTCPBootstrapProtocol>: NIOClientTLSProvider {
   typealias Bootstrap = Bootstrap
 
@@ -192,11 +184,7 @@ struct NEClientTLSProvider<Bootstrap: NIOClientTCPBootstrapProtocol>: NIOClientT
 }
 
 #if canImport(Network)
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension Certificate {
     fileprivate var _base: SecCertificate? {
       get throws {
@@ -207,11 +195,7 @@ struct NEClientTLSProvider<Bootstrap: NIOClientTCPBootstrapProtocol>: NIOClientT
     }
   }
 #else
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension String {
     fileprivate func validateSNIServerName() throws {
       guard !self.isIPAddress() else {

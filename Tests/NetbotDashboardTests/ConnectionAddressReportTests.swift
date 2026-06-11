@@ -23,11 +23,7 @@ import Testing
 
 struct ConnectionAddressReportTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func initWithAllParameters() {
     let report = ConnectionAddressReport(
       hostname: "example.com",
@@ -49,11 +45,7 @@ struct ConnectionAddressReportTests {
   }
 
   // Test default values when parameters are not passed
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func initWithDefaultValues() {
     let report = ConnectionAddressReport(
       hostname: "example.com",
@@ -71,11 +63,7 @@ struct ConnectionAddressReportTests {
   }
 
   // Test equality (== operator) and hashing
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func equalityAndHashing() {
     let report1 = ConnectionAddressReport(
       hostname: "example.com",
@@ -112,11 +100,7 @@ struct ConnectionAddressReportTests {
   }
 
   // Test Codable conformance (encode and decode)
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func codable() throws {
     let report = ConnectionAddressReport(
       hostname: "example.com",

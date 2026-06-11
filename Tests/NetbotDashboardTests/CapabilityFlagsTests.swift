@@ -17,11 +17,7 @@ import Testing
 
 struct CapabilityFlagsTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       CapabilityFlags.allCases,
@@ -32,20 +28,12 @@ struct CapabilityFlagsTests {
     #expect(capability.localizedName == localizedName)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
     #expect(CapabilityFlags.allCases == [.httpCapture, .httpsDecryption, .rewrite, .scripting])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func equalityAndHashing() async throws {
     let capability1 = CapabilityFlags.httpCapture
     let capability2 = CapabilityFlags.httpCapture

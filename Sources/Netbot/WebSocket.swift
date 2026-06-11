@@ -16,11 +16,7 @@ import NIOWebSocket
 
 /// A handler that unmask inbound `WebSocketFrame` to `ByteBuffer`, it also mask all outbound
 /// `ByteBuffer` to `WebSocketFrame` with `.binary` opcode.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 final class WebSocketFrameToByteBufferCodec: ChannelInboundHandler, ChannelOutboundHandler {
 
   typealias InboundIn = WebSocketFrame
@@ -49,19 +45,11 @@ final class WebSocketFrameToByteBufferCodec: ChannelInboundHandler, ChannelOutbo
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension WebSocketFrameToByteBufferCodec: Sendable {}
 
 /// A handler that response to control codes.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 final class WebSocketAutoReply: ChannelInboundHandler {
 
   typealias InboundIn = WebSocketFrame
@@ -143,9 +131,5 @@ final class WebSocketAutoReply: ChannelInboundHandler {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension WebSocketAutoReply: @unchecked Sendable {}

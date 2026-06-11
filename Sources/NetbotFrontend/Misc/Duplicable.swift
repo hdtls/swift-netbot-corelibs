@@ -15,22 +15,14 @@ import Foundation
 import NetbotProfile
 
 /// Duplicate a new object.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public protocol Duplicable {
 
   /// Make a copy.
   func copy() -> Self
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Sequence where Element: Duplicable {
 
   /// Make a duplicate element.
@@ -75,11 +67,7 @@ extension Sequence where Element: Duplicable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Sequence where Element == String {
 
   /// Make a duplicate element.
@@ -119,11 +107,7 @@ extension Sequence where Element == String {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_7
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension NetbotProfile.V1._AnyProxy {
 
   public func copy() -> NetbotProfile.V1._AnyProxy {
@@ -153,11 +137,7 @@ extension NetbotProfile.V1._AnyProxy {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_7
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension NetbotProfile.V1._AnyProxyGroup {
 
   public func copy() -> NetbotProfile.V1._AnyProxyGroup {

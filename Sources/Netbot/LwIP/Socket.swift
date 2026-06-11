@@ -11,15 +11,11 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-#if NETBOT_REQUIRES_LWIP
+#if SWTNE_REQUIRES_LWIP
   import CNELwIP
   import NIOCore
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   class Socket: BaseSocket {
 
     func write(pointer: UnsafeRawBufferPointer, flags: Int32) throws {

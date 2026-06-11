@@ -18,11 +18,7 @@ import Preference
 #endif
 
 /// The network outbound mode.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public enum OutboundMode: String, RawRepresentable, Sendable {
 
   /// Direct mode. In this mode all requests will be sent directly.
@@ -35,18 +31,10 @@ public enum OutboundMode: String, RawRepresentable, Sendable {
   case ruleBased = "rule-based"
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension OutboundMode: PreferenceRepresentable {}
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension OutboundMode {
 
   public var localizedName: String {
@@ -97,11 +85,7 @@ extension OutboundMode {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension OutboundMode: CaseIterable {
   public static var allCases: [OutboundMode] {
     [.direct, .globalProxy, .ruleBased]

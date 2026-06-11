@@ -18,11 +18,7 @@
 
   /// This object implements the protocol which we have defined. It provides the actual behavior for the service. It is 'exported' by the
   /// service to make it available to the process hosting the service over an NSXPCConnection.
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   final public class AppServiceHandle {
 
     private let authorizationExternalForm: Data
@@ -111,18 +107,10 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension AppServiceHandle: @unchecked Sendable {}
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension AppServiceHandle: AppServiceHandleProtocol {
 
     public func codeSigningRequirement() async -> String {
@@ -186,11 +174,7 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension NSXPCConnection {
 
     /// Convert `remoteObjectProxy` to `any PHTHandleProtocol` if possible.
@@ -217,20 +201,12 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   enum NEXPCServiceError: Error {
     case operationUnsupported
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension Data {
     var authorizationExternalForm: AuthorizationExternalForm {
       get throws {

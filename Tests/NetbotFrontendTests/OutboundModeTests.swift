@@ -18,11 +18,7 @@ import Testing
 
 struct OutboundModeTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       OutboundMode.allCases,
@@ -34,11 +30,7 @@ struct OutboundModeTests {
     #expect(mode.localizedDescription == description)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: zip(OutboundMode.allCases, ["direct-outbound", "global-proxy", "rule-based"]))
   func rawRepresentableConformance(_ mode: OutboundMode, _ rawValue: String) {
     #expect(mode.rawValue == rawValue)
@@ -46,20 +38,12 @@ struct OutboundModeTests {
     #expect(OutboundMode(rawValue: "unknown") == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
     #expect(OutboundMode.allCases == [.direct, .globalProxy, .ruleBased])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: zip(OutboundMode.allCases, ["direct-outbound", "global-proxy", "rule-based"]))
   func preferenceRepresentableConformance(_ mode: OutboundMode, _ preferenceValue: String) {
     #expect(mode.preferenceValue as? String == preferenceValue)

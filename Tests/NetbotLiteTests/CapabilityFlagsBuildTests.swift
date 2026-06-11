@@ -22,6 +22,7 @@ import Testing
 
 struct CapabilityFlagsBuildTests {
 
+  @available(SwiftStdlib 6.0, *)
   @Test func buildTLS() async throws {
     let inputStream = EmbeddedChannel()
     let outputStream = EmbeddedChannel()
@@ -40,6 +41,7 @@ struct CapabilityFlagsBuildTests {
     }
   }
 
+  @available(SwiftStdlib 6.0, *)
   @Test func buildHTTPCapture() async throws {
     let inputStream = EmbeddedChannel()
     let outputStream = EmbeddedChannel()

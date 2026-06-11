@@ -17,11 +17,7 @@ import Testing
 
 struct DuplicableTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   class File: Duplicable {
     var name: String
 
@@ -34,11 +30,7 @@ struct DuplicableTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func duplicate() {
     let file = File(named: "info")
     var copyed = file.copy()
@@ -52,11 +44,7 @@ struct DuplicableTests {
     #expect(["info"].duplicate("info") == "info copy")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func duplicateInAnArrayThatAlreadyContainsACopy() {
     let file = File(named: "info")
 
@@ -68,11 +56,7 @@ struct DuplicableTests {
     #expect(["info", "info copy"].duplicate("info") == "info copy 1")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func duplicateInAnArrayThatContainsMultipleCopys() {
     let file = File(named: "info")
 

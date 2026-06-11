@@ -23,18 +23,14 @@ import HTTPTypes
   import Foundation
 #endif
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension V1 {
 
-  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+  #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
     @Model final public class _Response {
 
       /// The HTTP request object if present. otherwise returns `nil`.
@@ -71,17 +67,13 @@ extension V1 {
   #endif
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension V1._Response {
 
   /// Merge new values from DTO.
   /// - Parameter data: New `Response` to merge.
   public func mergeValues(_ data: Response) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
       httpResponse = data.httpResponse
       trailers = data.trailers
       body = data.body

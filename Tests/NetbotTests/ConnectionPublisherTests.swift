@@ -28,11 +28,7 @@ import Testing
 
 struct ConnectionPublisherTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func failedToRunIfAddressAlreadyInUsed() async throws {
     let channel = try await ServerBootstrap(group: .shared)
       .bind(to: .init(ipAddress: "127.0.0.1", port: 0))
@@ -50,11 +46,7 @@ struct ConnectionPublisherTests {
     #endif
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func shutdownGracefully() async throws {
     let publisher = ConnectionPulse(
       group: .shared, address: .hostPort(host: "127.0.0.1", port: .any))

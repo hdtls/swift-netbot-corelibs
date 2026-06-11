@@ -19,11 +19,7 @@ import HTTPTypes
   import Foundation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension StubbedHTTPResponse {
   public struct FormatStyle: Sendable {
     private var delimiter: Character { "," }
@@ -32,11 +28,7 @@ extension StubbedHTTPResponse {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension StubbedHTTPResponse.FormatStyle {
   public func format(_ value: StubbedHTTPResponse) -> String {
     var formatOutput = value.isEnabled ? "" : "# "
@@ -58,19 +50,11 @@ extension StubbedHTTPResponse.FormatStyle {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension StubbedHTTPResponse.FormatStyle: FormatStyle {
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension StubbedHTTPResponse.FormatStyle {
   public func parse(_ value: String) throws -> StubbedHTTPResponse {
     func errorOut() -> CocoaError {
@@ -135,64 +119,36 @@ extension StubbedHTTPResponse.FormatStyle {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension StubbedHTTPResponse.FormatStyle: ParseStrategy {
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension StubbedHTTPResponse.FormatStyle {
   public var parseStrategy: StubbedHTTPResponse.FormatStyle {
     self
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension StubbedHTTPResponse.FormatStyle: ParseableFormatStyle {
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension StubbedHTTPResponse.FormatStyle: Codable, Hashable {}
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension FormatStyle where Self == StubbedHTTPResponse.FormatStyle {
   public static var stubbedHTTPResponse: Self { .init() }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ParseStrategy where Self == StubbedHTTPResponse.FormatStyle {
   @_disfavoredOverload
   public static var stubbedHTTPResponse: Self { .init() }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension StubbedHTTPResponse {
 
   #if canImport(FoundationEssentials)

@@ -17,11 +17,7 @@ import Testing
 
 struct AirPortTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       [0, 1, 2, 3, 4],
@@ -32,11 +28,7 @@ struct AirPortTests {
     #expect(channelWidth == AirPort.ChannelWidth(rawValue: rawValue))
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       [AirPort.ChannelWidth.unknown, .width20MHz, .width40MHz, .width80MHz, .width160MHz],
@@ -47,11 +39,7 @@ struct AirPortTests {
     #expect(channelWidth.localizedName == localizedName)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       [0, 1, 2, 3],
@@ -64,11 +52,7 @@ struct AirPortTests {
     #expect(channelBand == AirPort.ChannelBand(rawValue: rawValue))
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       [AirPort.ChannelBand.unknown, .band2GHz, .band5GHz, .band6GHz],
@@ -79,11 +63,7 @@ struct AirPortTests {
     #expect(channelBand.localizedName == localizedName)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       [0, 1, 2, 3, 4, 5, 6],
@@ -96,11 +76,7 @@ struct AirPortTests {
     #expect(channelBand == AirPort.PHYMode(rawValue: rawValue))
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       [AirPort.PHYMode.none, .mode11a, .mode11b, .mode11g, .mode11n, .mode11ac, .mode11ax],
@@ -111,11 +87,7 @@ struct AirPortTests {
     #expect(channelBand.localizedName == localizedName)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 9_223_372_036_854_775_807],
@@ -144,11 +116,7 @@ struct AirPortTests {
     #expect(channelBand == AirPort.Security(rawValue: rawValue))
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       [
@@ -181,11 +149,7 @@ struct AirPortTests {
     #expect(channelBand.localizedName == localizedName)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @MainActor @Test func defaultProperties() async {
     let airPort = AirPort()
     #expect(!airPort.isAvailable)

@@ -17,11 +17,7 @@
   import Foundation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct AnyProxy: Equatable, Hashable, Sendable {
 
   /// The name of this policy.
@@ -139,11 +135,7 @@ public struct AnyProxy: Equatable, Hashable, Sendable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension AnyProxy {
 
   public typealias Model = V1._AnyProxy

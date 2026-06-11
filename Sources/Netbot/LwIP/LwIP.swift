@@ -11,7 +11,7 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-#if NETBOT_REQUIRES_LWIP
+#if SWTNE_REQUIRES_LWIP
   import CNELwIP
   import Logging
   import NEAddressProcessing
@@ -20,11 +20,8 @@
   import NIOExtras
   import NetbotDNS
   import NetbotLite
+  import Synchronization
   import SynchronizationExtras
-
-  #if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    import Synchronization
-  #endif
 
   #if canImport(Network)
     import NIOTransportServices
@@ -32,11 +29,7 @@
     import NIOPosix
   #endif
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Lockable final class LwIP: @unchecked Sendable {
 
     // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -185,50 +178,19 @@
 
     private func handleNewPackets0(_ packetObjects: [NEPacket]) async {
       await withTaskGroup { g in
-        #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-          if #available(SwiftStdlib 6.0, *) {
-            let subranges = packetObjects.indices(where: self.dns.handlePacket(_:))
+        let subranges = packetObjects.indices(where: self.dns.handlePacket(_:))
 
-            g.addTask {
-              let handled = await self.dns.handleNewPackets(packetObjects[subranges])
+        g.addTask {
+          let handled = await self.dns.handleNewPackets(packetObjects[subranges])
 
-              _ = self.packetFlow.writePacketObjects(handled)
-            }
+          // TODO: Handle failure of packet object write.
+          _ = self.packetFlow.writePacketObjects(handled)
+        }
 
-            g.addTask {
-              let subranges = packetObjects.indices.removingSubranges(subranges)
-              await self.handleNewPackets(packetObjects[subranges.subranges])
-            }
-          } else {
-            g.addTask {
-              let handled = await self.dns.handleNewPackets(
-                packetObjects.filter(self.dns.handlePacket(_:))
-              )
-              _ = self.packetFlow.writePacketObjects(handled)
-            }
-
-            g.addTask {
-              await self.handleNewPackets(
-                packetObjects.filter {
-                  !self.dns.handlePacket($0)
-                })
-            }
-          }
-        #else
-          let subranges = packetObjects.indices(where: self.dns.handlePacket(_:))
-
-          g.addTask {
-            let handled = await self.dns.handleNewPackets(packetObjects[subranges])
-
-            // TODO: Handle failure of packet object write.
-            _ = self.packetFlow.writePacketObjects(handled)
-          }
-
-          g.addTask {
-            let subranges = packetObjects.indices.removingSubranges(subranges)
-            await self.handleNewPackets(packetObjects[subranges.subranges])
-          }
-        #endif
+        g.addTask {
+          let subranges = packetObjects.indices.removingSubranges(subranges)
+          await self.handleNewPackets(packetObjects[subranges.subranges])
+        }
 
         await g.waitForAll()
       }
@@ -338,11 +300,7 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension LwIP {
     final private class AutoReplyResponse: ChannelInboundHandler, Sendable {
       typealias InboundIn = ByteBuffer

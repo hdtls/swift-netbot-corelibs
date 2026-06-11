@@ -18,11 +18,7 @@
 #endif
 
 /// An object that contains definitions of how to measure network latency.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct MeasurePolicy: Codable, Hashable, Sendable {
 
   // The URL used to test latency.
@@ -65,11 +61,7 @@ public struct MeasurePolicy: Codable, Hashable, Sendable {
 }
 
 /// An object that encapsualtes the performance metrics during the execution of a network speed test.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct TransactionMetrics: Codable, Hashable, Sendable {
 
   /// The maximum amount of data that can be transmitted over a network in a given amount of time.

@@ -25,11 +25,7 @@ import Testing
 
 @Suite struct ConnectionTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValues() {
     let connection = Connection()
     #expect(connection.originalRequest == nil)
@@ -43,11 +39,7 @@ import Testing
     #expect(connection.processReport == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func incrementTaskIdentifier() {
     let c1 = Connection()
 
@@ -55,21 +47,13 @@ import Testing
     #expect(c2.taskIdentifier > c1.taskIdentifier)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func identifiableConformance() async throws {
     let c = Connection()
     #expect(c.id == c.taskIdentifier)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func codableConformance() throws {
     let connection = Connection(taskIdentifier: 6)
     connection.originalRequest = .init(address: .hostPort(host: "192.168.1.2", port: 63532))
@@ -146,21 +130,13 @@ import Testing
     #expect(result.earliestBeginDate == connection.earliestBeginDate)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func persistentModel() {
     let source = Connection.Model.self
     #expect(source == V1._Connection.self)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func initializeConnectionFromPersistentModel() {
     let data = V1._Connection()
     data.taskIdentifier = 123

@@ -34,11 +34,7 @@
     import Network
   #endif
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public protocol ProfileAutoreloadDelegate: AnyObject, Sendable {
     func setEnabledHTTPCapabilities(_ capabilities: CapabilityFlags) async
     func setForwardProtocol(_ forwardProtocol: any ForwardProtocolConvertible) async
@@ -49,11 +45,7 @@
       async throws
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @MainActor final public class ProfileAutoreload {
 
     @Preference(Prefs.Name.profileURL, store: .__shared)
@@ -359,10 +351,6 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension CapabilityFlags: PreferenceRepresentable {}
 #endif

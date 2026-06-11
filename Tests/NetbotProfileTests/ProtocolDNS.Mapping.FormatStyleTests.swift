@@ -24,11 +24,7 @@ import Testing
 @Suite(.tags(.profile, .profileparser, .dns))
 struct ProtocolDNS_Mapping_FormatStyleTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ProtocolDNS.Mapping.FormatStyle(),
     ProtocolDNS.Mapping.FormatStyle.dnsMapping,
@@ -39,11 +35,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatOutput == "example.com = 1.1.1.1")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ProtocolDNS.Mapping.FormatStyle(),
     ProtocolDNS.Mapping.FormatStyle.dnsMapping,
@@ -55,11 +47,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatOutput == "example.com = example1.com")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ProtocolDNS.Mapping.FormatStyle(),
     ProtocolDNS.Mapping.FormatStyle.dnsMapping,
@@ -71,11 +59,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatOutput == "example.com = server:8.8.8.8")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ProtocolDNS.Mapping.FormatStyle(),
     ProtocolDNS.Mapping.FormatStyle.dnsMapping,
@@ -87,11 +71,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatOutput == "# example.com = 1.1.1.1")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ProtocolDNS.Mapping.FormatStyle(),
     ProtocolDNS.Mapping.FormatStyle.dnsMapping,
@@ -104,11 +84,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatOutput == "# example.com = example1.com")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ProtocolDNS.Mapping.FormatStyle(),
     ProtocolDNS.Mapping.FormatStyle.dnsMapping,
@@ -121,11 +97,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatOutput == "# example.com = server:8.8.8.8")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ProtocolDNS.Mapping.FormatStyle(),
     ProtocolDNS.Mapping.FormatStyle().parseStrategy,
@@ -145,11 +117,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ProtocolDNS.Mapping.FormatStyle(),
     ProtocolDNS.Mapping.FormatStyle().parseStrategy,
@@ -171,11 +139,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ProtocolDNS.Mapping.FormatStyle(),
     ProtocolDNS.Mapping.FormatStyle().parseStrategy,
@@ -197,11 +161,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ProtocolDNS.Mapping.FormatStyle(),
     ProtocolDNS.Mapping.FormatStyle().parseStrategy,
@@ -223,11 +183,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ProtocolDNS.Mapping.FormatStyle(),
     ProtocolDNS.Mapping.FormatStyle().parseStrategy,
@@ -249,11 +205,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ProtocolDNS.Mapping.FormatStyle(),
     ProtocolDNS.Mapping.FormatStyle().parseStrategy,
@@ -275,11 +227,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ProtocolDNS.Mapping.FormatStyle(),
     ProtocolDNS.Mapping.FormatStyle().parseStrategy,
@@ -301,11 +249,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatStyleConformance() {
     var formatInput = ProtocolDNS.Mapping(domainName: "example.com", value: "8.8.8.8")
     formatInput.strategy = .dns
@@ -313,11 +257,7 @@ struct ProtocolDNS_Mapping_FormatStyleTests {
     #expect(formatInput.formatted(.dnsMapping) == "# example.com = server:8.8.8.8")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseStrategyConformance() {
     #expect(throws: Never.self) {
       try ProtocolDNS.Mapping("# example.com = server:8.8.8.8", strategy: .dnsMapping)

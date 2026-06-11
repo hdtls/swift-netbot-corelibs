@@ -18,22 +18,14 @@ import Testing
 @Suite(.tags(.profile, .forwardproto, .swiftdata))
 struct V1_AnyProxyGroupTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
     let persistentModel = V1._AnyProxyGroup()
     #expect(persistentModel.kind == .select)
     #expect(persistentModel.resource == .init())
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test("AnyProxyGroup.init(persistentModel:)")
   func initWithPersistentModel() {
     let persistentModel = V1._AnyProxyGroup()
@@ -47,11 +39,7 @@ struct V1_AnyProxyGroupTests {
     #expect(group.creationDate == persistentModel.creationDate)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() {
     let persistentModel = V1._AnyProxyGroup()
     let group = AnyProxyGroup()
@@ -69,11 +57,7 @@ struct V1_AnyProxyGroupTests {
 @Suite(.tags(.profile, .forwardproto, .swiftdata))
 struct V1_AnyProxyGroup_KindTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       V1._AnyProxyGroup.Kind.allCases,
@@ -87,11 +71,7 @@ struct V1_AnyProxyGroup_KindTests {
     #expect(kind.localizedName == localizedName)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       V1._AnyProxyGroup.Kind.allCases,
@@ -108,21 +88,13 @@ struct V1_AnyProxyGroup_KindTests {
     #expect(kind.localizedDescription == description)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
     #expect(
       V1._AnyProxyGroup.Kind.allCases == [.select, .urlTest, .fallback, .ssid, .loadBalance])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       V1._AnyProxyGroup.Kind.allCases,
@@ -139,11 +111,7 @@ struct V1_AnyProxyGroup_KindTests {
 @Suite(.tags(.profile, .forwardproto, .swiftdata))
 struct V1_AnyProxyGroup_ResourceTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
     let resource = V1._AnyProxyGroup.Resource()
     #expect(resource.source == .cache)
@@ -155,11 +123,7 @@ struct V1_AnyProxyGroup_ResourceTests {
 @Suite(.tags(.profile, .forwardproto, .swiftdata))
 struct V1_AnyProxyGroup_Resource_SourceTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
     #expect(V1._AnyProxyGroup.Resource.Source.allCases == [.cache, .query])
   }

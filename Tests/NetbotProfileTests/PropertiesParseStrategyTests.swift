@@ -24,18 +24,10 @@ import Testing
 @Suite(.tags(.profileparser))
 struct PropertiesParseStrategyTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   var parser: PropertiesParseStrategy { .init() }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: ["==", " = = ", "p1, p2 = 1", "p1"])
   func parsePropertiesFromInvalidInput(_ parseInput: String) async throws {
     let parseFunctions = [parser.parse, parser._parse, parser._parse0]
@@ -47,11 +39,7 @@ struct PropertiesParseStrategyTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parse() async throws {
     let parseFunctions = [parser.parse, parser._parse, parser._parse0]
 
@@ -67,11 +55,7 @@ struct PropertiesParseStrategyTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parsePropertiesFromInputContainingQuotationMarks() throws {
 
     let parseInput = "p1 = 1, \"p2 = 2\""
@@ -84,11 +68,7 @@ struct PropertiesParseStrategyTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parsePropertiesFromInputContainingMultipleQuotationMarks() throws {
     let parseInput = "p1 = 1, \"p2 = 2\", p3 = \"a\""
 

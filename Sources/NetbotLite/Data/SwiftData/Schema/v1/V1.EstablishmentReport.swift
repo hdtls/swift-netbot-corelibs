@@ -17,19 +17,15 @@ import NEAddressProcessing
   import Observation
 #endif
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import Foundation
   import SwiftData
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension V1 {
 
-  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+  #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
     @Model final public class _EstablishmentReport {
 
       /// The duration of the connection's establishment in seconds.
@@ -124,11 +120,7 @@ extension V1 {
   #endif
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension V1._EstablishmentReport {
 
   /// A Resolution report represents one step of endpoint resolution.
@@ -170,17 +162,13 @@ extension V1._EstablishmentReport {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension V1._EstablishmentReport {
 
   /// Merge new values from DTO.
   /// - Parameter data: New `EstablishmentReport` to merge.
   public func mergeValues(_ data: EstablishmentReport) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
       self.duration = data.duration
       self.attemptStartedAfterInterval = data.attemptStartedAfterInterval
       self.previousAttemptCount = data.previousAttemptCount

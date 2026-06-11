@@ -23,11 +23,7 @@ import Testing
 
 @Suite struct ConnectionStateTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func hashableConformance() async throws {
     let state = Connection.State.establishing
 
@@ -37,11 +33,7 @@ import Testing
     #expect(states == [.establishing, .active])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func codableConformance() async throws {
     let state = Connection.State.establishing
     let data = try JSONEncoder().encode(state)
@@ -52,11 +44,7 @@ import Testing
     #expect(result == state)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       [Connection.State.establishing, .active, .completed, .failed, .cancelled],
@@ -66,11 +54,7 @@ import Testing
     #expect(state.rawValue == rawValue)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() async throws {
     #expect(
       Connection.State.allCases == [.establishing, .active, .completed, .failed, .cancelled])

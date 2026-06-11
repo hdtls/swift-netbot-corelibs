@@ -24,11 +24,7 @@ import Testing
 @Suite(.tags(.profile, .profileparser, .httprewrites))
 struct URLRewrite_FormatStyleTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     URLRewrite.FormatStyle(),
     URLRewrite.FormatStyle.urlRewrite,
@@ -45,11 +41,7 @@ struct URLRewrite_FormatStyleTests {
     #expect(urlRewrite.formatted(formatter) == expected)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     URLRewrite.FormatStyle(),
     URLRewrite.FormatStyle().parseStrategy,
@@ -70,11 +62,7 @@ struct URLRewrite_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     "abc, (?:http://)?swift.org, https://swift.org",
     "found, (?:http://)?swift.org",
@@ -91,11 +79,7 @@ struct URLRewrite_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatStyleConformance() {
     var urlRewrite = URLRewrite()
     urlRewrite.type = .found
@@ -105,11 +89,7 @@ struct URLRewrite_FormatStyleTests {
     #expect(urlRewrite.formatted(.urlRewrite) == "found, (?:http://)?swift.org, https://swift.org")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseStrategyConformance() {
     #expect(throws: Never.self) {
       try URLRewrite("found, (?:http://)?swift.org, https://swift.org", strategy: .urlRewrite)

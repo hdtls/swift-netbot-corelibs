@@ -23,7 +23,7 @@ import NetbotLiteData
   import Foundation
 #endif
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import CoreData
   import SwiftData
 #endif
@@ -36,21 +36,13 @@ import NetbotLiteData
   import Observation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public enum DataTransfer: Hashable, Sendable {
   case upload
   case download
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 #if canImport(Darwin) || swift(>=6.3)
   @Observable
 #endif
@@ -60,7 +52,7 @@ public enum DataTransfer: Hashable, Sendable {
 
   nonisolated public static let `default` = RecentConnectionsStore()
 
-  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+  #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
     /// The ModelContainer for the ModelActor.
     /// The container that manages the app’s schema and model storage configuration.
     nonisolated public let modelContainer: ModelContainer
@@ -138,7 +130,7 @@ public enum DataTransfer: Hashable, Sendable {
     self.init(messenger: Messenger())
   }
 
-  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+  #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
     nonisolated public convenience init(
       modelContainer: ModelContainer, messenger: some MessengerProtocol
     ) {
@@ -147,7 +139,7 @@ public enum DataTransfer: Hashable, Sendable {
   #endif
 
   nonisolated public convenience init(messenger: some MessengerProtocol) {
-    #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+    #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
       let schema = Schema(versionedSchema: V1.self)
       let configuration: ModelConfiguration = .init(isStoredInMemoryOnly: true)
       let modelContainer = try! ModelContainer(for: schema, configurations: [configuration])
@@ -159,7 +151,7 @@ public enum DataTransfer: Hashable, Sendable {
 
   nonisolated private init(_modelContainer: Any?, messenger: some MessengerProtocol) {
     self.messenger = messenger
-    #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+    #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
       self.modelContainer = _modelContainer as! ModelContainer
     #endif
 
@@ -225,7 +217,7 @@ public enum DataTransfer: Hashable, Sendable {
     self.timerSource = DispatchSource.makeTimerSource(queue: .main)
     self.timerSource?.schedule(deadline: .now(), repeating: .seconds(1))
     self.timerSource?.setEventHandler {
-      #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+      #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
         let modelContext = self.modelContainer.mainContext
 
         let term = Connection.State.active.rawValue
@@ -307,7 +299,7 @@ public enum DataTransfer: Hashable, Sendable {
   private func performBatchUpdates(_ models: [Connection]) {
     func doInsert(_ model: Connection) throws {
       var persistentModel: V1._Connection
-      #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+      #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
         let term = model.taskIdentifier
         var fd = FetchDescriptor<V1._Connection>(
           predicate: #Predicate { $0.taskIdentifier == term })
@@ -335,7 +327,7 @@ public enum DataTransfer: Hashable, Sendable {
       } else {
         persistentModel = V1._Connection()
         persistentModel.mergeValues(model)
-        #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+        #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
           modelContext.insert(persistentModel)
         #else
           self._searchResult.append(persistentModel)
@@ -343,7 +335,7 @@ public enum DataTransfer: Hashable, Sendable {
         #endif
       }
 
-      #if !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
+      #if !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
         // Track whether this connection is currently active. If so, index
         // for quick access to active connections; otherwise, remove it
         // from the active index.
@@ -363,7 +355,7 @@ public enum DataTransfer: Hashable, Sendable {
         if persistentModel.originalRequest == nil {
           let originalRequest = Request.Model()
           originalRequest.mergeValues(backingData)
-          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+          #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             modelContext.insert(originalRequest)
           #endif
           persistentModel.originalRequest = originalRequest
@@ -381,7 +373,7 @@ public enum DataTransfer: Hashable, Sendable {
         if persistentModel.currentRequest == nil {
           let currentRequest = Request.Model()
           currentRequest.mergeValues(backingData)
-          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+          #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             modelContext.insert(currentRequest)
           #endif
           persistentModel.currentRequest = currentRequest
@@ -398,7 +390,7 @@ public enum DataTransfer: Hashable, Sendable {
         if persistentModel.response == nil {
           let response = Response.Model()
           response.mergeValues(backingData)
-          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+          #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             modelContext.insert(response)
           #endif
           persistentModel.response = response
@@ -416,7 +408,7 @@ public enum DataTransfer: Hashable, Sendable {
         if persistentModel.dnsResolutionReport == nil {
           let dnsResolutionReport = DNSResolutionReport.Model()
           dnsResolutionReport.mergeValues(backingData)
-          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+          #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             modelContext.insert(dnsResolutionReport)
           #endif
           persistentModel.dnsResolutionReport = dnsResolutionReport
@@ -434,7 +426,7 @@ public enum DataTransfer: Hashable, Sendable {
         if persistentModel.forwardingReport == nil {
           let forwardingReport = ForwardingReport.Model()
           forwardingReport.mergeValues(backingData)
-          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+          #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             modelContext.insert(forwardingReport)
           #endif
           persistentModel.forwardingReport = forwardingReport
@@ -452,7 +444,7 @@ public enum DataTransfer: Hashable, Sendable {
         if persistentModel.establishmentReport == nil {
           let establishmentReport = EstablishmentReport.Model()
           establishmentReport.mergeValues(backingData)
-          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+          #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             modelContext.insert(establishmentReport)
           #endif
           persistentModel.establishmentReport = establishmentReport
@@ -476,20 +468,20 @@ public enum DataTransfer: Hashable, Sendable {
           // metrics.
           let dataTransferReport = DataTransferReport.Model()
           dataTransferReport.mergeValues(backingData)
-          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+          #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             modelContext.insert(dataTransferReport)
           #endif
 
           let aggregatePathReport = V1._PathReport()
           aggregatePathReport.mergeValues(backingData.aggregatePathReport)
-          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+          #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             modelContext.insert(aggregatePathReport)
           #endif
           dataTransferReport.aggregatePathReport = aggregatePathReport
 
           let pathReport = V1._PathReport()
           pathReport.mergeValues(backingData.pathReport)
-          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+          #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             modelContext.insert(pathReport)
           #endif
           dataTransferReport.pathReport = pathReport
@@ -537,7 +529,7 @@ public enum DataTransfer: Hashable, Sendable {
         if persistentModel.processReport == nil {
           let processReport = ProcessReport.Model()
           processReport.mergeValues(backingData)
-          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+          #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             modelContext.insert(processReport)
           #else
             // FIXME: Retain Cycle
@@ -552,7 +544,7 @@ public enum DataTransfer: Hashable, Sendable {
           // Prevents duplicate Process objects from being created for the
           // same underlying process.
           var program: Program.Model
-          #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+          #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             let _program = try modelContext.fetch(
               FetchDescriptor<V1._Program>(
                 predicate: #Predicate {
@@ -569,7 +561,7 @@ public enum DataTransfer: Hashable, Sendable {
             program = _program
             if persistentModel.processReport?.program == nil {
               persistentModel.processReport?.program = program
-              #if !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
+              #if !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
                 // FIXME: Retain Cycle
                 let inserted = program.processReports.contains {
                   $0.connection?.persistentModelID == persistentModel.persistentModelID
@@ -582,7 +574,7 @@ public enum DataTransfer: Hashable, Sendable {
           } else {
             program = Program.Model()
             program.mergeValues(backingData)
-            #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+            #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
               modelContext.insert(program)
             #else
               assert(persistentModel.processReport != nil)
@@ -594,19 +586,19 @@ public enum DataTransfer: Hashable, Sendable {
             persistentModel.processReport?.program = program
 
             let dataTransferReport = V1._DataTransferReport()
-            #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+            #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
               modelContext.insert(dataTransferReport)
             #endif
             program.dataTransferReport = dataTransferReport
 
             let aggregatePathReport = V1._PathReport()
-            #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+            #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
               modelContext.insert(aggregatePathReport)
             #endif
             dataTransferReport.aggregatePathReport = aggregatePathReport
 
             let pathReport = V1._PathReport()
-            #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+            #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
               modelContext.insert(pathReport)
             #endif
             dataTransferReport.pathReport = pathReport
@@ -646,7 +638,7 @@ public enum DataTransfer: Hashable, Sendable {
       }
     }
 
-    #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+    #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
       let modelContext = modelContainer.mainContext
 
       try? modelContext.transaction {

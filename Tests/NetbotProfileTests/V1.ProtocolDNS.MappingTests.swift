@@ -18,11 +18,7 @@ import Testing
 @Suite(.tags(.profile, .dns, .swiftdata))
 struct V1_ProtocolDNS_MappingTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
     let data = V1._ProtocolDNS._Mapping()
     #expect(data.strategy == .mapping)
@@ -32,11 +28,7 @@ struct V1_ProtocolDNS_MappingTests {
     #expect(data.note == "")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test("ProtocolDNS.Mapping.init(persistentModel:)")
   func initWithPersistentModel() {
     let persistentModel = V1._ProtocolDNS._Mapping()
@@ -48,11 +40,7 @@ struct V1_ProtocolDNS_MappingTests {
     #expect(data.note == persistentModel.note)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() {
     let persistentModel = V1._ProtocolDNS._Mapping()
     let data = ProtocolDNS.Mapping()
@@ -68,11 +56,7 @@ struct V1_ProtocolDNS_MappingTests {
 @Suite(.tags(.profile, .dns, .swiftdata))
 struct V1_ProtocolDNS_Mapping_KindTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: zip(ProtocolDNS.MappingStrategy.allCases, [0, 1, 2]))
   func rawRepresentableConformance(_ strategy: ProtocolDNS.MappingStrategy, _ rawValue: Int) {
     #expect(ProtocolDNS.MappingStrategy(rawValue: rawValue) == strategy)
@@ -80,11 +64,7 @@ struct V1_ProtocolDNS_Mapping_KindTests {
     #expect(ProtocolDNS.MappingStrategy(rawValue: 9) == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
     #expect(ProtocolDNS.MappingStrategy.allCases == [.mapping, .cname, .dns])
   }

@@ -22,11 +22,7 @@
 ///        var needsRepairs: Bool = false
 ///     }
 #if compiler(>=6.2)
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
 #endif
 @attached(member, names: named(_storage), named(_Storage))
 @attached(memberAttribute)
@@ -34,22 +30,14 @@ public macro _cowOptimization() =
   #externalMacro(module: "CoWOptimizationMacros", type: "CoWOptimizationMacro")
 
 #if compiler(>=6.2)
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
 #endif
 @attached(accessor, names: named(get), named(_modify))
 public macro _cowOptimizationTracked() =
   #externalMacro(module: "CoWOptimizationMacros", type: "CoWOptimizationTrackedMacro")
 
 #if compiler(>=6.2)
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
 #endif
 @attached(peer)
 public macro _cowOptimizationIgnored() =

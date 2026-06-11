@@ -31,11 +31,7 @@ import Testing
 struct InMemoryHTTPCaptureTests {
 
   #if swift(>=6.2)
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func unsupportedHeadT() async throws {
       await #expect(processExitsWith: .failure) {
         _ = InMemoryHTTPCapture<Int>(connection: .init(), captureFilters: [])
@@ -43,11 +39,7 @@ struct InMemoryHTTPCaptureTests {
     }
   #endif
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func onHTTPRequest() async throws {
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "test.com", port: 443))
@@ -62,11 +54,7 @@ struct InMemoryHTTPCaptureTests {
     #expect(connection.currentRequest == expected)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func onHTTPRequestBody() async throws {
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "test.com", port: 443))
@@ -85,11 +73,7 @@ struct InMemoryHTTPCaptureTests {
     #expect(connection.currentRequest?.body == Data([0x01, 0x02, 0x03, 0x01, 0x02, 0x03]))
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func onHTTPRequestEnd() async throws {
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "test.com", port: 443))
@@ -109,11 +93,7 @@ struct InMemoryHTTPCaptureTests {
     )
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func onHTTPResponse() async throws {
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "test.com", port: 443))
@@ -128,11 +108,7 @@ struct InMemoryHTTPCaptureTests {
     #expect(connection.response == expected)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func onHTTPResponseBody() async throws {
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "test.com", port: 443))
@@ -151,11 +127,7 @@ struct InMemoryHTTPCaptureTests {
     #expect(connection.response?.body == Data([0x01, 0x02, 0x03, 0x01, 0x02, 0x03]))
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func onHTTPResponseEnd() async throws {
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "test.com", port: 443))

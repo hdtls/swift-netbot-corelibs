@@ -17,11 +17,7 @@
 
   struct ObservationLockableMacrosTests {
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func lockableMacro() {
       #if canImport(Darwin) || swift(>=6.3)
         let expandedSource = """
@@ -58,11 +54,7 @@
             }
           }
 
-          #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-            @available(SwiftStdlib 5.9, *)
-          #else
-            @available(SwiftStdlib 6.0, *)
-          #endif
+          @available(SwiftStdlib 6.0, *)
           extension Contact: nonisolated Observation.Observable {
           }
           """
@@ -96,11 +88,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func lockableMacroIgnoreUnLockableMember() {
       #if canImport(Darwin) || swift(>=6.3)
         let expandedSource = """
@@ -137,11 +125,7 @@
             }
           }
 
-          #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-            @available(SwiftStdlib 5.9, *)
-          #else
-            @available(SwiftStdlib 6.0, *)
-          #endif
+          @available(SwiftStdlib 6.0, *)
           extension UnLockable: nonisolated Observation.Observable {
           }
           """
@@ -176,11 +160,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func lockableMacroIgnoreMemberAlreadyContainsTrackedOrIgnored() {
       #if canImport(Darwin) || swift(>=6.3)
         let expandedSource = """
@@ -215,11 +195,7 @@
             }
           }
 
-          #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-            @available(SwiftStdlib 5.9, *)
-          #else
-            @available(SwiftStdlib 6.0, *)
-          #endif
+          @available(SwiftStdlib 6.0, *)
           extension UnLockable: nonisolated Observation.Observable {
           }
           """
@@ -250,11 +226,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func trackedMacro() {
       #if canImport(Darwin) || swift(>=6.3)
         let expandedSource = """
@@ -328,11 +300,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func trackedWithAccessLevel() {
       #if canImport(Darwin) || swift(>=6.3)
         let expandedSource = """
@@ -649,11 +617,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func trackedMacroIgnoreUnLockableProperty() {
       assertMacroExpansion(
         """
@@ -676,11 +640,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func trackedMacroIgnoreAlreadyIgnoredProperty() {
       assertMacroExpansion(
         """
@@ -697,11 +657,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func ignoredMacro() {
       assertMacroExpansion(
         """

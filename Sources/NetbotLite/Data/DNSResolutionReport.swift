@@ -14,11 +14,7 @@
 import NEAddressProcessing
 
 /// DNS resolution report.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct DNSResolutionReport: Codable, Hashable, Sendable {
 
   /// The duration of the connection's establishment in seconds.
@@ -67,11 +63,7 @@ public struct DNSResolutionReport: Codable, Hashable, Sendable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension DNSResolutionReport {
 
   public typealias Model = V1._DNSResolutionReport

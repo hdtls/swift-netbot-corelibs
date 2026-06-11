@@ -13,14 +13,11 @@
 
 #if os(macOS)
   import Foundation
+  import Synchronization
   import SynchronizationExtras
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  @Lockable public class ProcessInfo: NSObject, NSSecureCoding {
+  @available(SwiftStdlib 6.0, *)
+  @Lockable final public class ProcessInfo: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
     /// Indicates the name of the application.
@@ -87,10 +84,6 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  extension ProcessInfo: @unchecked Sendable {}
+  @available(SwiftStdlib 6.0, *)
+  extension ProcessInfo: Sendable {}
 #endif

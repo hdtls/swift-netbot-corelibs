@@ -16,14 +16,11 @@
   import Logging
   @preconcurrency import NetworkExtension
 
-  /// NETunnelProviderSession wrapper.
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  /// `Session` creates and manages NETunnelProviderManager during their lifetimes.
+  @available(SwiftStdlib 6.0, *)
   @globalActor public actor Session {
 
+    /// A shared Session object.
     public static let shared = Session()
 
     public enum Message: Sendable {
@@ -43,7 +40,7 @@
 
     private init() {}
 
-    /// Start packet tunnel with specific options.
+    /// Start packet tunnel session with specific options.
     public func startVPNTunnel(options: [String: Any]) async throws {
       do {
         try await waitUntilLoaded()
@@ -60,7 +57,7 @@
       }
     }
 
-    /// Stop current running packet tunnel.
+    /// Stop current running packet tunnel session.
     public func stopVPNTunnel() async {
       let session = manager?.connection as? NETunnelProviderSession
       session?.stopTunnel()
@@ -70,6 +67,11 @@
       lastLoadError = nil
     }
 
+    /// Sends a message to NETunnelProvider and waiting for response.
+    ///
+    /// - Parameter message: The message to be sent.
+    /// - Returns: Response data, nil if session is nil or if no response is expected.
+    ///
     @discardableResult
     nonisolated public func send(_ message: Message) async throws -> Data? {
       guard let session = await manager?.connection as? NETunnelProviderSession else {

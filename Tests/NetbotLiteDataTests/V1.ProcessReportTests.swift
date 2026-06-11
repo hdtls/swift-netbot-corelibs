@@ -17,21 +17,13 @@ import Testing
 
 @Suite struct V1_ProcessReportTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValues() async throws {
     let report = V1._ProcessReport()
     #expect(report.processIdentifier == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   func mergeValues() throws {
     let model = V1._ProcessReport()
     model.processIdentifier = 1
@@ -41,16 +33,12 @@ import Testing
   }
 }
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
 
   extension V1_ProcessReportTests {
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func query() async throws {
       SQL_initialized()
 

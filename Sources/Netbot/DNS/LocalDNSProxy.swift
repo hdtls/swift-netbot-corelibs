@@ -17,11 +17,8 @@ import NEAddressProcessing
 import NIOCore
 import NetbotLite
 import NetbotProfile
+import Synchronization
 import SynchronizationExtras
-
-#if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import Synchronization
-#endif
 
 #if canImport(Network)
   import NIOTransportServices
@@ -29,11 +26,7 @@ import SynchronizationExtras
   import NIOPosix
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @Lockable final public class LocalDNSProxy: Sendable {
 
   public struct Options: Sendable {
@@ -471,11 +464,7 @@ import SynchronizationExtras
 }
 
 #if canImport(Network)
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   final private class AddressedEnvelopeSuite: ChannelDuplexHandler, Sendable {
     typealias InboundIn = ByteBuffer
     typealias InboundOut = AddressedEnvelope<ByteBuffer>

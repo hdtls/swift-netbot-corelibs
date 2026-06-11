@@ -20,18 +20,10 @@ import Testing
 @Suite(.tags(.dns))
 struct SerializationTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   private var parser: NLDNSParser { NLDNSParser() }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseAResponse() async throws {
     let answerRRs = [
       ARecord(
@@ -75,11 +67,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func serializeAResponse() async throws {
     let answerRRs = [
       ARecord(
@@ -119,11 +107,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseNSResponse() async throws {
     let answerRRs = [
       NSRecord(
@@ -170,11 +154,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func serializeNSResponse() async throws {
     let answerRRs = [
       NSRecord(domainName: "swift.org", ttl: 3251, data: "c.ns.apple.com"),
@@ -218,11 +198,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseCNAMEResponse() async throws {
     let answerRRs = [
       CNAMERecord(
@@ -266,11 +242,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func serializeCNAMEResponse() async throws {
     let answerRRs = [
       CNAMERecord(
@@ -310,11 +282,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseSOAResponse() async throws {
     let answerRRs = [
       SOARecord(
@@ -366,11 +334,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func serializeSOAResponse() async throws {
     let answerRRs = [
       SOARecord(
@@ -418,11 +382,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parsePTRResponse() async throws {
     let answerRRs = [
       PTRRecord(
@@ -466,11 +426,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func serializePTRResponse() async throws {
     let answerRRs = [
       PTRRecord(
@@ -510,11 +466,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseMXResponse() async throws {
     let answerRRs = [
       MXRecord(
@@ -583,11 +535,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func serializeMXResponse() async throws {
     let answerRRs = [
       MXRecord(
@@ -652,11 +600,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseTXTResponse() async throws {
     let answerRRs = [
       TXTRecord(
@@ -710,11 +654,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func serializeTXTResponse() async throws {
     let answerRRs = [
       TXTRecord(
@@ -764,11 +704,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseAAAAResponse() async throws {
     let answerRRs: [any ResourceRecord] = [
       CNAMERecord(
@@ -831,11 +767,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func serializeAAAAResponse() async throws {
     let answerRRs: [any ResourceRecord] = [
       CNAMERecord(
@@ -890,11 +822,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseSRVResponse() async throws {
     let answerRRs = [
       SRVRecord(
@@ -938,11 +866,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func serializeSRVResponse() async throws {
     let answerRRs = [
       SRVRecord(
@@ -982,11 +906,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseNAPTRResponse() async throws {
     let answerRRs = [
       NAPTRRecord(
@@ -1032,11 +952,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func serializeNAPTRResponse() async throws {
     let answerRRs = [
       NAPTRRecord(
@@ -1078,11 +994,7 @@ struct SerializationTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func serializeEmptyDomainInRR() async throws {
     let answerRRs = [
       CNAMERecord(

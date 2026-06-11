@@ -16,42 +16,38 @@
   import Dispatch
   import Foundation
   import Logging
+  import Synchronization
 
   #if canImport(Network)
     import Network
   #endif
 
-  #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    import SynchronizationExtras
-  #else
-    import Synchronization
-  #endif
-
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  /// An object contains operations of latency tests.
+  @available(SwiftStdlib 6.0, *)
   final public class Diagnostics: Sendable {
 
     private let logger = Logger(label: "com.tenbits.diagnostics")
 
+    /// Create a instance of `Diagnostics`.
     nonisolated public init() {
     }
 
-    /// Measure latency for Router, DNS and Internet.
     #if swift(>=6.2)
-      /// Measure TCP connect time to port 53.
+      /// Measure router latency by connect to a specific router address.
+      ///
+      /// - Parameter address: Router address.
+      /// - Returns: Duration of router latency.
+      ///
       @concurrent public func testRouterLatency(address: NWEndpoint.Host) async -> Duration {
         await _testRouterLatency(address: address)
       }
 
-      /// Measure Internet latency by fetching a tiny known endpoint (defaults to Apple's connectivity check) with a HEAD request.
+      /// Measure DNS latency by resolving a tiny known host with a DNS query.
       ///
       /// - Parameters:
-      ///   - connectivityCheckURL: The URL used to measure connectivity.
-      ///   - timeoutInterval: The timeout time interval for measure request.
-      /// - Returns: A tuple of duration of dns request/response circle and duration of TTFB.
+      ///   - url: The URL contains host to resolve, if nil the Apple's connectivity check host will be used.
+      ///   - timeoutInterval: The timeout time interval for measure request, if nil 5 seconds wil lbe used.
+      /// - Returns: Duration of dns request/response circle.
       ///
       @concurrent public func testDNSLatency(url: URL? = nil, timeoutInterval: Double? = nil) async
         -> Duration
@@ -62,9 +58,9 @@
       /// Measure Internet latency by fetching a tiny known endpoint (defaults to Apple's connectivity check) with a HEAD request.
       ///
       /// - Parameters:
-      ///   - connectivityCheckURL: The URL used to measure connectivity.
+      ///   - url: The URL used to measure connectivity.
       ///   - timeoutInterval: The timeout time interval for measure request.
-      /// - Returns: A tuple of duration of dns request/response circle and duration of TTFB.
+      /// - Returns: Duration of TTFB.
       ///
       @concurrent public func testInternetLatency(url: URL? = nil, timeoutInterval: Double? = nil)
         async -> Duration
@@ -72,16 +68,35 @@
         await _testInternetLatency(url: url, timeoutInterval: timeoutInterval)
       }
     #else
+      /// Measure router latency by connect to a specific router address.
+      ///
+      /// - Parameter address: Router address.
+      /// - Returns: Duration of router latency.
+      ///
       nonisolated public func testRouterLatency(address: NWEndpoint) async -> Duration {
         await _testRouterLatency(address: address)
       }
 
+      /// Measure DNS latency by resolving a tiny known host with a DNS query.
+      ///
+      /// - Parameters:
+      ///   - url: The URL contains host to resolve, if nil the Apple's connectivity check host will be used.
+      ///   - timeoutInterval: The timeout time interval for measure request, if nil 5 seconds wil lbe used.
+      /// - Returns: Duration of dns request/response circle.
+      ///
       nonisolated public func testDNSLatency(url: URL? = nil, timeoutInterval: Double? = nil) async
         -> Duration
       {
         await _testDNSLatency(url: url, timeoutInterval: timeoutInterval)
       }
 
+      /// Measure Internet latency by fetching a tiny known endpoint (defaults to Apple's connectivity check) with a HEAD request.
+      ///
+      /// - Parameters:
+      ///   - url: The URL used to measure connectivity.
+      ///   - timeoutInterval: The timeout time interval for measure request.
+      /// - Returns: Duration of TTFB.
+      ///
       nonisolated public func testInternetLatency(url: URL? = nil, timeoutInterval: Double? = nil)
         async -> Duration
       {

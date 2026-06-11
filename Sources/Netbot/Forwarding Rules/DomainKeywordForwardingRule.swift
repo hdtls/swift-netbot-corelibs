@@ -21,11 +21,7 @@ import NetbotLiteData
   import Foundation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @_cowOptimization
 struct DomainKeywordForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
@@ -46,11 +42,7 @@ struct DomainKeywordForwardingRule: ForwardingRule, ForwardingRuleConvertible, H
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension DomainKeywordForwardingRule._Storage: Hashable {
   static func == (
     lhs: DomainKeywordForwardingRule._Storage, rhs: DomainKeywordForwardingRule._Storage
@@ -66,9 +58,5 @@ extension DomainKeywordForwardingRule._Storage: Hashable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension DomainKeywordForwardingRule._Storage: @unchecked Sendable {}

@@ -14,11 +14,7 @@
 import Preference
 
 /// An OptionSet for proxy mode.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct ProxyMode: OptionSet, RawRepresentable, Hashable, Sendable {
 
   public var rawValue: Int
@@ -37,9 +33,5 @@ public struct ProxyMode: OptionSet, RawRepresentable, Hashable, Sendable {
   public static let enhanced = ProxyMode(rawValue: 1 << 2)
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ProxyMode: PreferenceRepresentable {}

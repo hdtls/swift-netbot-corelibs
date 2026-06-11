@@ -18,11 +18,7 @@
   @Suite(.tags(.swiftmacros))
   struct CopyonWriteMacrosTests {
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func coWOptimizationMacro() throws {
       assertMacroExpansion(
         """
@@ -66,11 +62,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func coWOptimizationMacroIgnoreNonStructDecl() throws {
       assertMacroExpansion(
         """
@@ -91,11 +83,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func coWOptimizationMacroIgnoreUnOptimizableMembers() throws {
       assertMacroExpansion(
         """
@@ -147,11 +135,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func coWOptimizationApplyinlinableAttributeCorrectly() throws {
       assertMacroExpansion(
         """
@@ -195,11 +179,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func coWOptimizationIgnoreMembersAlreadyContainsTrackedAndIgnoredMacro() throws {
       assertMacroExpansion(
         """
@@ -238,11 +218,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func coWOptimizationTrackedMacro() throws {
       assertMacroExpansion(
         """
@@ -271,11 +247,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func cowOptimizationTrackedIgnoreComputedProperty() {
       assertMacroExpansion(
         """
@@ -294,11 +266,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func cowOptimizationTrackedIgnoreImmutableProperty() {
       assertMacroExpansion(
         """
@@ -317,11 +285,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func cowOptimizationTrackedIgnoreNonInstanceProperty() {
       assertMacroExpansion(
         """
@@ -340,11 +304,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func cowOptimizationIgnoreMacro() {
       assertMacroExpansion(
         """

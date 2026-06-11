@@ -17,6 +17,7 @@ import NIOEmbedded
 import NetbotLite
 import NetbotLiteData
 import NetbotProfile
+import Synchronization
 import Testing
 
 @testable import NetbotDNS
@@ -27,20 +28,10 @@ import Testing
   import NIOPosix
 #endif
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import SynchronizationExtras
-#else
-  import Synchronization
-#endif
-
 @Suite(.tags(.dns))
 struct LocalDNSProxyTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   final class MockDNSServer: @unchecked Sendable {
     let queryCalls: Atomic<Int> = .init(0)
     let response: [any ResourceRecord]
@@ -162,11 +153,7 @@ struct LocalDNSProxyTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func queryA() async throws {
     let server = MockDNSServer(
       response: [
@@ -205,11 +192,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func handleExpiredARecord() async throws {
     let server = MockDNSServer(
       response: [
@@ -248,11 +231,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func queryAAAA() async throws {
     let server = MockDNSServer(
       response: [
@@ -289,11 +268,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func handleExpiredAAAARecord() async throws {
     let server = MockDNSServer(
       response: [AAAARecord(domainName: "example.com", ttl: 1, data: .init("::1")!)]
@@ -328,11 +303,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func queryNS() async throws {
     let server = MockDNSServer(
       response: [
@@ -368,11 +339,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func queryCNAME() async throws {
     let server = MockDNSServer(
       response: [
@@ -409,11 +376,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func querySOA() async throws {
     let server = MockDNSServer(
       response: [
@@ -453,11 +416,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       ["92.82.12.172.in-addr.arpa", "2001:0db8:1234:1a00:0000:0000:0000:0001.in6-addr.arpa"],
@@ -498,11 +457,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func queryDisguisedIPv4PTR() async throws {
     let server = MockDNSServer(
       response: []
@@ -551,11 +506,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func queryMX() async throws {
     let server = MockDNSServer(
       response: [
@@ -598,11 +549,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func queryTXT() async throws {
     let server = MockDNSServer(
       response: [
@@ -639,11 +586,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func querySRV() async throws {
     let server = MockDNSServer(
       response: [
@@ -681,11 +624,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func initiateAQuery() async throws {
     let server = MockDNSServer(
       response: [
@@ -724,11 +663,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func initiateAAAAQuery() async throws {
     let server = MockDNSServer(
       response: [
@@ -765,11 +700,7 @@ struct LocalDNSProxyTests {
     try await resolver.shutdownGracefully()
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func rejectResponseMessage() async throws {
     let resolver = LocalDNSProxy(
       options: .init(
@@ -794,11 +725,7 @@ struct LocalDNSProxyTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func handleOnlyQueryOperations() async throws {
     let resolver = LocalDNSProxy(
       options: .init(
@@ -824,11 +751,7 @@ struct LocalDNSProxyTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func standardServerOnlyHandleMessageWithExactlyOneQuestion() async throws {
     let resolver = LocalDNSProxy(
       options: .init(
@@ -857,11 +780,7 @@ struct LocalDNSProxyTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func aAddressMapping() async throws {
     let mapping = ProtocolDNS.Mapping(
       strategy: .mapping, domainName: "localhost", value: "127.0.0.1", note: "")
@@ -920,11 +839,7 @@ struct LocalDNSProxyTests {
     #expect(response.answerRRs as! [ARecord] == expected.answerRRs as! [ARecord])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func aaaaAddressMapping() async throws {
     let mapping = ProtocolDNS.Mapping(
       strategy: .mapping, domainName: "localhost", value: "::1", note: "")
@@ -983,11 +898,7 @@ struct LocalDNSProxyTests {
     #expect(response.answerRRs as! [AAAARecord] == expected.answerRRs as! [AAAARecord])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func cnameMapping() async throws {
     let mapping = ProtocolDNS.Mapping(
       strategy: .cname, domainName: "example.com", value: "test.com", note: "")

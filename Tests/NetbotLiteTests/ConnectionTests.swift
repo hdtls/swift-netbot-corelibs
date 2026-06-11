@@ -16,6 +16,7 @@ import Logging
 import NEAddressProcessing
 import NIOCore
 import NetbotLiteData
+import Synchronization
 import Testing
 
 @testable import NetbotLite
@@ -30,19 +31,9 @@ import Testing
   import NIOPosix
 #endif
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import SynchronizationExtras
-#else
-  import Synchronization
-#endif
-
 @Suite struct ConnectionTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   struct MockProcessReporting: ProcessReporting {
     let processReportResult: Result<ProcessReport, any Error>
 
@@ -53,11 +44,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   struct MockDNSResolver: NetbotLite.Resolver {
     let eventLoop: any EventLoop
     let v4Result: Result<[Address], any Error>
@@ -82,11 +69,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func metadata() async throws {
     var connection = Connection(taskIdentifier: 0)
     connection.originalRequest = .init(address: .hostPort(host: "192.168.0.2", port: 45345))
@@ -99,11 +82,7 @@ import Testing
     #expect(connection.metadata["Request"] == "#0 unknown host")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func satisfy() {
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "192.168.0.2", port: 45345))
@@ -113,11 +92,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func isFinished() async throws {
     let connection = Connection()
     connection.originalRequest = .init(address: .hostPort(host: "192.168.0.2", port: 45345))
@@ -136,11 +111,7 @@ import Testing
     #expect(connection.state.isFinished)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func processInfoLookup() async throws {
     let connection = Connection()
     connection.establishmentReport = .init()
@@ -162,11 +133,7 @@ import Testing
     #expect(connection.processReport != nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func dnsLookupIfAddressIsNil() async throws {
     let group: any EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let eventLoop = group.next()
@@ -184,11 +151,7 @@ import Testing
     #expect(report.resolutions.isEmpty)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     Request(address: .url(URL(string: "test.com:443")!)),
     Request(address: .unix(path: "/var/run/tmp.sock")),
@@ -211,11 +174,7 @@ import Testing
     #expect(report.resolutions.isEmpty)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     Request(address: .hostPort(host: "123.123.123.123", port: 0)),
     Request(address: .hostPort(host: "::1", port: 0)),
@@ -243,11 +202,7 @@ import Testing
     #expect(resolution.endpoints.first == originalRequest.address)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func dnsLookupIfAddressIsHostname() async throws {
     let group: any EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let eventLoop = group.next()
@@ -289,11 +244,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func dnsLookupIfV4ResultIsEmptyAndV6Failed() async {
     let group: any EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let eventLoop = group.next()
@@ -318,11 +269,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func dnsLookupIfV4FailedAndV6ResultIsEmpty() async {
     let group: any EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let eventLoop = group.next()
@@ -347,11 +294,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func dnsLookupIfV4ResultContainsAtLeastOneEndpointButV6Failed() async {
     let group: any EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let eventLoop = group.next()
@@ -379,11 +322,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func dnsLookupIfV6ResultContainsAtLeastOneEndpointButV4Failed() async {
     let group: any EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let eventLoop = group.next()
@@ -411,11 +350,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func dnsLookupBothV4AndV6Failed() async {
     let group: any EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let eventLoop = group.next()
@@ -440,11 +375,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func ruleLookup() async throws {
     struct MockRuleEngine: RulesEngine {
       let forwardingRules: [any NetbotLite.ForwardingRuleConvertible] = []
@@ -483,11 +414,7 @@ import Testing
     #expect(connection.forwardingReport != nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func protocolLookupFailedIfDNSLookupFailed() async throws {
     struct MockRuleEngine: RulesEngine {
       let forwardingRules: [any NetbotLite.ForwardingRuleConvertible] = []
@@ -527,11 +454,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func protocolLookupFailedIfProcessInfoLookupFailed() async throws {
     struct MockRuleEngine: RulesEngine {
       let forwardingRules: [any NetbotLite.ForwardingRuleConvertible] = []
@@ -578,11 +501,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func protocolLookupForDirectOutbound() async throws {
     struct MockRuleEngine: RulesEngine {
       let forwardingRules: [any NetbotLite.ForwardingRuleConvertible] = []
@@ -624,11 +543,7 @@ import Testing
     #expect(report._forwardingRule == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func protocolLookupForGlobalProxyOutbound() async throws {
     struct MockRuleEngine: RulesEngine {
       let forwardingRules: [any NetbotLite.ForwardingRuleConvertible] = []
@@ -669,11 +584,7 @@ import Testing
     #expect(report._forwardingRule == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func protocolLookupForRuleBasedOutbound() async throws {
     struct MockRuleEngine: RulesEngine {
       let forwardingRules: [any NetbotLite.ForwardingRuleConvertible] = []

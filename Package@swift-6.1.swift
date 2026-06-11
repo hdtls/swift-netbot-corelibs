@@ -247,7 +247,7 @@ let package = Package(
   ]
 )
 
-if Context.environment["NETBOT_REQUIRES_LOCAL_PACKAGE_DEPENDENCIES"] != nil {
+if Context.environment["SWTNE_REQUIRES_LOCAL_DEPS"] != nil {
   package.dependencies += [
     .package(path: "../swift-nio-transport-services"),
     .package(path: "../swift-netbot-protoimpl"),
@@ -266,12 +266,7 @@ if Context.environment["NETBOT_REQUIRES_LOCAL_PACKAGE_DEPENDENCIES"] != nil {
 
 for target in package.targets {
   var settings = target.swiftSettings ?? []
-  settings.append(.define("NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9"))
-  settings.append(.define("NETBOT_REQUIRES_LWIP", .when(platforms: [.macOS])))
-  settings.append(
-    .enableExperimentalFeature(
-      "AvailabilityMacro=SwiftStdlib 5.9:iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0"
-    ))
+  settings.append(.define("SWTNE_REQUIRES_LWIP", .when(platforms: [.macOS])))
   settings.append(
     .enableExperimentalFeature(
       "AvailabilityMacro=SwiftStdlib 6.0:iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0"

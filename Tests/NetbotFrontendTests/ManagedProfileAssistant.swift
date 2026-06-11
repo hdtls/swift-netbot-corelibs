@@ -28,11 +28,7 @@ import NetbotProfile
 // swift-format-ignore: AlwaysUseLowerCamelCase
 let __dir = UUID()
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 func withManagedProfile(body: (ProfileAssistant) async throws -> Void) async throws {
   #if canImport(SwiftData)
     let schema: Schema = Schema(versionedSchema: _VersionedSchema.self)

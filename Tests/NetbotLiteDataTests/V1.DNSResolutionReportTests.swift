@@ -18,20 +18,12 @@ import Testing
 
 @Suite struct V1_DNSResolutionReportTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func persistentModelTypealias() {
     #expect(DNSResolutionReport.Model.self == V1._DNSResolutionReport.self)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() {
     let data = DNSResolutionReport(
       duration: .seconds(12.5),
@@ -83,16 +75,12 @@ import Testing
   }
 }
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
 
   extension V1_DNSResolutionReportTests {
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func query() async throws {
       SQL_initialized()
 

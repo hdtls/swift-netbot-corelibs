@@ -19,11 +19,7 @@ import Testing
 @Suite(.tags(.profile, .profileparser, .httprewrites))
 struct URLRewrite__RegexBuilderTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: [
       "[URL Rewrite]", " [URL Rewrite]", "[URL Rewrite] ", " [URL Rewrite] ",
@@ -35,11 +31,7 @@ struct URLRewrite__RegexBuilderTests {
     #expect(!matches.isEmpty)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: [
       "[URL  Rewrites]", "URL Rewrites]", "[URL Rewrites", " URL Rewrites", "[ URL Rewrites]",
@@ -49,22 +41,14 @@ struct URLRewrite__RegexBuilderTests {
     #expect(testInput.matches(of: URLRewrite.sectionRegex).isEmpty)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: ["# http-fields, pattern, replacement", "found, pattern, replacement"])
   func matchAnyURLRewrite(_ testInput: String) {
     let matches = testInput.matches(of: URLRewrite.regex)
     #expect(!matches.isEmpty)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func mtchSpecifiedURLRewrite() {
     var urlRewrite = URLRewrite()
     urlRewrite.type = .found

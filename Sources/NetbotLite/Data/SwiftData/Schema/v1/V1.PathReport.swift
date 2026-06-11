@@ -15,20 +15,16 @@
   import Observation
 #endif
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension V1 {
 
   /// A path report contains counters and statistics observed
   /// by the connection along a single network path.
-  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+  #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
     @Model
   #else
     #if canImport(Darwin) || swift(>=6.3)
@@ -79,17 +75,13 @@ extension V1 {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension V1._PathReport {
 
   /// Merge new values from DTO.
   /// - Parameter data: New `DataTransferReport.PathReport` to merge.
   public func mergeValues(_ data: DataTransferReport.PathReport) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
       self.receivedIPPacketCount = data.receivedIPPacketCount
       self.sentIPPacketCount = data.sentIPPacketCount
       self.receivedTransportByteCount = data.receivedTransportByteCount

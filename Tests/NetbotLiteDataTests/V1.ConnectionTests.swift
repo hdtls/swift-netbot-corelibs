@@ -23,17 +23,13 @@ import Testing
   import Foundation
 #endif
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
 #endif
 
 @Suite struct V1_ConnectionTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValues() {
     let connection = V1._Connection()
     #expect(connection.taskIdentifier == 0)
@@ -50,13 +46,9 @@ import Testing
     #expect(connection.processReport == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func connectionIdentifiable() {
-    #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+    #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
       let connection = V1._Connection()
       #expect(connection.id == connection.persistentModelID)
     #else
@@ -66,11 +58,7 @@ import Testing
     #endif
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() {
     let date = Date()
     let data = Connection(taskIdentifier: 55)
@@ -103,16 +91,12 @@ import Testing
   }
 }
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
 
   extension V1_ConnectionTests {
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func query() async throws {
       SQL_initialized()
 

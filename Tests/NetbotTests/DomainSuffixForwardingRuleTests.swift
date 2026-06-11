@@ -21,22 +21,14 @@ import Testing
 @Suite(.tags(.forwardingrule))
 struct DomainSuffixForwardingRuleTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
     let data = DomainSuffixForwardingRule(domainSuffix: "test.com", forwardProtocol: .direct)
     #expect(data.domainSuffix == "test.com")
     #expect(data.description == "DOMAIN-SUFFIX test.com")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func copyOnWrite() {
     var a = DomainSuffixForwardingRule(domainSuffix: "test.com", forwardProtocol: .direct)
     let b = a
@@ -47,11 +39,7 @@ struct DomainSuffixForwardingRuleTests {
     #expect(c != a)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       ["test1.com:443", "sub.test2.com", "test2.com:443", "test.com:443", nil],
@@ -69,11 +57,7 @@ struct DomainSuffixForwardingRuleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func equatableConformance() async throws {
     let lhs = DomainSuffixForwardingRule(domainSuffix: "test1.com", forwardProtocol: .direct)
     let rhs = DomainSuffixForwardingRule(domainSuffix: "test2.com", forwardProtocol: .direct)
@@ -86,11 +70,7 @@ struct DomainSuffixForwardingRuleTests {
     #expect(lhs != rhs2)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func hashableConformance() async throws {
     let r1 = DomainSuffixForwardingRule(domainSuffix: "test1.com", forwardProtocol: .direct)
     let r2 = r1

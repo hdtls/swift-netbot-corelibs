@@ -15,11 +15,7 @@
   import Foundation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct CapabilityFlags: OptionSet, Hashable, RawRepresentable, Sendable {
 
   public var rawValue: Int
@@ -34,11 +30,7 @@ public struct CapabilityFlags: OptionSet, Hashable, RawRepresentable, Sendable {
   public static let scripting = CapabilityFlags(rawValue: 1 << 3)
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension CapabilityFlags {
 
   public var localizedName: String {
@@ -70,11 +62,7 @@ extension CapabilityFlags {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension CapabilityFlags {
 
   public static var allCases: [CapabilityFlags] {

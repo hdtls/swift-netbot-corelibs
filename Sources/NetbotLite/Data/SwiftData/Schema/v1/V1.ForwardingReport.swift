@@ -15,18 +15,14 @@
   import Observation
 #endif
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension V1 {
 
-  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+  #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
     @Model public class _ForwardingReport {
 
       /// The length of time duration on this matching step.
@@ -65,17 +61,13 @@ extension V1 {
   #endif
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension V1._ForwardingReport {
 
   /// Merge new values from DTO.
   /// - Parameter data: New `ForwardingReport` to merge.
   public func mergeValues(_ data: ForwardingReport) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
       self.duration = data.duration
       self.forwardingRule = data.forwardingRule
       self.forwardProtocol = data.forwardProtocol

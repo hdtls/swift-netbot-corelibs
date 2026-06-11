@@ -18,11 +18,7 @@ import Testing
 @Suite(.tags(.profile, .profileparser, .forwardingrule))
 struct AnyForwardingRule__RegexBuilderTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     "[Rule]", " [Rule]", "[Rule] ", " [Rule] ",
     "[Rule]   ",
@@ -32,11 +28,7 @@ struct AnyForwardingRule__RegexBuilderTests {
     #expect(!matches.isEmpty)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     "[forwardingRule ]", "forwardingRule]", "[forwardingRule", " forwardingRule",
     "[ forwardingRule]",
@@ -45,11 +37,7 @@ struct AnyForwardingRule__RegexBuilderTests {
     #expect(parseInput.matches(of: AnyForwardingRule.sectionRegex).isEmpty)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: [
       "# DOMAIN-SUFFIX, swift.org, DIRECT", "DOMAIN, https://swift.org, DIRECT",
@@ -63,11 +51,7 @@ struct AnyForwardingRule__RegexBuilderTests {
     #expect(!matches.isEmpty)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func matchSpecifiedRule() {
     var forwardingRule = AnyForwardingRule()
     forwardingRule.kind = .domainSuffix

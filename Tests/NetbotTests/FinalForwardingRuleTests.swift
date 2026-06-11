@@ -21,11 +21,7 @@ import Testing
 @Suite(.tags(.forwardingrule))
 struct FinalForwardingRuleTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
     let forwardingRule = FINALForwardingRule("test", forwardProtocol: .direct)
     #expect(forwardingRule.condition == "test")
@@ -36,11 +32,7 @@ struct FinalForwardingRuleTests {
     #expect(forwardingRule1.description == "FINAL")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func copyOnWrite() {
     var a = FINALForwardingRule("test", forwardProtocol: .direct)
     let b = a
@@ -51,11 +43,7 @@ struct FinalForwardingRuleTests {
     #expect(c != a)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: ["test1.com:443", "sub.test2.com", "test2.com:443", "notmatch.com:443"])
   func predicateWorks(_ authority: String) {
     let connection = Connection()
@@ -69,11 +57,7 @@ struct FinalForwardingRuleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func equatableConformance() async throws {
     let lhs = FINALForwardingRule("test1", forwardProtocol: .direct)
     let rhs = FINALForwardingRule("test2", forwardProtocol: .direct)

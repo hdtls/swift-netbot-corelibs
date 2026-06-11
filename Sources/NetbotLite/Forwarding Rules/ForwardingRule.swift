@@ -15,11 +15,7 @@ import NetbotLiteData
 
 /// Types that conform to the `ForwardingRuleConvertible` protocol can provide
 /// their own representation to be used when converting an instance to a `ForwardingRule`.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public protocol ForwardingRuleConvertible: Sendable {
 
   /// Converting an instance of conforming type to `ForwardingRule`.
@@ -27,11 +23,7 @@ public protocol ForwardingRuleConvertible: Sendable {
 }
 
 /// A `ForwardingRule` specifies how to route network traffic to the backend services.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public protocol ForwardingRule: Sendable {
 
   /// Forward protocol define how to forward connections using this rule.
@@ -51,20 +43,12 @@ public protocol ForwardingRule: Sendable {
 ///
 /// There always contains one `FinalForwardingRule`, if user provide FinalForwardingRule implementation, it will be used as
 /// final result, otherwise a builtin FinalForwardingRule will be used.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public protocol FinalForwardingRule: ForwardingRule {
 
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension FinalForwardingRule {
 
   public var forwardProtocol: any ForwardProtocolConvertible { .direct }
@@ -76,18 +60,10 @@ extension FinalForwardingRule {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 struct _FinalForwardingRule: FinalForwardingRule, ForwardingRuleConvertible {}
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ForwardingRuleConvertible where Self: ForwardingRule {
 
   public func asForwardingRule() -> any ForwardingRule {

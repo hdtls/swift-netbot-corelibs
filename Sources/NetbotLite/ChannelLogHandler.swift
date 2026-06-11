@@ -15,11 +15,7 @@
   import Logging
   import NIOCore
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   final class EventLogHandler: Sendable {
 
     private let logger: Logger
@@ -35,11 +31,7 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension EventLogHandler: ChannelInboundHandler {
 
     typealias InboundIn = NIOAny
@@ -90,11 +82,7 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension EventLogHandler: ChannelOutboundHandler {
 
     typealias OutboundIn = NIOAny

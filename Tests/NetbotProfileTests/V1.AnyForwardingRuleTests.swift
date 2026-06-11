@@ -18,11 +18,7 @@ import Testing
 @Suite(.tags(.profile, .forwardingrule, .swiftdata))
 struct V1_AnyForwardingRuleTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
     let data = V1._AnyForwardingRule()
     #expect(data.isEnabled)
@@ -33,11 +29,7 @@ struct V1_AnyForwardingRuleTests {
     #expect(data.notification == .init())
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() {
     let persistentModel = V1._AnyForwardingRule()
     let forwardingRule = AnyForwardingRule()
@@ -54,11 +46,7 @@ struct V1_AnyForwardingRuleTests {
 @Suite(.tags(.profile, .forwardingrule, .swiftdata))
 struct V1_AnyForwardingRule_KindTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       V1._AnyForwardingRule.Kind.allCases,
@@ -73,11 +61,7 @@ struct V1_AnyForwardingRule_KindTests {
     #expect(V1._AnyForwardingRule.Kind(rawValue: "unknown") == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       V1._AnyForwardingRule.Kind.allCases,
@@ -94,11 +78,7 @@ struct V1_AnyForwardingRule_KindTests {
 @Suite(.tags(.profile, .forwardingrule, .swiftdata))
 struct V1_AnyForwardingRule_NotificationTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
     let notification = V1._AnyForwardingRule.Notification()
     #expect(notification.message == "")
@@ -106,11 +86,7 @@ struct V1_AnyForwardingRule_NotificationTests {
     #expect(notification.timeInterval == 300)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func equatableConformance() async throws {
     let lhs = V1._AnyForwardingRule.Notification()
     let rhs = V1._AnyForwardingRule.Notification()

@@ -14,11 +14,8 @@
 import NetbotPreferences
 import NetbotProfile
 import Preference
+import Synchronization
 import SynchronizationExtras
-
-#if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import Synchronization
-#endif
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
@@ -27,11 +24,7 @@ import SynchronizationExtras
   import Foundation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ProfileAssistant {
 
   #if canImport(FoundationEssentials)
@@ -225,11 +218,7 @@ extension ProfileAssistant {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension URL {
   var isProfile: Bool {
     isFileURL && pathExtension == .profilePathExtension

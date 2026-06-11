@@ -14,6 +14,8 @@
 import Alamofire
 import Dispatch
 import Logging
+import Synchronization
+import SynchronizationExtras
 
 #if os(macOS)
   import CoreWLAN
@@ -30,19 +32,8 @@ import Logging
   import Observation
 #endif
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import SynchronizationExtras
-#else
-  import SynchronizationExtras
-  import Synchronization
-#endif
-
 /// The `AirPort` is a state object of the Wi-Fi subsystem which provides access to all Wi-Fi interfaces.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 #if canImport(Darwin) || swift(>=6.3)
   @Observable
 #endif
@@ -452,11 +443,7 @@ import Logging
 }
 
 #if os(macOS)
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension AirPort {
     @Lockable final fileprivate class CWAirPortMonitor: Sendable {
 
@@ -698,11 +685,7 @@ import Logging
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension AirPort.CWAirPortMonitor {
 
     func clientConnectionInterrupted() {
@@ -773,28 +756,16 @@ import Logging
   }
 
   #if swift(>=6.2)
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     extension AirPort.CWAirPortMonitor: nonisolated CWEventDelegate {
     }
   #else
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     extension AirPort.CWAirPortMonitor: @preconcurrency CWEventDelegate {
     }
   #endif
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension AirPort.AirPortMonitor {
 
     fileprivate init(monitor: AirPort.CWAirPortMonitor) {
@@ -805,11 +776,7 @@ import Logging
   }
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension AirPort.ChannelWidth {
 
   /// Returns localized name of the channel width.
@@ -829,11 +796,7 @@ extension AirPort.ChannelWidth {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension AirPort.ChannelBand {
 
   /// Returns localized name of the channel band.
@@ -851,11 +814,7 @@ extension AirPort.ChannelBand {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension AirPort.PHYMode {
 
   /// Returns localized name of the physical layer mode.
@@ -879,11 +838,7 @@ extension AirPort.PHYMode {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension AirPort.Security {
 
   /// Returns localized name of the security.

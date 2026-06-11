@@ -18,11 +18,7 @@ import Testing
 @Suite(.tags(.profile, .httprewrites))
 struct HTTPFieldsRewriteTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() async throws {
     let data = HTTPFieldsRewrite()
     #expect(data.isEnabled)
@@ -38,11 +34,7 @@ struct HTTPFieldsRewriteTests {
 @Suite(.tags(.profile, .httprewrites))
 struct HTTPFieldsRewrite_DirectionTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       HTTPFieldsRewrite.Direction.allCases, ["request", "response"]
@@ -54,11 +46,7 @@ struct HTTPFieldsRewrite_DirectionTests {
     #expect(HTTPFieldsRewrite.Direction(rawValue: "unknown") == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
     #expect(HTTPFieldsRewrite.Direction.allCases == [.request, .response])
   }
@@ -67,11 +55,7 @@ struct HTTPFieldsRewrite_DirectionTests {
 @Suite(.tags(.profile, .httprewrites))
 struct HTTPFieldsRewrite_ActionTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       HTTPFieldsRewrite.Action.allCases, ["add", "remove", "replace"]
@@ -83,11 +67,7 @@ struct HTTPFieldsRewrite_ActionTests {
     #expect(HTTPFieldsRewrite.Action(rawValue: "unknown") == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
     #expect(HTTPFieldsRewrite.Action.allCases == [.add, .remove, .replace])
   }

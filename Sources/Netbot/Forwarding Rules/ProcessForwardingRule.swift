@@ -22,11 +22,7 @@ import NetbotLiteData
 #endif
 
 /// Forwarding rule base on Process.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @_cowOptimization
 struct ProcessForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
@@ -48,11 +44,7 @@ struct ProcessForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashabl
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ProcessForwardingRule._Storage: Hashable {
   static func == (lhs: ProcessForwardingRule._Storage, rhs: ProcessForwardingRule._Storage) -> Bool
   {
@@ -67,9 +59,5 @@ extension ProcessForwardingRule._Storage: Hashable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ProcessForwardingRule._Storage: @unchecked Sendable {}

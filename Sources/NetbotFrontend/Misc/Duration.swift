@@ -11,7 +11,7 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-@available(SwiftStdlib 5.9, *)
+@available(SwiftStdlib 6.0, *)
 extension Duration {
 
   /// Value of `Duration.seconds(Int.max)`.

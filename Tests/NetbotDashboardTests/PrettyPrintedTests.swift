@@ -26,11 +26,7 @@ import Testing
 
 struct PrettyPrintedTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formattedConnectionForwardProtocol() {
     let model = Connection.Model()
     #expect(model.forwardingReport == nil)
@@ -43,11 +39,7 @@ struct PrettyPrintedTests {
     #expect(model.forwardProtocolFormatted == "DIRECT (DOMAIN-SUFFIX test.com)")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func connectionProtocolName() {
     let model = Connection.Model()
     #expect(model.protocolName == "TCP")
@@ -61,11 +53,7 @@ struct PrettyPrintedTests {
     #expect(model.protocolName == "HTTP")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: zip(Connection.State.allCases, [true, true, false, false, false]))
   func connectionIsActive(state: Connection.State, isActive: Bool) {
     let model = Connection.Model()
@@ -73,11 +61,7 @@ struct PrettyPrintedTests {
     #expect(model.isActive == isActive)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func dataFormatted() {
     var data = Data()
     #expect(data.formatted() == "No Data".localizedCapitalized)
@@ -86,11 +70,7 @@ struct PrettyPrintedTests {
     #expect(data.formatted() == "HELLO WORLD!!!")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func responseFormatted() {
     let response = HTTPResponse(
       status: .ok,
@@ -105,11 +85,7 @@ struct PrettyPrintedTests {
     #expect(response.formatted() == formatted)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func reponseContentTypeCheck() {
     let response = Response.Model()
     #expect(!response.isImage)

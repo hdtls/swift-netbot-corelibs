@@ -16,23 +16,14 @@ import Logging
 import NEAddressProcessing
 import NIOCore
 import NetbotLiteData
+import Synchronization
 import Tracing
 
 #if canImport(Darwin) || swift(>=6.3)
   import Observation
 #endif
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import SynchronizationExtras
-#else
-  import Synchronization
-#endif
-
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Connection {
 
   internal var metadata: Logger.Metadata {
@@ -44,11 +35,7 @@ extension Connection {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Connection.State {
   var isFinished: Bool {
     switch self {
@@ -60,11 +47,7 @@ extension Connection.State {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Connection {
 
   func processInfoLookup(logger: Logger, proc: any ProcessReporting) async throws {

@@ -21,12 +21,9 @@ import NIOExtras
 import NIOHTTP1
 import NIOSSL
 import NetbotLiteData
+import Synchronization
 import SynchronizationExtras
 import Tracing
-
-#if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import Synchronization
-#endif
 
 #if canImport(Network)
   import NIOTransportServices
@@ -43,11 +40,7 @@ import Tracing
 /// A `AnalyzeBot` is an easy way to create network proxy servers.
 ///
 /// For current version we support start HTTP and SOCKS as local proxy servers if possible.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @Lockable public class AnalyzeBot: @unchecked Sendable {
 
   /// Logger object used to log messages.

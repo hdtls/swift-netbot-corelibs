@@ -13,19 +13,11 @@
 
 import NIOTLS
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 typealias AsyncALPNHandler = NIOTypedApplicationProtocolNegotiationHandler
 
 /// The error of an ALPN negotiation.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 enum ALPNError: Error {
 
   /// The token of negotiated is unsupported.

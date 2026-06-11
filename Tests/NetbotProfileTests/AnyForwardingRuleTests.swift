@@ -18,11 +18,7 @@ import Testing
 @Suite(.tags(.profile, .forwardingrule))
 struct AnyForwardingRuleTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
     let data = AnyForwardingRule()
     #expect(data.isEnabled)
@@ -37,11 +33,7 @@ struct AnyForwardingRuleTests {
 @Suite(.tags(.profile, .forwardingrule))
 struct AnyForwardingRule_KindTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       AnyForwardingRule.Kind.allCases,
@@ -56,11 +48,7 @@ struct AnyForwardingRule_KindTests {
     #expect(AnyForwardingRule.Kind(rawValue: "unknown") == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       AnyForwardingRule.Kind.allCases,
@@ -77,11 +65,7 @@ struct AnyForwardingRule_KindTests {
 @Suite(.tags(.profile, .forwardingrule))
 struct AnyForwardingRule_NotificationTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
     let notification = AnyForwardingRule.Notification()
     #expect(notification.message == "")
@@ -89,11 +73,7 @@ struct AnyForwardingRule_NotificationTests {
     #expect(notification.timeInterval == 300)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func equatableConformance() {
     let lhs = AnyForwardingRule.Notification()
     let rhs = AnyForwardingRule.Notification()

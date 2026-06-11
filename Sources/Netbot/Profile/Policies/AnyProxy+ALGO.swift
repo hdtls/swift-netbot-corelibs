@@ -15,11 +15,7 @@
 ///
 /// We don't care about rawValue is uppercase or lowercase for example:
 ///     Algorithm(rawValue: "aes-128-gcm") == Algorithm(rawValue: "AES-128-GCM") // true
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public enum Algorithm: String, CaseIterable, Codable, Equatable, Hashable, Sendable {
 
   case aes128Gcm = "AES-128-GCM"

@@ -18,11 +18,7 @@
 /// a connection. A report may be created prior to a connection moving into
 /// the .ready state, but measurements will not be collected until after the
 /// connection is ready.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct DataTransferReport: Codable, Hashable, Sendable {
 
   /// Length of time in duration over which the report collected
@@ -122,11 +118,7 @@ public struct DataTransferReport: Codable, Hashable, Sendable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension DataTransferReport {
 
   public typealias Model = V1._DataTransferReport
@@ -138,11 +130,7 @@ extension DataTransferReport {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension DataTransferReport.PathReport {
 
   public typealias Model = V1._PathReport
@@ -164,11 +152,7 @@ extension DataTransferReport.PathReport {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension DataTransferReport.PathReport {
 
   public static func &+ (lhs: DataTransferReport.PathReport, rhs: DataTransferReport.PathReport)

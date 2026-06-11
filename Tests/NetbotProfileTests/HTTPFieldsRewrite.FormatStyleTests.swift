@@ -24,11 +24,7 @@ import Testing
 @Suite(.tags(.profile, .profileparser, .httprewrites))
 struct HTTPFieldsRewrite_FormatStyleTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle.httpFieldsRewrite,
@@ -48,11 +44,7 @@ struct HTTPFieldsRewrite_FormatStyleTests {
     #expect(httpFieldsRewrite.formatted(formatter) == expected)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle.httpFieldsRewrite,
@@ -72,11 +64,7 @@ struct HTTPFieldsRewrite_FormatStyleTests {
     #expect(httpFieldsRewrite.formatted(formatter) == expected)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle.httpFieldsRewrite,
@@ -96,11 +84,7 @@ struct HTTPFieldsRewrite_FormatStyleTests {
     #expect(httpFieldsRewrite.formatted(formatter) == expected)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle.httpFieldsRewrite,
@@ -120,11 +104,7 @@ struct HTTPFieldsRewrite_FormatStyleTests {
     #expect(httpFieldsRewrite.formatted(formatter) == expected)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle().parseStrategy,
@@ -149,11 +129,7 @@ struct HTTPFieldsRewrite_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle().parseStrategy,
@@ -178,11 +154,7 @@ struct HTTPFieldsRewrite_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     HTTPFieldsRewrite.FormatStyle(),
     HTTPFieldsRewrite.FormatStyle().parseStrategy,
@@ -207,11 +179,7 @@ struct HTTPFieldsRewrite_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     "abc (?:http://)?example.com add Proxy-Connection keep-alive",
     "request (?:http://)?example.com plus Proxy-Connection keep-alive",
@@ -230,11 +198,7 @@ struct HTTPFieldsRewrite_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatStyleConformance() {
     var httpFieldsRewrite = HTTPFieldsRewrite()
     httpFieldsRewrite.direction = .request
@@ -248,11 +212,7 @@ struct HTTPFieldsRewrite_FormatStyleTests {
     #expect(httpFieldsRewrite.formatted(.httpFieldsRewrite) == expected)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseStrategyConformance() {
     #expect(throws: Never.self) {
       try HTTPFieldsRewrite(

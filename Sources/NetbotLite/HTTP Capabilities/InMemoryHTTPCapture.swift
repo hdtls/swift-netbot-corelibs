@@ -16,6 +16,7 @@ import NIOCore
 import NIOHTTP1
 import NIOHTTPTypesHTTP1
 import NetbotLiteData
+import Synchronization
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
@@ -23,17 +24,7 @@ import NetbotLiteData
   import Foundation
 #endif
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import SynchronizationExtras
-#else
-  import Synchronization
-#endif
-
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 final class InMemoryHTTPCapture<HeadT: Equatable & Sendable>: ChannelInboundHandler, Sendable {
 
   typealias InboundIn = HTTPPart<HeadT, ByteBuffer>

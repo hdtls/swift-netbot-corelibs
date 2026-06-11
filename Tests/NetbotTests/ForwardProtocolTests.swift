@@ -23,11 +23,7 @@ import Testing
 @Suite(.tags(.forwardproto))
 struct ForwardProtocolTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test("ForwardProtocolRejectTinyGIF: name is correct and makeConnection throws")
   func rejectTinyGIFHasCorrectNameAndAlwaysThrowsErrorWhenMakeNewConnection() async throws {
     let proto = ForwardProtocolRejectTinyGIF()
@@ -42,11 +38,7 @@ struct ForwardProtocolTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test("ForwardProtocolReject: name is correct and makeConnection throws")
   func rejectHasCorrectNameAndAlwaysThrowsErrorWhenMakeNewConnection() async throws {
     let proto = ForwardProtocolReject()
@@ -60,11 +52,7 @@ struct ForwardProtocolTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test("ForwardProtocolDirect: name is correct")
   func direct() async throws {
     let proto = ForwardProtocolDirect()

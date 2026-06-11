@@ -18,11 +18,7 @@ import Testing
 
 struct AvailableIPPoolTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     "1111.1/12",
     "as.1/12",
@@ -34,11 +30,7 @@ struct AvailableIPPoolTests {
     #expect(AvailableIPPool(uncheckedBounds: cidr) == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func bypassRangeBoundary() async throws {
     var pool = try #require(AvailableIPPool(uncheckedBounds: "192.168.0.1/16"))
     #expect(pool.lower == IPv4Address("192.168.0.0")!)
@@ -55,11 +47,7 @@ struct AvailableIPPoolTests {
     #expect(pool.loadThenWrappingIncrement() == IPv4Address("192.168.0.1"))
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func loadThenWrappingIncrement() async throws {
     let availablePools = [
       try #require(AvailableIPPool(uncheckedBounds: "192.168.0.1/16")),
@@ -82,11 +70,7 @@ struct AvailableIPPoolTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func contains() async throws {
     let p = AvailableIPPool(uncheckedBounds: "198.18.0.1/15")!
     let na0 = IPv4Address("198.18.1.1")!

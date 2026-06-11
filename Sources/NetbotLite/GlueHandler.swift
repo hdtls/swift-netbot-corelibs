@@ -13,11 +13,7 @@
 
 import NIOCore
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 final class GlueHandler: ChannelHandler, @unchecked Sendable {
 
   private weak var partner: GlueHandler?
@@ -72,11 +68,7 @@ final class GlueHandler: ChannelHandler, @unchecked Sendable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension GlueHandler: ChannelInboundHandler {
 
   typealias InboundIn = NIOAny
@@ -128,11 +120,7 @@ extension GlueHandler: ChannelInboundHandler {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension GlueHandler: ChannelOutboundHandler {
 
   typealias OutboundIn = NIOAny

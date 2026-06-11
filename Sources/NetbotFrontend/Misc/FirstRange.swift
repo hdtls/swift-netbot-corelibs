@@ -13,7 +13,7 @@
 
 import NetbotProfile
 
-@available(SwiftStdlib 5.9, *)
+@available(SwiftStdlib 6.0, *)
 extension Array where Element == Substring {
 
   func firstRange(match sectionRegex: some RegexComponent) -> ClosedRange<Int>? {

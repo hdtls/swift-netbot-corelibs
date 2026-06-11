@@ -17,11 +17,7 @@ import Testing
 
 struct ConnectionMiscsTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func localizedConnectionStateName() {
     #expect(Connection.State.establishing.localizedName == "Establishing")
     #expect(Connection.State.active.localizedName == "Active")

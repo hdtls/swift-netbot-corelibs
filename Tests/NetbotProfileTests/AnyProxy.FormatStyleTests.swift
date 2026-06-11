@@ -25,19 +25,11 @@ import Testing
 @Suite(.tags(.profile, .profileparser, .forwardproto))
 struct AnyProxy_FormatStyleTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   private var formatter: AnyProxy.FormatStyle { .init() }
 
   /// A AnyProxy modified all basic properties to undefault value.
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   private var base: AnyProxy {
     var proxy = AnyProxy()
     proxy.serverAddress = "svr.example.com"
@@ -74,11 +66,7 @@ struct AnyProxy_FormatStyleTests {
     "VMESS = vmess, username = C51F3C92-EEF6-4506-A39F-C2D7786A50D7, password-reference = password, authentication-required = true, force-http-tunneling = true, alpn = h2, tls = true, tls.skip-certificate-verification = true, tls.sni = sni.example.com, tls.certificate-pinning = wLgBEAGmLltnXbK6pzpvPMeOCTKZ0QwrWGem6DkNf6o=, allow-udp-relay = true, algo = AES-256-GCM, obfs = true, obfs.strategy = 2, obfs.hostname = obfuscate.example.com, ws = true, ws.uri = /ws, ws.http-fields = Connection:keep-alive, force-vmess-aead = true, tfo = true, test-url = http://test.example.com, dont-alert-error = true, port = 6152, server-address = svr.example.com, interface-name = AirPort, back-to-default-if-nic-unavailable = true, ip.packet-tos = 2, ip.version-strategy = v4"
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   private var possibleParseOutput: AnyProxy {
     var expected = AnyProxy(name: "VMESS")
     expected.serverAddress = "svr.example.com"
@@ -111,11 +99,7 @@ struct AnyProxy_FormatStyleTests {
     return expected
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatDirectProxy() {
     var proxy = AnyProxy(name: "DIRECT")
     proxy.kind = .direct
@@ -130,11 +114,7 @@ struct AnyProxy_FormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatRejectProxy() {
     var proxy = AnyProxy(name: "REJECT")
     proxy.kind = .reject
@@ -149,11 +129,7 @@ struct AnyProxy_FormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatRejectTinyGIFProxy() {
     var proxy = AnyProxy(name: "REJECT-TINYGIF")
     proxy.kind = .rejectTinyGIF
@@ -168,11 +144,7 @@ struct AnyProxy_FormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatHTTPProxy() {
     var proxy = AnyProxy(name: "HTTP")
     proxy.kind = .http
@@ -192,11 +164,7 @@ struct AnyProxy_FormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatHTTPSProxy() {
     var proxy = AnyProxy(name: "HTTPS")
     proxy.kind = .https
@@ -216,11 +184,7 @@ struct AnyProxy_FormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatSOCKS5Proxy() {
     var proxy = AnyProxy(name: "SOCKS5")
     proxy.kind = .socks5
@@ -240,11 +204,7 @@ struct AnyProxy_FormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatSOCKS5OverTLSProxy() {
     var proxy = AnyProxy(name: "SOCKS5-OVER-TLS")
     proxy.kind = .socks5OverTLS
@@ -265,11 +225,7 @@ struct AnyProxy_FormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatShadowsocksProxy() {
     var proxy = AnyProxy(name: "SHADOWSOCKS")
     proxy.kind = .shadowsocks
@@ -289,11 +245,7 @@ struct AnyProxy_FormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatVMESSProxy() {
     var proxy = AnyProxy(name: "VMESS")
     proxy.kind = .vmess
@@ -315,11 +267,7 @@ struct AnyProxy_FormatStyleTests {
     #expect(AnyProxy.FormatStyle().format(proxy) == formatOutput)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     AnyProxy.FormatStyle(),
     AnyProxy.FormatStyle().parseStrategy,
@@ -364,11 +312,7 @@ struct AnyProxy_FormatStyleTests {
     #expect(parseOutput.dontAlertError == possibleParseOutput.dontAlertError)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseAnyProxyFromInvalidString() throws {
     let parseInput = "NotAValidProxy = abc"
     #expect(throws: CocoaError.self) {
@@ -376,11 +320,7 @@ struct AnyProxy_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseAlias() throws {
     let parseInput = "DIRECT = direct"
     let parseOutput = try AnyProxy.FormatStyle().parse(parseInput)
@@ -388,11 +328,7 @@ struct AnyProxy_FormatStyleTests {
     #expect(parseOutput.name == "DIRECT")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     "HTTP = http, server-address = , port = 0",
     "HTTP = http, port = 0",
@@ -405,11 +341,7 @@ struct AnyProxy_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       [
@@ -437,33 +369,21 @@ struct AnyProxy_FormatStyleTests {
     #expect(formatOuput == expected)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatStyleConformance() {
     var proxy = AnyProxy(name: "DIRECT")
     proxy.kind = .direct
     #expect(proxy.formatted(AnyProxy.FormatStyle()) == "DIRECT = direct")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseStrategyConformance() throws {
     #expect(throws: Never.self) {
       try AnyProxy("DIRECT = direct", strategy: AnyProxy.FormatStyle())
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseableFormatStyleConformance() {
     #expect(throws: Never.self) {
       try AnyProxy.FormatStyle().parseStrategy.parse("DIRECT = direct")

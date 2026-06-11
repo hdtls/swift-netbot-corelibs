@@ -23,22 +23,14 @@ import Testing
 
 @Suite struct ProcessReportTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValues() async throws {
     let report = ProcessReport()
     #expect(report.processIdentifier == nil)
     #expect(report.program == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func hashableConformance() async throws {
     let report = ProcessReport(
       processIdentifier: 52342
@@ -53,11 +45,7 @@ import Testing
     #expect(reports == [report])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func codableConformance() async throws {
     let report = ProcessReport(
       processIdentifier: 52342
@@ -68,11 +56,7 @@ import Testing
     #expect(result == report)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func initFromPersistentModel() throws {
     let model = V1._ProcessReport()
     model.processIdentifier = 12345

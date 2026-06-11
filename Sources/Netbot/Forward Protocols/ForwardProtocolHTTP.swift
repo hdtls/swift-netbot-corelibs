@@ -29,11 +29,7 @@ import NetbotProfile
   import NIOSSL
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @_cowOptimization struct ForwardProtocolHTTP: Hashable, Sendable {
 
   var name: String
@@ -66,11 +62,7 @@ import NetbotProfile
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ForwardProtocolHTTP._Storage: Hashable {
   static func == (lhs: ForwardProtocolHTTP._Storage, rhs: ForwardProtocolHTTP._Storage) -> Bool {
     return lhs.name == rhs.name && lhs.serverAddress == rhs.serverAddress && lhs.port == rhs.port
@@ -91,18 +83,10 @@ extension ForwardProtocolHTTP._Storage: Hashable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ForwardProtocolHTTP._Storage: @unchecked Sendable {}
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ForwardProtocolHTTP: ProxiableForwardProtocol {
 
   func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
@@ -178,9 +162,5 @@ extension ForwardProtocolHTTP: ProxiableForwardProtocol {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ForwardProtocolHTTP: ForwardProtocolConvertible {}

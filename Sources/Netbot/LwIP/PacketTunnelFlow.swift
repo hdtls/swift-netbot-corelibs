@@ -17,11 +17,7 @@ import NIOCore
   import NetworkExtension
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public protocol PacketTunnelFlow: AnyObject, Sendable {
 
   func readPacketObjects() async -> [NEPacket]
@@ -31,11 +27,7 @@ public protocol PacketTunnelFlow: AnyObject, Sendable {
 
 #if canImport(NetworkExtension)
   // swift-format-ignore: AvoidRetroactiveConformances
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension NEPacketTunnelFlow: @retroactive @unchecked Sendable, PacketTunnelFlow {
 
     public func readPacketObjects() async -> [NEPacket] {

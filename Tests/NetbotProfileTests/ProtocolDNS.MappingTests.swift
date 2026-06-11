@@ -18,11 +18,7 @@ import Testing
 @Suite(.tags(.profile, .dns))
 struct ProtocolDNS_MappingTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
     let data = ProtocolDNS.Mapping()
     #expect(data.strategy == .mapping)
@@ -36,11 +32,7 @@ struct ProtocolDNS_MappingTests {
 @Suite(.tags(.profile, .dns))
 struct ProtocolDNS_MappingStrategyTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: zip(ProtocolDNS.MappingStrategy.allCases, [0, 1, 2]))
   func rawRepresentableConformance(_ kind: ProtocolDNS.MappingStrategy, _ rawValue: Int) {
     #expect(ProtocolDNS.MappingStrategy(rawValue: rawValue) == kind)
@@ -48,11 +40,7 @@ struct ProtocolDNS_MappingStrategyTests {
     #expect(ProtocolDNS.MappingStrategy(rawValue: 9) == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
     #expect(ProtocolDNS.MappingStrategy.allCases == [.mapping, .cname, .dns])
   }

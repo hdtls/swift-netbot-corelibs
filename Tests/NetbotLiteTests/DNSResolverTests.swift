@@ -25,11 +25,7 @@ import Testing
 
 @Suite struct DNSResolverTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func dnsResolver() async throws {
     final class DNSResolver: NetbotLite.Resolver, Sendable {
       let eventLoop: any EventLoop

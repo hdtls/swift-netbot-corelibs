@@ -29,11 +29,7 @@ import NetbotProfile
   import NIOSSL
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @_cowOptimization struct ForwardProtocolSOCKS5: Hashable, Sendable {
 
   var name: String
@@ -75,11 +71,7 @@ import NetbotProfile
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ForwardProtocolSOCKS5._Storage: Hashable {
   static func == (lhs: ForwardProtocolSOCKS5._Storage, rhs: ForwardProtocolSOCKS5._Storage) -> Bool
   {
@@ -99,18 +91,10 @@ extension ForwardProtocolSOCKS5._Storage: Hashable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ForwardProtocolSOCKS5._Storage: @unchecked Sendable {}
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ForwardProtocolSOCKS5: ProxiableForwardProtocol {
 
   func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
@@ -188,9 +172,5 @@ extension ForwardProtocolSOCKS5: ProxiableForwardProtocol {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ForwardProtocolSOCKS5: ForwardProtocolConvertible {}

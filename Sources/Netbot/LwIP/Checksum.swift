@@ -14,11 +14,7 @@
 import NEAddressProcessing
 import NIOCore
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 func _chksum(_ data: ByteBuffer, zeroization: Bool = false, offset: Int = 10) -> UInt16 {
   var sum = UInt32.zero
 
@@ -43,11 +39,7 @@ func _chksum(_ data: ByteBuffer, zeroization: Bool = false, offset: Int = 10) ->
   return ~UInt16(sum)
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 func _chksum(
   _ data: ByteBuffer, pseudoFields: PseudoFields, zeroization: Bool = false, offset: Int = 6
 ) -> UInt16 {

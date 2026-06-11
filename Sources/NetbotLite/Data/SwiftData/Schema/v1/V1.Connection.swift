@@ -24,28 +24,18 @@ import NEAddressProcessing
   import Foundation
 #endif
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
 #endif
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
+  @available(SwiftStdlib 6.0, *)
   extension V1 {
 
     @Model final public class _Connection {
 
-      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-        @available(SwiftStdlib 6.0, *)
-      #endif
       #Unique<_Connection>([\.taskIdentifier])
 
-      #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-        @available(SwiftStdlib 6.0, *)
-      #endif
       #Index<_Connection>([\.taskIdentifier])
 
       /// The identifier of the connection.
@@ -112,11 +102,7 @@ import NEAddressProcessing
     }
   }
 #else
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension V1 {
 
     #if canImport(Darwin) || swift(>=6.3)
@@ -181,21 +167,13 @@ import NEAddressProcessing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension V1._Connection: Identifiable {
     public var id: UInt64 { persistentModelID }
   }
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension V1._Connection {
 
   /// Merge new values from DTO.
@@ -203,7 +181,7 @@ extension V1._Connection {
   ///
   /// - Parameter data: New `Connection` to merge.
   public func mergeValues(_ data: Connection) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
       self.taskIdentifier = data.taskIdentifier
       if self.earliestBeginDate != data.earliestBeginDate {
         self.earliestBeginDateFormatted = data.earliestBeginDate

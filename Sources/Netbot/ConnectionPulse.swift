@@ -15,6 +15,7 @@ import NEAddressProcessing
 import NIOCore
 import NetbotLite
 import NetbotLiteData
+import Synchronization
 import SynchronizationExtras
 
 #if canImport(FoundationEssentials)
@@ -32,15 +33,7 @@ import SynchronizationExtras
   import NIOWebSocket
 #endif
 
-#if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import Synchronization
-#endif
-
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @Lockable final class ConnectionPulse: ConnectionPublisher, Sendable {
 
   private let group: any EventLoopGroup

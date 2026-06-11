@@ -24,11 +24,7 @@ import Testing
 @Suite(.tags(.profile, .profileparser, .forwardingrule))
 struct AnyForwardingRule_FormatStyleTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -51,11 +47,7 @@ struct AnyForwardingRule_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -77,11 +69,7 @@ struct AnyForwardingRule_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -103,11 +91,7 @@ struct AnyForwardingRule_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -128,11 +112,7 @@ struct AnyForwardingRule_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -158,11 +138,7 @@ struct AnyForwardingRule_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -188,11 +164,7 @@ struct AnyForwardingRule_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -219,11 +191,7 @@ struct AnyForwardingRule_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -250,11 +218,7 @@ struct AnyForwardingRule_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -292,11 +256,7 @@ struct AnyForwardingRule_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle().parseStrategy,
@@ -317,22 +277,14 @@ struct AnyForwardingRule_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseStrategyConformance() {
     #expect(throws: Never.self) {
       try AnyForwardingRule("GEOIP, CN, direct", strategy: .forwardingRule)
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     AnyForwardingRule.FormatStyle(),
     AnyForwardingRule.FormatStyle.forwardingRule,
@@ -411,11 +363,7 @@ struct AnyForwardingRule_FormatStyleTests {
     #expect(formatOutput == "# FINAL, Auto URL Test // test note")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatStyleConformance() {
     var formatInput = AnyForwardingRule()
     formatInput.kind = .geoip

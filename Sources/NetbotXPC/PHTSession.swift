@@ -16,21 +16,13 @@
   import ServiceManagement
   import Logging
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   enum ServiceName: String {
     case assistantService = "com.tenbits.netbot.AssistantService"
     case assistantd = "com.tenbits.netbot.assistantd"
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @globalActor public actor PHTSession {
 
     public static let shared = PHTSession()
@@ -261,11 +253,7 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension NSXPCConnection {
 
     /// Convert `remoteObjectProxy` to `any AppServiceHandleProtocol` if possible.

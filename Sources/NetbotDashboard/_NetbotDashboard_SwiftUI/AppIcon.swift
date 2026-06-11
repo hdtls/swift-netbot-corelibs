@@ -17,11 +17,7 @@
   import SwiftUI
   import UniformTypeIdentifiers
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @_spi(SwiftUI) extension V1._ProcessReport {
 
     @MainActor private static let cache = NSCache<NSString, NSImage>()
@@ -81,11 +77,7 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @_spi(SwiftUI) extension V1._Program {
 
     @MainActor public var applicationIconImage: NSImage? {
@@ -97,11 +89,7 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @_spi(SwiftUI) public struct ApplicationIcon: View, @MainActor Equatable {
     public static func == (lhs: ApplicationIcon, rhs: ApplicationIcon) -> Bool {
       lhs.localizedName == rhs.localizedName

@@ -26,11 +26,7 @@ import Testing
 @Suite(.tags(.profile, .profileassistant))
 struct ProfileAssistant__ProfileTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceUnsupportedProperties() async throws {
     try await withManagedProfile { profileAssistant in
       await #expect(throws: Never.self) {
@@ -41,11 +37,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceMatchedPropertyToSameValue() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -61,11 +53,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceMatchedPropertyToNewValue() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -85,11 +73,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceUndefindGeneralProperties() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -119,11 +103,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceUndefinedMitMProperties() async throws {
     try await withManagedProfile { profileAssistant in
       let profileURL = await profileAssistant.profileURL
@@ -153,11 +133,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func repaceDNSServers() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -172,11 +148,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceExceptions() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -191,11 +163,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceHTTPListenAddress() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -210,11 +178,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceHTTPListenPort() async throws {
     try await withManagedProfile { profileAssistant in
       var expected = """
@@ -238,11 +202,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceSOCKSListenAddress() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -257,11 +217,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceSOCKSListenPort() async throws {
     try await withManagedProfile { profileAssistant in
       var expected = """
@@ -285,11 +241,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceExcludeSimpleHostnames() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -304,11 +256,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceSkipCertificateVerification() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -323,11 +271,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceHostnames() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -342,11 +286,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceBase64EncodedP12String() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -361,11 +301,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replacePassphrase() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -380,11 +316,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceTestURL() async throws {
     try await withManagedProfile { profileAssistant in
       var expected = """
@@ -408,11 +340,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceProxyTestURL() async throws {
     try await withManagedProfile { profileAssistant in
       var expected = """
@@ -437,11 +365,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceTestTimeout() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -456,11 +380,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceDontAlertRejectErrors() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """
@@ -475,11 +395,7 @@ struct ProfileAssistant__ProfileTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func replaceDontAllowRemoteAccess() async throws {
     try await withManagedProfile { profileAssistant in
       let expected = """

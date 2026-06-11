@@ -23,11 +23,7 @@
   /// 1. Metadata set on the log handler itself is used as the base metadata.
   /// 2. The handler's ``metadataProvider`` is invoked, overriding any existing keys.
   /// 3. The per-log-statement metadata is merged, overriding any previously set keys.
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public struct OSLogHandler: LogHandler {
 
     private let logger: os.Logger

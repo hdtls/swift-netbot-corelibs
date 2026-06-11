@@ -16,11 +16,7 @@
   import NetbotDashboard
   import Foundation
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension Program.Model {
 
     public enum CompareOptions: CaseIterable, Hashable, Sendable {
@@ -59,11 +55,7 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension Array where Element == Program.Model {
 
     @MainActor public func sorted(using options: Program.Model.CompareOptions)

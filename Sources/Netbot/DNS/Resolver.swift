@@ -12,11 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 /// A protocol that covers an object that does DNS lookups.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public protocol Resolver {
 
   /// Lookup A records associated with `name`.

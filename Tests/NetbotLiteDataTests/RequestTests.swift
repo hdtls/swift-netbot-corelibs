@@ -25,11 +25,7 @@ import Testing
 
 @Suite struct RequestTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func hostOfHTTPRequest() {
     var source = HTTPRequest(method: .get, scheme: "https", authority: "swift.org:443", path: nil)
     #expect(source.host() == "swift.org")
@@ -40,11 +36,7 @@ import Testing
     #expect(source.host(percentEncoded: false) == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func portOfHTTPRequest() {
     var source = HTTPRequest(method: .get, scheme: "https", authority: "swift.org:443", path: nil)
     #expect(source.port == 443)
@@ -56,11 +48,7 @@ import Testing
     #expect(source.port == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func addressOfHTTPRequest() async throws {
     var source = HTTPRequest(method: .get, scheme: "https", authority: "swift.org:443", path: nil)
     #expect(source.address == .hostPort(host: "swift.org", port: 443))
@@ -69,11 +57,7 @@ import Testing
     #expect(source.address == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValues() async throws {
     let httpRequest = HTTPRequest(
       method: .get, scheme: "https", authority: "swift.org:443", path: nil)
@@ -90,11 +74,7 @@ import Testing
     #expect(source.trailers == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func hostOfRequest() {
     var source = Request(
       httpRequest: HTTPRequest(
@@ -116,11 +96,7 @@ import Testing
     #expect(source.host(percentEncoded: false) == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func portOfRequest() {
     var source = Request(
       httpRequest: HTTPRequest(
@@ -138,11 +114,7 @@ import Testing
     #expect(source.port == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setHTTPRequest() {
     let httpRequest = HTTPRequest(
       method: .get, scheme: "https", authority: "swift.org:443", path: nil)
@@ -154,11 +126,7 @@ import Testing
     #expect(data.address == .hostPort(host: "swift.org", port: 443))
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func hashableConformance() async throws {
     let request = Request(address: .unix(path: "/var/run/tmp.socks"))
     let expected = request
@@ -168,11 +136,7 @@ import Testing
     #expect(requests == [request])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func codableConformance() async throws {
     var request = Request(address: .unix(path: "/var/run/tmp.socks"))
     var data = try JSONEncoder().encode(request)
@@ -187,21 +151,13 @@ import Testing
     #expect(request == result)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func persistentModel() {
     let source = Request.Model.self
     #expect(source == V1._Request.self)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func initializeRequestFromPersistentModel() async throws {
     let httpRequest = HTTPRequest(
       method: .get, scheme: "https", authority: "swift.org:443", path: nil)

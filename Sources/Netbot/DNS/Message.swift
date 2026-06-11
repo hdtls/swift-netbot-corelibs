@@ -15,11 +15,7 @@ import NEAddressProcessing
 import NIOCore
 
 /// `QTYPE` fields appear in the question part of a query, define the type of the question.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct QTYPE: RawRepresentable, Hashable, Sendable {
 
   public var rawValue: UInt16
@@ -30,11 +26,7 @@ public struct QTYPE: RawRepresentable, Hashable, Sendable {
 }
 
 /// Full list of DNS Parameters can be found here:  https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension QTYPE {
 
   /// A IPv4 host address.
@@ -158,11 +150,7 @@ extension QTYPE {
 }
 
 /// `QCLASS` fields appear in the question section of a query, define the class of the question.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct QCLASS: RawRepresentable, Hashable, Sendable {
 
   public var rawValue: UInt16
@@ -172,11 +160,7 @@ public struct QCLASS: RawRepresentable, Hashable, Sendable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension QCLASS {
 
   /// The internet (IN).
@@ -203,31 +187,19 @@ extension QCLASS {
 /// `TYPE` fields are used in resource records.
 ///
 /// - note: These types should be a subset of QTYPEs, for convenience we use QTYPE directly.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public typealias TYPE = QTYPE
 
 /// `CLASS` fields are used in resource records.
 ///
 /// - note: These types should be a subset of QCLASSes, for convenience we use QCLASS directly,
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public typealias CLASS = QCLASS
 
 /// Resource record defines information about a dns resource record,
 /// including pertains domain name, type, class, ttl, data length and
 /// data.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public protocol ResourceRecord: Hashable, Sendable {
 
   associatedtype Data
@@ -261,11 +233,7 @@ public protocol ResourceRecord: Hashable, Sendable {
 /// browser, the DNS system uses the A record to translate that domain
 /// into an IP address (like 192.0.2.1) so that it knows where to send the
 /// request.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct ARecord: ResourceRecord {
 
   public typealias Data = IPv4Address
@@ -296,11 +264,7 @@ public struct ARecord: ResourceRecord {
 /// NS record that specifies which servers are authoritative for a particular
 /// domain. In simpler terms, it tells the internet where to look for the DNS
 /// records for that domain.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct NSRecord: ResourceRecord {
 
   public typealias Data = String
@@ -334,11 +298,7 @@ public struct NSRecord: ResourceRecord {
 /// Essentially, it allows you to point one domain (or subdomain) to another
 /// domain, rather than directly mapping it to an IP address like with an A
 /// record.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct CNAMERecord: ResourceRecord {
 
   public typealias Data = String
@@ -375,11 +335,7 @@ public struct CNAMERecord: ResourceRecord {
 /// The SOA record is critical for DNS zone management because it helps
 /// control how DNS information is propagated and cached across the
 /// internet. It's usually the first record in a DNS zone file.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct SOARecord: ResourceRecord {
 
   /// `SOARecord.Data` defines authoritative information about a
@@ -457,11 +413,7 @@ public struct SOARecord: ResourceRecord {
 ///
 /// It’s primarily used in reverse DNS lookups to determine the domain name
 /// associated with an IP address.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct PTRRecord: ResourceRecord {
 
   public typealias Data = String
@@ -494,11 +446,7 @@ public struct PTRRecord: ResourceRecord {
 ///
 /// When someone sends an email to an address (e.g., user@example.com),
 /// the MX record tells the sending email server where to deliver the email.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct MXRecord: ResourceRecord {
 
   /// `MXRecord.Data` define mail servers responsible for handling email
@@ -547,11 +495,7 @@ public struct MXRecord: ResourceRecord {
 /// While TXT records were originally designed for human-readable
 /// information, they are now commonly used for a variety of purposes
 /// related to domain verification and security.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct TXTRecord: ResourceRecord {
 
   public typealias Data = String
@@ -587,11 +531,7 @@ public struct TXTRecord: ResourceRecord {
 /// the AAAA record is used for the newer IPv6 protocol, which provides
 /// a much larger address space and is becoming increasingly important
 /// as the number of devices connected to the internet grows.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct AAAARecord: ResourceRecord {
 
   public typealias Data = IPv6Address
@@ -625,11 +565,7 @@ public struct AAAARecord: ResourceRecord {
 /// (e.g., SIP, XMPP, LDAP) and is commonly used for services like instant
 /// messaging, VoIP, and other network protocols that require server
 /// discovery.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct SRVRecord: ResourceRecord {
 
   public struct Data: Hashable, Sendable {
@@ -689,11 +625,7 @@ public struct SRVRecord: ResourceRecord {
 ///
 /// NAPTR records are often used in combination with SRV (Service) records,
 /// particularly in systems like SIP and ENUM (E.164 Number Mapping).
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct NAPTRRecord: ResourceRecord {
 
   public struct Data: Hashable, Sendable {
@@ -757,11 +689,7 @@ public struct NAPTRRecord: ResourceRecord {
 }
 
 /// A RAW record is a type erased resource record.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct RAWRecord: ResourceRecord {
 
   public typealias Data = ByteBuffer
@@ -792,11 +720,7 @@ public struct RAWRecord: ResourceRecord {
 }
 
 /// The question is used to carry the "question" in most DNS queries.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct Question: Hashable, Sendable {
 
   /// The domain name to query.
@@ -832,11 +756,7 @@ public struct Question: Hashable, Sendable {
 //  +---------------------+
 ///
 /// The header section is always present.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct Message: Sendable {
 
   // The header includes fields that specify which of the remaining sections are

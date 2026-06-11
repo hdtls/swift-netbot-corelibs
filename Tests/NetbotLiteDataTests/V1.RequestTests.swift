@@ -25,11 +25,7 @@ import Testing
 
 @Suite struct V1_RequestTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValues() async throws {
     let source = V1._Request()
     #expect(source.httpRequest == nil)
@@ -40,11 +36,7 @@ import Testing
     #expect(source.trailers == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createRequestWithAddress() async throws {
     let source = V1._Request()
     source.address = .hostPort(host: "swift.org", port: 443)
@@ -54,11 +46,7 @@ import Testing
     #expect(source.trailers == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func createRequestWithHTTPRequest() async throws {
     let httpRequest = HTTPRequest(
       method: .get, scheme: "https", authority: "swift.org:443", path: nil)
@@ -70,11 +58,7 @@ import Testing
     #expect(source.trailers == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setHTTPRequest() async throws {
     let httpRequest = HTTPRequest(
       method: .get, scheme: "https", authority: "swift.org:443", path: nil)
@@ -88,11 +72,7 @@ import Testing
     #expect(source.httpRequest == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setAddress() async throws {
     let address = Address.hostPort(host: "swift.org", port: 443)
     let source = V1._Request()
@@ -103,11 +83,7 @@ import Testing
     #expect(source.address == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() async throws {
     var httpRequest = HTTPRequest(
       method: .get, scheme: "https", authority: "swift.org:443", path: nil)
@@ -140,16 +116,12 @@ import Testing
   }
 }
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
 
   extension V1_RequestTests {
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func query() async throws {
       SQL_initialized()
 

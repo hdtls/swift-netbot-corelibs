@@ -25,11 +25,7 @@ struct UUID_FormatStyleTests {
 
   let uuid = UUID()
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func uuidFormatStyle() throws {
     let formatInput = uuid
     var formatOutput = formatInput.formatted()
@@ -52,11 +48,7 @@ struct UUID_FormatStyleTests {
     #expect(parseOutput == uuid)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseUUIDFromInvalidString() throws {
     let parseInput = "ABC"
     #expect(throws: CocoaError.self) {
@@ -73,11 +65,7 @@ struct UUID_FormatStyleTests {
   }
 
   #if canImport(Darwin)
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func uuidFormatter() throws {
       let formatInput = uuid
       var formatOutput = UUID.Formatter().string(for: formatInput)
@@ -93,11 +81,7 @@ struct UUID_FormatStyleTests {
       #expect(formatOutput == uuid.uuidString)
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func getObjectValue() {
       let parseInput = "B65361C5-9623-4586-A179-72A40CCE04D5"
 

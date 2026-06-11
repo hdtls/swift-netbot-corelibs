@@ -2,7 +2,7 @@
 //
 // This source file is part of the Netbot open source project
 //
-// Copyright © 2025-2026 Junfeng Zhang and the Netbot project authors
+// Copyright © 2026 Junfeng Zhang and the Netbot project authors
 // Licensed under Apache License v2.0
 //
 // See https://www.apache.org/licenses/LICENSE-2.0 for license information
@@ -17,11 +17,7 @@
 
   struct LockableMacrosTests {
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func lockableMacro() {
       assertMacroExpansion(
         """
@@ -42,11 +38,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func lockableMacroIgnoreUnLockableMember() {
       assertMacroExpansion(
         """
@@ -69,11 +61,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func lockableMacroIgnoreMemberAlreadyContainsTrackedOrIgnored() {
       assertMacroExpansion(
         """
@@ -92,11 +80,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func trackedMacro() {
       assertMacroExpansion(
         """
@@ -132,11 +116,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func trackedWithAccessMode() {
       assertMacroExpansion(
         """
@@ -184,11 +164,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func trackedWithAccessLevel() {
       assertMacroExpansion(
         """
@@ -317,11 +293,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func trackedMacroIgnoreUnLockableProperty() {
       assertMacroExpansion(
         """
@@ -344,11 +316,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func trackedMacroIgnoreAlreadyIgnoredProperty() {
       assertMacroExpansion(
         """
@@ -365,11 +333,7 @@
       )
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func ignoredMacro() {
       assertMacroExpansion(
         """

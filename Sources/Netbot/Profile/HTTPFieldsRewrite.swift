@@ -18,11 +18,7 @@
 #endif
 
 /// A HTTP fields modification representation object, define how to modify mached request header fields.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct HTTPFieldsRewrite: Equatable, Hashable, Sendable {
 
   /// An enum define HTTP directions.
@@ -97,11 +93,7 @@ public struct HTTPFieldsRewrite: Equatable, Hashable, Sendable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension HTTPFieldsRewrite {
 
   public typealias Model = V1._HTTPFieldsRewrite

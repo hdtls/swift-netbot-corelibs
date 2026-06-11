@@ -17,11 +17,7 @@ import Testing
 
 struct V1_PathReportTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test("V1._PathReport default initialization")
   func pathReportDefaultInit() {
     let report = V1._PathReport()
@@ -39,11 +35,7 @@ struct V1_PathReportTests {
     #expect(report.sentApplicationByteCount == 0)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test("DataTransferReport.PathReport default initialization")
   func dataTransferPathReportDefaultInit() {
     let report = DataTransferReport.PathReport()
@@ -61,11 +53,7 @@ struct V1_PathReportTests {
     #expect(report.sentApplicationByteCount == 0)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test("Init from persistent model copies all values")
   func dataTransferPathReportFromPersistentModel() {
     let persistent = V1._PathReport()
@@ -97,11 +85,7 @@ struct V1_PathReportTests {
     #expect(report.sentApplicationByteCount == 200)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test("mergeValues overwrites all values")
   func mergeValues() {
     let persistent = V1._PathReport()
@@ -148,16 +132,12 @@ struct V1_PathReportTests {
   }
 }
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
 
   extension V1_PathReportTests {
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func query() async throws {
       SQL_initialized()
 

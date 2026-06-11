@@ -23,11 +23,7 @@ import Testing
 
 @Suite struct ProgramTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func defaultProperties() {
     let program = Program()
     #expect(program.localizedName == "")
@@ -36,11 +32,7 @@ import Testing
     #expect(program.iconTIFFRepresentation == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func hashableConformance() {
     let program1 = Program()
     let program2 = Program()
@@ -52,11 +44,7 @@ import Testing
     #expect(programs == [program1, program3])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func codableConformance() {
     let program = Program()
 
@@ -67,21 +55,13 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func identifiableConformance() {
     let program = Program(localizedName: "ssh")
     #expect(program.id == "ssh")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func initFromPersistentModel() async throws {
     let bundleURL = URL(string: "file:///Applications/FakeApp.app")
     let execURL = URL(string: "file:///Applications/FakeApp.app/Contents/MacOS/FakeApp")

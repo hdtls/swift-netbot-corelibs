@@ -23,22 +23,14 @@ import NetbotLiteData
 /// A pending data transfer report collector represents a report that was started
 /// with startDataTransferReport(), and may be collected to generate
 /// a completed DataTransferReport.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 protocol DataTransferReportCollector: Sendable {
 
   @preconcurrency func collect(
     queue: DispatchQueue, completion: @escaping @Sendable (_ report: DataTransferReport) -> Void)
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Channel {
 
   /// Request pending data transfer report.
@@ -65,11 +57,7 @@ extension Channel {
 }
 
 #if canImport(Network)
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension NWConnection.PendingDataTransferReport: DataTransferReportCollector {
 
     func collect(
@@ -108,11 +96,7 @@ extension Channel {
 #else
 
   // TODO: Pending Data Transfer Report non-Darwin
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   final class PendingDataTransferReport: DataTransferReportCollector {
 
     init() {}

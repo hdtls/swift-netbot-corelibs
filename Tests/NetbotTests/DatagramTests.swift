@@ -24,11 +24,7 @@ import Testing
       "f0960035002e24b4cca801200001000000000001057377696674036f726700000100010000291000000000000000"
   )
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   var datagram: Datagram {
     Datagram(
       data: data,
@@ -41,11 +37,7 @@ import Testing
     )
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func getValues() async throws {
     #expect(datagram.sourcePort == 61590)
     #expect(datagram.destinationPort == 53)
@@ -63,11 +55,7 @@ import Testing
     #expect(datagram.pseudoFields.dataLength == 46)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setSRCPort() async throws {
     var datagram = self.datagram
     datagram.sourcePort = 12345
@@ -77,11 +65,7 @@ import Testing
     #expect(datagram.data == data)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setDSTPort() async throws {
     var datagram = self.datagram
     datagram.destinationPort = 12345
@@ -91,11 +75,7 @@ import Testing
     #expect(datagram.data == data)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setPayload() async throws {
     var datagram = self.datagram
     let payload = datagram.payload
@@ -110,11 +90,7 @@ import Testing
     #expect(datagram.data == data)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setPseudoFields() async throws {
     var datagram = self.datagram
     let pseudoFields = PseudoFields(

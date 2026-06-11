@@ -19,11 +19,7 @@ import NIOCore
   import Foundation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 enum RecognizedResult: Equatable, Sendable {
 
   case identified(String)
@@ -31,28 +27,16 @@ enum RecognizedResult: Equatable, Sendable {
   case fallback
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 protocol Recognition {
 
   static func recognize(_ data: ByteBuffer) -> RecognizedResult
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 enum Recognizer {}
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Recognizer {
 
   final class Handler<R: Recognition>: ChannelInboundHandler, RemovableChannelHandler {
@@ -129,11 +113,7 @@ extension Recognizer {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Recognizer {
   /// This handler can be used in channels that are acting as the server to recognize whether channel is communicating with SSL/TLS protocol.
   struct TLS: Recognition {
@@ -184,11 +164,7 @@ extension Recognizer {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Recognizer {
 
   /// This handler can be used in channels that are acting as the server to recognize whether channel is communicating with HTTP protocol.

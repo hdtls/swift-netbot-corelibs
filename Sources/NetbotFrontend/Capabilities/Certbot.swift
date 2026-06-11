@@ -34,39 +34,41 @@ import X509
 
 /// `CertbotError` is the error type returned by Certbot. It encompasses a few different
 /// types of errors, each with their own associated reasons.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public enum CertbotError: Error {
 
+  /// The underlying reason the `.certificateLoadFailed` error occurred.
   public enum LoadFailureReason: Sendable {
+    /// Input file is nil
     case inputFileNil
+
+    /// Input file can't be read.
     case inputFileReadFailed
+
+    /// Input bundle load success but there is no valid certificates in this bundle.
     case noValidCertificate
   }
 
+  /// Certification load failed.
   case certificateLoadFailed(reason: LoadFailureReason)
 
+  /// The underlying reason the `.certificateTrustFailed` error occurred.
   public enum TrustFailureReason: Sendable {
     case system(code: Int, reason: String?)
     case iii
   }
 
+  /// Certification trust failed.
   case certificateTrustFailed(reason: TrustFailureReason)
 
+  /// Operation unsupported.
   case operationUnsupported
 }
 
 /// An certificate managment object.
 ///
 /// This object allow user to load, generate, install and trust certificates.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 #if canImport(Darwin) || swift(>=6.3)
   @Observable
 #endif
@@ -160,9 +162,8 @@ public enum CertbotError: Error {
     private var generatingTask: Task<Backing, any Error>?
   #endif
 
-  /// Create an new instance of `Certbot`.
+  /// Create a new instance of `Certbot`.
   nonisolated public init() {
-
   }
 
   #if swift(>=6.2)

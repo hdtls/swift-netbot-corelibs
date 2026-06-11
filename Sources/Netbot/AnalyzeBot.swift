@@ -18,17 +18,12 @@ import NIOSSL
 import NetbotDNS
 import NetbotLite
 import NetbotProfile
+import Synchronization
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
 #else
   import Foundation
-#endif
-
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import SynchronizationExtras
-#else
-  import Synchronization
 #endif
 
 #if canImport(Network)
@@ -43,17 +38,13 @@ import NetbotProfile
 #endif
 
 /// Assistant to manage PacketTunnelProvider and NIO proxy servers backend.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public actor AnalyzeBot {
 
   nonisolated private let dns: LocalDNSProxy
   nonisolated private let core: NetbotLite.AnalyzeBot
 
-  #if NETBOT_REQUIRES_LWIP
+  #if SWTNE_REQUIRES_LWIP
     private var coreLwIP: LwIP?
   #endif
 
@@ -182,7 +173,7 @@ public actor AnalyzeBot {
   #endif
 
   public func setLwIPEnabled(_ enabled: Bool, packetFlow: any PacketTunnelFlow) async throws {
-    #if NETBOT_REQUIRES_LWIP
+    #if SWTNE_REQUIRES_LWIP
       if enabled {
         self.coreLwIP = LwIP(group: group, packetFlow: packetFlow, dns: dns)
         try await self.coreLwIP?.run()

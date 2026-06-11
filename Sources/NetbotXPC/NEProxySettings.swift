@@ -14,13 +14,10 @@
 #if canImport(NetworkExtension)
   import Foundation
   import NetworkExtension
+  import Synchronization
   import SynchronizationExtras
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Lockable public class NEProxySettings: NSObject, NSSecureCoding {
     public static var supportsSecureCoding: Bool { true }
 
@@ -96,18 +93,14 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  // swift-format-ignore: AvoidRetroactiveConformances
+  @available(SwiftStdlib 6.0, *)
+  extension NEProxyServer: @retroactive @unchecked Sendable {}
+
+  @available(SwiftStdlib 6.0, *)
   extension NEProxySettings: @unchecked Sendable {}
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension Optional where Wrapped == NEProxySettings {
 
     var options: [CFString: Any] {

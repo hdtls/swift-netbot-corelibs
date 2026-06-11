@@ -14,21 +14,14 @@
 import NEAddressProcessing
 import NetbotLite
 import NetbotLiteData
+import Synchronization
 import SynchronizationExtras
 
 #if os(macOS)
   import NetbotXPC
 #endif
 
-#if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import Synchronization
-#endif
-
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 final class ProcessResolver: ProcessReporting {
 
   @LockableTracked(accessors: .get)
@@ -90,11 +83,7 @@ final class ProcessResolver: ProcessReporting {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 protocol _ProcessInspector: Sendable {
 
   /// Request process info with socket port.
@@ -106,25 +95,13 @@ protocol _ProcessInspector: Sendable {
 }
 
 #if os(macOS)
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension PHTSession: _ProcessInspector {}
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   typealias ProcessInfo = NetbotXPC.ProcessInfo
 #else
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   struct ProcessInfo: Hashable, Codable, Sendable {
     /// Indicates the name of the application.
     /// This is dependent on the current localization of the referenced app, and is suitable for presentation to the user.
@@ -144,11 +121,7 @@ protocol _ProcessInspector: Sendable {
   }
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 struct OperationUnsupportedProcessInspector: _ProcessInspector {
   func processInfo(address: UInt16) async throws -> ProcessInfo? {
     throw AnalyzeError.operationUnsupported

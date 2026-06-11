@@ -18,11 +18,7 @@ import NetbotLite
 import NetbotLiteData
 
 /// Forwarding rule base on GeoIP country code.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @_cowOptimization
 struct GeoIPForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
@@ -68,11 +64,7 @@ struct GeoIPForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable,
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension GeoIPForwardingRule._Storage: Hashable {
   static func == (lhs: GeoIPForwardingRule._Storage, rhs: GeoIPForwardingRule._Storage) -> Bool {
     lhs.countryCode == rhs.countryCode
@@ -86,9 +78,5 @@ extension GeoIPForwardingRule._Storage: Hashable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension GeoIPForwardingRule._Storage: @unchecked Sendable {}

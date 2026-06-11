@@ -16,11 +16,7 @@ import NIOCore
 import NetbotLiteData
 
 /// `ForwardProtocolReject` define protocol that reject all connections forwarded using this protocol.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct ForwardProtocolReject: Equatable, Hashable, Sendable {
 
   public var name: String
@@ -30,11 +26,7 @@ public struct ForwardProtocolReject: Equatable, Hashable, Sendable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ForwardProtocolReject: ForwardProtocol {
 
   public func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
@@ -44,18 +36,10 @@ extension ForwardProtocolReject: ForwardProtocol {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ForwardProtocolReject: ForwardProtocolConvertible {}
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ForwardProtocol where Self == ForwardProtocolReject {
 
   /// Return the default `ForwardProtocolReject`.
@@ -64,11 +48,7 @@ extension ForwardProtocol where Self == ForwardProtocolReject {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ForwardProtocolConvertible where Self == ForwardProtocolReject {
 
   /// Return the default `ForwardProtocolReject`.

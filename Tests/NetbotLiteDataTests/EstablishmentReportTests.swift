@@ -24,11 +24,7 @@ import Testing
 
 @Suite struct EstablishmentReportTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func resolutionSourceHashableConformance() async throws {
     let source = EstablishmentReport.Resolution.Source.query
     #expect(source == .query)
@@ -37,11 +33,7 @@ import Testing
     #expect(dnsProtocols == [.query, .cache])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func resolutionSourceCodableConformance() async throws {
     let source = EstablishmentReport.Resolution.Source.query
 
@@ -53,11 +45,7 @@ import Testing
     #expect(result == source)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func resolutionDNSProtocolHashableConformance() async throws {
     let dnsProtocol = EstablishmentReport.Resolution.DNSProtocol.tcp
     #expect(dnsProtocol == .tcp)
@@ -66,11 +54,7 @@ import Testing
     #expect(dnsProtocols == [.tcp, .udp])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func resolutionDNSProtocolCodableConformance() async throws {
     let dnsProtocol = EstablishmentReport.Resolution.DNSProtocol.tcp
 
@@ -83,11 +67,7 @@ import Testing
     #expect(result == dnsProtocol)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func resolutionPropertyInitialValues() async throws {
     let resolution = EstablishmentReport.Resolution.init(
       source: .query, duration: .seconds(1), endpointCount: 1,
@@ -101,11 +81,7 @@ import Testing
     #expect(resolution.dnsProtocol == .tcp)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func resolutionHashableConformance() async throws {
     let resolution = EstablishmentReport.Resolution.init(
       source: .query, duration: .seconds(1), endpointCount: 1,
@@ -119,11 +95,7 @@ import Testing
     #expect(resolutions == [resolution])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func resolutionCodableConformance() async throws {
     let resolution = EstablishmentReport.Resolution.init(
       source: .query, duration: .seconds(1), endpointCount: 1,
@@ -135,11 +107,7 @@ import Testing
     #expect(result == resolution)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValues() async throws {
     let report = EstablishmentReport()
 
@@ -152,11 +120,7 @@ import Testing
     #expect(report.resolutions == [])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func destinationEndpoint() async throws {
     var report = EstablishmentReport()
     #expect(report.destinationEndpoint == nil)
@@ -187,11 +151,7 @@ import Testing
     #expect(report.destinationEndpoint == .hostPort(host: "127.0.0.1", port: 443))
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func destinationEndpointWhenUseProxyIsEnabled() async throws {
     var report = EstablishmentReport(
       duration: .zero,
@@ -216,11 +176,7 @@ import Testing
     #expect(report.destinationEndpoint == report.proxyEndpoint)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func hashableConformance() async throws {
     let report = EstablishmentReport()
     #expect(report == .init())
@@ -229,11 +185,7 @@ import Testing
     #expect(reports == [report])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func codableConformance() async throws {
     let report = EstablishmentReport()
     let data = try JSONEncoder().encode(report)
@@ -241,21 +193,13 @@ import Testing
     #expect(result == report)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func persistentModel() {
     let source = EstablishmentReport.Model.self
     #expect(source == V1._EstablishmentReport.self)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func initializeEstablishmentReportFromPersistentModel() async throws {
     let persistentModel = V1._EstablishmentReport()
     persistentModel.resolutions = [

@@ -15,42 +15,18 @@
   import NetbotXPC
   import NetworkExtension
 
-  // swift-format-ignore: AvoidRetroactiveConformances
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
-  extension NEProxyServer: @retroactive @unchecked Sendable {}
-
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public typealias NEProxySettings = NetbotXPC.NEProxySettings
 
   // swift-format-ignore: AvoidRetroactiveConformances
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension NEIPv4Settings: @retroactive @unchecked Sendable {}
 
   // swift-format-ignore: AvoidRetroactiveConformances
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension NEDNSSettings: @retroactive @unchecked Sendable {}
 #else
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public struct NEDNSSettings: Hashable, Sendable {
     public var servers: [String]
 
@@ -61,11 +37,7 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public struct NEProxyServer: Hashable, Sendable {
     public var address: String
     public var port: Int
@@ -76,11 +48,7 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public struct NEProxySettings: Hashable, Sendable {
 
     public var httpEnabled = false
@@ -95,11 +63,7 @@
     public init() {}
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public struct NEIPv4Route: Hashable, Sendable {
 
     public let destinationAddress: String
@@ -116,11 +80,7 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public struct NEIPv4Settings: Hashable, Sendable {
 
     public let addresses: [String]
@@ -138,11 +98,7 @@
   }
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct NEPacketTunnelNetworkSettings: Hashable, Sendable {
 
   public let tunnelRemoteAddress: String

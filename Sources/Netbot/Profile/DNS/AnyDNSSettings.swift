@@ -11,11 +11,7 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct AnyDNSSettings: Codable, Equatable, Hashable, Sendable {
 
   /// The DNS protocol used by the server, such as HTTPS or TLS.
@@ -51,11 +47,7 @@ public struct AnyDNSSettings: Codable, Equatable, Hashable, Sendable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public enum DNSProtocol: Int, Codable, Hashable, Sendable {
   case cleartext
   case tls

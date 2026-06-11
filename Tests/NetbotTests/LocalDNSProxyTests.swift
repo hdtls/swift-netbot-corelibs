@@ -15,24 +15,15 @@ import NEAddressProcessing
 import NIOCore
 import NetbotDNS
 import NetbotLiteData
+import Synchronization
 import Testing
 
 @testable import Netbot
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import SynchronizationExtras
-#else
-  import Synchronization
-#endif
-
 @Suite(.tags(.dns))
 struct LocalDNSProxyTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   final class MockTunnelFlow: PacketTunnelFlow {
     let writePacketObjects = Mutex<[NEPacket]>([])
 
@@ -48,11 +39,7 @@ struct LocalDNSProxyTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func handleInput() async throws {
     let options = LocalDNSProxy.Options(
       group: .shared,

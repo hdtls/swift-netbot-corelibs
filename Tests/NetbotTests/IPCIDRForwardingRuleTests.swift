@@ -22,11 +22,7 @@ import Testing
 @Suite(.tags(.forwardingrule))
 struct IPCIDRForwardingRuleTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() async throws {
     let forwardingRule = FINALForwardingRule("test", forwardProtocol: .direct)
     #expect(forwardingRule.condition == "test")
@@ -37,11 +33,7 @@ struct IPCIDRForwardingRuleTests {
     #expect(forwardingRule1.description == "FINAL")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func copyOnWrite() async throws {
     var a = FINALForwardingRule("test", forwardProtocol: .direct)
     let b = a
@@ -52,11 +44,7 @@ struct IPCIDRForwardingRuleTests {
     #expect(c != a)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       [
@@ -74,11 +62,7 @@ struct IPCIDRForwardingRuleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       [
@@ -97,11 +81,7 @@ struct IPCIDRForwardingRuleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func equatableConformance() async throws {
     let lhs = IPCIDRForwardingRule(uncheckedBounds: "192.168.0.1/20", forwardProtocol: .direct)
     let rhs = IPCIDRForwardingRule(

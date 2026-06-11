@@ -18,18 +18,10 @@ import NetbotLite
   import Network
   import NIOTransportServices
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   typealias DatagramClientBootstrap = NIOTSDatagramBootstrap
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension DatagramClientBootstrap {
 
     func connect<Output>(
@@ -45,11 +37,7 @@ import NetbotLite
   typealias DatagramClientBootstrap = DatagramBootstrap
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension EventLoopGroup where Self == MultiThreadedEventLoopGroup {
 
   public static var shared: any EventLoopGroup {

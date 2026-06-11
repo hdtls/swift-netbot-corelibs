@@ -17,11 +17,7 @@ import Testing
 
 struct ConnectionFilterTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func equalityAndHashing() async throws {
     let h1 = ConnectionFilter.hostname("swift.org")
     let h2 = ConnectionFilter.hostname("swift.org")

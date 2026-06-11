@@ -11,17 +11,9 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import SynchronizationExtras
-#else
-  import Synchronization
-#endif
+import Synchronization
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 final public class LRUCache<Key, Value> where Key: Hashable & Sendable, Value: Sendable {
 
   private let _represention: Mutex<[Key: Node]>
@@ -108,11 +100,7 @@ final public class LRUCache<Key, Value> where Key: Hashable & Sendable, Value: S
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension LRUCache {
 
   fileprivate final class Node {
@@ -164,18 +152,10 @@ extension LRUCache {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension LRUCache: @unchecked Sendable {}
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension LRUCache {
 
   public func forEach(_ body: ((key: Key, value: Value)) throws -> Void) rethrows {

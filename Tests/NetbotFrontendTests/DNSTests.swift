@@ -26,11 +26,7 @@
 
       """
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func setDNSServers() async throws {
       try await withManagedProfile { profileAssistant in
         let profileURL = await profileAssistant.profileURL
@@ -59,11 +55,7 @@
       }
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func removeDNSServer() async throws {
       try await withManagedProfile { profileAssistant in
         let profileURL = await profileAssistant.profileURL
@@ -82,11 +74,7 @@
       }
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func removeDNSServerThatDoseNotExistInProfileFile() async throws {
       try await withManagedProfile { profileAssistant in
         let profileURL = await profileAssistant.profileURL
@@ -105,11 +93,7 @@
       }
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func removeDNSServersAtSpecifiedOffsets() async throws {
       try await withManagedProfile { profileAssistant in
         let profileURL = await profileAssistant.profileURL

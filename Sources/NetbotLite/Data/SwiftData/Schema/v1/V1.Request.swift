@@ -24,18 +24,14 @@ import NEAddressProcessing
   import Foundation
 #endif
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension V1 {
 
-  #if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+  #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
     @Model final public class _Request {
 
       /// The HTTP request object if present. otherwise returns `nil`.
@@ -90,11 +86,7 @@ extension V1 {
   #endif
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension V1._Request {
 
   /// Merge new values from DTO.
@@ -118,7 +110,7 @@ extension V1._Request {
       }
     }
 
-    #if swift(>=6.2) && !(canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA)
+    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
       self.httpRequest = data.httpRequest
       self.address = data.address
       self.trailers = data.trailers
@@ -135,11 +127,9 @@ extension V1._Request {
       if self.trailers != data.trailers {
         self.trailers = data.trailers
       }
-
       if self.hostname != data.host(percentEncoded: false) {
         self.hostname = data.host(percentEncoded: false)
       }
-
       if self.absoluteURLString != absoluteURLString {
         self.absoluteURLString = absoluteURLString
       }

@@ -21,22 +21,14 @@ import Testing
 @Suite(.tags(.forwardingrule))
 struct DomainKeywordForwardingRuleTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
     let data = DomainKeywordForwardingRule(domainKeyword: "test", forwardProtocol: .direct)
     #expect(data.domainKeyword == "test")
     #expect(data.description == "DOMAIN-KEYWORD test")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func copyOnWrite() {
     var a = DomainKeywordForwardingRule(domainKeyword: "test", forwardProtocol: .direct)
     let b = a
@@ -47,11 +39,7 @@ struct DomainKeywordForwardingRuleTests {
     #expect(c != a)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       ["test1.com:443", "sub.test2.com", "test2.com:443", "notmatch.com:443"],
@@ -69,11 +57,7 @@ struct DomainKeywordForwardingRuleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func equatableConformance() async throws {
     let lhs = DomainKeywordForwardingRule(domainKeyword: "test1", forwardProtocol: .direct)
     let rhs = DomainKeywordForwardingRule(domainKeyword: "test2", forwardProtocol: .direct)

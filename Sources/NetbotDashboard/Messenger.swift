@@ -12,6 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 import NetbotLiteData
+import Synchronization
 import SynchronizationExtras
 
 #if canImport(Darwin)
@@ -21,25 +22,13 @@ import SynchronizationExtras
   import Alamofire
 #endif
 
-#if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import Synchronization
-#endif
-
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public protocol MessengerProtocol: Sendable {
 
   func openStream() -> AsyncThrowingStream<[Connection], any Error>
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 final class Messenger: MessengerProtocol {
 
   private typealias Model = Connection

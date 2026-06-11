@@ -17,11 +17,7 @@ import NEAddressProcessing
 /// became established. This is intended to be used for analysis of performance
 /// after connection establishment. The report cannot be gathered until a
 /// connection is in the .ready state.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct EstablishmentReport: Codable, Hashable, Sendable {
 
   /// The duration of the connection's establishment in seconds.
@@ -160,11 +156,7 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension EstablishmentReport {
 
   public typealias Model = V1._EstablishmentReport

@@ -19,11 +19,7 @@ import Testing
 @Suite(.tags(.forwardproto))
 struct ForwardProtocolSSTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func initWithAllParameters() {
     // Arrange
     let algorithm: NESS.Algorithm = .aes128Gcm
@@ -52,11 +48,7 @@ struct ForwardProtocolSSTests {
       "Password Reference should be set correctly")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func equality() {
     let algorithm: NESS.Algorithm = .aes128Gcm
     let name = "ForwardProtocol1"
@@ -99,11 +91,7 @@ struct ForwardProtocolSSTests {
       "ForwardProtocolSS instances with different values should not be equal")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func hashing() {
     let algorithm: NESS.Algorithm = .aes128Gcm
     let name = "ForwardProtocol1"

@@ -18,11 +18,7 @@ import Testing
 @Suite(.tags(.profile, .forwardproto))
 struct AnyProxyGroupTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() async throws {
     let persistentModel = AnyProxyGroup()
     #expect(persistentModel.kind == .select)
@@ -33,11 +29,7 @@ struct AnyProxyGroupTests {
 @Suite(.tags(.profile, .forwardproto))
 struct AnyProxyGroup_KindTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       AnyProxyGroup.Kind.allCases,
@@ -51,11 +43,7 @@ struct AnyProxyGroup_KindTests {
     #expect(kind.localizedName == localizedName)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       AnyProxyGroup.Kind.allCases,
@@ -71,21 +59,13 @@ struct AnyProxyGroup_KindTests {
     #expect(kind.localizedDescription == description)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() async throws {
     #expect(
       AnyProxyGroup.Kind.allCases == [.select, .urlTest, .fallback, .ssid, .loadBalance])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       AnyProxyGroup.Kind.allCases, ["select", "url-test", "fallback", "ssid", "load-balance"]
@@ -101,11 +81,7 @@ struct AnyProxyGroup_KindTests {
 @Suite(.tags(.profile, .forwardproto))
 struct AnyProxyGroup_ResourceTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
     let resource = AnyProxyGroup.Resource()
     #expect(resource.source == .cache)
@@ -117,11 +93,7 @@ struct AnyProxyGroup_ResourceTests {
 @Suite(.tags(.profile, .forwardproto))
 struct AnyProxyGroup_Resource_SourceTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
     #expect(AnyProxyGroup.Resource.Source.allCases == [.cache, .query])
   }

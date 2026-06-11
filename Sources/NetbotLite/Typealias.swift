@@ -18,32 +18,16 @@ import NIOCore
   import Network
   import NIOTransportServices
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public typealias ClientBootstrap = NIOTransportServices.NIOTSConnectionBootstrap
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public typealias ServerBootstrap = NIOTransportServices.NIOTSListenerBootstrap
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public typealias MultiThreadedEventLoopGroup = NIOTransportServices.NIOTSEventLoopGroup
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   extension MultiThreadedEventLoopGroup {
 
     public convenience init(numberOfThreads: Int) {
@@ -60,11 +44,7 @@ import NIOCore
   public typealias MultiThreadedEventLoopGroup = NIOPosix.MultiThreadedEventLoopGroup
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension ClientBootstrap {
 
   public func connect<Output>(

@@ -20,11 +20,7 @@
   #endif
   import Network
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public struct EventLog: Hashable {
     public var level: Logger.Level
     public var date: Date
@@ -37,35 +33,40 @@
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  /// An instance of state object of all activities including latencies, events and Wi-Fi.
+  @available(SwiftStdlib 6.0, *)
   @MainActor @Observable final public class Activities {
 
     /// DNS latency.
     public var dnsLatency = Duration.zero
+
     #if canImport(SwiftUI)
+      /// Formatted DNS latency attributed string.
       public var dnsLatencyAttributed: AttributedString = "-/ms"
     #endif
 
     /// Router latency.
     public var routerLatency = Duration.zero
+
     #if canImport(SwiftUI)
+      /// Formatted router latency attributed string.
       public var routerLatencyAttributed: AttributedString = "-/ms"
     #endif
 
     /// Internet latency.
     public var internetLatency = Duration.zero
+
     #if canImport(SwiftUI)
+      /// Formatted internet latency attributed string.
       public var internetLatencyAttributed: AttributedString = "-/ms"
     #endif
 
     public var events: [EventLog] = []
 
+    /// AirPort state object.
     public let airPort = AirPort()
 
+    /// Diagnostics object.
     private let diagnostics = Diagnostics()
 
     private let formatStyle = Duration.UnitsFormatStyle.units(
@@ -74,6 +75,7 @@
       maximumUnitCount: 1
     )
 
+    /// Create a new instance of `Activities`.
     public init() {
       #if canImport(SwiftUI)
         let zero = attributedString(fromDuration: .zero)
@@ -116,10 +118,24 @@
     #endif
 
     #if swift(>=6.2)
+      /// Test latency using specific `url` and `timeoutInterval`.
+      ///
+      /// This operation update `dnsLatency`, `routerLatency` and `internetLatency` after test finished.
+      ///
+      /// - Parameters:
+      ///   - url: `URL` for internet latency tests.
+      ///   - timeoutInterval: Time out interval for all latency tests.
       @concurrent public func testLatency(url: URL? = nil, timeoutInterval: Double = 5) async {
         await _testLatency(url: url, timeoutInterval: timeoutInterval)
       }
     #else
+      /// Test latency using specific `url` and `timeoutInterval`.
+      ///
+      /// This operation update `dnsLatency`, `routerLatency` and `internetLatency` after test finished.
+      ///
+      /// - Parameters:
+      ///   - url: `URL` for internet latency tests.
+      ///   - timeoutInterval: Time out interval for all latency tests.
       nonisolated public func testLatency(url: URL? = nil, timeoutInterval: Double = 5) async {
         await _testLatency(url: url, timeoutInterval: timeoutInterval)
       }
@@ -142,6 +158,7 @@
             #endif
           }
         }
+
         g.addTask { [weak self] in
           guard let self else { return }
           let dnsLatency = await diagnostics.testDNSLatency(

@@ -16,6 +16,7 @@ import Testing
 
 struct OutboundModeTests {
 
+  @available(SwiftStdlib 6.0, *)
   @Test func rawRepresentable() {
     #expect(OutboundMode.direct.rawValue == "direct-outbound")
     #expect(OutboundMode.globalProxy.rawValue == "global-proxy")

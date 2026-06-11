@@ -18,11 +18,7 @@ import Testing
 @Suite(.tags(.profile, .httprewrites, .swiftdata))
 struct V1_HTTPFieldsRewriteTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() async throws {
     let data = V1._HTTPFieldsRewrite()
     #expect(data.isEnabled)
@@ -38,11 +34,7 @@ struct V1_HTTPFieldsRewriteTests {
 @Suite(.tags(.profile, .httprewrites, .swiftdata))
 struct V1_HTTPFieldsRewrite_DirectionTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       V1._HTTPFieldsRewrite.Direction.allCases, ["request", "response"]
@@ -54,11 +46,7 @@ struct V1_HTTPFieldsRewrite_DirectionTests {
     #expect(V1._HTTPFieldsRewrite.Direction(rawValue: "unknown") == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
     #expect(V1._HTTPFieldsRewrite.Direction.allCases == [.request, .response])
   }
@@ -67,11 +55,7 @@ struct V1_HTTPFieldsRewrite_DirectionTests {
 @Suite(.tags(.profile, .httprewrites, .swiftdata))
 struct V1_HTTPFieldsRewrite_ActionTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
       V1._HTTPFieldsRewrite.Action.allCases, ["add", "remove", "replace"]
@@ -83,11 +67,7 @@ struct V1_HTTPFieldsRewrite_ActionTests {
     #expect(V1._HTTPFieldsRewrite.Action(rawValue: "unknown") == nil)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
     #expect(V1._HTTPFieldsRewrite.Action.allCases == [.add, .remove, .replace])
   }

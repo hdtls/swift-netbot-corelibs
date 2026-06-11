@@ -11,21 +11,12 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-#if NETBOT_REQUIRES_LWIP
+#if SWTNE_REQUIRES_LWIP
   import CNELwIP
   import NIOCore
+  import Synchronization
 
-  #if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    import SynchronizationExtras
-  #else
-    import Synchronization
-  #endif
-
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   final class LwIPListener: BaseSocketChannel<ServerSocket>, @unchecked Sendable {
 
     private let group: any EventLoopGroup

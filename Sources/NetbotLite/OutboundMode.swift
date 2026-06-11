@@ -12,11 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 /// The network outbound mode.
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public enum OutboundMode: Sendable {
 
   /// Direct mode. In this mode all requests will be sent directly.
@@ -29,11 +25,7 @@ public enum OutboundMode: Sendable {
   case ruleBased
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension OutboundMode: RawRepresentable {
 
   public var rawValue: String {

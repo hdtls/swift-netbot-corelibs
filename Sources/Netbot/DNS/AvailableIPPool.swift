@@ -12,6 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 import NEAddressProcessing
+import Synchronization
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
@@ -19,17 +20,7 @@ import NEAddressProcessing
   import Foundation
 #endif
 
-#if canImport(Darwin) && NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import SynchronizationExtras
-#else
-  import Synchronization
-#endif
-
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension IPv4Address {
 
   fileprivate var _address: UInt32 {
@@ -49,11 +40,7 @@ extension IPv4Address {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct AvailableIPPool: Sendable {
 
   final private class _Storage: Sendable {

@@ -11,16 +11,12 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-#if canImport(SwiftData) && NETBOT_REQUIRES_PERSISTENT_STORAGE_SWIFTDATA
+#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import Foundation
-  import NEAddressProcessing
   import HTTPTypes
+  import NEAddressProcessing
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public class SQLValueTransformer<T: Codable>: ValueTransformer {
 
     public override class func transformedValueClass() -> AnyClass {
@@ -43,11 +39,7 @@
   }
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   public func SQL_initialized() {
     ValueTransformer.setValueTransformer(
       SQLValueTransformer<Duration>(),

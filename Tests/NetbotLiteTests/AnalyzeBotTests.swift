@@ -95,11 +95,7 @@ import Testing
     )
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func initializer() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let bot = AnalyzeBot(group: group, logger: .init(label: ""))
@@ -116,11 +112,7 @@ import Testing
     #expect(!bot.isActive)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setOutboundMode() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let bot = AnalyzeBot(group: group, logger: .init(label: ""))
@@ -128,11 +120,7 @@ import Testing
     #expect(bot.outboundMode == .ruleBased)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setForwardingProtocol() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let bot = AnalyzeBot(group: group, logger: .init(label: ""))
@@ -140,11 +128,7 @@ import Testing
     #expect(bot.forwardProtocol.asForwardProtocol().name == "REJECT")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setForwardingRules() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let bot = AnalyzeBot(group: group, logger: .init(label: ""))
@@ -152,11 +136,7 @@ import Testing
     #expect(bot.forwardingRules.count == 1)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setEnabledHTTPCapabilities() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let bot = AnalyzeBot(group: group, logger: .init(label: ""))
@@ -164,11 +144,7 @@ import Testing
     #expect(bot.capabilities == .httpsDecryption)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setDecryptionSSLPKCS12Bundle() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let bot = AnalyzeBot(group: group, logger: .init(label: ""))
@@ -178,11 +154,7 @@ import Testing
     #expect(bot.decryptionSSLPKCS12Bundle == decryptionSSLPKCS12Bundle)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func preventSetSameDecryptionSSLPKCS12Bundle() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let bot = AnalyzeBot(group: group, logger: .init(label: ""))
@@ -193,11 +165,7 @@ import Testing
     #expect(bot.decryptionSSLPKCS12Bundle == decryptionSSLPKCS12Bundle)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setDecryptionSSLPKCS12BundleToNil() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let bot = AnalyzeBot(group: group, logger: .init(label: ""))

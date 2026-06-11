@@ -23,11 +23,7 @@ import NetbotProfile
   import Foundation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable, Sendable {
 
   @usableFromInline final class _Storage {
@@ -163,11 +159,7 @@ struct RulesetForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashabl
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension RulesetForwardingRule._Storage: Hashable {
   static func == (lhs: RulesetForwardingRule._Storage, rhs: RulesetForwardingRule._Storage) -> Bool
   {
@@ -184,9 +176,5 @@ extension RulesetForwardingRule._Storage: Hashable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension RulesetForwardingRule._Storage: @unchecked Sendable {}

@@ -15,25 +15,15 @@
   import Alamofire
   import SwiftUI
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @_spi(SwiftUI) extension EnvironmentValues {
 
     @Entry public var urlSession = Alamofire.Session.default
 
     @Entry public var session = Session.shared
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #endif
     @Entry public var diagnostics = Diagnostics()
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #endif
     @Entry public var profileAssistant = ProfileAssistant.default
   }
 #endif

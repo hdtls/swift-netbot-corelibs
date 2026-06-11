@@ -17,6 +17,7 @@
   import Logging
   import NIOCore
   import Network
+  import Synchronization
   import SynchronizationExtras
   import UserNotifications
 
@@ -26,16 +27,8 @@
     import CoreWLAN
   #endif
 
-  #if !canImport(Darwin) && !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    import Synchronization
-  #endif
-
   /// A wrap class for `NWPathMonitor` providing default `pathUpdateHandler`.
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Lockable final public class PathMonitor: Sendable {
 
     private let pathMonitor: NWPathMonitor
@@ -117,17 +110,10 @@
         self.logger.info("Network has been changed to \(ssid), New IP address: \(address)")
 
         let content = UNMutableNotificationContent()
-        #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-          content.title = String(
-            localized: "Network Changed",
-            comment: "Title of network changed notification"
-          )
-        #else
-          content.title = String(
-            localized: "Network Changed",
-            comment: "Title of network changed notification"
-          )
-        #endif
+        content.title = String(
+          localized: "Network Changed",
+          comment: "Title of network changed notification"
+        )
 
         content.subtitle = ssid
         content.body = address

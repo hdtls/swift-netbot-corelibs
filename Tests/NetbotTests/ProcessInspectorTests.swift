@@ -19,6 +19,7 @@ import Testing
 
 struct ProcessInspectorTests {
 
+  @available(SwiftStdlib 6.0, *)
   struct MockInspector: _ProcessInspector {
     let processName: String?
     func processInfo(address: UInt16) async throws -> Netbot.ProcessInfo? {
@@ -32,6 +33,7 @@ struct ProcessInspectorTests {
     }
   }
 
+  @available(SwiftStdlib 6.0, *)
   @Test func resolveProcessInfoWithNilSourceEndpoint() async {
     await #expect(throws: AnalyzeError.operationUnsupported) {
       let connection = Connection()
@@ -40,6 +42,7 @@ struct ProcessInspectorTests {
     }
   }
 
+  @available(SwiftStdlib 6.0, *)
   @Test func resolveProcessInfoWithInvalidPortOfSourceEndpoint() async {
     await #expect(throws: AnalyzeError.operationUnsupported) {
       let url = URL(string: "http://123.123.123.13:\(Int.max)")!
@@ -54,6 +57,7 @@ struct ProcessInspectorTests {
     }
   }
 
+  @available(SwiftStdlib 6.0, *)
   @Test func operationUnsupported() async {
     await #expect(throws: AnalyzeError.operationUnsupported) {
       var establishmentReport = EstablishmentReport()
@@ -66,6 +70,7 @@ struct ProcessInspectorTests {
     }
   }
 
+  @available(SwiftStdlib 6.0, *)
   @Test func modifySourceEndpointIfWeHaveStoreNewAddress() async {
     var establishmentReport = EstablishmentReport()
     establishmentReport.sourceEndpoint = .hostPort(host: "123.123.123.123", port: 443)
@@ -79,6 +84,7 @@ struct ProcessInspectorTests {
     #expect(connection.establishmentReport?.sourceEndpoint == sourceEndpoint)
   }
 
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: zip(["zsh", nil], ["zsh", "Unknown"]))
   func formatProcessLocalizedName(processName: String?, localizedName: String) async {
     var establishmentReport = EstablishmentReport()

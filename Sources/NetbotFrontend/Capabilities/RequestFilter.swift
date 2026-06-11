@@ -13,11 +13,7 @@
 
 import Preference
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public enum RequestFilterStrategy: Int, CaseIterable, Hashable, Sendable {
   case noFilter
   case withKeywords
@@ -25,11 +21,7 @@ public enum RequestFilterStrategy: Int, CaseIterable, Hashable, Sendable {
   case matchPatterns
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension RequestFilterStrategy {
 
   public var abstract: String {
@@ -46,18 +38,10 @@ extension RequestFilterStrategy {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension RequestFilterStrategy: PreferenceRepresentable {}
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct RequestFilter: Hashable, Sendable {
 
   public var strategy: RequestFilterStrategy
@@ -70,11 +54,7 @@ public struct RequestFilter: Hashable, Sendable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension RequestFilter: PreferenceRepresentable {
 
   public init?(preferenceValue: Any) {

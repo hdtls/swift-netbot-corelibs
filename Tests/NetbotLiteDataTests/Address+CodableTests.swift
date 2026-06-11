@@ -30,11 +30,7 @@ import Testing
     return encoder
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func hostPortNameAddress() async throws {
     let hostPort = Address.hostPort(host: "swift.org", port: 443)
 
@@ -49,11 +45,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func hostPortIPv4Address() async throws {
     let hostPort = Address.hostPort(host: "127.0.0.1", port: 443)
 
@@ -68,11 +60,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func hostPortIPv6Address() async throws {
     let hostPort = Address.hostPort(host: "::1", port: 443)
 
@@ -86,11 +74,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func unixPathAddress() async throws {
     let unix = Address.unix(path: "/var/run/tmp.sock")
 
@@ -104,11 +88,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func urlAddress() async throws {
     let url = Address.url(URL(string: "https://example.com")!)
 

@@ -21,11 +21,7 @@ import NetbotLiteData
   import Foundation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Connection.Model {
 
   /// Pretty printed forwarding policy.
@@ -55,11 +51,7 @@ extension Connection.Model {
   public var isActive: Bool { state == .establishing || state == .active }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Data {
   public func formatted() -> String {
     guard !isEmpty else { return "No Data".localizedCapitalized }
@@ -67,11 +59,7 @@ extension Data {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension HTTPRequest {
   public func formatted() -> String {
     """
@@ -82,11 +70,7 @@ extension HTTPRequest {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension HTTPResponse {
   public func formatted() -> String {
     """
@@ -96,11 +80,7 @@ extension HTTPResponse {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Response.Model {
 
   public var isImage: Bool {

@@ -29,11 +29,7 @@ import Testing
 
 @Suite struct AddressConversionTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func convertSocketAddressToAddress() throws {
     #expect(throws: Never.self) {
       let sa = try SocketAddress(ipAddress: "::1", port: 0).asAddress()
@@ -51,11 +47,7 @@ import Testing
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func convertAddressToSocketAddress() async throws {
     #expect(throws: AnalyzeError.operationUnsupported) {
       _ = try Address.hostPort(host: "swift.org", port: 443).asAddress()
@@ -85,11 +77,7 @@ import Testing
   }
 
   #if canImport(Network)
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func convertNWEndpointToAddress() {
       #expect(throws: Never.self) {
         let sa = try NWEndpoint.hostPort(host: "::1", port: 0).asAddress()
@@ -123,11 +111,7 @@ import Testing
       }
     }
 
-    #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-      @available(SwiftStdlib 5.9, *)
-    #else
-      @available(SwiftStdlib 6.0, *)
-    #endif
+    @available(SwiftStdlib 6.0, *)
     @Test func convertAddressToNWEndpoint() async throws {
       #expect(throws: Never.self) {
         let sa = try Address.hostPort(host: "::1", port: 0).asEndpoint()

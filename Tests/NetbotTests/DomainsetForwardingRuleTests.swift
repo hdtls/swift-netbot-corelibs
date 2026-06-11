@@ -30,11 +30,7 @@ struct DomainsetForwardingRuleTests {
   private let externalResourceDirectory: URL = URL(fileURLWithPath: #filePath)
     .deletingLastPathComponent().appending(path: "External Resource")
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
     let data = DomainsetForwardingRule(
       originalURLString: #filePath, forwardProtocol: .direct)
@@ -43,11 +39,7 @@ struct DomainsetForwardingRuleTests {
     #expect(data.description == "DOMAIN-SET DomainsetForwardingRuleTests.swift")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func externalResourceDoesNotExists() async throws {
     let data = DomainsetForwardingRule(
       originalURLString: #filePath, forwardProtocol: .direct)
@@ -56,11 +48,7 @@ struct DomainsetForwardingRuleTests {
     #expect(data.description == "DOMAIN-SET DomainsetForwardingRuleTests.swift")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func externalDomainsProcessing() async throws {
     let forwardingRule = DomainsetForwardingRule(
       externalResourceDirectory: externalResourceDirectory,
@@ -71,11 +59,7 @@ struct DomainsetForwardingRuleTests {
     #expect(forwardingRule.description == "DOMAIN-SET domains")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func setOriginalURLString() async throws {
     var forwardingRule = DomainsetForwardingRule(
       externalResourceDirectory: externalResourceDirectory, originalURLString: #filePath,
@@ -91,11 +75,7 @@ struct DomainsetForwardingRuleTests {
     #expect(forwardingRule.description == "DOMAIN-SET domains")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func copyOnWrite() {
     var a = DomainsetForwardingRule(
       externalResourceDirectory: externalResourceDirectory, originalURLString: #filePath,
@@ -108,11 +88,7 @@ struct DomainsetForwardingRuleTests {
     #expect(c != a)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: ["test1.com:443", "sub.test2.com", "test2.com:443"])
   func predicateWorks(_ authority: String) {
     let connection = Connection()
@@ -127,11 +103,7 @@ struct DomainsetForwardingRuleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func equatableConformance() {
     let lhs = DomainsetForwardingRule(
       originalURLString: "https://test1.com/domains", forwardProtocol: .direct)

@@ -25,11 +25,7 @@ import Testing
 @Suite(.tags(.forwardproto))
 struct ForwardProtocolVMESSTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func initWithAllParameters() {
     let name = "ForwardProtocol1"
     let serverAddress = "192.168.0.1"
@@ -57,11 +53,7 @@ struct ForwardProtocolVMESSTests {
     #expect(forwardProtocol.tlsOptions == tls)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func equality() {
     let name = "ForwardProtocol1"
     let serverAddress = "192.168.0.1"
@@ -103,11 +95,7 @@ struct ForwardProtocolVMESSTests {
       "ForwardProtocolVMESS instances with different values should not be equal")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func hashing() {
     let name = "ForwardProtocol1"
     let serverAddress = "192.168.0.1"

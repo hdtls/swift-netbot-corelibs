@@ -12,6 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 import HTTPTypes
+import Synchronization
 import SynchronizationExtras
 
 #if canImport(FoundationEssentials)
@@ -24,23 +25,11 @@ import SynchronizationExtras
   import Observation
 #endif
 
-#if !canImport(Darwin) || !NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  import Synchronization
-#endif
-
 // swift-format-ignore: AlwaysUseLowerCamelCase
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public let SQL_lastInsertedID = Atomic<UInt64>(0)
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @ObservationLockable final public class Connection: Identifiable, Sendable {
 
   public var id: UInt64 {
@@ -93,11 +82,7 @@ public let SQL_lastInsertedID = Atomic<UInt64>(0)
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Connection: Codable {
 
   private enum CodingKeys: String, CodingKey {
@@ -161,11 +146,7 @@ extension Connection: Codable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension Connection {
 
   public typealias Model = V1._Connection

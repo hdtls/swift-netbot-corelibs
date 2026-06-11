@@ -19,11 +19,7 @@ import CoWOptimization
   import Foundation
 #endif
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @_cowOptimization public struct AnyProxyGroup: Hashable, Sendable {
 
   /// Name of the policy group.
@@ -61,11 +57,7 @@ import CoWOptimization
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension AnyProxyGroup._Storage: Hashable {
   @inlinable static func == (lhs: AnyProxyGroup._Storage, rhs: AnyProxyGroup._Storage) -> Bool {
     return lhs.name == rhs.name
@@ -88,18 +80,10 @@ extension AnyProxyGroup._Storage: Hashable {
   }
 }
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension AnyProxyGroup._Storage: @unchecked Sendable {}
 
-#if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-  @available(SwiftStdlib 5.9, *)
-#else
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 extension AnyProxyGroup {
 
   public typealias Model = V1._AnyProxyGroup

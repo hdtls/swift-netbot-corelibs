@@ -25,11 +25,7 @@ import Testing
 @Suite(.tags(.profile, .profileparser, .httprewrites))
 struct StubbedHTTPResponse_FormatStyleTests {
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     StubbedHTTPResponse.FormatStyle(),
     StubbedHTTPResponse.FormatStyle.stubbedHTTPResponse,
@@ -47,11 +43,7 @@ struct StubbedHTTPResponse_FormatStyleTests {
     #expect(response.formatted(formatter) == expected)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatDisabledMock() {
     var response = StubbedHTTPResponse()
     response.isEnabled = false
@@ -63,11 +55,7 @@ struct StubbedHTTPResponse_FormatStyleTests {
         == "# ^https://example.com, data = \"file:///var/tmp/data.json\", status = 200 OK")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func ignoreEmptyBodyWhileFormatting() {
     var response = StubbedHTTPResponse()
     response.pattern = "^https://example.com"
@@ -76,11 +64,7 @@ struct StubbedHTTPResponse_FormatStyleTests {
     #expect(response.formatted() == expected)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func ignoreEmptyResponseStatusReasonPhraseWhileFormatting() {
     var response = StubbedHTTPResponse()
     response.pattern = "^https://example.com"
@@ -90,11 +74,7 @@ struct StubbedHTTPResponse_FormatStyleTests {
     #expect(response.formatted() == expected)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func ignoreEmptyHTTPFieldsWhileFormatting() {
     var response = StubbedHTTPResponse()
     response.pattern = "^https://example.com"
@@ -103,11 +83,7 @@ struct StubbedHTTPResponse_FormatStyleTests {
     #expect(response.formatted() == expected)
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     StubbedHTTPResponse.FormatStyle(),
     StubbedHTTPResponse.FormatStyle().parseStrategy,
@@ -125,11 +101,7 @@ struct StubbedHTTPResponse_FormatStyleTests {
     #expect(parseOutput.additionalHTTPFields == [.contentType: "application/json"])
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test(arguments: [
     ""
   ])
@@ -139,11 +111,7 @@ struct StubbedHTTPResponse_FormatStyleTests {
     }
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func formatStyleConformance() {
     var response = StubbedHTTPResponse()
     response.pattern = "^https://example.com"
@@ -151,11 +119,7 @@ struct StubbedHTTPResponse_FormatStyleTests {
     #expect(response.formatted(.stubbedHTTPResponse) == "^https://example.com, status = 200 OK")
   }
 
-  #if NETBOT_SWIFT_STDLIB_VERSION_MIN_REQUIRED_5_9
-    @available(SwiftStdlib 5.9, *)
-  #else
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @Test func parseStrategyConformance() {
     #expect(throws: Never.self) {
       try StubbedHTTPResponse(
