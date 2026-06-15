@@ -12,7 +12,6 @@
 // ===----------------------------------------------------------------------=== //
 
 import Alamofire
-import Dispatch
 import Logging
 import NetbotLiteData
 
@@ -115,7 +114,7 @@ public enum DataTransfer: Hashable, Sendable {
   nonisolated private let messenger: any MessengerProtocol
   private var earliestBeginDate = Date.distantPast
   private var _aggregatePathReportTable: [String: DataTransferReport.PathReport] = [:]
-  private var timerSource: DispatchSourceTimer?
+  private var speedProcessTask: Task<Void, Never>?
   private var fetchTask: Task<Void, Never>?
 
   #if canImport(NetworkExtension)
@@ -211,30 +210,31 @@ public enum DataTransfer: Hashable, Sendable {
 
     self._fetchError = nil
 
-    if let timerSource, !timerSource.isCancelled {
-      timerSource.cancel()
+    if let speedProcessTask, !speedProcessTask.isCancelled {
+      speedProcessTask.cancel()
     }
-    self.timerSource = DispatchSource.makeTimerSource(queue: .main)
-    self.timerSource?.schedule(deadline: .now(), repeating: .seconds(1))
-    self.timerSource?.setEventHandler {
+    self.speedProcessTask = Task.detached {
       #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-        let modelContext = self.modelContainer.mainContext
-
-        let term = Connection.State.active.rawValue
-        let fd = FetchDescriptor<Data>(predicate: #Predicate { $0._state == term })
-        let models: [DataTransferReport.PathReport] =
-          (try? modelContext.fetch(fd).compactMap {
-            guard let pathReport = $0.dataTransferReport?.pathReport else { return nil }
-            return DataTransferReport.PathReport(persistentModel: pathReport)
-          }) ?? []
-      #else
-        let models: [DataTransferReport.PathReport] = self._activeIndexes.compactMap {
-          guard let pathReport = $0.value.dataTransferReport?.pathReport else { return nil }
-          return DataTransferReport.PathReport(persistentModel: pathReport)
-        }
+        let modelContext = ModelContext(self.modelContainer)
       #endif
 
-      Task {
+      while !Task.isCancelled {
+        #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
+          let term = Connection.State.active.rawValue
+          let fd = FetchDescriptor<Data>(predicate: #Predicate { $0._state == term })
+          let models: [DataTransferReport.PathReport] =
+            (try? modelContext.fetch(fd).compactMap {
+              guard let pathReport = $0.dataTransferReport?.pathReport else { return nil }
+              return DataTransferReport.PathReport(persistentModel: pathReport)
+            }) ?? []
+        #else
+          let models: [DataTransferReport.PathReport] = await Task { @MainActor in
+            self._activeIndexes.compactMap {
+              guard let pathReport = $0.value.dataTransferReport?.pathReport else { return nil }
+              return DataTransferReport.PathReport(persistentModel: pathReport)
+            }
+          }.value
+        #endif
         let pathReport = models.reduce(DataTransferReport.PathReport()) { $0 &+ $1 }
         let pathReportFormatted = DataTransferReport.Model.PathReportFormatted(
           sentApplicationByteCount: pathReport.sentApplicationByteCount
@@ -242,28 +242,25 @@ public enum DataTransfer: Hashable, Sendable {
           receivedApplicationByteCount: pathReport.receivedApplicationByteCount
             .formatted(.byteCount(style: .binary, spellsOutZero: false))
         )
-        await MainActor.run {
+        Task { @MainActor in
           self._pathReportFormatted = pathReportFormatted
         }
+        try? await Task.sleep(for: .seconds(1), clock: .suspending)
+      }
+
+      let pathReportFormatted = DataTransferReport.Model.PathReportFormatted(
+        sentApplicationByteCount: 0.formatted(.byteCount(style: .binary, spellsOutZero: false)),
+        receivedApplicationByteCount: 0.formatted(
+          .byteCount(style: .binary, spellsOutZero: false))
+      )
+      Task { @MainActor in
+        self._pathReportFormatted = pathReportFormatted
       }
     }
-    self.timerSource?.setCancelHandler {
-      Task {
-        let pathReportFormatted = DataTransferReport.Model.PathReportFormatted(
-          sentApplicationByteCount: 0.formatted(.byteCount(style: .binary, spellsOutZero: false)),
-          receivedApplicationByteCount: 0.formatted(
-            .byteCount(style: .binary, spellsOutZero: false))
-        )
-        await MainActor.run {
-          self._pathReportFormatted = pathReportFormatted
-        }
-      }
-    }
-    self.timerSource?.resume()
   }
 
   private func cancel() {
-    self.timerSource?.cancel()
+    self.speedProcessTask?.cancel()
     self.fetchTask?.cancel()
     self.fetchTask = nil
   }
