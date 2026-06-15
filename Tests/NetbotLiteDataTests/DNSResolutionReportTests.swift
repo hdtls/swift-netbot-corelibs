@@ -16,11 +16,21 @@ import Testing
 
 @testable import NetbotLiteData
 
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
 @Suite struct DNSResolutionReportTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValues() {
-    let report = DNSResolutionReport(duration: .zero, resolutions: [])
+    let earliestBeginDate = Date.now
+    let report = DNSResolutionReport(
+      earliestBeginDate: earliestBeginDate, duration: .zero, resolutions: []
+    )
+    #expect(report.earliestBeginDate == earliestBeginDate)
     #expect(report.duration == .zero)
     #expect(report.resolutions.isEmpty)
   }
@@ -64,7 +74,11 @@ import Testing
         ]
       ),
     ]
-    let report = DNSResolutionReport(duration: .seconds(3.25), resolutions: resolutions)
+    let report = DNSResolutionReport(
+      earliestBeginDate: .now,
+      duration: .seconds(3.25),
+      resolutions: resolutions
+    )
 
     let encoder = JSONEncoder()
     let data = try encoder.encode(report)

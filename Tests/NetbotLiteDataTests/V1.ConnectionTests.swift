@@ -67,7 +67,12 @@ import Testing
     data.taskDescription = "descA"
     data.tls = false
     data.state = .active
-    data.forwardingReport = .init()
+    data.forwardingReport = .init(
+      earliestBeginDate: .now,
+      duration: .seconds(1),
+      forwardProtocol: "FINAL",
+      forwardingRule: nil
+    )
 
     let connection = V1._Connection()
     connection.taskIdentifier = 1

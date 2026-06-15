@@ -16,6 +16,12 @@ import Testing
 
 @testable import NetbotLiteData
 
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
 @Suite struct V1_DNSResolutionReportTests {
 
   @available(SwiftStdlib 6.0, *)
@@ -25,7 +31,9 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() {
+    let earliestBeginDate = Date.now
     let data = DNSResolutionReport(
+      earliestBeginDate: earliestBeginDate,
       duration: .seconds(12.5),
       resolutions: [
         DNSResolutionReport.Resolution(
@@ -51,6 +59,7 @@ import Testing
     let report = V1._DNSResolutionReport()
     report.mergeValues(data)
 
+    #expect(report.earliestBeginDate == earliestBeginDate)
     #expect(report.duration.seconds == 12.5)
     #expect(report.resolutions.count == 2)
 
@@ -91,6 +100,7 @@ import Testing
       let modelContext = ModelContext(modelContainer)
 
       let data = DNSResolutionReport(
+        earliestBeginDate: .now,
         duration: .seconds(1),
         resolutions: [
           .init(

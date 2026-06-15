@@ -11,9 +11,18 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
 /// A ForwardingReport report represents forwarding rule matching.
 @available(SwiftStdlib 6.0, *)
 public struct ForwardingReport: Codable, Hashable, Sendable {
+
+  /// The date when the forward lookup begin.
+  public var earliestBeginDate: Date
 
   /// Length of time in seconds spent on forwarding rule matching.
   public var duration: Duration
@@ -27,25 +36,33 @@ public struct ForwardingReport: Codable, Hashable, Sendable {
   package var _forwardingRule: (any Sendable)?
 
   package init(
-    duration: Duration = .zero, forwardProtocol: String = "DIRECT", forwardingRule: String? = nil
+    earliestBeginDate: Date,
+    duration: Duration,
+    forwardProtocol: String,
+    forwardingRule: String?
   ) {
+    self.earliestBeginDate = earliestBeginDate
     self.duration = duration
     self.forwardProtocol = forwardProtocol
     self.forwardingRule = forwardingRule
   }
 
   public static func == (lhs: ForwardingReport, rhs: ForwardingReport) -> Bool {
-    lhs.duration == rhs.duration && lhs.forwardProtocol == rhs.forwardProtocol
+    lhs.earliestBeginDate == rhs.earliestBeginDate
+      && lhs.duration == rhs.duration
+      && lhs.forwardProtocol == rhs.forwardProtocol
       && lhs.forwardingRule == rhs.forwardingRule
   }
 
   public func hash(into hasher: inout Hasher) {
+    hasher.combine(earliestBeginDate)
     hasher.combine(duration)
     hasher.combine(forwardProtocol)
     hasher.combine(forwardingRule)
   }
 
   private enum CodingKeys: CodingKey {
+    case earliestBeginDate
     case duration
     case forwardProtocol
     case forwardingRule
@@ -53,6 +70,7 @@ public struct ForwardingReport: Codable, Hashable, Sendable {
 
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.earliestBeginDate = try container.decode(Date.self, forKey: .earliestBeginDate)
     self.duration = try container.decode(Duration.self, forKey: .duration)
     self.forwardProtocol = try container.decode(String.self, forKey: .forwardProtocol)
     self.forwardingRule = try container.decodeIfPresent(String.self, forKey: .forwardingRule)
@@ -60,6 +78,7 @@ public struct ForwardingReport: Codable, Hashable, Sendable {
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(earliestBeginDate, forKey: .earliestBeginDate)
     try container.encode(duration, forKey: .duration)
     try container.encode(forwardProtocol, forKey: .forwardProtocol)
     try container.encodeIfPresent(forwardingRule, forKey: .forwardingRule)
@@ -72,6 +91,7 @@ extension ForwardingReport {
   public typealias Model = V1._ForwardingReport
 
   public init(persistentModel: Model) {
+    self.earliestBeginDate = persistentModel.earliestBeginDate
     self.duration = persistentModel.duration
     self.forwardingRule = persistentModel.forwardingRule
     self.forwardProtocol = persistentModel.forwardProtocol

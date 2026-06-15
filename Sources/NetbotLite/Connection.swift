@@ -19,6 +19,12 @@ import NetbotLiteData
 import Synchronization
 import Tracing
 
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
 #if canImport(Darwin) || swift(>=6.3)
   import Observation
 #endif
@@ -71,6 +77,7 @@ extension Connection {
   ///
   func dnsLookup(logger: Logger, resolver: any Resolver, on eventLoop: any EventLoop) async throws {
     try await withSpan("dns query") { _ in
+      let earliestBeginDate = Date.now
       let startTime = DispatchTime.now()
       let hostname: String
 
@@ -84,6 +91,7 @@ extension Connection {
           hostname = name
         case .ipv4, .ipv6:
           dnsResolutionReport = DNSResolutionReport(
+            earliestBeginDate: earliestBeginDate,
             duration: startTime.distance(to: .now()).duration,
             resolutions: [
               DNSResolutionReport.Resolution(
@@ -98,6 +106,7 @@ extension Connection {
         }
       case .unix:
         dnsResolutionReport = DNSResolutionReport(
+          earliestBeginDate: earliestBeginDate,
           duration: startTime.distance(to: .now()).duration,
           resolutions: []
         )
@@ -105,12 +114,14 @@ extension Connection {
       case .url:
         // Not supported yet.
         dnsResolutionReport = DNSResolutionReport(
+          earliestBeginDate: earliestBeginDate,
           duration: startTime.distance(to: .now()).duration,
           resolutions: []
         )
         return
       case .none:
         dnsResolutionReport = DNSResolutionReport(
+          earliestBeginDate: earliestBeginDate,
           duration: startTime.distance(to: .now()).duration,
           resolutions: []
         )
@@ -169,7 +180,11 @@ extension Connection {
               withMutation(keyPath: \.dnsResolutionReport) {
                 $dnsResolutionReport.withLock {
                   if $0 == nil {
-                    $0 = DNSResolutionReport(duration: .zero, resolutions: resolutions)
+                    $0 = DNSResolutionReport(
+                      earliestBeginDate: earliestBeginDate,
+                      duration: .zero,
+                      resolutions: resolutions
+                    )
                   } else {
                     $0?.resolutions.append(contentsOf: resolutions)
                   }
@@ -236,18 +251,21 @@ extension Connection {
       }
 
       let fallback: any ForwardProtocol
+      let earliestBeginDate = Date.now
       let startTime = DispatchTime.now()
 
       switch outboundMode {
       case .direct:
         fallback = .direct
         forwardingReport = ForwardingReport(
+          earliestBeginDate: earliestBeginDate,
           duration: startTime.distance(to: .now()).duration,
           forwardProtocol: fallback
         )
       case .globalProxy:
         fallback = forwardProtocol.asForwardProtocol()
         forwardingReport = ForwardingReport(
+          earliestBeginDate: earliestBeginDate,
           duration: startTime.distance(to: .now()).duration,
           forwardProtocol: fallback
         )

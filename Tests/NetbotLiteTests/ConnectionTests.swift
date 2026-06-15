@@ -408,7 +408,13 @@ import Testing
     try await connection
       .ruleLookup(
         logger: .init(label: "rule"),
-        rulesEngine: MockRuleEngine(forwardingReport: .init(forwardingRule: MockForwardingRule()))
+        rulesEngine: MockRuleEngine(
+          forwardingReport: .init(
+            earliestBeginDate: .now,
+            duration: .seconds(1),
+            forwardingRule: MockForwardingRule()
+          )
+        )
       )
 
     #expect(connection.forwardingReport != nil)
@@ -448,7 +454,14 @@ import Testing
             v4Result: .failure(CancellationError()),
             v6Result: .success([])
           ),
-          rules: MockRuleEngine(forwardingReport: .init()),
+          rules: MockRuleEngine(
+            forwardingReport: .init(
+              earliestBeginDate: .now,
+              duration: .seconds(1),
+              forwardProtocol: "DIRECT",
+              forwardingRule: nil
+            )
+          ),
           eventLoop: eventLoop
         )
     }
@@ -495,7 +508,14 @@ import Testing
             v4Result: .success([]),
             v6Result: .success([])
           ),
-          rules: MockRuleEngine(forwardingReport: .init()),
+          rules: MockRuleEngine(
+            forwardingReport: .init(
+              earliestBeginDate: .now,
+              duration: .seconds(1),
+              forwardProtocol: "DIRECT",
+              forwardingRule: nil
+            )
+          ),
           eventLoop: eventLoop
         )
     }
@@ -533,7 +553,13 @@ import Testing
           v4Result: .success([]),
           v6Result: .success([])
         ),
-        rules: MockRuleEngine(forwardingReport: .init()),
+        rules: MockRuleEngine(
+          forwardingReport: .init(
+            earliestBeginDate: .now,
+            duration: .seconds(1),
+            forwardProtocol: "DIRECT",
+            forwardingRule: nil
+          )),
         eventLoop: eventLoop
       )
 
@@ -575,7 +601,13 @@ import Testing
           v4Result: .success([]),
           v6Result: .success([])
         ),
-        rules: MockRuleEngine(forwardingReport: .init()),
+        rules: MockRuleEngine(
+          forwardingReport: .init(
+            earliestBeginDate: .now,
+            duration: .seconds(1),
+            forwardProtocol: "DIRECT",
+            forwardingRule: nil
+          )),
         eventLoop: eventLoop
       )
 
@@ -626,7 +658,13 @@ import Testing
           v4Result: .success([]),
           v6Result: .success([])
         ),
-        rules: MockRuleEngine(forwardingReport: .init(forwardingRule: MockForwardingRule())),
+        rules: MockRuleEngine(
+          forwardingReport: .init(
+            earliestBeginDate: .now,
+            duration: .seconds(1),
+            forwardingRule: MockForwardingRule()
+          )
+        ),
         eventLoop: eventLoop
       )
 

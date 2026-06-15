@@ -11,6 +11,12 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
 #if canImport(Darwin) || swift(>=6.3)
   import Observation
 #endif
@@ -24,6 +30,9 @@ extension V1 {
 
   #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
     @Model public class _ForwardingReport {
+
+      /// The date when the DNS resolution begin.
+      public var earliestBeginDate = Date.now
 
       /// The length of time duration on this matching step.
       @Attribute(.transformable(by: SQLValueTransformer<Duration>.self))
@@ -44,6 +53,9 @@ extension V1 {
       @Observable
     #endif
     public class _ForwardingReport {
+
+      /// The date when the DNS resolution begin.
+      public var earliestBeginDate = Date.now
 
       /// The length of time duration on this matching step.
       public var duration: Duration = Duration.zero
@@ -68,10 +80,14 @@ extension V1._ForwardingReport {
   /// - Parameter data: New `ForwardingReport` to merge.
   public func mergeValues(_ data: ForwardingReport) {
     #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
+      self.earliestBeginDate = data.earliestBeginDate
       self.duration = data.duration
       self.forwardingRule = data.forwardingRule
       self.forwardProtocol = data.forwardProtocol
     #else
+      if self.earliestBeginDate != data.earliestBeginDate {
+        self.earliestBeginDate = data.earliestBeginDate
+      }
       if self.duration != data.duration {
         self.duration = data.duration
       }

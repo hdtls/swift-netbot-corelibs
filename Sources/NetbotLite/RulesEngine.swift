@@ -20,6 +20,12 @@ import Synchronization
 import SynchronizationExtras
 import Tracing
 
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
 @available(SwiftStdlib 6.0, *)
 public protocol RulesEngine: Sendable {
 
@@ -52,16 +58,26 @@ public protocol RulesEngine: Sendable {
   }
 
   func executeAllRules(connection: Connection) async -> ForwardingReport {
+    let earliestBeginDate = Date.now
+    let startTime = DispatchTime.now()
     guard let originalRequest = connection.originalRequest,
       let host = originalRequest.host(percentEncoded: false)
     else {
-      return ForwardingReport(forwardingRule: _FinalForwardingRule())
+      return ForwardingReport(
+        earliestBeginDate: earliestBeginDate,
+        duration: startTime.distance(to: .now()).duration,
+        forwardingRule: _FinalForwardingRule()
+      )
     }
 
     let savedForwardingRule = cache.value(forKey: host)
 
     if let savedForwardingRule {
-      return ForwardingReport(forwardingRule: savedForwardingRule)
+      return ForwardingReport(
+        earliestBeginDate: earliestBeginDate,
+        duration: startTime.distance(to: .now()).duration,
+        forwardingRule: savedForwardingRule
+      )
     }
 
     // Keep in-flight rule lookup tasks so concurrent identical lookups share one operation.
@@ -98,7 +114,11 @@ public protocol RulesEngine: Sendable {
 
         // We have updated lookup cache, so the task is no longer needed.
         inFlightLookups.withLock { $0[host] = nil }
-        return ForwardingReport(forwardingRule: forwardingRule)
+        return ForwardingReport(
+          earliestBeginDate: earliestBeginDate,
+          duration: startTime.distance(to: .now()).duration,
+          forwardingRule: forwardingRule
+        )
       }
       $0[host] = task
       return task
@@ -109,9 +129,10 @@ public protocol RulesEngine: Sendable {
 
 @available(SwiftStdlib 6.0, *)
 extension ForwardingReport {
-  init(duration: Duration = .zero, forwardingRule: any ForwardingRule) {
+  init(earliestBeginDate: Date, duration: Duration, forwardingRule: any ForwardingRule) {
     let forwardProtocol = forwardingRule.forwardProtocol.asForwardProtocol()
     self.init(
+      earliestBeginDate: earliestBeginDate,
       duration: duration,
       forwardProtocol: forwardProtocol.name,
       forwardingRule: forwardingRule.description
@@ -120,8 +141,13 @@ extension ForwardingReport {
     self._forwardProtocol = forwardProtocol
   }
 
-  init(duration: Duration = .zero, forwardProtocol: any ForwardProtocol) {
-    self.init(duration: duration, forwardProtocol: forwardProtocol.name)
+  init(earliestBeginDate: Date, duration: Duration, forwardProtocol: any ForwardProtocol) {
+    self.init(
+      earliestBeginDate: earliestBeginDate,
+      duration: duration,
+      forwardProtocol: forwardProtocol.name,
+      forwardingRule: nil
+    )
     self._forwardProtocol = forwardProtocol
   }
 }

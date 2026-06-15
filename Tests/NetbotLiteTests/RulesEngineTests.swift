@@ -96,7 +96,7 @@ import Testing
     let result = await service.executeAllRules(connection: connection)
 
     #expect(result._forwardingRule is _FinalForwardingRule)
-    #expect(result.duration == .zero)
+    #expect(result.duration > .zero)
     #expect(result.forwardingRule == "FINAL")
     #expect(result.forwardProtocol == "DIRECT")
   }

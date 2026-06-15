@@ -16,6 +16,12 @@ import Testing
 
 @testable import NetbotLiteData
 
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
+
 @Suite struct V1_ForwardingReportTests {
 
   @available(SwiftStdlib 6.0, *)
@@ -27,14 +33,16 @@ import Testing
   @Test func mergeValues() {
     let model = V1._ForwardingReport()
 
+    let earliestBeginDate = Date.now
     let data = ForwardingReport(
+      earliestBeginDate: earliestBeginDate,
       duration: .seconds(13.5),
       forwardProtocol: "REJECT",
       forwardingRule: "FINAL"
     )
 
     model.mergeValues(data)
-
+    #expect(model.earliestBeginDate == earliestBeginDate)
     #expect(model.duration == .seconds(13.5))
     #expect(model.forwardProtocol == "REJECT")
     #expect(model.forwardingRule == "FINAL")
@@ -57,7 +65,10 @@ import Testing
       let modelContext = ModelContext(modelContainer)
 
       let data = ForwardingReport(
-        duration: .seconds(1), forwardProtocol: "DIRECT", forwardingRule: "DOMAIN-SUFIX example.com"
+        earliestBeginDate: .now,
+        duration: .seconds(1),
+        forwardProtocol: "DIRECT",
+        forwardingRule: "DOMAIN-SUFIX example.com"
       )
 
       let model = V1._ForwardingReport()

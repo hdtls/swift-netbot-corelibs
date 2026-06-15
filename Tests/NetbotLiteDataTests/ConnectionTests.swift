@@ -83,6 +83,7 @@ import Testing
       ]
     )
     connection.forwardingReport = .init(
+      earliestBeginDate: .now,
       duration: .seconds(1),
       forwardProtocol: "HTTP",
       forwardingRule: "FINAL"

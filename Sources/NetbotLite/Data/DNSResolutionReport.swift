@@ -17,6 +17,9 @@ import NEAddressProcessing
 @available(SwiftStdlib 6.0, *)
 public struct DNSResolutionReport: Codable, Hashable, Sendable {
 
+  /// The date when the DNS resolution begin.
+  public var earliestBeginDate: Date
+
   /// The duration of the connection's establishment in seconds.
   /// This is the total time from when the successful connection
   /// attempt began until the connection becomes ready, including
@@ -57,7 +60,12 @@ public struct DNSResolutionReport: Codable, Hashable, Sendable {
     }
   }
 
-  package init(duration: Duration, resolutions: [Resolution]) {
+  package init(
+    earliestBeginDate: Date,
+    duration: Duration,
+    resolutions: [Resolution]
+  ) {
+    self.earliestBeginDate = earliestBeginDate
     self.duration = duration
     self.resolutions = resolutions
   }
@@ -69,6 +77,7 @@ extension DNSResolutionReport {
   public typealias Model = V1._DNSResolutionReport
 
   public init(persistentModel: Model) {
+    self.earliestBeginDate = persistentModel.earliestBeginDate
     self.duration = persistentModel.duration
     self.resolutions = persistentModel.resolutions.map {
       Resolution(

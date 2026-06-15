@@ -27,6 +27,9 @@ extension V1 {
   #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
     @Model final public class _DNSResolutionReport {
 
+      /// The date when the DNS resolution begin.
+      public var earliestBeginDate = Date.now
+
       /// The duration of the connection's establishment in seconds.
       /// This is the total time from when the successful connection
       /// attempt began until the connection becomes ready, including
@@ -47,6 +50,9 @@ extension V1 {
       @Observable
     #endif
     final public class _DNSResolutionReport {
+
+      /// The date when the DNS resolution begin.
+      public var earliestBeginDate = Date.now
 
       /// The duration of the connection's establishment in seconds.
       /// This is the total time from when the successful connection
@@ -109,6 +115,7 @@ extension V1._DNSResolutionReport {
   /// - Parameter data: New `DNSResolutionReport` to merge.
   public func mergeValues(_ data: DNSResolutionReport) {
     #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
+      self.earliestBeginDate = data.earliestBeginDate
       self.duration = data.duration
       self.resolutions = data.resolutions.map {
         Resolution(
@@ -119,6 +126,9 @@ extension V1._DNSResolutionReport {
         )
       }
     #else
+      if self.earliestBeginDate != data.earliestBeginDate {
+        self.earliestBeginDate = data.earliestBeginDate
+      }
       if self.duration != data.duration {
         self.duration = data.duration
       }
