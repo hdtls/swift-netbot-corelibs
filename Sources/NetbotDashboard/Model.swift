@@ -14,6 +14,7 @@
 import Alamofire
 import Logging
 import NetbotLiteData
+import Synchronization
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
@@ -113,7 +114,7 @@ public enum DataTransfer: Hashable, Sendable {
   nonisolated private let logger = Logger(label: "dashboard")
   nonisolated private let messenger: any MessengerProtocol
   private var earliestBeginDate = Date.distantPast
-  private var _aggregatePathReportTable: [String: DataTransferReport.PathReport] = [:]
+  private let pathReportTable = Mutex<[String: DataTransferReport.PathReport]>([:])
   private var speedProcessTask: Task<Void, Never>?
   private var fetchTask: Task<Void, Never>?
 
@@ -196,7 +197,7 @@ public enum DataTransfer: Hashable, Sendable {
 
       do {
         for try await message in messenger.openStream() {
-          performBatchUpdates(message)
+          await performBatchUpdates(message)
         }
       } catch let error as AFError {
         self._fetchError = error
@@ -271,9 +272,13 @@ public enum DataTransfer: Hashable, Sendable {
     var aggregatePathReport: DataTransferReport.PathReport
 
     if let forwardProtocol {
-      aggregatePathReport = self._aggregatePathReportTable[forwardProtocol, default: .init()]
+      aggregatePathReport = self.pathReportTable.withLock {
+        $0[forwardProtocol, default: .init()]
+      }
     } else {
-      aggregatePathReport = self._aggregatePathReportTable.values.reduce(.init()) { $0 &+ $1 }
+      aggregatePathReport = self.pathReportTable.withLock {
+        $0.values.reduce(.init()) { $0 &+ $1 }
+      }
     }
 
     return .init(
@@ -293,7 +298,12 @@ public enum DataTransfer: Hashable, Sendable {
     self.earliestBeginDate = Date.now
   }
 
-  private func performBatchUpdates(_ models: [Connection]) {
+  #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
+    #if swift(>=6.2)
+      @concurrent
+    #endif
+  #endif
+  private func performBatchUpdates(_ models: [Connection]) async {
     func doInsert(_ model: Connection) throws {
       var persistentModel: V1._Connection
       #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
@@ -490,8 +500,9 @@ public enum DataTransfer: Hashable, Sendable {
           //
           // This allows quick access to cumulative transfer data by protocol.
           let key = model.forwardingReport?.forwardProtocol ?? "DIRECT"
-          self._aggregatePathReportTable[key, default: .init()] &+=
-            backingData.aggregatePathReport
+          self.pathReportTable.withLock {
+            $0[key, default: .init()] &+= backingData.aggregatePathReport
+          }
         } else {
           // If a DataTransferReport already exists, merge new values
           // into it and its path reports.
@@ -514,8 +525,9 @@ public enum DataTransfer: Hashable, Sendable {
           persistentModel.dataTransferReport?.pathReport?.mergeValues(backingData.pathReport)
 
           let key = model.forwardingReport?.forwardProtocol ?? "DIRECT"
-          self._aggregatePathReportTable[key, default: .init()] &+=
-            backingData.aggregatePathReport &- aggregatePathReport
+          self.pathReportTable.withLock {
+            $0[key, default: .init()] &+= backingData.aggregatePathReport &- aggregatePathReport
+          }
         }
       }
 
@@ -636,7 +648,7 @@ public enum DataTransfer: Hashable, Sendable {
     }
 
     #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-      let modelContext = modelContainer.mainContext
+      let modelContext = ModelContext(modelContainer)
 
       try? modelContext.transaction {
         for model in models {
