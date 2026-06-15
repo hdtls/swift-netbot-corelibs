@@ -349,7 +349,7 @@ import Tracing
   private func initializeFlow(_ inputStream: any Channel, originalRequest: Request) async throws
     -> Flow
   {
-    try await withSpan("initialize Proxy Flow") { _ in
+    try await withSpan("initialize Proxy Flow") { span in
       let session = Connection()
       do {
         session.originalRequest = originalRequest
@@ -366,6 +366,11 @@ import Tracing
           proxyEndpoint: nil,
           resolutions: []
         )
+
+        span.updateAttributes { attributes in
+          attributes["id"] = "\(session.taskIdentifier)"
+          attributes["establishment.source"] = "\(sourceEndpoint)"
+        }
 
         await session.publish(using: connectionPublisher)
 
@@ -389,7 +394,7 @@ import Tracing
 
         session.state = .active
 
-        await withSpan("establishment-report gen") { _ in
+        await withSpan("establishment-report gen") { span in
           // Once channel connected, we can request establishment report.
           // Error will be ignored, we don't want connection closed by establishment report
           // generation error.
@@ -412,6 +417,13 @@ import Tracing
               }
             }
           }
+
+          span.updateAttributes { attributes in
+            attributes["establishment.use_proxy"] = establishmentReport?.usedProxy
+            attributes["establishment.duration"] = establishmentReport?.duration.seconds
+            attributes["establishment.resolutions"] = establishmentReport?.resolutions.count
+          }
+          span.setStatus(.init(code: .ok))
         }
 
         await session.collectDataTransferMetrics(on: outputStream)
@@ -444,6 +456,8 @@ import Tracing
           try? inputStream.pipeline.syncOperations.addHandler(localGlue)
           try? outputStream.pipeline.syncOperations.addHandlers(peerGlue)
         }.get()
+
+        span.setStatus(.init(code: .ok))
         return (inputStream, outputStream, session)
       } catch {
         session.duration = .seconds(-session.earliestBeginDate.timeIntervalSinceNow)

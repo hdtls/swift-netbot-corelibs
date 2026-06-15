@@ -59,12 +59,22 @@ extension Connection {
 
   func processInfoLookup(logger: Logger, proc: any ProcessReporting) async throws {
     // We don't care error of process report generating, so we can use optional try.
-    try await withSpan("process-report gen") { _ in
+    try await withSpan("process-report gen") { span in
       assert(establishmentReport != nil)
       guard establishmentReport?.sourceEndpoint != nil else {
         return
       }
+
       processReport = try await proc.processInfo(connection: self)
+
+      span.updateAttributes { attributes in
+        attributes["process.id"] = processReport?.processIdentifier
+        attributes["process.program.name"] = processReport?.program?.localizedName
+        attributes["process.program.executable"] =
+          processReport?.program?.executableURL?.absoluteString
+        attributes["process.program.bundle"] = processReport?.program?.bundleURL?.absoluteString
+      }
+      span.setStatus(.init(code: .ok))
     }
   }
 
@@ -77,7 +87,7 @@ extension Connection {
   /// path has produced a result (or both have failed). The entire process runs within a tracing span named "dns query".
   ///
   func dnsLookup(logger: Logger, resolver: any Resolver, on eventLoop: any EventLoop) async throws {
-    try await withSpan("dns query") { _ in
+    try await withSpan("dns query") { span in
       let earliestBeginDate = Date.now
       let startTime = DispatchTime.now()
 
@@ -210,23 +220,37 @@ extension Connection {
         "DNS evaluating end with \(dnsResolutionReport.duration.formatted(.prettyPrinted())).",
         metadata: metadata
       )
+
+      span.updateAttributes { attributes in
+        attributes["dns.query.earliest_begin_date"] = dnsResolutionReport.earliestBeginDate
+          .formatted()
+        attributes["dns.query.duration"] = dnsResolutionReport.duration.seconds
+        attributes["dns.query.resolutions"] = dnsResolutionReport.resolutions.count
+      }
+      span.setStatus(.init(code: .ok))
     }
   }
 
   func ruleLookup(logger: Logger, rulesEngine: any RulesEngine) async throws {
-    await withSpan("forwarding-rule lookup") { _ in
-      let forwardingReport = await rulesEngine.executeAllRules(connection: self)
-      assert(forwardingReport._forwardingRule != nil)
-      assert(forwardingReport._forwardProtocol != nil)
-      self.forwardingReport = forwardingReport
+    await withSpan("forwarding-rule lookup") { span in
+      let report = await rulesEngine.executeAllRules(connection: self)
+      assert(report._forwardingRule != nil)
+      assert(report._forwardProtocol != nil)
+      forwardingReport = report
 
       logger.debug(
-        "Rule evaluating end with \(forwardingReport.duration.formatted(.prettyPrinted())).",
+        "Rule evaluating end with \(report.duration.formatted(.prettyPrinted())).",
         metadata: metadata
       )
-      logger.debug(
-        "Rule matched - \(forwardingReport.forwardingRule ?? "FINAL")", metadata: metadata
-      )
+      logger.debug("Rule matched - \(report.forwardingRule ?? "FINAL")", metadata: metadata)
+
+      span.updateAttributes { attributes in
+        attributes["rule.lookup.earliest_begin_date"] = report.earliestBeginDate.formatted()
+        attributes["rule.lookup.duration"] = report.duration.seconds
+        attributes["rule.forward_protocol"] = report.forwardProtocol
+        attributes["rule.description"] = report.forwardingRule
+      }
+      span.setStatus(.init(code: .ok))
     }
   }
 
@@ -235,7 +259,7 @@ extension Connection {
     proc: any ProcessReporting, resolver: any Resolver, rules: any RulesEngine,
     eventLoop: any EventLoop
   ) async throws {
-    try await withSpan("forward-protocol lookup") { _ in
+    try await withSpan("forward-protocol lookup") { span in
       try await withThrowingTaskGroup(of: Void.self) { g in
         g.addTask {
           try await self.processInfoLookup(logger: logger, proc: proc)
@@ -285,6 +309,13 @@ extension Connection {
         "Policy evaluating - \(fallback.name)",
         metadata: metadata
       )
+
+      span.updateAttributes { attributes in
+        attributes["forwarder.lookup.earliest_begin_date"] = earliestBeginDate.formatted()
+        attributes["forwarder.lookup.duration"] = startTime.distance(to: .now()).duration.seconds
+        attributes["forwarder.protocol"] = fallback.name
+      }
+      span.setStatus(.init(code: .ok))
     }
   }
 
