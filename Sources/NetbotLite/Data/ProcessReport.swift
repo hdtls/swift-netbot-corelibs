@@ -19,9 +19,12 @@ public struct ProcessReport: Codable, Hashable, Sendable {
 
   public var program: Program?
 
-  public init(processIdentifier: Int32? = nil, program: Program? = nil) {
+  package init(processIdentifier: Int32?, program: Program?) {
     self.processIdentifier = processIdentifier
     self.program = program
+  }
+
+  package init() {
   }
 }
 

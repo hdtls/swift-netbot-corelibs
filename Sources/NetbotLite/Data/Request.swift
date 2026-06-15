@@ -11,9 +11,14 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Foundation
 import HTTPTypes
 import NEAddressProcessing
+
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+#else
+  import Foundation
+#endif
 
 /// A `Request` object represents a proxy load request.
 @available(SwiftStdlib 6.0, *)
@@ -35,12 +40,12 @@ public struct Request: Codable, Hashable, Sendable {
   /// The HTTP message trailer headers (Trailer / chunked encoding).
   public var trailers: HTTPFields?
 
-  public init(httpRequest: HTTPRequest) {
+  package init(httpRequest: HTTPRequest) {
     self.httpRequest = httpRequest
     self.address = httpRequest.address
   }
 
-  public init(address: Address) {
+  package init(address: Address) {
     self.address = address
   }
 
@@ -90,10 +95,15 @@ extension HTTPRequest {
     guard let hostPart = authority?.split(separator: ":").first else {
       return nil
     }
-    guard percentEncoded else {
-      return hostPart.removingPercentEncoding
-    }
-    return hostPart.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+    #if canImport(FoundationEssentials)
+      let absoluteString = "\(scheme ?? "http")://\(hostPart)"
+      return URL(string: absoluteString)?.host(percentEncoded: percentEncoded)
+    #else
+      guard percentEncoded else {
+        return hostPart.removingPercentEncoding
+      }
+      return hostPart.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+    #endif
   }
 
   /// Returns the port component of the HTTPRequest if present, otherwise returns `nil`.

@@ -66,19 +66,19 @@ public struct DataTransferReport: Codable, Hashable, Sendable {
     /// The number of bytes sent by the application.
     public let sentApplicationByteCount: UInt64
 
-    public init(
-      receivedIPPacketCount: UInt64 = 0,
-      sentIPPacketCount: UInt64 = 0,
-      receivedTransportByteCount: UInt64 = 0,
-      receivedTransportDuplicateByteCount: UInt64 = 0,
-      receivedTransportOutOfOrderByteCount: UInt64 = 0,
-      sentTransportByteCount: UInt64 = 0,
-      retransmittedTransportByteCount: UInt64 = 0,
-      transportSmoothedRTT: Double = 0,
-      transportMinimumRTT: Double = 0,
-      transportRTTVariance: Double = 0,
-      receivedApplicationByteCount: UInt64 = 0,
-      sentApplicationByteCount: UInt64 = 0
+    package init(
+      receivedIPPacketCount: UInt64,
+      sentIPPacketCount: UInt64,
+      receivedTransportByteCount: UInt64,
+      receivedTransportDuplicateByteCount: UInt64,
+      receivedTransportOutOfOrderByteCount: UInt64,
+      sentTransportByteCount: UInt64,
+      retransmittedTransportByteCount: UInt64,
+      transportSmoothedRTT: Double,
+      transportMinimumRTT: Double,
+      transportRTTVariance: Double,
+      receivedApplicationByteCount: UInt64,
+      sentApplicationByteCount: UInt64
     ) {
       self.receivedIPPacketCount = receivedIPPacketCount
       self.sentIPPacketCount = sentIPPacketCount
@@ -92,6 +92,21 @@ public struct DataTransferReport: Codable, Hashable, Sendable {
       self.transportRTTVariance = transportRTTVariance
       self.receivedApplicationByteCount = receivedApplicationByteCount
       self.sentApplicationByteCount = sentApplicationByteCount
+    }
+
+    package init() {
+      self.receivedIPPacketCount = 0
+      self.sentIPPacketCount = 0
+      self.receivedTransportByteCount = 0
+      self.receivedTransportDuplicateByteCount = 0
+      self.receivedTransportOutOfOrderByteCount = 0
+      self.sentTransportByteCount = 0
+      self.retransmittedTransportByteCount = 0
+      self.transportSmoothedRTT = 0
+      self.transportMinimumRTT = 0
+      self.transportRTTVariance = 0
+      self.receivedApplicationByteCount = 0
+      self.sentApplicationByteCount = 0
     }
   }
 
@@ -108,13 +123,19 @@ public struct DataTransferReport: Codable, Hashable, Sendable {
   public var pathReport: PathReport
 
   package init(
-    duration: Duration = .zero,
-    aggregatePathReport: PathReport = .init(),
-    pathReport: PathReport = .init()
+    duration: Duration,
+    aggregatePathReport: PathReport,
+    pathReport: PathReport
   ) {
     self.duration = duration
     self.aggregatePathReport = aggregatePathReport
     self.pathReport = pathReport
+  }
+
+  package init() {
+    self.duration = .zero
+    self.aggregatePathReport = .init()
+    self.pathReport = .init()
   }
 }
 

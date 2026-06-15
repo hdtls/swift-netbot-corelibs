@@ -28,16 +28,13 @@ import Testing
     let report = ProcessReport()
     #expect(report.processIdentifier == nil)
     #expect(report.program == nil)
+
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test func hashableConformance() async throws {
-    let report = ProcessReport(
-      processIdentifier: 52342
-    )
-    let expected = ProcessReport(
-      processIdentifier: 52342
-    )
+    let report = ProcessReport(processIdentifier: 52342, program: nil)
+    let expected = ProcessReport(processIdentifier: 52342, program: nil)
 
     #expect(report == expected)
 
@@ -47,9 +44,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func codableConformance() async throws {
-    let report = ProcessReport(
-      processIdentifier: 52342
-    )
+    let report = ProcessReport(processIdentifier: 52342, program: nil)
 
     let data = try JSONEncoder().encode(report)
     let result = try JSONDecoder().decode(ProcessReport.self, from: data)

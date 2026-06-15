@@ -31,11 +31,11 @@ public struct Response: Codable, Hashable, Sendable {
   /// The HTTP message trailer headers (Trailer / chunked encoding).
   public var trailers: HTTPFields?
 
-  public init(httpResponse: HTTPResponse) {
+  package init(httpResponse: HTTPResponse) {
     self.httpResponse = httpResponse
   }
 
-  public init() {}
+  package init() {}
 }
 
 @available(SwiftStdlib 6.0, *)

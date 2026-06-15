@@ -33,7 +33,7 @@ public struct Program: Hashable, Codable, Sendable {
   /// Indicates the icon TIFF representation data of the application.
   public var iconTIFFRepresentation: Data?
 
-  public init(
+  package init(
     localizedName: String = "",
     bundleURL: URL? = nil,
     executableURL: URL? = nil,

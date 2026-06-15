@@ -27,7 +27,7 @@ import Testing
   func mergeValues() throws {
     let model = V1._ProcessReport()
     model.processIdentifier = 1
-    let report = ProcessReport(processIdentifier: 99999)
+    let report = ProcessReport(processIdentifier: 99999, program: nil)
     model.mergeValues(report)
     #expect(model.processIdentifier == 99999)
   }
@@ -48,10 +48,7 @@ import Testing
       )
       let modelContext = ModelContext(modelContainer)
 
-      let data = ProcessReport(
-        processIdentifier: 63528,
-        program: nil
-      )
+      let data = ProcessReport(processIdentifier: 63528, program: nil)
 
       let model = V1._ProcessReport()
       model.mergeValues(data)
