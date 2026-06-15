@@ -101,7 +101,7 @@ let package = Package(
         .product(name: "NESS", package: "swift-netbot-protoimpl"),
         .product(name: "NEVMESS", package: "swift-netbot-protoimpl"),
       ],
-      exclude: ["DNS", "Profile"]
+      exclude: ["DNS", "Preferences", "Profile"]
     ),
     .target(
       name: "NetbotDashboard",
@@ -182,7 +182,8 @@ let package = Package(
       dependencies: [
         .product(name: "Logging", package: "swift-log"),
         .product(name: "Preference", package: "swift-preference"),
-      ]
+      ],
+      path: "Sources/Netbot/Preferences"
     ),
     .target(
       name: "NetbotProfile",
