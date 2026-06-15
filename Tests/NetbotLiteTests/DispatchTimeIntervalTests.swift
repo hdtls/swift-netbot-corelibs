@@ -22,78 +22,78 @@ import Testing
 
   #if os(Linux) || os(Windows) || os(Android) || os(OpenBSD)
     @available(SwiftStdlib 6.0, *)
-    func distanceCalculate() {
+    @Test func distance() {
       let t2 = DispatchTime(uptimeNanoseconds: 1)
       #expect(t1.distance(to: t2) == .nanoseconds(1))
     }
   #endif
 
-  @available(SwiftStdlib 6.0, *)
-  @Test func prettyPrintSeconds() {
-    var t2 = DispatchTimeInterval.seconds(1)
-    #expect(t2.prettyPrinted == "1 s")
-
-    t2 = DispatchTimeInterval.seconds(1_000_0)
-    #expect(t2.prettyPrinted == "10000 s")
-  }
-
-  @available(SwiftStdlib 6.0, *)
-  @Test func prettyPrintMilliseconds() {
-    var t2 = DispatchTimeInterval.milliseconds(1)
-    #expect(t2.prettyPrinted == "1 ms")
-
-    t2 = .milliseconds(999)
-    #expect(t2.prettyPrinted == "999 ms")
-
-    t2 = .milliseconds(1_000)
-    #expect(t2.prettyPrinted == "1 s")
-
-    t2 = .milliseconds(1_999)
-    #expect(t2.prettyPrinted == "1 s")
-  }
-
-  @available(SwiftStdlib 6.0, *)
-  @Test func prettyPrintMicroseconds() {
-    var t2 = DispatchTimeInterval.microseconds(1)
-    #expect(t2.prettyPrinted == "1 µs")
-
-    t2 = .microseconds(999)
-    #expect(t2.prettyPrinted == "999 µs")
-
-    t2 = .microseconds(1_000)
-    #expect(t2.prettyPrinted == "1 ms")
-
-    t2 = .microseconds(1_999)
-    #expect(t2.prettyPrinted == "1 ms")
-
-    t2 = .microseconds(1_000_000)
-    #expect(t2.prettyPrinted == "1 s")
-
-    t2 = .microseconds(1_999_999)
-    #expect(t2.prettyPrinted == "1 s")
-  }
-
-  @available(SwiftStdlib 6.0, *)
-  @Test func prettyPrintNanoseconds() {
-    var t2 = DispatchTimeInterval.nanoseconds(1)
-    #expect(t2.prettyPrinted == "1 ns")
-
-    t2 = .nanoseconds(999)
-    #expect(t2.prettyPrinted == "999 ns")
-
-    t2 = .nanoseconds(1_000)
-    #expect(t2.prettyPrinted == "1 µs")
-
-    t2 = .nanoseconds(1_999)
-    #expect(t2.prettyPrinted == "1 µs")
-
-    t2 = .nanoseconds(1_000_000)
-    #expect(t2.prettyPrinted == "1 ms")
-
-    t2 = .nanoseconds(1_999_999)
-    #expect(t2.prettyPrinted == "1 ms")
-
-    t2 = .nanoseconds(1_000_000_000)
-    #expect(t2.prettyPrinted == "1 s")
-  }
+  //  @available(SwiftStdlib 6.0, *)
+  //  @Test func prettyPrintSeconds() {
+  //    var t2 = DispatchTimeInterval.seconds(1)
+  //    #expect(t2.prettyPrinted == "1 s")
+  //
+  //    t2 = DispatchTimeInterval.seconds(1_000_0)
+  //    #expect(t2.prettyPrinted == "10000 s")
+  //  }
+  //
+  //  @available(SwiftStdlib 6.0, *)
+  //  @Test func prettyPrintMilliseconds() {
+  //    var t2 = DispatchTimeInterval.milliseconds(1)
+  //    #expect(t2.prettyPrinted == "1 ms")
+  //
+  //    t2 = .milliseconds(999)
+  //    #expect(t2.prettyPrinted == "999 ms")
+  //
+  //    t2 = .milliseconds(1_000)
+  //    #expect(t2.prettyPrinted == "1 s")
+  //
+  //    t2 = .milliseconds(1_999)
+  //    #expect(t2.prettyPrinted == "1 s")
+  //  }
+  //
+  //  @available(SwiftStdlib 6.0, *)
+  //  @Test func prettyPrintMicroseconds() {
+  //    var t2 = DispatchTimeInterval.microseconds(1)
+  //    #expect(t2.prettyPrinted == "1 µs")
+  //
+  //    t2 = .microseconds(999)
+  //    #expect(t2.prettyPrinted == "999 µs")
+  //
+  //    t2 = .microseconds(1_000)
+  //    #expect(t2.prettyPrinted == "1 ms")
+  //
+  //    t2 = .microseconds(1_999)
+  //    #expect(t2.prettyPrinted == "1 ms")
+  //
+  //    t2 = .microseconds(1_000_000)
+  //    #expect(t2.prettyPrinted == "1 s")
+  //
+  //    t2 = .microseconds(1_999_999)
+  //    #expect(t2.prettyPrinted == "1 s")
+  //  }
+  //
+  //  @available(SwiftStdlib 6.0, *)
+  //  @Test func prettyPrintNanoseconds() {
+  //    var t2 = DispatchTimeInterval.nanoseconds(1)
+  //    #expect(t2.prettyPrinted == "1 ns")
+  //
+  //    t2 = .nanoseconds(999)
+  //    #expect(t2.prettyPrinted == "999 ns")
+  //
+  //    t2 = .nanoseconds(1_000)
+  //    #expect(t2.prettyPrinted == "1 µs")
+  //
+  //    t2 = .nanoseconds(1_999)
+  //    #expect(t2.prettyPrinted == "1 µs")
+  //
+  //    t2 = .nanoseconds(1_000_000)
+  //    #expect(t2.prettyPrinted == "1 ms")
+  //
+  //    t2 = .nanoseconds(1_999_999)
+  //    #expect(t2.prettyPrinted == "1 ms")
+  //
+  //    t2 = .nanoseconds(1_000_000_000)
+  //    #expect(t2.prettyPrinted == "1 s")
+  //  }
 }

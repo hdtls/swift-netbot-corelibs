@@ -21,6 +21,7 @@ import Tracing
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
+  import FoundationInternationalization
 #else
   import Foundation
 #endif
@@ -79,16 +80,95 @@ extension Connection {
     try await withSpan("dns query") { _ in
       let earliestBeginDate = Date.now
       let startTime = DispatchTime.now()
-      let hostname: String
 
       let address = originalRequest?.address
       let port = originalRequest?.port ?? 0
 
+      let dnsResolutionReport: DNSResolutionReport
       switch address {
       case .hostPort(let host, _):
         switch host {
-        case .name(let name):
-          hostname = name
+        case .name(let hostname):
+          // Do actual query in a separated task the promise wait until
+          // first success result received.
+          let promise = eventLoop.makePromise(of: Void.self)
+          Task {
+            await withTaskGroup(of: Result<[DNSResolutionReport.Resolution], any Error>.self) { g in
+              g.addTask {
+                do {
+                  let startTime = DispatchTime.now()
+                  let addresses = try await resolver.initiateAAAAQuery(host: hostname, port: port)
+                    .get()
+
+                  return .success([
+                    DNSResolutionReport.Resolution(
+                      source: .query,
+                      duration: startTime.distance(to: .now()).duration,
+                      dnsProtocol: .udp,
+                      endpoints: addresses.compactMap { try? $0.asAddress() }
+                    )
+                  ])
+                } catch {
+                  return .failure(error)
+                }
+              }
+
+              g.addTask {
+                do {
+                  let startTime = DispatchTime.now()
+                  let addresses = try await resolver.initiateAQuery(host: hostname, port: port)
+                    .get()
+
+                  return .success([
+                    DNSResolutionReport.Resolution(
+                      source: .query,
+                      duration: startTime.distance(to: .now()).duration,
+                      dnsProtocol: .udp,
+                      endpoints: addresses.compactMap { try? $0.asAddress() }
+                    )
+                  ])
+                } catch {
+                  return .failure(error)
+                }
+              }
+
+              var lastError: (any Error)?
+
+              for await resolution in g {
+                do {
+                  let resolutions: [DNSResolutionReport.Resolution] = try resolution.get()
+                  guard !resolutions.map(\.endpoints).joined().isEmpty else { continue }
+                  withMutation(keyPath: \.dnsResolutionReport) {
+                    $dnsResolutionReport.withLock {
+                      if $0 == nil {
+                        $0 = DNSResolutionReport(
+                          earliestBeginDate: earliestBeginDate,
+                          duration: .zero,
+                          resolutions: resolutions
+                        )
+                      } else {
+                        $0?.resolutions.append(contentsOf: resolutions)
+                      }
+                    }
+                  }
+                  promise.succeed()
+                } catch {
+                  lastError = error
+                }
+              }
+
+              if let lastError {
+                // Failed when both DNS resolutions is empty and an error is occured.
+                access(keyPath: \.dnsResolutionReport)
+                if $dnsResolutionReport.withLock({ $0?.resolutions.isEmpty ?? true }) {
+                  promise.fail(lastError)
+                }
+              }
+            }
+          }
+          try await promise.futureResult.get()
+          // Once resolution completed successfully the `self.dnsResolutionReport`
+          dnsResolutionReport = self.dnsResolutionReport!
         case .ipv4, .ipv6:
           dnsResolutionReport = DNSResolutionReport(
             earliestBeginDate: earliestBeginDate,
@@ -102,7 +182,6 @@ extension Connection {
               )
             ]
           )
-          return
         }
       case .unix:
         dnsResolutionReport = DNSResolutionReport(
@@ -110,7 +189,6 @@ extension Connection {
           duration: startTime.distance(to: .now()).duration,
           resolutions: []
         )
-        return
       case .url:
         // Not supported yet.
         dnsResolutionReport = DNSResolutionReport(
@@ -118,97 +196,18 @@ extension Connection {
           duration: startTime.distance(to: .now()).duration,
           resolutions: []
         )
-        return
       case .none:
         dnsResolutionReport = DNSResolutionReport(
           earliestBeginDate: earliestBeginDate,
           duration: startTime.distance(to: .now()).duration,
           resolutions: []
         )
-        return
       }
 
-      // Do actual query in a separated task the promise wait until
-      // first success result received.
-      let promise = eventLoop.makePromise(of: Void.self)
-      Task {
-        await withTaskGroup(of: Result<[DNSResolutionReport.Resolution], any Error>.self) { g in
-          g.addTask {
-            do {
-              let startTime = DispatchTime.now()
-              let addresses = try await resolver.initiateAAAAQuery(host: hostname, port: port)
-                .get()
-
-              return .success([
-                DNSResolutionReport.Resolution(
-                  source: .query,
-                  duration: startTime.distance(to: .now()).duration,
-                  dnsProtocol: .udp,
-                  endpoints: addresses.compactMap { try? $0.asAddress() }
-                )
-              ])
-            } catch {
-              return .failure(error)
-            }
-          }
-
-          g.addTask {
-            do {
-              let startTime = DispatchTime.now()
-              let addresses = try await resolver.initiateAQuery(host: hostname, port: port)
-                .get()
-
-              return .success([
-                DNSResolutionReport.Resolution(
-                  source: .query,
-                  duration: startTime.distance(to: .now()).duration,
-                  dnsProtocol: .udp,
-                  endpoints: addresses.compactMap { try? $0.asAddress() }
-                )
-              ])
-            } catch {
-              return .failure(error)
-            }
-          }
-
-          var lastError: (any Error)?
-
-          for await resolution in g {
-            do {
-              let resolutions: [DNSResolutionReport.Resolution] = try resolution.get()
-              guard !resolutions.map(\.endpoints).joined().isEmpty else { continue }
-              withMutation(keyPath: \.dnsResolutionReport) {
-                $dnsResolutionReport.withLock {
-                  if $0 == nil {
-                    $0 = DNSResolutionReport(
-                      earliestBeginDate: earliestBeginDate,
-                      duration: .zero,
-                      resolutions: resolutions
-                    )
-                  } else {
-                    $0?.resolutions.append(contentsOf: resolutions)
-                  }
-                }
-              }
-              promise.succeed()
-            } catch {
-              lastError = error
-            }
-          }
-
-          if let lastError {
-            // Failed when both DNS resolutions is empty and an error is occured.
-            access(keyPath: \.dnsResolutionReport)
-            if $dnsResolutionReport.withLock({ $0?.resolutions.isEmpty ?? true }) {
-              promise.fail(lastError)
-            }
-          }
-        }
-      }
-      try await promise.futureResult.get()
+      self.dnsResolutionReport = dnsResolutionReport
 
       logger.debug(
-        "DNS evaluating end with \(startTime.distance(to: .now()).prettyPrinted).",
+        "DNS evaluating end with \(dnsResolutionReport.duration.formatted(.prettyPrinted())).",
         metadata: metadata
       )
     }
@@ -216,21 +215,18 @@ extension Connection {
 
   func ruleLookup(logger: Logger, rulesEngine: any RulesEngine) async throws {
     await withSpan("forwarding-rule lookup") { _ in
-      let startTime = DispatchTime.now()
-
-      var forwardingReport = await rulesEngine.executeAllRules(connection: self)
-      let duration = startTime.distance(to: .now())
-      forwardingReport.duration = duration.duration
+      let forwardingReport = await rulesEngine.executeAllRules(connection: self)
       assert(forwardingReport._forwardingRule != nil)
       assert(forwardingReport._forwardProtocol != nil)
       self.forwardingReport = forwardingReport
 
       logger.debug(
-        "Rule evaluating end with \(duration.prettyPrinted).",
+        "Rule evaluating end with \(forwardingReport.duration.formatted(.prettyPrinted())).",
         metadata: metadata
       )
       logger.debug(
-        "Rule matched - \(forwardingReport.forwardingRule ?? "FINAL")", metadata: metadata)
+        "Rule matched - \(forwardingReport.forwardingRule ?? "FINAL")", metadata: metadata
+      )
     }
   }
 

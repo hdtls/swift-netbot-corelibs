@@ -13,6 +13,13 @@
 
 import Dispatch
 
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+  import FoundationInternationalization
+#else
+  import Foundation
+#endif
+
 // remove when available to all platforms
 #if os(Linux) || os(Windows) || os(Android) || os(OpenBSD)
   extension DispatchTime {
@@ -52,41 +59,12 @@ extension DispatchTimeInterval {
     #endif
     }
   }
+}
 
-  var prettyPrinted: String {
-    switch self {
-    case .seconds(let int):
-      return "\(int) s"
-    case .milliseconds(let int):
-      guard int >= 1_000 else {
-        return "\(int) ms"
-      }
-      return "\(int / 1_000) s"
-    case .microseconds(let int):
-      guard int >= 1_000 else {
-        return "\(int) µs"
-      }
-      guard int >= 1_000_000 else {
-        return "\(int / 1_000) ms"
-      }
-      return "\(int / 1_000_000) s"
-    case .nanoseconds(let int):
-      guard int >= 1_000 else {
-        return "\(int) ns"
-      }
-      guard int >= 1_000_000 else {
-        return "\(int / 1_000) µs"
-      }
-      guard int >= 1_000_000_000 else {
-        return "\(int / 1_000_000) ms"
-      }
-      return "\(int / 1_000_000_000) s"
-    case .never:
-      return "n/a"
-    #if canImport(Darwin)
-      @unknown default:
-        return "n/a"
-    #endif
-    }
+@available(SwiftStdlib 6.0, *)
+extension FormatStyle where Self == Duration.UnitsFormatStyle {
+
+  static func prettyPrinted() -> Self {
+    .init(allowedUnits: [.seconds, .milliseconds, .microseconds, .nanoseconds], width: .narrow)
   }
 }

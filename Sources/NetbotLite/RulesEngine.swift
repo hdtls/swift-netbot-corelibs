@@ -123,7 +123,13 @@ public protocol RulesEngine: Sendable {
       $0[host] = task
       return task
     }
-    return await task.value
+
+    // We cache task here, so we need update `earliestBeginDate` and `duration`
+    // to prevent cache value.
+    var report = await task.value
+    report.earliestBeginDate = earliestBeginDate
+    report.duration = startTime.distance(to: .now()).duration
+    return report
   }
 }
 
