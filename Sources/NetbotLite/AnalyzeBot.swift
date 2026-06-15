@@ -11,7 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Dispatch
 import Logging
 import NEAddressProcessing
 import NEHTTP
@@ -41,7 +40,7 @@ import Tracing
 ///
 /// For current version we support start HTTP and SOCKS as local proxy servers if possible.
 @available(SwiftStdlib 6.0, *)
-@Lockable public class AnalyzeBot: @unchecked Sendable {
+@Lockable final public class AnalyzeBot: Sendable {
 
   /// Logger object used to log messages.
   public let logger: Logger
@@ -50,57 +49,57 @@ import Tracing
 
   /// Address of web proxy (HTTP/HTTPS) server will bind if present.
   @LockableTracked(accessors: .get)
-  final public var webProxyListenAddress: SocketAddress
+  public var webProxyListenAddress: SocketAddress
 
   /// Address of SOCKS proxy server will bind if present.
   @LockableTracked(accessors: .get)
-  final public var socksProxyListenAddress: SocketAddress
+  public var socksProxyListenAddress: SocketAddress
 
   /// The outbound mode control how requests will be process.
   @LockableTracked(accessors: .get)
-  final public var outboundMode: OutboundMode = .direct
+  public var outboundMode: OutboundMode = .direct
 
   /// Forward protocol used in global proxy outbound mode.
   @LockableTracked(accessors: .get)
-  final public var forwardProtocol: any ForwardProtocolConvertible = .direct
+  public var forwardProtocol: any ForwardProtocolConvertible = .direct
 
   /// The rules used to make outbound stream.
-  final public var forwardingRules: [any ForwardingRuleConvertible] {
+  public var forwardingRules: [any ForwardingRuleConvertible] {
     self.rulesEngine.forwardingRules
   }
 
   /// A set of enabled capabilities, default is empty.
   @LockableTracked(accessors: .get)
-  final public var capabilities: CapabilityFlags = []
+  public var capabilities: CapabilityFlags = []
 
   /// The dns resolver.
   @LockableTracked(accessors: .get)
-  final public var resolver: any Resolver
+  public var resolver: any Resolver
 
   /// The RulesEngine evaluates the Rules.
   @LockableTracked(accessors: .get)
-  final public var rulesEngine: any RulesEngine
+  public var rulesEngine: any RulesEngine
 
   /// A service help detect the process that the current connection is created.
   @LockableTracked(accessors: .get)
-  final public var processInfo: any ProcessReporting = DefaultProcessReporting()
+  public var processInfo: any ProcessReporting = DefaultProcessReporting()
 
   /// A publisher publish connection states.
   @LockableTracked(accessors: .get)
-  final public var connectionPublisher: any ConnectionPublisher = DefaultConnectionPublisher()
+  public var connectionPublisher: any ConnectionPublisher = DefaultConnectionPublisher()
 
   /// DNS names that allow HTTPS decryption.
   @LockableTracked(accessors: .get)
-  final public var decryptionDNSNames: [String] = []
+  public var decryptionDNSNames: [String] = []
 
   /// `NIOSSLPKCS12Bundle` used to decrypt HTTPS connections.
   @LockableTracked(accessors: .get)
-  final public var decryptionSSLPKCS12Bundle: NIOSSLPKCS12Bundle? = nil
+  public var decryptionSSLPKCS12Bundle: NIOSSLPKCS12Bundle? = nil
 
   /// True if this `AnalyzeBot` is currently active. `isActive` is defined as the period
   /// of time after the `run` and before `shutdownGracefully` has fired.
   @LockableTracked(accessors: .get)
-  final public var isActive: Bool = false
+  public var isActive: Bool = false
 
   private var quiescing: [ServerQuiescingHelper] = []
 
