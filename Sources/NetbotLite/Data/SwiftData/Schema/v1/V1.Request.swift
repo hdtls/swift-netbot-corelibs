@@ -55,6 +55,8 @@ extension V1 {
       /// The data is sent as the message body of the request.
       @Attribute(.externalStorage) public var body: Data?
 
+      public var connection: _Connection?
+
       public init() {}
     }
   #else
@@ -80,6 +82,8 @@ extension V1 {
 
       /// The data is sent as the message body of the request.
       public var body: Data?
+
+      public var connection: _Connection?
 
       public init() {}
     }

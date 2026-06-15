@@ -43,12 +43,15 @@ import NEAddressProcessing
       public var taskIdentifier: UInt64 = 0
 
       /// The persistent original request of the connection.
+      @Relationship(deleteRule: .cascade, inverse: \_Request.connection)
       public var originalRequest: _Request?
 
       /// The persistent current request of the connection.
+      @Relationship(deleteRule: .cascade, inverse: \_Request.connection)
       public var currentRequest: _Request?
 
       /// The persistent response of the connection.
+      @Relationship(deleteRule: .cascade, inverse: \_Response.connection)
       public var response: _Response?
 
       /// The date when the connection begin.
