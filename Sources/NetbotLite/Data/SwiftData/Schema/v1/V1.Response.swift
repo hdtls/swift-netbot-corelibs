@@ -39,7 +39,7 @@ extension V1 {
 
       /// The HTTP message trailer headers (Trailer / chunked encoding).
       @Attribute(.transformable(by: SQLValueTransformer<HTTPFields>.self))
-      public var trailers: HTTPFields?
+      public var trailerHTTPFields: HTTPFields?
 
       /// The data is sent as the message body of the request.
       @Attribute(.externalStorage)
@@ -59,7 +59,7 @@ extension V1 {
       public var httpResponse: HTTPResponse?
 
       /// The HTTP message trailer headers (Trailer / chunked encoding).
-      public var trailers: HTTPFields?
+      public var trailerHTTPFields: HTTPFields?
 
       /// The data is sent as the message body of the request.
       public var body: Data?
@@ -79,14 +79,14 @@ extension V1._Response {
   public func mergeValues(_ data: Response) {
     #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
       httpResponse = data.httpResponse
-      trailers = data.trailers
+      trailerHTTPFields = data.trailerHTTPFields
       body = data.body
     #else
       if httpResponse != data.httpResponse {
         httpResponse = data.httpResponse
       }
-      if trailers != data.trailers {
-        trailers = data.trailers
+      if trailerHTTPFields != data.trailerHTTPFields {
+        trailerHTTPFields = data.trailerHTTPFields
       }
       if body != data.body {
         body = data.body

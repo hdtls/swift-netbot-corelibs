@@ -20,7 +20,7 @@ import NEAddressProcessing
   import Foundation
 #endif
 
-/// A `Request` object represents a proxy load request.
+/// A `Request` object represents a proxy request.
 @available(SwiftStdlib 6.0, *)
 public struct Request: Codable, Hashable, Sendable {
 
@@ -38,13 +38,17 @@ public struct Request: Codable, Hashable, Sendable {
   public var body: Data?
 
   /// The HTTP message trailer headers (Trailer / chunked encoding).
-  public var trailers: HTTPFields?
+  public var trailerHTTPFields: HTTPFields?
 
+  /// Create an instance of `Request` from `HTTPRequest`.
+  /// - Parameter httpRequest: Original HTTP request.
   package init(httpRequest: HTTPRequest) {
     self.httpRequest = httpRequest
     self.address = httpRequest.address
   }
 
+  /// Create an instance of `Request` from `Address`.
+  /// - Parameter address: Request address.
   package init(address: Address) {
     self.address = address
   }
@@ -73,13 +77,16 @@ public struct Request: Codable, Hashable, Sendable {
 @available(SwiftStdlib 6.0, *)
 extension Request {
 
+  /// Persistent model class
   public typealias Model = V1._Request
 
+  /// Create an instance of `Request` from persistent model.
+  /// - Parameter persistentModel: Request persistent model.
   public init(persistentModel: Model) {
     httpRequest = persistentModel.httpRequest
     address = persistentModel.address
     body = persistentModel.body
-    trailers = persistentModel.trailers
+    trailerHTTPFields = persistentModel.trailerHTTPFields
   }
 }
 

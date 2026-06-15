@@ -29,7 +29,7 @@ public struct Response: Codable, Hashable, Sendable {
   public var body: Data?
 
   /// The HTTP message trailer headers (Trailer / chunked encoding).
-  public var trailers: HTTPFields?
+  public var trailerHTTPFields: HTTPFields?
 
   package init(httpResponse: HTTPResponse) {
     self.httpResponse = httpResponse
@@ -41,11 +41,14 @@ public struct Response: Codable, Hashable, Sendable {
 @available(SwiftStdlib 6.0, *)
 extension Response {
 
+  /// Persistent model class.
   public typealias Model = V1._Response
 
+  /// Create an instance of `Response` from persistent model.
+  /// - Parameter persistentModel: Response persistent model.
   public init(persistentModel: Model) {
     httpResponse = persistentModel.httpResponse
-    trailers = persistentModel.trailers
+    trailerHTTPFields = persistentModel.trailerHTTPFields
     body = persistentModel.body
   }
 }

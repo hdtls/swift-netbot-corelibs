@@ -44,7 +44,7 @@ extension V1 {
 
       /// The HTTP message trailer headers (Trailer / chunked encoding).
       @Attribute(.transformable(by: SQLValueTransformer<HTTPFields>.self))
-      public var trailers: HTTPFields?
+      public var trailerHTTPFields: HTTPFields?
 
       /// The host of the receiver.
       public var hostname: String?
@@ -72,7 +72,7 @@ extension V1 {
       public var address: Address?
 
       /// The HTTP message trailer headers (Trailer / chunked encoding).
-      public var trailers: HTTPFields?
+      public var trailerHTTPFields: HTTPFields?
 
       /// The host of the receiver.
       public var hostname: String?
@@ -117,7 +117,7 @@ extension V1._Request {
     #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
       self.httpRequest = data.httpRequest
       self.address = data.address
-      self.trailers = data.trailers
+      self.trailerHTTPFields = data.trailerHTTPFields
       self.body = data.body
       self.hostname = data.host(percentEncoded: false)
       self.absoluteURLString = absoluteURLString
@@ -128,8 +128,8 @@ extension V1._Request {
       if self.address != data.address {
         self.address = data.address
       }
-      if self.trailers != data.trailers {
-        self.trailers = data.trailers
+      if self.trailerHTTPFields != data.trailerHTTPFields {
+        self.trailerHTTPFields = data.trailerHTTPFields
       }
       if self.hostname != data.host(percentEncoded: false) {
         self.hostname = data.host(percentEncoded: false)

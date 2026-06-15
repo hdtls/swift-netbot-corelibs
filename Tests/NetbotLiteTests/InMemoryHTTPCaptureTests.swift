@@ -82,12 +82,12 @@ struct InMemoryHTTPCaptureTests {
     let capture = InMemoryHTTPCapture<HTTPRequestHead>(connection: connection, captureFilters: [])
     let channel = await NIOAsyncTestingChannel(handler: capture)
     try await channel.writeInbound(HTTPPart<HTTPRequestHead, ByteBuffer>.end(nil))
-    #expect(connection.currentRequest?.trailers == nil)
+    #expect(connection.currentRequest?.trailerHTTPFields == nil)
 
     try await channel.writeInbound(
       HTTPPart<HTTPRequestHead, ByteBuffer>.end(["Server-Timing": "custom-metric;dur=123.4"]))
     #expect(
-      connection.currentRequest?.trailers == [
+      connection.currentRequest?.trailerHTTPFields == [
         HTTPField.Name("Server-Timing")!: "custom-metric;dur=123.4"
       ]
     )
@@ -136,12 +136,14 @@ struct InMemoryHTTPCaptureTests {
     let capture = InMemoryHTTPCapture<HTTPResponseHead>(connection: connection, captureFilters: [])
     let channel = await NIOAsyncTestingChannel(handler: capture)
     try await channel.writeInbound(HTTPPart<HTTPResponseHead, ByteBuffer>.end(nil))
-    #expect(connection.response?.trailers == nil)
+    #expect(connection.response?.trailerHTTPFields == nil)
 
     try await channel.writeInbound(
       HTTPPart<HTTPResponseHead, ByteBuffer>.end(["Server-Timing": "custom-metric;dur=123.4"]))
     #expect(
-      connection.response?.trailers == [HTTPField.Name("Server-Timing")!: "custom-metric;dur=123.4"]
+      connection.response?.trailerHTTPFields == [
+        HTTPField.Name("Server-Timing")!: "custom-metric;dur=123.4"
+      ]
     )
   }
 }

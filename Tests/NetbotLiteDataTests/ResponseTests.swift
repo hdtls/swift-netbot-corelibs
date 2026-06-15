@@ -30,12 +30,12 @@ import Testing
     var source = Response(httpResponse: httpResponse)
     #expect(source.httpResponse == httpResponse)
     #expect(source.body == nil)
-    #expect(source.trailers == nil)
+    #expect(source.trailerHTTPFields == nil)
 
     source = Response()
     #expect(source.httpResponse == nil)
     #expect(source.body == nil)
-    #expect(source.trailers == nil)
+    #expect(source.trailerHTTPFields == nil)
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -72,11 +72,11 @@ import Testing
   @Test func initializeResponseFromPersistentModel() async throws {
     let persistentModel = V1._Response()
     persistentModel.httpResponse = .init(status: .ok)
-    persistentModel.trailers = [.init("Digest")!: "sha-256=abc123..."]
+    persistentModel.trailerHTTPFields = [.init("Digest")!: "sha-256=abc123..."]
 
     let response = Response(persistentModel: persistentModel)
     #expect(response.httpResponse == .init(status: .ok))
     #expect(response.body == persistentModel.body)
-    #expect(response.trailers == persistentModel.trailers)
+    #expect(response.trailerHTTPFields == persistentModel.trailerHTTPFields)
   }
 }

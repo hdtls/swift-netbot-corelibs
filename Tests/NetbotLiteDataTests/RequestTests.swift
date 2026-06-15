@@ -65,13 +65,13 @@ import Testing
     #expect(source.httpRequest == httpRequest)
     #expect(source.address == httpRequest.address)
     #expect(source.body == nil)
-    #expect(source.trailers == nil)
+    #expect(source.trailerHTTPFields == nil)
 
     source = Request(address: .hostPort(host: "swift.org", port: 443))
     #expect(source.httpRequest == nil)
     #expect(source.address == .hostPort(host: "swift.org", port: 443))
     #expect(source.body == nil)
-    #expect(source.trailers == nil)
+    #expect(source.trailerHTTPFields == nil)
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -166,13 +166,13 @@ import Testing
     source.httpRequest = httpRequest
     source.address = .hostPort(host: "swift.org", port: 443)
     source.body = Data([0])
-    source.trailers = [.init("Digest")!: "sha-256=abc123..."]
+    source.trailerHTTPFields = [.init("Digest")!: "sha-256=abc123..."]
 
     let data = Request(persistentModel: source)
 
     #expect(data.httpRequest == httpRequest)
     #expect(data.address == .hostPort(host: "swift.org", port: 443))
     #expect(data.body == Data([0]))
-    #expect(data.trailers == source.trailers)
+    #expect(data.trailerHTTPFields == source.trailerHTTPFields)
   }
 }

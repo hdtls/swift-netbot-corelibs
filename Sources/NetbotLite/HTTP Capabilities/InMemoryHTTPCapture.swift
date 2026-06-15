@@ -95,13 +95,13 @@ final class InMemoryHTTPCapture<HeadT: Equatable & Sendable>: ChannelInboundHand
       if HeadT.self == HTTPRequestHead.self {
         connection.withMutation(keyPath: \.currentRequest) {
           connection.$currentRequest.withLock {
-            $0?.trailers = trailers
+            $0?.trailerHTTPFields = trailers
           }
         }
       } else {
         connection.withMutation(keyPath: \.response) {
           connection.$response.withLock {
-            $0?.trailers = trailers
+            $0?.trailerHTTPFields = trailers
           }
         }
       }
