@@ -28,48 +28,112 @@ import SynchronizationExtras
 @available(SwiftStdlib 6.0, *)
 public let SQL_lastInsertedID = Atomic<UInt64>(0)
 
+/// A model representing a single network connection lifecycle.
+///
+/// `Connection` captures all observable metadata for a request/response
+/// exchange as it moves through DNS resolution, connection establishment,
+/// optional TLS negotiation, forwarding, and data transfer phases.
+///
+/// It is designed to be:
+/// - **Observable**: properties are tracked using observation macros
+/// - **Thread-safe**: conforms to `Sendable` with controlled mutation points
+/// - **Traceable**: carries identifiers and reports for each pipeline stage
+///
+/// A `Connection` typically lives from the moment a request is created
+/// until the response is fully received or the connection is terminated.
 @available(SwiftStdlib 6.0, *)
 @ObservationLockable @DebugDescription final public class Connection: Sendable {
 
-  /// The identifier of the connection.
+  /// A unique identifier assigned to this connection task.
+  ///
+  /// This value is typically used to correlate logs, reports, and
+  /// internal tracking for a single connection lifecycle.
   public let taskIdentifier: UInt64
 
-  /// The original request of the sesion.
+  /// The original request that initiated this connection.
+  ///
+  /// This value is set once at the beginning of the connection lifecycle
+  /// and typically remains unchanged even if `currentRequest` is modified.
   public var originalRequest: Request? = nil
 
-  /// The current request of the connection.
+  /// The most recent request associated with this connection.
+  ///
+  /// This may change over time as redirects, rewrites, or proxy logic
+  /// updates the active request being processed.
   @ObservationLockableTracked(accessLevel: .package)
   public var currentRequest: Request? = nil
 
+  /// The response received for this connection, if available.
+  ///
+  /// This is typically set after the connection completes or when
+  /// a partial response is received from upstream.
   @ObservationLockableTracked(accessLevel: .package)
   public var response: Response? = nil
 
+  /// The earliest time at which this connection was initiated.
+  ///
+  /// Used for latency measurement and lifecycle tracking.
   public var earliestBeginDate: Date = .now
 
+  /// The total duration of the connection lifecycle.
+  ///
+  /// This value is typically updated when the connection finishes,
+  /// representing total time spent from start to completion.
   public var duration: Duration = .zero
 
+  /// A human-readable description of the connection task.
+  ///
+  /// This can include debugging context such as URL, host,
+  /// routing decision, or internal pipeline stage.
   public var taskDescription: String = ""
 
-  /// A bool value determine whether this sesion transport over TLS.
+  /// Indicates whether the connection is secured using TLS.
+  ///
+  /// When `true`, the connection is expected to be encrypted
+  /// using TLS/SSL at the transport layer.
   public var tls: Bool = false
 
-  /// Access the current state of the connection
+  /// The current lifecycle state of the connection.
+  ///
+  /// Represents the progression of the connection through stages
+  /// such as establishing, active, completed, failed or cancelled.
   public var state: State = .establishing
 
+  /// DNS resolution report associated with this connection, if any.
+  ///
+  /// Contains information such as resolved addresses, lookup timing,
+  /// and resolution results used for establishing the connection.
   @ObservationLockableTracked(accessLevel: .package)
   public var dnsResolutionReport: DNSResolutionReport? = nil
 
-  /// A establishment report.
+  /// Report describing the connection establishment phase.
+  ///
+  /// Includes timing and metadata for TCP/TLS handshake or equivalent
+  /// transport setup process.
   @ObservationLockableTracked(accessLevel: .package)
   public var establishmentReport: EstablishmentReport? = nil
 
+  /// Report describing forwarding behavior.
+  ///
+  /// Captures routing decisions, proxy forwarding metadata,
+  /// and intermediate transport details.
   public var forwardingReport: ForwardingReport? = nil
 
+  /// Report describing data transfer statistics and progress.
+  ///
+  /// Includes metrics such as bytes sent/received and transfer timing.
   @ObservationLockableTracked(accessLevel: .package)
   public var dataTransferReport: DataTransferReport? = nil
 
+  /// Report describing the originating process of this connection.
+  ///
+  /// Useful for attribution, debugging, and per-process traffic analysis.
   public var processReport: ProcessReport? = nil
 
+  /// Creates a new `Connection` instance.
+  ///
+  /// - Parameter taskIdentifier: A unique identifier for the connection. If not provided,
+  ///   a default identifier is generated using a monotonic counter.
   public init(
     taskIdentifier: UInt64 = SQL_lastInsertedID.wrappingAdd(1, ordering: .relaxed).oldValue
   ) {
@@ -191,8 +255,11 @@ extension Connection: CustomStringConvertible, CustomDebugStringConvertible {
 @available(SwiftStdlib 6.0, *)
 extension Connection {
 
+  /// Persistent model class.
   public typealias Model = V1._Connection
 
+  /// Create a new `Connection`instance.
+  /// - Parameter persistentModel: A persistent model for the connection.
   public convenience init(persistentModel: Model) {
     self.init(taskIdentifier: persistentModel.taskIdentifier)
     self.earliestBeginDate = persistentModel.earliestBeginDate

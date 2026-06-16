@@ -14,7 +14,7 @@
 @available(SwiftStdlib 6.0, *)
 extension Connection {
 
-  /// States a connection may be in
+  /// A enum represents the progression of a `Connection` through stages.
   public enum State: String, CaseIterable, Codable, Hashable, RawRepresentable, Sendable {
 
     /// Establishing connections are actively establishing the connection
