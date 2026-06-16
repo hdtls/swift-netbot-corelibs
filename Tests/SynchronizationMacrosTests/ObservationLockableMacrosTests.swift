@@ -29,27 +29,27 @@
 
             @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
 
-            package nonisolated func access<Member>(keyPath: KeyPath<Contact, Member>) {
+            package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<Contact, __macro_local_6MemberfMu_>) {
               _$observationRegistrar.access(self, keyPath: keyPath)
             }
 
-            package nonisolated func withMutation<Member, MutationResult>(keyPath: KeyPath<Contact, Member>, _ mutation: () throws -> MutationResult) rethrows -> MutationResult {
+            package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<Contact, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
               try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
             }
 
-            private nonisolated func shouldNotifyObservers<Member>(_ lhs: Member, _ rhs: Member) -> Bool {
+            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
               true
             }
 
-            private nonisolated func shouldNotifyObservers<Member: Equatable>(_ lhs: Member, _ rhs: Member) -> Bool {
+            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
               lhs != rhs
             }
 
-            private nonisolated func shouldNotifyObservers<Member: AnyObject>(_ lhs: Member, _ rhs: Member) -> Bool {
+            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
               lhs !== rhs
             }
 
-            private nonisolated func shouldNotifyObservers<Member: Equatable & AnyObject>(_ lhs: Member, _ rhs: Member) -> Bool {
+            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
               lhs != rhs
             }
           }
@@ -66,10 +66,10 @@
             @ObservationLockableTracked
             var familyName: String
 
-            package nonisolated func access<Member>(keyPath: KeyPath<Contact, Member>) {
+            package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<Contact, __macro_local_6MemberfMu_>) {
             }
 
-            package nonisolated func withMutation<Member, MutationResult>(keyPath: KeyPath<Contact, Member>, _ mutation: () throws -> MutationResult) rethrows -> MutationResult {
+            package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<Contact, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
               try mutation()
             }
           }
@@ -100,27 +100,27 @@
 
             @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
 
-            package nonisolated func access<Member>(keyPath: KeyPath<UnLockable, Member>) {
+            package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>) {
               _$observationRegistrar.access(self, keyPath: keyPath)
             }
 
-            package nonisolated func withMutation<Member, MutationResult>(keyPath: KeyPath<UnLockable, Member>, _ mutation: () throws -> MutationResult) rethrows -> MutationResult {
+            package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
               try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
             }
 
-            private nonisolated func shouldNotifyObservers<Member>(_ lhs: Member, _ rhs: Member) -> Bool {
+            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
               true
             }
 
-            private nonisolated func shouldNotifyObservers<Member: Equatable>(_ lhs: Member, _ rhs: Member) -> Bool {
+            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
               lhs != rhs
             }
 
-            private nonisolated func shouldNotifyObservers<Member: AnyObject>(_ lhs: Member, _ rhs: Member) -> Bool {
+            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
               lhs !== rhs
             }
 
-            private nonisolated func shouldNotifyObservers<Member: Equatable & AnyObject>(_ lhs: Member, _ rhs: Member) -> Bool {
+            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
               lhs != rhs
             }
           }
@@ -137,10 +137,10 @@
             let tag: Int = 0
             func prepare() {}
 
-            package nonisolated func access<Member>(keyPath: KeyPath<UnLockable, Member>) {
+            package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>) {
             }
 
-            package nonisolated func withMutation<Member, MutationResult>(keyPath: KeyPath<UnLockable, Member>, _ mutation: () throws -> MutationResult) rethrows -> MutationResult {
+            package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
               try mutation()
             }
           }
@@ -170,27 +170,27 @@
 
             @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
 
-            package nonisolated func access<Member>(keyPath: KeyPath<UnLockable, Member>) {
+            package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>) {
               _$observationRegistrar.access(self, keyPath: keyPath)
             }
 
-            package nonisolated func withMutation<Member, MutationResult>(keyPath: KeyPath<UnLockable, Member>, _ mutation: () throws -> MutationResult) rethrows -> MutationResult {
+            package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
               try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
             }
 
-            private nonisolated func shouldNotifyObservers<Member>(_ lhs: Member, _ rhs: Member) -> Bool {
+            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
               true
             }
 
-            private nonisolated func shouldNotifyObservers<Member: Equatable>(_ lhs: Member, _ rhs: Member) -> Bool {
+            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
               lhs != rhs
             }
 
-            private nonisolated func shouldNotifyObservers<Member: AnyObject>(_ lhs: Member, _ rhs: Member) -> Bool {
+            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
               lhs !== rhs
             }
 
-            private nonisolated func shouldNotifyObservers<Member: Equatable & AnyObject>(_ lhs: Member, _ rhs: Member) -> Bool {
+            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
               lhs != rhs
             }
           }
@@ -205,10 +205,10 @@
             @ObservationLockableTracked var tracked: String
             @ObservationLockableIgnored var ignored: Int
 
-            package nonisolated func access<Member>(keyPath: KeyPath<UnLockable, Member>) {
+            package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>) {
             }
 
-            package nonisolated func withMutation<Member, MutationResult>(keyPath: KeyPath<UnLockable, Member>, _ mutation: () throws -> MutationResult) rethrows -> MutationResult {
+            package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
               try mutation()
             }
           }

@@ -31,38 +31,40 @@ extension ObservationLockableMacro: MemberMacro {
     guard let classDecl = declaration.as(ClassDeclSyntax.self) else {
       return []
     }
+    let memberGeneric = context.makeUniqueName("Member")
+    let mutationGeneric = context.makeUniqueName("MutationResult")
     #if canImport(Darwin) || swift(>=6.3)
       return [
         """
         @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
         """,
         """
-        package nonisolated func access<Member>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), Member>) {
+        package nonisolated func access<\(memberGeneric)>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), \(memberGeneric)>) {
           _$observationRegistrar.access(self, keyPath: keyPath)
         }
         """,
         """
-        package nonisolated func withMutation<Member, MutationResult>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), Member>, _ mutation: () throws -> MutationResult) rethrows -> MutationResult {
+        package nonisolated func withMutation<\(memberGeneric), \(mutationGeneric)>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), \(memberGeneric)>, _ mutation: () throws -> \(mutationGeneric)) rethrows -> \(mutationGeneric) {
           try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
         }
         """,
         """
-        private nonisolated func shouldNotifyObservers<Member>(_ lhs: Member, _ rhs: Member) -> Bool {
+        private nonisolated func shouldNotifyObservers<\(memberGeneric)>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool {
           true
         }
         """,
         """
-        private nonisolated func shouldNotifyObservers<Member: Equatable>(_ lhs: Member, _ rhs: Member) -> Bool {
+        private nonisolated func shouldNotifyObservers<\(memberGeneric): Equatable>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool {
           lhs != rhs
         }
         """,
         """
-        private nonisolated func shouldNotifyObservers<Member: AnyObject>(_ lhs: Member, _ rhs: Member) -> Bool {
+        private nonisolated func shouldNotifyObservers<\(memberGeneric): AnyObject>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool {
           lhs !== rhs
         }
         """,
         """
-        private nonisolated func shouldNotifyObservers<Member: Equatable & AnyObject>(_ lhs: Member, _ rhs: Member) -> Bool {
+        private nonisolated func shouldNotifyObservers<\(memberGeneric): Equatable & AnyObject>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool {
           lhs != rhs
         }
         """,
@@ -70,11 +72,11 @@ extension ObservationLockableMacro: MemberMacro {
     #else
       return [
         """
-        package nonisolated func access<Member>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), Member>) {
+        package nonisolated func access<\(memberGeneric)>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), \(memberGeneric)>) {
         }
         """,
         """
-        package nonisolated func withMutation<Member, MutationResult>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), Member>, _ mutation: () throws -> MutationResult) rethrows -> MutationResult {
+        package nonisolated func withMutation<\(memberGeneric), \(mutationGeneric)>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), \(memberGeneric)>, _ mutation: () throws -> \(mutationGeneric)) rethrows -> \(mutationGeneric) {
           try mutation()
         }
         """,
