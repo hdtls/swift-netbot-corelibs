@@ -132,6 +132,85 @@ import Testing
   }
 
   @available(SwiftStdlib 6.0, *)
+  @Test func hashableConformance() throws {
+    let conn1 = Connection(taskIdentifier: 1)
+    let conn2 = conn1
+    let conn3 = Connection(taskIdentifier: 2)
+
+    #expect(conn1 == conn2)
+    #expect(conn1 != conn3)
+    let set = Set([conn1, conn2, conn3])
+    #expect(set.count == 2)
+  }
+
+  @available(SwiftStdlib 6.0, *)
+  @Test func customDebugDescriptionConformance() throws {
+    let connection = Connection(taskIdentifier: 6)
+    connection.originalRequest = .init(address: .hostPort(host: "192.168.1.2", port: 63532))
+    connection.currentRequest = .init(
+      httpRequest: HTTPRequest.init(
+        method: .get, scheme: "http", authority: "192.168.1.2:63532", path: nil)
+    )
+    connection.response = .init(httpResponse: .init(status: .badRequest))
+    connection.tls = false
+    connection.state = .completed
+    connection.establishmentReport = .init(
+      duration: .seconds(1),
+      attemptStartedAfterInterval: 0,
+      previousAttemptCount: 0,
+      sourceEndpoint: .hostPort(host: "192.168.1.2", port: 63532),
+      usedProxy: true,
+      proxyEndpoint: .hostPort(host: "127.0.0.1", port: 4444),
+      resolutions: [
+        .init(
+          source: .cache,
+          duration: .seconds(0.14),
+          endpointCount: 1,
+          successfulEndpoint: .hostPort(host: "192.168.1.2", port: 63532),
+          preferredEndpoint: .hostPort(host: "192.168.1.2", port: 63532),
+          dnsProtocol: .udp
+        )
+      ]
+    )
+    connection.forwardingReport = .init(
+      earliestBeginDate: .now,
+      duration: .seconds(1),
+      forwardProtocol: "HTTP",
+      forwardingRule: "FINAL"
+    )
+    connection.dataTransferReport = .init(
+      duration: .seconds(12),
+      aggregatePathReport: .init(
+        receivedIPPacketCount: 89,
+        sentIPPacketCount: 123,
+        receivedTransportByteCount: 1_231_231,
+        receivedTransportDuplicateByteCount: 243,
+        receivedTransportOutOfOrderByteCount: 12,
+        sentTransportByteCount: 12_312_314,
+        retransmittedTransportByteCount: 123,
+        transportSmoothedRTT: 23,
+        transportMinimumRTT: 34,
+        transportRTTVariance: 12,
+        receivedApplicationByteCount: 12414,
+        sentApplicationByteCount: 8347
+      ),
+      pathReport: .init()
+    )
+    connection.processReport = .init(
+      processIdentifier: 555,
+      program: Program(
+        localizedName: "t",
+        bundleURL: nil,
+        executableURL: nil,
+        iconTIFFRepresentation: nil
+      )
+    )
+    connection.earliestBeginDate = .distantPast
+
+    #expect(connection.debugDescription == connection.description)
+  }
+
+  @available(SwiftStdlib 6.0, *)
   @Test func persistentModel() {
     let source = Connection.Model.self
     #expect(source == V1._Connection.self)

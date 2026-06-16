@@ -11,7 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import HTTPTypes
 import Synchronization
 import SynchronizationExtras
 
@@ -30,11 +29,7 @@ import SynchronizationExtras
 public let SQL_lastInsertedID = Atomic<UInt64>(0)
 
 @available(SwiftStdlib 6.0, *)
-@ObservationLockable final public class Connection: Identifiable, Sendable {
-
-  public var id: UInt64 {
-    taskIdentifier
-  }
+@ObservationLockable @DebugDescription final public class Connection: Sendable {
 
   /// The identifier of the connection.
   public let taskIdentifier: UInt64
@@ -79,6 +74,25 @@ public let SQL_lastInsertedID = Atomic<UInt64>(0)
     taskIdentifier: UInt64 = SQL_lastInsertedID.wrappingAdd(1, ordering: .relaxed).oldValue
   ) {
     self.taskIdentifier = taskIdentifier
+  }
+}
+
+@available(SwiftStdlib 6.0, *)
+extension Connection: Identifiable {
+  public var id: UInt64 {
+    taskIdentifier
+  }
+}
+
+@available(SwiftStdlib 6.0, *)
+extension Connection: Equatable, Hashable {
+
+  public static func == (lhs: Connection, rhs: Connection) -> Bool {
+    lhs.id == rhs.id
+  }
+
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(id)
   }
 }
 
@@ -143,6 +157,34 @@ extension Connection: Codable {
     try container.encodeIfPresent(forwardingReport, forKey: .forwardingReport)
     try container.encodeIfPresent(dataTransferReport, forKey: .dataTransferReport)
     try container.encodeIfPresent(processReport, forKey: .processReport)
+  }
+}
+
+@available(SwiftStdlib 6.0, *)
+extension Connection: CustomStringConvertible, CustomDebugStringConvertible {
+  public var description: String {
+    """
+    <\(String(describing: Connection.self)): \(ObjectIdentifier(self))> {
+        taskIdentifier = \(taskIdentifier);
+        originalRequest = \(String(describing: originalRequest));
+        currentRequest = \(String(describing: currentRequest));
+        response = \(String(describing: response));
+        earliestBeginDate = \(earliestBeginDate);
+        duration = \(duration);
+        taskDescription = \(taskDescription);
+        tls = \(tls);
+        state = \(state);
+        dnsResolutionReport = \(String(describing: dnsResolutionReport));
+        establishmentReport = \(String(describing: establishmentReport));
+        forwardingReport = \(String(describing: forwardingReport));
+        dataTransferReport = \(String(describing: dataTransferReport));
+        processReport = \(String(describing: processReport));
+    }
+    """
+  }
+
+  public var debugDescription: String {
+    description
   }
 }
 
