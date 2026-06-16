@@ -112,11 +112,11 @@ import Testing
   }
 
   @available(SwiftStdlib 6.0, *)
-  @Test func processInfoLookup() async throws {
+  @Test func processLookup() async throws {
     let connection = Connection()
     connection.establishmentReport = .init()
     try await connection
-      .processInfoLookup(
+      .processLookup(
         logger: .init(label: "test"),
         proc: MockProcessReporting(processReportResult: .success(.init()))
       )
@@ -126,7 +126,7 @@ import Testing
       $0?.sourceEndpoint = .hostPort(host: "127.0.0.1", port: 6232)
     }
     try await connection
-      .processInfoLookup(
+      .processLookup(
         logger: .init(label: "test"),
         proc: MockProcessReporting(processReportResult: .success(.init()))
       )

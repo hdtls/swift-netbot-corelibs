@@ -376,7 +376,11 @@ import Tracing
           attributes["establishment.source"] = "\(sourceEndpoint)"
         }
 
+        // Publish session changes using connection publisher.
         await session.publish(using: connectionPublisher)
+
+        // Update transport metrics.
+        await session.transportMetrics(on: nil)
 
         try await session.protocolLookup(
           logger: logger,
@@ -389,48 +393,17 @@ import Tracing
         )
 
         // Create peer channel.
-        let forwardProtocol =
-          session.forwardingReport?._forwardProtocol as? ForwardProtocol ?? .direct
-
+        let forwardProtocol = session.forwardingReport.asForwardProtocol()
         let outputStream = try await forwardProtocol.makeConnection(
           logger: logger, connection: session, on: inputStream.eventLoop.next()
         )
 
         session.state = .active
 
-        await withSpan("establishment-report gen") { span in
-          // Once channel connected, we can request establishment report.
-          // Error will be ignored, we don't want connection closed by establishment report
-          // generation error.
-          let establishmentReport = try? await outputStream.establishmentReport().get()
-          if let establishmentReport {
-            session.withMutation(keyPath: \.establishmentReport) {
-              session.$establishmentReport.withLock {
-                assert($0 != nil)
+        await session.establishmentMetrics(on: outputStream)
 
-                // `EstablishmentReport.sourceEndpoint` is requested from server channel, but
-                // establishment report is requested from client channel, so we need update sourceEndpoint
-                // to use original value.
-                let usedProxy = $0?.usedProxy ?? false
-
-                $0?.duration = establishmentReport.duration
-                $0?.attemptStartedAfterInterval = establishmentReport.attemptStartedAfterInterval
-                $0?.previousAttemptCount = establishmentReport.previousAttemptCount
-                $0?.proxyEndpoint = usedProxy ? (try? outputStream.remoteAddress?.asAddress()) : nil
-                $0?.resolutions = establishmentReport.resolutions
-              }
-            }
-          }
-
-          span.updateAttributes { attributes in
-            attributes["establishment.use_proxy"] = establishmentReport?.usedProxy
-            attributes["establishment.duration"] = establishmentReport?.duration.seconds
-            attributes["establishment.resolutions"] = establishmentReport?.resolutions.count
-          }
-          span.setStatus(.init(code: .ok))
-        }
-
-        await session.collectDataTransferMetrics(on: outputStream)
+        // Update transport metrics.
+        await session.transportMetrics(on: outputStream)
 
         // Setup HTTP capabilities pipeline
         try await inputStream.eventLoop.submit {

@@ -31,6 +31,18 @@ protocol DataTransferReportCollector: Sendable {
 }
 
 @available(SwiftStdlib 6.0, *)
+extension DataTransferReportCollector {
+
+  func collect() async -> DataTransferReport {
+    await withCheckedContinuation { continuation in
+      collect(queue: .global()) { report in
+        continuation.resume(returning: report)
+      }
+    }
+  }
+}
+
+@available(SwiftStdlib 6.0, *)
 extension Channel {
 
   /// Request pending data transfer report.

@@ -54,6 +54,7 @@ public let SQL_lastInsertedID = Atomic<UInt64>(0)
   ///
   /// This value is set once at the beginning of the connection lifecycle
   /// and typically remains unchanged even if `currentRequest` is modified.
+  @ObservationLockableTracked(accessLevel: .package)
   public var originalRequest: Request? = nil
 
   /// The most recent request associated with this connection.
@@ -117,6 +118,7 @@ public let SQL_lastInsertedID = Atomic<UInt64>(0)
   ///
   /// Captures routing decisions, proxy forwarding metadata,
   /// and intermediate transport details.
+  @ObservationLockableTracked(accessLevel: .package)
   public var forwardingReport: ForwardingReport? = nil
 
   /// Report describing data transfer statistics and progress.
@@ -128,7 +130,10 @@ public let SQL_lastInsertedID = Atomic<UInt64>(0)
   /// Report describing the originating process of this connection.
   ///
   /// Useful for attribution, debugging, and per-process traffic analysis.
+  @ObservationLockableTracked(accessLevel: .package)
   public var processReport: ProcessReport? = nil
+
+  package var transportMetricsTask: Task<Void, Never>? = nil
 
   /// Creates a new `Connection` instance.
   ///

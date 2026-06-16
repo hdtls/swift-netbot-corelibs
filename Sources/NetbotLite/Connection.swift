@@ -11,8 +11,8 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Dispatch
 import Logging
+import Metrics
 import NEAddressProcessing
 import NIOCore
 import NetbotLiteData
@@ -57,22 +57,77 @@ extension Connection.State {
 @available(SwiftStdlib 6.0, *)
 extension Connection {
 
-  func processInfoLookup(logger: Logger, proc: any ProcessReporting) async throws {
-    // We don't care error of process report generating, so we can use optional try.
-    try await withSpan("process-report gen") { span in
-      assert(establishmentReport != nil)
-      guard establishmentReport?.sourceEndpoint != nil else {
-        return
+  func establishmentMetrics(on outputStream: any Channel) async {
+    @inline(__always) func execute() async -> EstablishmentReport? {
+      // Once channel connected, we can request establishment report.
+      // Error will be ignored, we don't want connection closed by establishment report
+      // generation error.
+      let establishmentReport = try? await outputStream.establishmentReport().get()
+      if let establishmentReport {
+        withMutation(keyPath: \.establishmentReport) {
+          $establishmentReport.withLock {
+            // `EstablishmentReport.sourceEndpoint` is requested from server channel, but
+            // establishment report is requested from client channel, so we need update sourceEndpoint
+            // to use original value.
+            let usedProxy = $0?.usedProxy ?? false
+
+            $0?.duration = establishmentReport.duration
+            $0?.attemptStartedAfterInterval = establishmentReport.attemptStartedAfterInterval
+            $0?.previousAttemptCount = establishmentReport.previousAttemptCount
+            $0?.proxyEndpoint = usedProxy ? (try? outputStream.remoteAddress?.asAddress()) : nil
+            $0?.resolutions = establishmentReport.resolutions
+          }
+        }
+      }
+      return establishmentReport
+    }
+
+    await withSpan("task.establishment-report gen") { span in
+      let label = "task.establishment-report-gen.duration"
+      let dimensions = [
+        ("task.id", "\(id)"),
+        ("task.establishment-report-gen.earliest_begin_date", Date.now.formatted()),
+      ]
+      let metrics = await Timer.measure(label: label, dimensions: dimensions) {
+        await execute()
       }
 
-      processReport = try await proc.processInfo(connection: self)
+      span.updateAttributes { attributes in
+        attributes["establishment.use_proxy"] = metrics?.usedProxy
+        attributes["establishment.duration"] = metrics?.duration.seconds
+        attributes["establishment.resolutions"] = metrics?.resolutions.count
+      }
+      span.setStatus(.init(code: .ok))
+    }
+  }
+
+  func processLookup(logger: Logger, proc: any ProcessReporting) async throws {
+    // We don't care error of process report generating, so we can use optional try.
+    guard establishmentReport?.sourceEndpoint != nil else {
+      return
+    }
+
+    @inline(__always) func execute() async throws -> ProcessReport? {
+      let metrics = try await proc.processInfo(connection: self)
+      processReport = metrics
+      return metrics
+    }
+
+    try await withSpan("task.process-lookup") { span in
+      let label = "task.process-lookup.duration"
+      let dimensions = [
+        ("task.id", "\(id)"),
+        ("task.process-lookup.earliest_begin_date", Date.now.formatted()),
+      ]
+      let metrics = try await Timer.measure(label: label, dimensions: dimensions) {
+        try await execute()
+      }
 
       span.updateAttributes { attributes in
-        attributes["process.id"] = processReport?.processIdentifier
-        attributes["process.program.name"] = processReport?.program?.localizedName
-        attributes["process.program.executable"] =
-          processReport?.program?.executableURL?.absoluteString
-        attributes["process.program.bundle"] = processReport?.program?.bundleURL?.absoluteString
+        attributes["process.id"] = metrics?.processIdentifier
+        attributes["process.program.name"] = metrics?.program?.localizedName
+        attributes["process.program.executable"] = metrics?.program?.executableURL?.absoluteString
+        attributes["process.program.bundle"] = metrics?.program?.bundleURL?.absoluteString
       }
       span.setStatus(.init(code: .ok))
     }
@@ -87,14 +142,14 @@ extension Connection {
   /// path has produced a result (or both have failed). The entire process runs within a tracing span named "dns query".
   ///
   func dnsLookup(logger: Logger, resolver: any Resolver, on eventLoop: any EventLoop) async throws {
-    try await withSpan("dns query") { span in
+    @inline(__always) func execute() async throws -> DNSResolutionReport? {
       let earliestBeginDate = Date.now
-      let startTime = DispatchTime.now()
+      let startTime = ContinuousClock.now
 
       let address = originalRequest?.address
       let port = originalRequest?.port ?? 0
 
-      let dnsResolutionReport: DNSResolutionReport
+      let metrics: DNSResolutionReport
       switch address {
       case .hostPort(let host, _):
         switch host {
@@ -103,17 +158,18 @@ extension Connection {
           // first success result received.
           let promise = eventLoop.makePromise(of: Void.self)
           Task {
-            await withTaskGroup(of: Result<[DNSResolutionReport.Resolution], any Error>.self) { g in
+            await withTaskGroup(of: Result<[DNSResolutionReport.Resolution], any Error>.self) {
+              g in
               g.addTask {
                 do {
-                  let startTime = DispatchTime.now()
+                  let startTime = ContinuousClock.now
                   let addresses = try await resolver.initiateAAAAQuery(host: hostname, port: port)
                     .get()
 
                   return .success([
                     DNSResolutionReport.Resolution(
                       source: .query,
-                      duration: startTime.distance(to: .now()).duration,
+                      duration: startTime.duration(to: .now),
                       dnsProtocol: .udp,
                       endpoints: addresses.compactMap { try? $0.asAddress() }
                     )
@@ -125,14 +181,14 @@ extension Connection {
 
               g.addTask {
                 do {
-                  let startTime = DispatchTime.now()
+                  let startTime = ContinuousClock.now
                   let addresses = try await resolver.initiateAQuery(host: hostname, port: port)
                     .get()
 
                   return .success([
                     DNSResolutionReport.Resolution(
                       source: .query,
-                      duration: startTime.distance(to: .now()).duration,
+                      duration: startTime.duration(to: .now),
                       dnsProtocol: .udp,
                       endpoints: addresses.compactMap { try? $0.asAddress() }
                     )
@@ -177,16 +233,15 @@ extension Connection {
             }
           }
           try await promise.futureResult.get()
-          // Once resolution completed successfully the `self.dnsResolutionReport`
-          dnsResolutionReport = self.dnsResolutionReport!
+          metrics = self.dnsResolutionReport!
         case .ipv4, .ipv6:
-          dnsResolutionReport = DNSResolutionReport(
+          metrics = DNSResolutionReport(
             earliestBeginDate: earliestBeginDate,
-            duration: startTime.distance(to: .now()).duration,
+            duration: startTime.duration(to: .now),
             resolutions: [
               DNSResolutionReport.Resolution(
                 source: .cache,
-                duration: startTime.distance(to: .now()).duration,
+                duration: startTime.duration(to: .now),
                 dnsProtocol: .unknown,
                 endpoints: [address!]
               )
@@ -194,61 +249,88 @@ extension Connection {
           )
         }
       case .unix:
-        dnsResolutionReport = DNSResolutionReport(
+        metrics = DNSResolutionReport(
           earliestBeginDate: earliestBeginDate,
-          duration: startTime.distance(to: .now()).duration,
+          duration: startTime.duration(to: .now),
           resolutions: []
         )
       case .url:
         // Not supported yet.
-        dnsResolutionReport = DNSResolutionReport(
+        metrics = DNSResolutionReport(
           earliestBeginDate: earliestBeginDate,
-          duration: startTime.distance(to: .now()).duration,
+          duration: startTime.duration(to: .now),
           resolutions: []
         )
       case .none:
-        dnsResolutionReport = DNSResolutionReport(
+        metrics = DNSResolutionReport(
           earliestBeginDate: earliestBeginDate,
-          duration: startTime.distance(to: .now()).duration,
+          duration: startTime.duration(to: .now),
           resolutions: []
         )
       }
 
-      self.dnsResolutionReport = dnsResolutionReport
+      dnsResolutionReport = metrics
 
       logger.debug(
-        "DNS evaluating end with \(dnsResolutionReport.duration.formatted(.prettyPrinted())).",
+        "DNS evaluating end with \(metrics.duration.formatted(.prettyPrinted())).",
         metadata: metadata
       )
+      return metrics
+    }
+
+    try await withSpan("task.dns-query") { span in
+      let label = "task.dns-query.duration"
+      let dimensions = $originalRequest.withLock {
+        [
+          ("task.id", "\(id)"),
+          ("task.original_request.address", $0?.address.map({ "\($0)" }) ?? "nil"),
+          ("task.original_request.port", "\($0?.port ?? 0)"),
+          ("task.dns-query.earliest_begin_date", earliestBeginDate.formatted()),
+        ]
+      }
+      let metrics = try await Timer.measure(label: label, dimensions: dimensions) {
+        try await execute()
+      }
 
       span.updateAttributes { attributes in
-        attributes["dns.query.earliest_begin_date"] = dnsResolutionReport.earliestBeginDate
-          .formatted()
-        attributes["dns.query.duration"] = dnsResolutionReport.duration.seconds
-        attributes["dns.query.resolutions"] = dnsResolutionReport.resolutions.count
+        attributes["dns.query.earliest_begin_date"] = metrics?.earliestBeginDate.formatted()
+        attributes["dns.query.duration"] = metrics?.duration.seconds
+        attributes["dns.query.resolutions"] = metrics?.resolutions.count
       }
       span.setStatus(.init(code: .ok))
     }
   }
 
   func ruleLookup(logger: Logger, rulesEngine: any RulesEngine) async throws {
-    await withSpan("forwarding-rule lookup") { span in
-      let report = await rulesEngine.executeAllRules(connection: self)
-      assert(report._forwardingRule != nil)
-      assert(report._forwardProtocol != nil)
-      forwardingReport = report
+    @inline(__always) func execute() async -> ForwardingReport? {
+      let metrics = await rulesEngine.executeAllRules(connection: self)
+      assert(metrics._forwardingRule != nil)
+      assert(metrics._forwardProtocol != nil)
+      forwardingReport = metrics
 
       logger.debug(
-        "Rule evaluating end with \(report.duration.formatted(.prettyPrinted())).",
-        metadata: metadata
-      )
-      logger.debug("Rule matched - \(report.forwardingRule ?? "FINAL")", metadata: metadata)
+        "Rule evaluating end with \(metrics.duration.formatted(.prettyPrinted())).",
+        metadata: metadata)
+      logger.debug("Rule matched - \(metrics.forwardingRule ?? "FINAL")", metadata: metadata)
+      return metrics
+    }
+
+    await withSpan("task.rule-lookup") { span in
+      let label = "task.rule-lookup.duration"
+      let dimensions = [
+        ("task.id", "\(id)"),
+        ("task.rule-lookup.rule_count", "\(rulesEngine.forwardingRules.count)"),
+        ("task.rule-lookup.earliest_begin_date", Date.now.formatted()),
+      ]
+      let metrics = await Timer.measure(label: label, dimensions: dimensions) {
+        await execute()
+      }
 
       span.updateAttributes { attributes in
-        attributes["rule.lookup.earliest_begin_date"] = report.earliestBeginDate.formatted()
-        attributes["rule.lookup.duration"] = report.duration.seconds
-        attributes["rule.forward_protocol"] = report.forwardProtocol
-        attributes["rule.description"] = report.forwardingRule
+        attributes["rule.lookup.earliest_begin_date"] = metrics?.earliestBeginDate.formatted()
+        attributes["rule.lookup.duration"] = metrics?.duration.seconds
+        attributes["rule.forward_protocol"] = metrics?.forwardProtocol
+        attributes["rule.description"] = metrics?.forwardingRule
       }
       span.setStatus(.init(code: .ok))
     }
@@ -259,10 +341,10 @@ extension Connection {
     proc: any ProcessReporting, resolver: any Resolver, rules: any RulesEngine,
     eventLoop: any EventLoop
   ) async throws {
-    try await withSpan("forward-protocol lookup") { span in
+    @inline(__always) func execute() async throws -> ForwardingReport? {
       try await withThrowingTaskGroup(of: Void.self) { g in
         g.addTask {
-          try await self.processInfoLookup(logger: logger, proc: proc)
+          try await self.processLookup(logger: logger, proc: proc)
         }
         g.addTask {
           try await self.dnsLookup(logger: logger, resolver: resolver, on: eventLoop)
@@ -270,76 +352,68 @@ extension Connection {
         try await g.waitForAll()
       }
 
-      let fallback: any ForwardProtocol
       let earliestBeginDate = Date.now
-      let startTime = DispatchTime.now()
+      let startTime = ContinuousClock.now
 
+      let metrics: ForwardingReport?
       switch outboundMode {
       case .direct:
-        fallback = .direct
-        forwardingReport = ForwardingReport(
+        metrics = ForwardingReport(
           earliestBeginDate: earliestBeginDate,
-          duration: startTime.distance(to: .now()).duration,
-          forwardProtocol: fallback
+          duration: startTime.duration(to: .now),
+          forwardProtocol: .direct
         )
       case .globalProxy:
-        fallback = forwardProtocol.asForwardProtocol()
-        forwardingReport = ForwardingReport(
+        metrics = ForwardingReport(
           earliestBeginDate: earliestBeginDate,
-          duration: startTime.distance(to: .now()).duration,
-          forwardProtocol: fallback
+          duration: startTime.duration(to: .now),
+          forwardProtocol: forwardProtocol.asForwardProtocol()
         )
       case .ruleBased:
         try await self.ruleLookup(logger: logger, rulesEngine: rules)
-        assert(forwardingReport?._forwardProtocol != nil)
-        assert(forwardingReport?._forwardingRule != nil)
-        fallback = forwardingReport?._forwardProtocol as? any ForwardProtocol ?? .direct
+        precondition(forwardingReport != nil)
+        metrics = forwardingReport!
       }
 
-      if fallback is any ProxiableForwardProtocol {
-        withMutation(keyPath: \.establishmentReport) {
-          $establishmentReport.withLock {
-            assert($0 != nil)
-            $0?.usedProxy = true
-          }
-        }
+      forwardingReport = metrics
+
+      let `protocol` = metrics.asForwardProtocol()
+
+      if `protocol` is any ProxiableForwardProtocol {
+        $establishmentReport.withLock { $0?.usedProxy = true }
       }
 
-      logger.debug(
-        "Policy evaluating - \(fallback.name)",
-        metadata: metadata
-      )
+      logger.debug("Policy evaluating - \(`protocol`.name)", metadata: metadata)
+
+      return metrics
+    }
+
+    try await withSpan("task.forwarder-lookup") { span in
+      let earliestBeginDate = Date.now
+
+      let label = "task.forwarder-lookup.duration"
+      let dimensions = [
+        ("task.id", "\(id)"),
+        ("task.forwarder-lookup.earliest_begin_date", earliestBeginDate.formatted()),
+      ]
+      let metrics = try await Timer.measure(label: label, dimensions: dimensions) {
+        try await execute()
+      }
 
       span.updateAttributes { attributes in
         attributes["forwarder.lookup.earliest_begin_date"] = earliestBeginDate.formatted()
-        attributes["forwarder.lookup.duration"] = startTime.distance(to: .now()).duration.seconds
-        attributes["forwarder.protocol"] = fallback.name
+        attributes["forwarder.lookup.duration"] = metrics?.duration.seconds
+        attributes["forwarder.protocol"] = metrics.asForwardProtocol().name
       }
       span.setStatus(.init(code: .ok))
     }
   }
 
   func publish(using publisher: any ConnectionPublisher) async {
-    @Sendable func finish() async {
+    @inline(__always) @Sendable func finish() async {
       // Reset the data transfer report metrics and publish changes.
       $dataTransferReport.withLock { $0?.pathReport = .init() }
       await publisher.send(self)
-    }
-
-    Task.detached {
-      while true {
-        try? await Task.sleep(for: .seconds(1))
-        guard !self.state.isFinished else {
-          #if !canImport(Darwin) && swift(<6.3)
-            await finish()
-          #endif
-          break
-        }
-        self.duration += .seconds(1)
-        #if !canImport(Darwin) && swift(<6.3)
-          await publisher.send(self)
-        #endif
-      }
     }
 
     #if canImport(Darwin) || swift(>=6.3)
@@ -358,7 +432,6 @@ extension Connection {
               self.dnsResolutionReport,
               self.establishmentReport,
               self.forwardingReport,
-              self.dataTransferReport,
               self.processReport
             )
             return .next(())
@@ -382,7 +455,6 @@ extension Connection {
                   self.dnsResolutionReport,
                   self.establishmentReport,
                   self.forwardingReport,
-                  self.dataTransferReport,
                   self.processReport
                 )
               } onChange: {
@@ -405,41 +477,49 @@ extension Connection {
     #endif
   }
 
-  func collectDataTransferMetrics(on channel: any Channel) async {
-    Task {
-      assert(dataTransferReport == nil)
-      while !self.state.isFinished {
-        guard let collector = try? await channel.pendingDataTransferReport().get() else {
-          // There are two situations that prevent us from geting the pending
-          // data transfer report, The first is that the channel has been closed,
-          // and the second is that the channel.connection is missing. Both
-          // situations indicate that the connection has ended, so we mark it
-          // `completed` here.
-          if !state.isFinished {
-            duration = .seconds(-earliestBeginDate.timeIntervalSinceNow)
-            state = .completed
-          }
-          break
-        }
+  func transportMetrics(on outputStream: (any Channel)?) async {
+    if let transportMetricsTask, !transportMetricsTask.isCancelled {
+      transportMetricsTask.cancel()
+    }
+
+    transportMetricsTask = Task {
+      while !state.isFinished {
+        let collector = try? await outputStream?.pendingDataTransferReport().get()
 
         try? await Task.sleep(for: .seconds(1))
 
-        // We don't care about failure here ignore errors by optional try.
-        guard let new = try? await channel.dataTransferReport(collector).get() else {
+        // We don't care about failure here.
+        guard let collector else {
+          duration = .seconds(-earliestBeginDate.timeIntervalSinceNow)
           continue
         }
 
-        guard let dataTransferReport else {
-          self.dataTransferReport = new
-          continue
+        let new = await collector.collect()
+
+        $dataTransferReport.withLock {
+          if $0 == nil {
+            $0 = new
+          } else {
+            $0?.duration += new.duration
+            $0?.aggregatePathReport &+= new.aggregatePathReport
+            $0?.pathReport &+= state.isFinished ? .init() : new.pathReport
+          }
         }
 
-        self.dataTransferReport = .init(
-          duration: dataTransferReport.duration + new.duration,
-          aggregatePathReport: dataTransferReport.aggregatePathReport &+ new.aggregatePathReport,
-          pathReport: self.state.isFinished ? .init() : new.aggregatePathReport
-        )
+        duration = .seconds(-earliestBeginDate.timeIntervalSinceNow)
       }
+    }
+  }
+}
+
+@available(SwiftStdlib 6.0, *)
+extension Optional where Wrapped == ForwardingReport {
+  func asForwardProtocol() -> any ForwardProtocol {
+    switch self {
+    case .none:
+      return .direct
+    case .some(let wrapped):
+      return wrapped._forwardProtocol as? ForwardProtocol ?? .direct
     }
   }
 }
