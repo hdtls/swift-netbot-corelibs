@@ -11,7 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Dispatch
 import Logging
 import NEAddressProcessing
 import NIOCore
@@ -59,13 +58,13 @@ public protocol RulesEngine: Sendable {
 
   func executeAllRules(connection: Connection) async -> ForwardingReport {
     let earliestBeginDate = Date.now
-    let startTime = DispatchTime.now()
+    let startTime = ContinuousClock.now
     guard let originalRequest = connection.originalRequest,
       let host = originalRequest.host(percentEncoded: false)
     else {
       return ForwardingReport(
         earliestBeginDate: earliestBeginDate,
-        duration: startTime.distance(to: .now()).duration,
+        duration: startTime.duration(to: .now),
         forwardingRule: _FinalForwardingRule()
       )
     }
@@ -75,7 +74,7 @@ public protocol RulesEngine: Sendable {
     if let savedForwardingRule {
       return ForwardingReport(
         earliestBeginDate: earliestBeginDate,
-        duration: startTime.distance(to: .now()).duration,
+        duration: startTime.duration(to: .now),
         forwardingRule: savedForwardingRule
       )
     }
@@ -116,7 +115,7 @@ public protocol RulesEngine: Sendable {
         inFlightLookups.withLock { $0[host] = nil }
         return ForwardingReport(
           earliestBeginDate: earliestBeginDate,
-          duration: startTime.distance(to: .now()).duration,
+          duration: startTime.duration(to: .now),
           forwardingRule: forwardingRule
         )
       }
@@ -128,7 +127,8 @@ public protocol RulesEngine: Sendable {
     // to prevent cache value.
     var report = await task.value
     report.earliestBeginDate = earliestBeginDate
-    report.duration = startTime.distance(to: .now()).duration
+    report.duration = startTime.duration(to: .now)
+
     return report
   }
 }
