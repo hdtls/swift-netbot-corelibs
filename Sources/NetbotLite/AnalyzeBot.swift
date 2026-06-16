@@ -210,18 +210,22 @@ import Tracing
 
   /// Run analyze services.
   public func run() async throws {
-    try await withSpan("run") { _ in
-      do {
-        guard !isActive else {
-          return
-        }
-        $isActive.withLock { $0 = true }
+    try await withTaskCancellationHandler {
+      try await withSpan("run") { _ in
+        do {
+          guard !isActive else {
+            return
+          }
+          $isActive.withLock { $0 = true }
 
-        try await run0()
-      } catch {
-        $isActive.withLock { $0 = false }
-        throw error
+          try await run0()
+        } catch {
+          $isActive.withLock { $0 = false }
+          throw error
+        }
       }
+    } onCancel: {
+      try? syncShutdownGracefully()
     }
   }
 
