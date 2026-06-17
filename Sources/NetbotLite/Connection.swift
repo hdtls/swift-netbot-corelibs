@@ -31,14 +31,27 @@ import Tracing
 #endif
 
 @available(SwiftStdlib 6.0, *)
-extension Connection {
-
-  internal var metadata: Logger.Metadata {
-    ["Request": "#\(taskIdentifier) \(originalRequest?.address.map { "\($0)" } ?? "unknown host")"]
+extension Optional where Wrapped == ForwardingReport {
+  func asForwardProtocol() -> any ForwardProtocol {
+    switch self {
+    case .none:
+      return .direct
+    case .some(let wrapped):
+      return wrapped._forwardProtocol as? ForwardProtocol ?? .direct
+    }
   }
+}
 
-  func satisfy(predicate: (Connection) throws -> Bool) rethrows -> Bool {
-    try predicate(self)
+@available(SwiftStdlib 6.0, *)
+extension Result {
+
+  init(catching body: @Sendable () async throws(Failure) -> Success) async {
+    do {
+      let value = try await body()
+      self = .success(value)
+    } catch {
+      self = .failure(error)
+    }
   }
 }
 
@@ -51,6 +64,18 @@ extension Connection.State {
     case .completed, .failed, .cancelled:
       return true
     }
+  }
+}
+
+@available(SwiftStdlib 6.0, *)
+extension Connection {
+
+  internal var metadata: Logger.Metadata {
+    ["Request": "#\(taskIdentifier) \(originalRequest?.address.map { "\($0)" } ?? "unknown host")"]
+  }
+
+  func satisfy(predicate: (Connection) throws -> Bool) rethrows -> Bool {
+    try predicate(self)
   }
 }
 
@@ -158,78 +183,91 @@ extension Connection {
           // first success result received.
           let promise = eventLoop.makePromise(of: Void.self)
           Task {
-            await withTaskGroup(of: Result<[DNSResolutionReport.Resolution], any Error>.self) {
-              g in
+            await withTaskGroup(of: Result<DNSResolutionReport.Resolution, any Error>.self) { g in
               g.addTask {
-                do {
-                  let startTime = ContinuousClock.now
-                  let addresses = try await resolver.initiateAAAAQuery(host: hostname, port: port)
-                    .get()
-
-                  return .success([
-                    DNSResolutionReport.Resolution(
-                      source: .query,
-                      duration: startTime.duration(to: .now),
-                      dnsProtocol: .udp,
-                      endpoints: addresses.compactMap { try? $0.asAddress() }
-                    )
-                  ])
-                } catch {
-                  return .failure(error)
+                await Result {
+                  DNSResolutionReport.Resolution(
+                    source: .query,
+                    duration: startTime.duration(to: .now),
+                    dnsProtocol: .udp,
+                    endpoints:
+                      try await resolver
+                      .initiateAAAAQuery(host: hostname, port: port)
+                      .flatMapThrowing({ try $0.map({ try $0.asAddress() }) })
+                      .get()
+                  )
                 }
               }
 
               g.addTask {
-                do {
-                  let startTime = ContinuousClock.now
-                  let addresses = try await resolver.initiateAQuery(host: hostname, port: port)
-                    .get()
-
-                  return .success([
-                    DNSResolutionReport.Resolution(
-                      source: .query,
-                      duration: startTime.duration(to: .now),
-                      dnsProtocol: .udp,
-                      endpoints: addresses.compactMap { try? $0.asAddress() }
-                    )
-                  ])
-                } catch {
-                  return .failure(error)
+                await Result {
+                  DNSResolutionReport.Resolution(
+                    source: .query,
+                    duration: startTime.duration(to: .now),
+                    dnsProtocol: .udp,
+                    endpoints:
+                      try await resolver
+                      .initiateAQuery(host: hostname, port: port)
+                      .flatMapThrowing({ try $0.map({ try $0.asAddress() }) })
+                      .get()
+                  )
                 }
               }
 
               var lastError: (any Error)?
+              // False if any resolution contains at least one endpoint.
+              var isEmpty = true
 
-              for await resolution in g {
+              for await result in g {
                 do {
-                  let resolutions: [DNSResolutionReport.Resolution] = try resolution.get()
-                  guard !resolutions.map(\.endpoints).joined().isEmpty else { continue }
+                  let resolution = try result.get()
+                  guard !resolution.endpoints.isEmpty else { continue }
+
                   withMutation(keyPath: \.dnsResolutionReport) {
                     $dnsResolutionReport.withLock {
                       if $0 == nil {
                         $0 = DNSResolutionReport(
                           earliestBeginDate: earliestBeginDate,
-                          duration: .zero,
-                          resolutions: resolutions
+                          duration: startTime.duration(to: .now),
+                          resolutions: [resolution]
                         )
                       } else {
-                        $0?.resolutions.append(contentsOf: resolutions)
+                        $0?.resolutions.append(resolution)
                       }
                     }
                   }
+
+                  // Fulfill promise immediately after first non-empty result is arrived.
                   promise.succeed()
+                  isEmpty = false
                 } catch {
                   lastError = error
                 }
               }
 
-              if let lastError {
-                // Failed when both DNS resolutions is empty and an error is occured.
-                access(keyPath: \.dnsResolutionReport)
-                if $dnsResolutionReport.withLock({ $0?.resolutions.isEmpty ?? true }) {
-                  promise.fail(lastError)
+              // Ensure we got DNS resolution report whatever success or failed.
+              withMutation(keyPath: \.dnsResolutionReport) {
+                $dnsResolutionReport.withLock {
+                  if $0 == nil {
+                    $0 = .init(
+                      earliestBeginDate: earliestBeginDate,
+                      duration: startTime.duration(to: .now),
+                      resolutions: []
+                    )
+                  } else {
+                    $0?.duration = startTime.duration(to: .now)
+                  }
                 }
               }
+
+              // Failed when both DNS resolutions is empty and an error is occured.
+              if let lastError, isEmpty {
+                promise.fail(lastError)
+              }
+
+              // This is required to resume event loop for no
+              // endpoints contains in all queries.
+              promise.succeed()
             }
           }
           try await promise.futureResult.get()
@@ -508,18 +546,6 @@ extension Connection {
 
         duration = .seconds(-earliestBeginDate.timeIntervalSinceNow)
       }
-    }
-  }
-}
-
-@available(SwiftStdlib 6.0, *)
-extension Optional where Wrapped == ForwardingReport {
-  func asForwardProtocol() -> any ForwardProtocol {
-    switch self {
-    case .none:
-      return .direct
-    case .some(let wrapped):
-      return wrapped._forwardProtocol as? ForwardProtocol ?? .direct
     }
   }
 }
