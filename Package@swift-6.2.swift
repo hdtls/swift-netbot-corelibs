@@ -39,6 +39,7 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-nio.git", from: "2.97.1"),
     .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.36.1"),
     .package(url: "https://github.com/apple/swift-nio-extras.git", from: "1.33.0"),
+    .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.28.0"),
     .package(url: "https://github.com/apple/swift-http-types.git", from: "1.5.1"),
     .package(url: "https://github.com/apple/swift-metrics.git", from: "2.11.0"),
     .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.4.1"),
@@ -252,15 +253,12 @@ let package = Package(
 
 if Context.environment["SWTNE_REQUIRES_LOCAL_DEPS"] != nil {
   package.dependencies += [
-    .package(path: "../swift-nio-transport-services"),
     .package(path: "../swift-netbot-protoimpl"),
     .package(path: "../swift-maxminddb"),
     .package(path: "../swift-preference"),
   ]
 } else {
   package.dependencies += [
-    .package(
-      url: "https://github.com/hdtls/swift-nio-transport-services.git", branch: "release/2.0"),
     .package(url: "https://github.com/hdtls/swift-netbot-protoimpl.git", branch: "main"),
     .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.3.0"),
     .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
