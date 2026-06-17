@@ -466,7 +466,6 @@ extension Connection {
               self.response,
               self.duration,
               self.tls,
-              self.state,
               self.dnsResolutionReport,
               self.establishmentReport,
               self.forwardingReport,
@@ -516,12 +515,12 @@ extension Connection {
   }
 
   func transportMetrics(on outputStream: (any Channel)?) async {
-    if let transportMetricsTask, !transportMetricsTask.isCancelled {
-      transportMetricsTask.cancel()
-    }
+    transportMetricsTask?.cancel()
+    transportMetricsTask = Task { [weak self] in
+      guard let self else { return }
 
-    transportMetricsTask = Task {
-      while !state.isFinished {
+      while !Task.isCancelled && !state.isFinished {
+
         let collector = try? await outputStream?.pendingDataTransferReport().get()
 
         try? await Task.sleep(for: .seconds(1))
@@ -540,7 +539,7 @@ extension Connection {
           } else {
             $0?.duration += new.duration
             $0?.aggregatePathReport &+= new.aggregatePathReport
-            $0?.pathReport &+= state.isFinished ? .init() : new.pathReport
+            $0?.pathReport = state.isFinished ? .init() : new.aggregatePathReport
           }
         }
 
