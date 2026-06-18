@@ -33,24 +33,7 @@ struct V1_PathReportTests {
     #expect(report.transportRTTVariance == 0)
     #expect(report.receivedApplicationByteCount == 0)
     #expect(report.sentApplicationByteCount == 0)
-  }
-
-  @available(SwiftStdlib 6.0, *)
-  @Test("DataTransferReport.PathReport default initialization")
-  func dataTransferPathReportDefaultInit() {
-    let report = DataTransferReport.PathReport()
-    #expect(report.receivedIPPacketCount == 0)
-    #expect(report.sentIPPacketCount == 0)
-    #expect(report.receivedTransportByteCount == 0)
-    #expect(report.receivedTransportDuplicateByteCount == 0)
-    #expect(report.receivedTransportOutOfOrderByteCount == 0)
-    #expect(report.sentTransportByteCount == 0)
-    #expect(report.retransmittedTransportByteCount == 0)
-    #expect(report.transportSmoothedRTT == 0)
-    #expect(report.transportMinimumRTT == 0)
-    #expect(report.transportRTTVariance == 0)
-    #expect(report.receivedApplicationByteCount == 0)
-    #expect(report.sentApplicationByteCount == 0)
+    #expect(report.formatted == .init())
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -113,8 +96,8 @@ struct V1_PathReportTests {
       transportSmoothedRTT: 88.8,
       transportMinimumRTT: 99.9,
       transportRTTVariance: 101.1,
-      receivedApplicationByteCount: 1111,
-      sentApplicationByteCount: 1212
+      receivedApplicationByteCount: 42_234_234,
+      sentApplicationByteCount: 23424
     )
     persistent.mergeValues(report)
     #expect(persistent.receivedIPPacketCount == 100)
@@ -127,8 +110,10 @@ struct V1_PathReportTests {
     #expect(persistent.transportSmoothedRTT == 88.8)
     #expect(persistent.transportMinimumRTT == 99.9)
     #expect(persistent.transportRTTVariance == 101.1)
-    #expect(persistent.receivedApplicationByteCount == 1111)
-    #expect(persistent.sentApplicationByteCount == 1212)
+    #expect(persistent.receivedApplicationByteCount == 42_234_234)
+    #expect(persistent.sentApplicationByteCount == 23424)
+    #expect(persistent.formatted.receivedApplicationByteCount == "40.3 MB")
+    #expect(persistent.formatted.sentApplicationByteCount == "23 kB")
   }
 }
 

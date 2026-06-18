@@ -15,6 +15,13 @@
   import Observation
 #endif
 
+#if canImport(FoundationEssentials)
+  import FoundationEssentials
+  import FoundationInternationalization
+#else
+  import Foundation
+#endif
+
 #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
 #endif
@@ -69,8 +76,31 @@ extension V1 {
     /// The number of bytes sent by the application.
     public var sentApplicationByteCount: UInt64 = 0
 
+    /// Formatted path report including receivedApplicationByteCount and sentApplicationByteCout.
+    public struct Formatted: Codable, Hashable, Sendable {
+
+      /// The formatted number of bytes received by the application.
+      public var sentApplicationByteCount = "0 bytes"
+
+      /// The formatted number of bytes sent by the application.
+      public var receivedApplicationByteCount = "0 bytes"
+
+      package init(
+        sentApplicationByteCount: String = "0 bytes",
+        receivedApplicationByteCount: String = "0 bytes"
+      ) {
+        self.sentApplicationByteCount = sentApplicationByteCount
+        self.receivedApplicationByteCount = receivedApplicationByteCount
+      }
+    }
+
+    /// Formatted path report.
+    public var formatted: Formatted = Formatted()
+
+    /// Data transfer report describe the relationship between ``V1._DataTransferReport`` and ``V1._PathReport``.
     public var dataTransferReport: _DataTransferReport?
 
+    /// Create a new ``V1._PathReport`` instance.
     public init() {}
   }
 }
@@ -78,9 +108,27 @@ extension V1 {
 @available(SwiftStdlib 6.0, *)
 extension V1._PathReport {
 
-  /// Merge new values from DTO.
-  /// - Parameter data: New `DataTransferReport.PathReport` to merge.
+  /// Converts a runtime ``DataTransferReport.PathReport`` into a persistent
+  /// ``V1._PathReport`` snapshot.
+  ///
+  /// This method captures the current state of the path report at a point in time.
+  /// Runtime-only fields (timers, live state transitions, observation locks)
+  /// are flattened into persistable values.
+  ///
+  /// - Parameter data: New ``DataTransferReport.PathReport`` to map.
+  /// - SeeAlso: ``DataTransferReport.PathReport.init(persistentModel:)``.
   public func mergeValues(_ data: DataTransferReport.PathReport) {
+    if self.sentApplicationByteCount != data.sentApplicationByteCount
+      || self.receivedApplicationByteCount != data.receivedApplicationByteCount
+    {
+      self.formatted = .init(
+        sentApplicationByteCount: data.sentApplicationByteCount
+          .formatted(.byteCount(style: .binary, spellsOutZero: false)),
+        receivedApplicationByteCount: data.receivedApplicationByteCount
+          .formatted(.byteCount(style: .binary, spellsOutZero: false))
+      )
+    }
+
     #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
       self.receivedIPPacketCount = data.receivedIPPacketCount
       self.sentIPPacketCount = data.sentIPPacketCount

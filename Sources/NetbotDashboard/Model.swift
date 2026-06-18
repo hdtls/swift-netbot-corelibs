@@ -106,10 +106,10 @@ public enum DataTransfer: Hashable, Sendable {
     _fetchError != nil
   }
 
-  public var pathReportFormatted: DataTransferReport.Model.PathReportFormatted {
+  public var pathReportFormatted: DataTransferReport.PathReport.Model.Formatted {
     _pathReportFormatted
   }
-  private var _pathReportFormatted = DataTransferReport.Model.PathReportFormatted()
+  private var _pathReportFormatted = DataTransferReport.PathReport.Model.Formatted()
 
   nonisolated private let logger = Logger(label: "dashboard")
   nonisolated private let messenger: any MessengerProtocol
@@ -237,7 +237,7 @@ public enum DataTransfer: Hashable, Sendable {
           }.value
         #endif
         let pathReport = models.reduce(DataTransferReport.PathReport()) { $0 &+ $1 }
-        let pathReportFormatted = DataTransferReport.Model.PathReportFormatted(
+        let pathReportFormatted = DataTransferReport.PathReport.Model.Formatted(
           sentApplicationByteCount: pathReport.sentApplicationByteCount
             .formatted(.byteCount(style: .binary, spellsOutZero: false)),
           receivedApplicationByteCount: pathReport.receivedApplicationByteCount
@@ -249,11 +249,7 @@ public enum DataTransfer: Hashable, Sendable {
         try? await Task.sleep(for: .seconds(1), clock: .suspending)
       }
 
-      let pathReportFormatted = DataTransferReport.Model.PathReportFormatted(
-        sentApplicationByteCount: 0.formatted(.byteCount(style: .binary, spellsOutZero: false)),
-        receivedApplicationByteCount: 0.formatted(
-          .byteCount(style: .binary, spellsOutZero: false))
-      )
+      let pathReportFormatted = DataTransferReport.PathReport.Model.Formatted()
       Task { @MainActor in
         self._pathReportFormatted = pathReportFormatted
       }
@@ -267,7 +263,7 @@ public enum DataTransfer: Hashable, Sendable {
   }
 
   public func aggregatePathReportFormatted(forwardProtocol: String? = nil)
-    -> DataTransferReport.Model.PathReportFormatted
+    -> DataTransferReport.PathReport.Model.Formatted
   {
     var aggregatePathReport: DataTransferReport.PathReport
 
@@ -631,18 +627,6 @@ public enum DataTransfer: Hashable, Sendable {
 
           program.dataTransferReport?.aggregatePathReport?.mergeValues(aggregatePathReport)
           program.dataTransferReport?.pathReport?.mergeValues(pathReport)
-          program.dataTransferReport?.aggregatePathReportFormatted = .init(
-            sentApplicationByteCount: aggregatePathReport.sentApplicationByteCount
-              .formatted(.byteCount(style: .binary, spellsOutZero: false)),
-            receivedApplicationByteCount: aggregatePathReport.receivedApplicationByteCount
-              .formatted(.byteCount(style: .binary, spellsOutZero: false))
-          )
-          program.dataTransferReport?.pathReportFormatted = .init(
-            sentApplicationByteCount: pathReport.sentApplicationByteCount
-              .formatted(.byteCount(style: .binary, spellsOutZero: false)),
-            receivedApplicationByteCount: pathReport.receivedApplicationByteCount
-              .formatted(.byteCount(style: .binary, spellsOutZero: false))
-          )
         }
       }
     }

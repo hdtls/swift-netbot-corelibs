@@ -29,6 +29,47 @@
 @available(SwiftStdlib 6.0, *)
 extension V1 {
 
+  /// A persistent representation of a data transfer performance information about
+  /// data transferred on an proxy tunnel connection for certain span of time. used
+  /// for SwiftData storage.
+  ///
+  /// ``V1._DataTransferReport`` is the storage-layer counterpart of the
+  /// in-memory ``DataTransferReport`` model. It mirrors the runtime
+  /// properties of ``DataTransferReport`` but is designed to be safely
+  /// persisted using SwiftData.
+  ///
+  /// Multiple reports can be retrieved from a single connection, starting and ending
+  /// at different times. This allows throughput to be measured based on how an
+  /// application is using a connection. A report may be created prior to a connection
+  /// moving into the .ready state, but measurements will not be collected until after
+  /// the connection is ready.
+  ///
+  /// ## Design Purpose
+  ///
+  /// This type exists to:
+  /// - Provide a stable schema for SwiftData storage
+  /// - Enable versioned migrations (V1, V2, ...)
+  /// - Avoid storing transient or non-persistable runtime state directly
+  ///
+  /// ## Versioning
+  ///
+  /// This model is part of `V1` schema and may evolve in future versions.
+  /// New fields should be added via new schema versions (`V2._DataTransferReport`)
+  /// to support safe migrations.
+  ///
+  /// ## SwiftData Constraints
+  ///
+  /// All properties in this model must conform to SwiftData storage rules:
+  /// - Value types or relationships only
+  /// - No transient computed-only fields unless marked non-persisted
+  ///
+  /// ## Usage
+  ///
+  /// This model is not intended for direct business logic usage.
+  /// It should be accessed via SwiftData `ModelContext` queries or
+  /// through mapping utilities.
+  ///
+  /// - SeeAlso: ``DataTransferReport``.
   #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
     @Model public class _DataTransferReport {
 
@@ -38,12 +79,13 @@ extension V1 {
       @Attribute(.transformable(by: SQLValueTransformer<Duration>.self))
       public var duration: Duration = Duration.zero
 
+      /// Formatted length of time over which the report collected
+      /// information.
       public var durationFormatted = "0ms"
 
-      public typealias PathReport = V1._PathReport
-
+      /// A report of path value in past one second.
       @Relationship(deleteRule: .cascade, inverse: \_PathReport.dataTransferReport)
-      public var pathReport: PathReport?
+      public var pathReport: _PathReport?
 
       /// A report of path values that aggregates counters across
       /// the paths used, if there are multiple paths. If there is
@@ -51,19 +93,36 @@ extension V1 {
       /// Values that can be summed are summed across paths. For values
       /// that cannot sum, the value of the primary path is used.
       @Relationship(deleteRule: .cascade, inverse: \_PathReport.dataTransferReport)
-      public var aggregatePathReport: PathReport?
+      public var aggregatePathReport: _PathReport?
 
-      public var pathReportFormatted = PathReportFormatted()
-
-      public var aggregatePathReportFormatted = PathReportFormatted()
-
+      /// Connection describe the relationship between ``V1._Connection`` and ``V1._DataTransferReport``.
+      ///
+      /// - SeeAlso: ``V1._Program.dataTransferReport``.
       public var connection: _Connection?
 
+      /// Program describe the relationship between ``V1._Program`` and ``V1._DataTransferReport``.
+      ///
+      /// - SeeAlso: ``V1._Program.dataTransferReport``.
       public var program: _Program?
 
+      /// Create a new ``DataTransferReport`` instance.
       public init() {}
     }
   #else
+    /// A persistent representation of a data transfer performance information about
+    /// data transferred on an proxy tunnel connection for certain span of time.
+    ///
+    /// Multiple reports can be retrieved from a single connection, starting and ending
+    /// at different times. This allows throughput to be measured based on how an
+    /// application is using a connection. A report may be created prior to a connection
+    /// moving into the .ready state, but measurements will not be collected until after
+    /// the connection is ready.
+    ///
+    /// This model is part of `V1` schema and may evolve in future versions.
+    /// New fields should be added via new schema versions (`V2._DataTransferReport`)
+    /// to support safe migrations.
+    ///
+    /// - SeeAlso: ``DataTransferReport``.
     #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
@@ -74,27 +133,31 @@ extension V1 {
       /// application and transport bytes counts.
       public var duration = Duration.zero
 
+      /// Formatted length of time over which the report collected
+      /// information.
       public var durationFormatted = "0ms"
 
-      public typealias PathReport = V1._PathReport
-
-      public var pathReport: PathReport?
+      /// A report of path value in past one second.
+      public var pathReport: _PathReport?
 
       /// A report of path values that aggregates counters across
       /// the paths used, if there are multiple paths. If there is
       /// only one path, this will contains the values for that path.
       /// Values that can be summed are summed across paths. For values
       /// that cannot sum, the value of the primary path is used.
-      public var aggregatePathReport: PathReport?
+      public var aggregatePathReport: _PathReport?
 
-      public var pathReportFormatted = PathReportFormatted()
-
-      public var aggregatePathReportFormatted = PathReportFormatted()
-
+      /// Connection describe the relationship between ``V1._Connection`` and ``V1._DataTransferReport``.
+      ///
+      /// - SeeAlso: ``V1._Connection.dataTransferReport``.
       public var connection: _Connection?
 
+      /// Program describe the relationship between ``V1._Program`` and ``V1._DataTransferReport``.
+      ///
+      /// - SeeAlso: ``V1._Program.dataTransferReport``.
       public var program: _Program?
 
+      /// Create a new ``V1._DataTransferReport`` instance.
       public init() {}
     }
   #endif
@@ -102,25 +165,16 @@ extension V1 {
 
 @available(SwiftStdlib 6.0, *)
 extension V1._DataTransferReport {
-  public struct PathReportFormatted: Hashable, Sendable, Codable {
-    public var sentApplicationByteCount = "0 bytes"
-    public var receivedApplicationByteCount = "0 bytes"
 
-    public init(
-      sentApplicationByteCount: String = "0 bytes",
-      receivedApplicationByteCount: String = "0 bytes"
-    ) {
-      self.sentApplicationByteCount = sentApplicationByteCount
-      self.receivedApplicationByteCount = receivedApplicationByteCount
-    }
-  }
-}
-
-@available(SwiftStdlib 6.0, *)
-extension V1._DataTransferReport {
-
-  /// Merge new values from DTO.
-  /// - Parameter data: New `DataTransferReport` to merge.
+  /// Converts a runtime ``DataTransferReport`` into a persistent ``V1._DataTransferReport`` snapshot.
+  ///
+  /// This method captures the current state of the data transfer report at a point in time.
+  /// Runtime-only fields (timers, live state transitions, observation locks)
+  /// are flattened into persistable values.
+  ///
+  /// - Important: Relationship values will not be merged.
+  /// - Parameter data: New ``DataTransferReport`` to map.
+  /// - SeeAlso: ``DataTransferReport.init(persistentModel:)``.
   public func mergeValues(_ data: DataTransferReport) {
     if self.duration != data.duration {
       self.durationFormatted = data.duration.formatted(
@@ -138,30 +192,5 @@ extension V1._DataTransferReport {
         self.duration = data.duration
       }
     #endif
-
-    if self.pathReport?.sentApplicationByteCount != data.pathReport.sentApplicationByteCount
-      || self.pathReport?.receivedApplicationByteCount
-        != data.pathReport.receivedApplicationByteCount
-    {
-      self.pathReportFormatted = .init(
-        sentApplicationByteCount: data.pathReport.sentApplicationByteCount
-          .formatted(.byteCount(style: .binary, spellsOutZero: false)),
-        receivedApplicationByteCount: data.pathReport.receivedApplicationByteCount
-          .formatted(.byteCount(style: .binary, spellsOutZero: false))
-      )
-    }
-
-    if self.aggregatePathReport?.sentApplicationByteCount
-      != data.aggregatePathReport.sentApplicationByteCount
-      || self.aggregatePathReport?.receivedApplicationByteCount
-        != data.aggregatePathReport.receivedApplicationByteCount
-    {
-      self.aggregatePathReportFormatted = .init(
-        sentApplicationByteCount: data.aggregatePathReport.sentApplicationByteCount
-          .formatted(.byteCount(style: .binary, spellsOutZero: false)),
-        receivedApplicationByteCount: data.aggregatePathReport.receivedApplicationByteCount
-          .formatted(.byteCount(style: .binary, spellsOutZero: false))
-      )
-    }
   }
 }

@@ -34,8 +34,8 @@ import NEAddressProcessing
 
     /// A persistent representation of a network connection used for SwiftData storage.
     ///
-    /// `V1._Connection` is the storage-layer counterpart of the in-memory
-    /// `Connection` model. It mirrors the runtime properties of `Connection`
+    /// ``V1._Connection`` is the storage-layer counterpart of the in-memory
+    /// ``Connection`` model. It mirrors the runtime properties of ``Connection``
     /// but is designed to be safely persisted using SwiftData.
     ///
     /// ## Design Purpose
@@ -46,19 +46,19 @@ import NEAddressProcessing
     /// - Enable versioned migrations (V1, V2, ...)
     /// - Avoid storing transient or non-persistable runtime state directly
     ///
-    /// ## Relationship to `Connection`
+    /// ## Relationship to ``Connection``
     ///
-    /// - `Connection` → runtime, observable, live network lifecycle model
-    /// - `_Connection` → persisted snapshot of a connection
+    /// - ``Connection`` → runtime, observable, live network lifecycle model
+    /// - ``V1._Connection`` → persisted snapshot of a connection
     ///
     /// Data is typically mapped bidirectionally:
     ///
-    /// - `Connection → _Connection` when saving state
-    /// - `_Connection → Connection` when restoring or querying history
+    /// - ``Connection`` → ``V1._Connection`` when saving state
+    /// - ``V1._Connection`` → ``Connection`` when restoring or querying history
     ///
     /// ## Versioning
     ///
-    /// This model is part of `V1` schema and may evolve in future versions.
+    /// This model is part of ``V1`` schema and may evolve in future versions.
     /// New fields should be added via new schema versions (`V2._Connection`)
     /// to support safe migrations.
     ///
@@ -143,6 +143,7 @@ import NEAddressProcessing
       /// using TLS/SSL at the transport layer.
       public var tls = false
 
+      /// A enum represents the progression of a `Connection` through stages.
       public typealias State = Connection.State
 
       /// The current lifecycle state of the connection.
@@ -194,6 +195,7 @@ import NEAddressProcessing
       @Relationship(deleteRule: .cascade, inverse: \_DataTransferReport.connection)
       public var dataTransferReport: _DataTransferReport?
 
+      /// Create a new ``V1._Connection`` instance.
       public init() {
         self.earliestBeginDateFormatted = self.earliestBeginDate
           .formatted(.dateTime.hour().minute().second())
@@ -206,8 +208,8 @@ import NEAddressProcessing
 
     /// A persistent representation of a network connection used for persistent storage.
     ///
-    /// `V1._Connection` is the storage-layer counterpart of the in-memory
-    /// `Connection` model. It mirrors the runtime properties of `Connection`
+    /// ``V1._Connection`` is the storage-layer counterpart of the in-memory
+    /// ``Connection`` model. It mirrors the runtime properties of ``Connection``
     /// but is designed to be safely persisted using db.
     ///
     /// ## Design Purpose
@@ -218,19 +220,19 @@ import NEAddressProcessing
     /// - Enable versioned migrations (V1, V2, ...)
     /// - Avoid storing transient or non-persistable runtime state directly
     ///
-    /// ## Relationship to `Connection`
+    /// ## Relationship to ``Connection``
     ///
-    /// - `Connection` → runtime, observable, live network lifecycle model
-    /// - `_Connection` → persisted snapshot of a connection
+    /// - ``Connection`` → runtime, observable, live network lifecycle model
+    /// - ``V1._Connection`` → persisted snapshot of a connection
     ///
     /// Data is typically mapped bidirectionally:
     ///
-    /// - `Connection → _Connection` when saving state
-    /// - `_Connection → Connection` when restoring or querying history
+    /// - ``Connection`` → ``V1._Connection`` when saving state
+    /// - ``V1._Connection`` → ``Connection`` when restoring or querying history
     ///
     /// ## Versioning
     ///
-    /// This model is part of `V1` schema and may evolve in future versions.
+    /// This model is part of ``V1`` schema and may evolve in future versions.
     /// New fields should be added via new schema versions (`V2._Connection`)
     /// to support safe migrations.
     ///
@@ -299,6 +301,7 @@ import NEAddressProcessing
       /// using TLS/SSL at the transport layer.
       public var tls = false
 
+      /// A enum represents the progression of a `Connection` through stages.
       public typealias State = Connection.State
 
       /// The current lifecycle state of the connection.
@@ -335,7 +338,7 @@ import NEAddressProcessing
       /// Includes metrics such as bytes sent/received and transfer timing.
       public var dataTransferReport: _DataTransferReport?
 
-      /// Creates a new `V1._Connection` instance.
+      /// Creates a new ``V1._Connection`` instance.
       public init() {
         self.taskIdentifier = 0
         self.earliestBeginDateFormatted = self.earliestBeginDate
@@ -353,14 +356,14 @@ import NEAddressProcessing
 @available(SwiftStdlib 6.0, *)
 extension V1._Connection {
 
-  /// Converts a runtime `Connection` into a persistent `_Connection` snapshot.
+  /// Converts a runtime ``Connection`` into a persistent ``V1._Connection`` snapshot.
   ///
   /// This method captures the current state of the connection at a point in time.
   /// Runtime-only fields (timers, live state transitions, observation locks)
   /// are flattened into persistable values.
   ///
   /// - Important: Relationship values will not be merged.
-  /// - Parameter data: New `Connection` to map.
+  /// - Parameter data: New ``Connection`` to map.
   /// - SeeAlso: ``Connection.init(persistentModel:)``.
   public func mergeValues(_ data: Connection) {
     #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)

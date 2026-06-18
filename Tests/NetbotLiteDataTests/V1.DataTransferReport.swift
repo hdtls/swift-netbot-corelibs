@@ -24,8 +24,6 @@ import Testing
     #expect(source.durationFormatted == "0ms")
     #expect(source.pathReport == nil)
     #expect(source.aggregatePathReport == nil)
-    #expect(source.pathReportFormatted == .init())
-    #expect(source.aggregatePathReportFormatted == .init())
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -97,8 +95,6 @@ import Testing
     #expect(model.pathReport?.transportRTTVariance == 0)
     #expect(model.pathReport?.receivedApplicationByteCount == 0)
     #expect(model.pathReport?.sentApplicationByteCount == 0)
-    #expect(model.aggregatePathReportFormatted.receivedApplicationByteCount == "117.7 MB")
-    #expect(model.pathReportFormatted.sentApplicationByteCount == "23 kB")
   }
 }
 
