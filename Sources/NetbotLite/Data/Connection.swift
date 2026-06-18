@@ -98,6 +98,7 @@ public let SQL_lastInsertedID = Atomic<UInt64>(0)
   ///
   /// Represents the progression of the connection through stages
   /// such as establishing, active, completed, failed or cancelled.
+  @ObservationLockableTracked(accessLevel: .package)
   public var state: State = .establishing
 
   /// DNS resolution report associated with this connection, if any.

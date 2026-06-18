@@ -427,6 +427,9 @@ import Tracing
               outputStream: outputStream
             )
 
+          let connectionClose = ConnectionClose(connection: session)
+          try? outputStream.pipeline.syncOperations.addHandler(connectionClose)
+
           // Exchange server and client data over GlueHandler.
           let (localGlue, peerGlue) = GlueHandler.matchedPair()
 
