@@ -62,7 +62,7 @@
 
     private var packetsReadLoop: Task<Void, any Error>? = nil
 
-    init(group: any EventLoopGroup = .shared, packetFlow: any PacketTunnelFlow, dns: LocalDNSProxy)
+    init(group: any EventLoopGroup = .default, packetFlow: any PacketTunnelFlow, dns: LocalDNSProxy)
     {
       let eventLoop = group.next()
       self.eventLoop = eventLoop
@@ -264,7 +264,7 @@
             destinationAddress = .hostPort(host: host, port: port)
           }
 
-          let socks = try await ClientBootstrap(group: .shared)
+          let socks = try await ClientBootstrap(group: .default)
             .channelOption(.allowRemoteHalfClosure, value: true)
             .connect(to: .init(ipAddress: "127.0.0.1", port: 6153)) { socks in
               socks.configureSOCKSConnectionPipeline(destinationAddress: destinationAddress) {

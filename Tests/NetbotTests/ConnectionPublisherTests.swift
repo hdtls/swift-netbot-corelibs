@@ -13,7 +13,7 @@
 
 import NEAddressProcessing
 import NIOCore
-import NetbotDNS
+import NetbotLite
 import NetbotLiteData
 import Testing
 
@@ -30,18 +30,18 @@ struct ConnectionPublisherTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func failedToRunIfAddressAlreadyInUsed() async throws {
-    let channel = try await ServerBootstrap(group: .shared)
+    let channel = try await ServerBootstrap(group: .default)
       .bind(to: .init(ipAddress: "127.0.0.1", port: 0))
       .get()
     let address = try #require(try channel.localAddress?.asAddress())
 
     #if canImport(Network)
       await #expect(throws: NWError.posix(.EADDRINUSE)) {
-        try await ConnectionPulse(group: .shared, address: address).run()
+        try await ConnectionPulse(group: .default, address: address).run()
       }
     #else
       await #expect(throws: IOError.self) {
-        try await ConnectionPulse(group: .shared, address: address).run()
+        try await ConnectionPulse(group: .default, address: address).run()
       }
     #endif
   }
@@ -49,7 +49,7 @@ struct ConnectionPublisherTests {
   @available(SwiftStdlib 6.0, *)
   @Test func shutdownGracefully() async throws {
     let publisher = ConnectionPulse(
-      group: .shared, address: .hostPort(host: "127.0.0.1", port: .any))
+      group: .default, address: .hostPort(host: "127.0.0.1", port: .any))
     try await publisher.run()
     await #expect(throws: Never.self) {
       try await publisher.shutdownGracefully()

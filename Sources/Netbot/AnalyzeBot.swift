@@ -53,7 +53,7 @@ public actor AnalyzeBot {
 
   private var proxySettings: NEProxySettings?
 
-  public init(group: any EventLoopGroup = .shared) {
+  public init(group: any EventLoopGroup = .default) {
     self.group = group
     self.dns = .init(group: group)
     self.core = .init(group: group, logger: logger)

@@ -45,6 +45,15 @@ import NIOCore
 #endif
 
 @available(SwiftStdlib 6.0, *)
+extension EventLoopGroup where Self == MultiThreadedEventLoopGroup {
+
+  /// A globally default, lazily initialized, singleton ``MultiThreadedEventLoopGroup``.
+  public static var `default`: any EventLoopGroup {
+    MultiThreadedEventLoopGroup.singleton
+  }
+}
+
+@available(SwiftStdlib 6.0, *)
 extension ClientBootstrap {
 
   public func connect<Output>(

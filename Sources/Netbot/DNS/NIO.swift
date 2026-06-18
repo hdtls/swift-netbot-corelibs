@@ -36,11 +36,3 @@ import NetbotLite
 
   typealias DatagramClientBootstrap = DatagramBootstrap
 #endif
-
-@available(SwiftStdlib 6.0, *)
-extension EventLoopGroup where Self == MultiThreadedEventLoopGroup {
-
-  public static var shared: any EventLoopGroup {
-    MultiThreadedEventLoopGroup.singleton
-  }
-}

@@ -13,7 +13,6 @@
 
 #if canImport(NetworkExtension)
   import Alamofire
-  import NetbotDNS
   import NetbotLite
   import NetbotLiteData
   import Combine
@@ -106,7 +105,7 @@
       try? MaxMindDB(file: maxminddbFile.path(percentEncoded: false), mode: .mmap)
     }
 
-    public init(group: any EventLoopGroup = .shared, store: UserDefaults?) {
+    public init(group: any EventLoopGroup = .default, store: UserDefaults?) {
       self.group = group
       self._profileURL = .init(wrappedValue: .profile, Prefs.Name.profileURL, store: store)
       self._profileLastContentModificationDate = .init(
@@ -153,7 +152,7 @@
       )
     }
 
-    nonisolated public init(group: any EventLoopGroup = .shared) {
+    nonisolated public init(group: any EventLoopGroup = .default) {
       self.group = group
     }
 

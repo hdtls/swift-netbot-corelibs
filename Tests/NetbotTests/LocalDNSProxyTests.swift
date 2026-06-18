@@ -14,6 +14,7 @@
 import NEAddressProcessing
 import NIOCore
 import NetbotDNS
+import NetbotLite
 import NetbotLiteData
 import Synchronization
 import Testing
@@ -42,7 +43,7 @@ struct LocalDNSProxyTests {
   @available(SwiftStdlib 6.0, *)
   @Test func handleInput() async throws {
     let options = LocalDNSProxy.Options(
-      group: .shared,
+      group: .default,
       bindAddress: IPv4Address("198.18.1.1")!,
       additionalServers: [],
       mappings: [],

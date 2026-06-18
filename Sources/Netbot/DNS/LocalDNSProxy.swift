@@ -137,7 +137,7 @@ import SynchronizationExtras
   }
 
   public convenience init(
-    group: any EventLoopGroup = .shared,
+    group: any EventLoopGroup = .default,
     bindAddress: IPv4Address = IPv4Address("198.18.0.2")!,
     additionalServers: [Address] = [],
     availableIPPool: AvailableIPPool = AvailableIPPool(

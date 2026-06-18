@@ -13,7 +13,6 @@
 
 import NEAddressProcessing
 import NIOCore
-import NIOEmbedded
 import NetbotLite
 import NetbotLiteData
 import NetbotProfile
@@ -89,7 +88,7 @@ struct LocalDNSProxyTests {
           }
         }
 
-        channel = try await NIOTSDatagramListenerBootstrap(group: .shared)
+        channel = try await NIOTSDatagramListenerBootstrap(group: .default)
           .childChannelInitializer { channel in
             channel.pipeline.addHandler(Responder(server: self))
           }
@@ -98,7 +97,7 @@ struct LocalDNSProxyTests {
 
         return try channel?.localAddress?.asAddress()
       #else
-        channel = try await DatagramBootstrap(group: .shared)
+        channel = try await DatagramBootstrap(group: .default)
           .bind(to: .init(ipAddress: "127.0.0.1", port: 0)) { channel in
             channel.eventLoop.makeCompletedFuture {
               try NIOAsyncChannel<
@@ -166,7 +165,7 @@ struct LocalDNSProxyTests {
 
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -204,7 +203,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -242,7 +241,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -276,7 +275,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -313,7 +312,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -350,7 +349,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -390,7 +389,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -431,7 +430,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -465,7 +464,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -523,7 +522,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -560,7 +559,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -598,7 +597,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -637,7 +636,7 @@ struct LocalDNSProxyTests {
 
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -674,7 +673,7 @@ struct LocalDNSProxyTests {
     let address = try #require(await server.start())
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [address],
         mappings: [],
@@ -704,7 +703,7 @@ struct LocalDNSProxyTests {
   @Test func rejectResponseMessage() async throws {
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [],
         mappings: [],
@@ -729,7 +728,7 @@ struct LocalDNSProxyTests {
   @Test func handleOnlyQueryOperations() async throws {
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [],
         mappings: [],
@@ -755,7 +754,7 @@ struct LocalDNSProxyTests {
   @Test func standardServerOnlyHandleMessageWithExactlyOneQuestion() async throws {
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [],
         mappings: [],
@@ -786,7 +785,7 @@ struct LocalDNSProxyTests {
       strategy: .mapping, domainName: "localhost", value: "127.0.0.1", note: "")
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [],
         mappings: [mapping],
@@ -845,7 +844,7 @@ struct LocalDNSProxyTests {
       strategy: .mapping, domainName: "localhost", value: "::1", note: "")
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [],
         mappings: [mapping],
@@ -904,7 +903,7 @@ struct LocalDNSProxyTests {
       strategy: .cname, domainName: "example.com", value: "test.com", note: "")
     let resolver = LocalDNSProxy(
       options: .init(
-        group: .shared,
+        group: .default,
         bindAddress: IPv4Address("198.18.0.2")!,
         additionalServers: [],
         mappings: [mapping],
