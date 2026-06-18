@@ -1,4 +1,4 @@
-// swift-tools-version: 6.3
+// swift-tools-version: 6.1
 // ===----------------------------------------------------------------------=== //
 //
 // This source file is part of the Netbot open source project
@@ -43,8 +43,17 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-http-types.git", from: "1.5.1"),
     .package(url: "https://github.com/apple/swift-metrics.git", from: "2.11.0"),
     .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.4.1"),
-    .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "603.0.0"),
     .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.11.1"),
+
+    // swift-syntax periodically publishes a new tag with a suffix of the format
+    // "-prerelease-YYYY-MM-DD". We always want to use the most recent tag
+    // associated with a particular Swift version, without needing to hardcode
+    // an exact tag and manually keep it up-to-date. Specifying the suffix
+    // "-latest" on this dependency is a workaround which causes Swift package
+    // manager to use the lexicographically highest-sorted tag with the
+    // specified semantic version, meaning the most recent "prerelease" tag will
+    // always be used.
+    .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "604.0.0-latest"),
   ],
   targets: [
     .macro(
