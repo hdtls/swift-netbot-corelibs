@@ -43,19 +43,6 @@ extension Optional where Wrapped == ForwardingReport {
 }
 
 @available(SwiftStdlib 6.0, *)
-extension Result {
-
-  init(catching body: @Sendable () async throws(Failure) -> Success) async {
-    do {
-      let value = try await body()
-      self = .success(value)
-    } catch {
-      self = .failure(error)
-    }
-  }
-}
-
-@available(SwiftStdlib 6.0, *)
 extension Connection.State {
   var isFinished: Bool {
     switch self {
