@@ -70,7 +70,12 @@ struct IPCIDRForwardingRule: ForwardingRule, ForwardingRuleConvertible, Hashable
     self._storage = _Storage(uncheckedBounds: uncheckedBounds, forwardProtocol: forwardProtocol)
   }
 
-  @inline(__always) mutating func copyStorageIfNotUniquelyReferenced() {
+  #if swift(>=6.3)
+    @inline(always)
+  #else
+    @inline(__always)
+  #endif
+  mutating func copyStorageIfNotUniquelyReferenced() {
     if !isKnownUniquelyReferenced(&self._storage) {
       self._storage = self._storage.copy()
     }

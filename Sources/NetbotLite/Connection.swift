@@ -83,7 +83,12 @@ extension Connection {
 extension Connection {
 
   func establishmentMetrics(on outputStream: any Channel) async {
-    @inline(__always) func execute() async -> EstablishmentReport? {
+    #if swift(>=6.3)
+      @inline(always)
+    #else
+      @inline(__always)
+    #endif
+    func execute() async -> EstablishmentReport? {
       // Once channel connected, we can request establishment report.
       // Error will be ignored, we don't want connection closed by establishment report
       // generation error.
@@ -132,7 +137,12 @@ extension Connection {
       return
     }
 
-    @inline(__always) func execute() async throws -> ProcessReport? {
+    #if swift(>=6.3)
+      @inline(always)
+    #else
+      @inline(__always)
+    #endif
+    func execute() async throws -> ProcessReport? {
       let metrics = try await proc.processInfo(connection: self)
       processReport = metrics
       return metrics
@@ -167,7 +177,12 @@ extension Connection {
   /// path has produced a result (or both have failed). The entire process runs within a tracing span named "dns query".
   ///
   func dnsLookup(logger: Logger, resolver: any Resolver, on eventLoop: any EventLoop) async throws {
-    @inline(__always) func execute() async throws -> DNSResolutionReport? {
+    #if swift(>=6.3)
+      @inline(always)
+    #else
+      @inline(__always)
+    #endif
+    func execute() async throws -> DNSResolutionReport? {
       let earliestBeginDate = Date.now
       let startTime = ContinuousClock.now
 
@@ -340,7 +355,12 @@ extension Connection {
   }
 
   func ruleLookup(logger: Logger, rulesEngine: any RulesEngine) async throws {
-    @inline(__always) func execute() async -> ForwardingReport? {
+    #if swift(>=6.3)
+      @inline(always)
+    #else
+      @inline(__always)
+    #endif
+    func execute() async -> ForwardingReport? {
       let metrics = await rulesEngine.executeAllRules(connection: self)
       assert(metrics._forwardingRule != nil)
       assert(metrics._forwardProtocol != nil)
@@ -379,7 +399,12 @@ extension Connection {
     proc: any ProcessReporting, resolver: any Resolver, rules: any RulesEngine,
     eventLoop: any EventLoop
   ) async throws {
-    @inline(__always) func execute() async throws -> ForwardingReport? {
+    #if swift(>=6.3)
+      @inline(always)
+    #else
+      @inline(__always)
+    #endif
+    func execute() async throws -> ForwardingReport? {
       try await withThrowingTaskGroup(of: Void.self) { g in
         g.addTask {
           try await self.processLookup(logger: logger, proc: proc)
@@ -448,7 +473,12 @@ extension Connection {
   }
 
   func publish(using publisher: any ConnectionPublisher) async {
-    @inline(__always) @Sendable func finish() async {
+    #if swift(>=6.3)
+      @inline(always)
+    #else
+      @inline(__always)
+    #endif
+    @Sendable func finish() async {
       // Reset the data transfer report metrics and publish changes.
       $dataTransferReport.withLock { $0?.pathReport = .init() }
       await publisher.send(self)

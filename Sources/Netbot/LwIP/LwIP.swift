@@ -206,7 +206,13 @@
           continue
         }
 
-        @Sendable @inline(__always) func input(_ packetObject: NEPacket) throws {
+        #if swift(>=6.3)
+          @inline(always)
+        #else
+          @inline(__always)
+        #endif
+        @Sendable
+        func input(_ packetObject: NEPacket) throws {
           try packetObject.data.withUnsafeReadableBytes {
             let p = pbuf_alloc(PBUF_RAW, UInt16($0.count), PBUF_RAM)
             pbuf_take(p, $0.baseAddress, UInt16($0.count))
