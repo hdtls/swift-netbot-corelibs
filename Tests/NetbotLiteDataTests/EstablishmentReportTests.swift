@@ -196,12 +196,12 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func persistentModel() {
     let source = EstablishmentReport.Model.self
-    #expect(source == V1._EstablishmentReport.self)
+    #expect(source == V1.EstablishmentReport.self)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test func initializeEstablishmentReportFromPersistentModel() async throws {
-    let persistentModel = V1._EstablishmentReport()
+    let persistentModel = V1.EstablishmentReport()
     persistentModel.resolutions = [
       .init(
         source: .cache, duration: .seconds(0.5), endpointCount: 1,

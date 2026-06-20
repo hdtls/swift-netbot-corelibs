@@ -261,11 +261,11 @@ extension Connection: CustomStringConvertible, CustomDebugStringConvertible {
 @available(SwiftStdlib 6.0, *)
 extension Connection {
 
-  /// Persistent model class.
-  public typealias Model = V1._Connection
+  /// In used persistent model typealias.
+  public typealias Model = V1.Connection
 
-  /// Create a new `Connection`instance.
-  /// - Parameter persistentModel: A persistent model for the connection.
+  /// Create a new ``Connection`` from persistent connection.
+  /// - Parameter persistentModel: Persistent connection.
   public convenience init(persistentModel: Model) {
     self.init(taskIdentifier: persistentModel.taskIdentifier)
     self.earliestBeginDate = persistentModel.earliestBeginDate

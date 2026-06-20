@@ -154,7 +154,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func persistentModel() {
     let source = Request.Model.self
-    #expect(source == V1._Request.self)
+    #expect(source == V1.Request.self)
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -162,7 +162,7 @@ import Testing
     let httpRequest = HTTPRequest(
       method: .get, scheme: "https", authority: "swift.org:443", path: nil)
 
-    let source = V1._Request()
+    let source = Request.Model()
     source.httpRequest = httpRequest
     source.address = .hostPort(host: "swift.org", port: 443)
     source.body = Data([0])

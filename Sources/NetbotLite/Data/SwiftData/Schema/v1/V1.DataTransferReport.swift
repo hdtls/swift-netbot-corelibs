@@ -33,9 +33,9 @@ extension V1 {
   /// data transferred on an proxy tunnel connection for certain span of time. used
   /// for SwiftData storage.
   ///
-  /// ``V1._DataTransferReport`` is the storage-layer counterpart of the
+  /// ``V1/DataTransferReport-1od9p`` is the storage-layer counterpart of the
   /// in-memory ``DataTransferReport`` model. It mirrors the runtime
-  /// properties of ``DataTransferReport`` but is designed to be safely
+  /// properties of `DataTransferReport` but is designed to be safely
   /// persisted using SwiftData.
   ///
   /// Multiple reports can be retrieved from a single connection, starting and ending
@@ -54,7 +54,7 @@ extension V1 {
   /// ## Versioning
   ///
   /// This model is part of `V1` schema and may evolve in future versions.
-  /// New fields should be added via new schema versions (`V2._DataTransferReport`)
+  /// New fields should be added via new schema versions (`V2.DataTransferReport`)
   /// to support safe migrations.
   ///
   /// ## SwiftData Constraints
@@ -71,7 +71,7 @@ extension V1 {
   ///
   /// - SeeAlso: ``DataTransferReport``.
   #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-    @Model public class _DataTransferReport {
+    @Model public class DataTransferReport {
 
       /// Length of time over which the report collected
       /// information. This can be used to calculate throughput for
@@ -84,26 +84,22 @@ extension V1 {
       public var durationFormatted = "0ms"
 
       /// A report of path value in past one second.
-      @Relationship(deleteRule: .cascade, inverse: \_PathReport.dataTransferReport)
-      public var pathReport: _PathReport?
+      @Relationship(deleteRule: .cascade, inverse: \V1.PathReport.dataTransferReport)
+      public var pathReport: V1.PathReport?
 
       /// A report of path values that aggregates counters across
       /// the paths used, if there are multiple paths. If there is
       /// only one path, this will contains the values for that path.
       /// Values that can be summed are summed across paths. For values
       /// that cannot sum, the value of the primary path is used.
-      @Relationship(deleteRule: .cascade, inverse: \_PathReport.dataTransferReport)
-      public var aggregatePathReport: _PathReport?
+      @Relationship(deleteRule: .cascade, inverse: \V1.PathReport.dataTransferReport)
+      public var aggregatePathReport: V1.PathReport?
 
-      /// Connection describe the relationship between ``V1._Connection`` and ``V1._DataTransferReport``.
-      ///
-      /// - SeeAlso: ``V1._Program.dataTransferReport``.
-      public var connection: _Connection?
+      /// Connection describe the relationship between ``V1/Connection-22tz1`` and ``V1/DataTransferReport-1od9p``.
+      public var connection: V1.Connection?
 
-      /// Program describe the relationship between ``V1._Program`` and ``V1._DataTransferReport``.
-      ///
-      /// - SeeAlso: ``V1._Program.dataTransferReport``.
-      public var program: _Program?
+      /// Program describe the relationship between ``V1/Program-mewl`` and ``V1/DataTransferReport-1od9p``.
+      public var program: V1.Program?
 
       /// Create a new ``DataTransferReport`` instance.
       public init() {}
@@ -119,14 +115,14 @@ extension V1 {
     /// the connection is ready.
     ///
     /// This model is part of `V1` schema and may evolve in future versions.
-    /// New fields should be added via new schema versions (`V2._DataTransferReport`)
+    /// New fields should be added via new schema versions (`V2.DataTransferReport`)
     /// to support safe migrations.
     ///
     /// - SeeAlso: ``DataTransferReport``.
     #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
-    public class _DataTransferReport {
+    public class DataTransferReport {
 
       /// Length of time over which the report collected
       /// information. This can be used to calculate throughput for
@@ -138,44 +134,38 @@ extension V1 {
       public var durationFormatted = "0ms"
 
       /// A report of path value in past one second.
-      public var pathReport: _PathReport?
+      public var pathReport: V1.PathReport?
 
       /// A report of path values that aggregates counters across
       /// the paths used, if there are multiple paths. If there is
       /// only one path, this will contains the values for that path.
       /// Values that can be summed are summed across paths. For values
       /// that cannot sum, the value of the primary path is used.
-      public var aggregatePathReport: _PathReport?
+      public var aggregatePathReport: V1.PathReport?
 
-      /// Connection describe the relationship between ``V1._Connection`` and ``V1._DataTransferReport``.
-      ///
-      /// - SeeAlso: ``V1._Connection.dataTransferReport``.
-      public var connection: _Connection?
+      /// Connection describe the relationship between ``V1/Connection-22tz1`` and ``V1/DataTransferReport-1od9p``.
+      public var connection: V1.Connection?
 
-      /// Program describe the relationship between ``V1._Program`` and ``V1._DataTransferReport``.
-      ///
-      /// - SeeAlso: ``V1._Program.dataTransferReport``.
-      public var program: _Program?
+      /// Program describe the relationship between ``V1/Connection-22tz1`` and ``V1/Program-mewl``.
+      public var program: V1.Program?
 
-      /// Create a new ``V1._DataTransferReport`` instance.
+      /// Create a new ``V1/DataTransferReport-1od9p`` instance.
       public init() {}
     }
   #endif
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._DataTransferReport {
+extension V1.DataTransferReport {
 
-  /// Converts a runtime ``DataTransferReport`` into a persistent ``V1._DataTransferReport`` snapshot.
+  /// Converts a runtime ``DataTransferReport`` into a persistent ``V1/DataTransferReport-1od9p`` snapshot.
   ///
   /// This method captures the current state of the data transfer report at a point in time.
   /// Runtime-only fields (timers, live state transitions, observation locks)
   /// are flattened into persistable values.
   ///
-  /// - Important: Relationship values will not be merged.
   /// - Parameter data: New ``DataTransferReport`` to map.
-  /// - SeeAlso: ``DataTransferReport.init(persistentModel:)``.
-  public func mergeValues(_ data: DataTransferReport) {
+  public func mergeValues(_ data: NetbotLiteData.DataTransferReport) {
     if self.duration != data.duration {
       self.durationFormatted = data.duration.formatted(
         .units(

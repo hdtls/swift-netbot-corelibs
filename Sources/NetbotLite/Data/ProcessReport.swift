@@ -11,12 +11,31 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+/// Information about a process and its associated activity.
+///
+/// ``ProcessReport`` associates a process identifier with the connection
+/// and application information observed for that process.
+///
+/// Use this type to correlate network activity with the process and
+/// application that generated it.
+///
+/// Use ``ProcessReport`` when working with responses in memory.
+/// Use ``V1/ProcessReport`` when storing response data.
+///
+/// - SeeAlso: ``V1/ProcessReport``
 @available(SwiftStdlib 6.0, *)
 public struct ProcessReport: Codable, Hashable, Sendable {
 
-  /// Indicates the process identifier (pid) of the application.
+  /// The identifier of the process.
+  ///
+  /// This value corresponds to the operating system process identifier (PID)
+  /// of the observed process.
   public var processIdentifier: Int32?
 
+  /// The application associated with the process.
+  ///
+  /// This value identifies the application to which the process belongs
+  /// and provides additional application metadata.
   public var program: Program?
 
   package init(processIdentifier: Int32?, program: Program?) {
@@ -24,15 +43,17 @@ public struct ProcessReport: Codable, Hashable, Sendable {
     self.program = program
   }
 
-  package init() {
-  }
+  package init() {}
 }
 
 @available(SwiftStdlib 6.0, *)
 extension ProcessReport {
 
-  public typealias Model = V1._ProcessReport
+  /// In used persistent model typealias.
+  public typealias Model = V1.ProcessReport
 
+  /// Create a new ``ProcessReport`` from persistent process report.
+  /// - Parameter persistentModel: Persistent process report.
   public init(persistentModel: Model) {
     processIdentifier = persistentModel.processIdentifier
   }

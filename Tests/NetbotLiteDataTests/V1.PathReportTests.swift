@@ -18,9 +18,9 @@ import Testing
 struct V1_PathReportTests {
 
   @available(SwiftStdlib 6.0, *)
-  @Test("V1._PathReport default initialization")
+  @Test("V1.PathReport default initialization")
   func pathReportDefaultInit() {
-    let report = V1._PathReport()
+    let report = V1.PathReport()
     #expect(report.receivedIPPacketCount == 0)
     #expect(report.sentIPPacketCount == 0)
     #expect(report.receivedTransportByteCount == 0)
@@ -39,7 +39,7 @@ struct V1_PathReportTests {
   @available(SwiftStdlib 6.0, *)
   @Test("Init from persistent model copies all values")
   func dataTransferPathReportFromPersistentModel() {
-    let persistent = V1._PathReport()
+    let persistent = V1.PathReport()
     persistent.receivedIPPacketCount = 10
     persistent.sentIPPacketCount = 20
     persistent.receivedTransportByteCount = 30
@@ -71,7 +71,7 @@ struct V1_PathReportTests {
   @available(SwiftStdlib 6.0, *)
   @Test("mergeValues overwrites all values")
   func mergeValues() {
-    let persistent = V1._PathReport()
+    let persistent = V1.PathReport()
     persistent.receivedIPPacketCount = 1
     persistent.sentIPPacketCount = 2
     persistent.receivedTransportByteCount = 3
@@ -127,7 +127,7 @@ struct V1_PathReportTests {
       SQL_initialized()
 
       let modelContainer = try ModelContainer(
-        for: V1._PathReport.self,
+        for: V1.PathReport.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
       )
       let modelContext = ModelContext(modelContainer)
@@ -147,11 +147,11 @@ struct V1_PathReportTests {
         sentApplicationByteCount: 241
       )
 
-      let model = V1._PathReport()
+      let model = V1.PathReport()
       model.mergeValues(data)
       modelContext.insert(model)
 
-      let fetched = try modelContext.fetch(FetchDescriptor<V1._PathReport>()).first
+      let fetched = try modelContext.fetch(FetchDescriptor<V1.PathReport>()).first
       let persistentModel = try #require(fetched)
       let result = DataTransferReport.PathReport(persistentModel: persistentModel)
       #expect(result == data)

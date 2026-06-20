@@ -19,33 +19,52 @@ import HTTPTypes
   import Foundation
 #endif
 
+/// A in-memory representation of a response.
+///
+/// ``Response`` stores the response metadata, body, and connection
+/// information in a format suitable for persistence.
+///
+/// Use ``Response`` when working with responses in memory.
+/// Use ``V1/Response-21n45`` when storing response data.
+///
+/// - SeeAlso: ``V1/Response-21n45``
 @available(SwiftStdlib 6.0, *)
 public struct Response: Codable, Hashable, Sendable {
 
-  /// The HTTP response object if present. otherwise returns `nil`.
+  /// The HTTP response head received from the server.
+  ///
+  /// Contains the status code, version, and response header fields.
   public var httpResponse: HTTPResponse?
 
-  /// The data is received as the message body of the response.
+  /// The response body payload.
+  ///
+  /// This value contains the raw bytes received from the server.
   public var body: Data?
 
-  /// The HTTP message trailer headers (Trailer / chunked encoding).
+  /// The trailing HTTP fields received after the response body.
+  ///
+  /// Trailer fields are commonly used with chunked transfer encoding
+  /// to provide metadata that is only known after the body has been sent.
   public var trailerHTTPFields: HTTPFields?
 
+  /// Create an instance of an HTTP associated ``Response``.
+  /// - Parameter httpResponse: Associated raw HTTP response.
   package init(httpResponse: HTTPResponse) {
     self.httpResponse = httpResponse
   }
 
+  /// Create an empty ``Response``.
   package init() {}
 }
 
 @available(SwiftStdlib 6.0, *)
 extension Response {
 
-  /// Persistent model class.
-  public typealias Model = V1._Response
+  /// In used persistent model typealias.
+  public typealias Model = V1.Response
 
-  /// Create an instance of `Response` from persistent model.
-  /// - Parameter persistentModel: Response persistent model.
+  /// Create a new ``Response`` from persistent response.
+  /// - Parameter persistentModel: Persistent response.
   public init(persistentModel: Model) {
     httpResponse = persistentModel.httpResponse
     trailerHTTPFields = persistentModel.trailerHTTPFields

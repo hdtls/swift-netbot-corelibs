@@ -142,8 +142,11 @@ public struct DataTransferReport: Codable, Hashable, Sendable {
 @available(SwiftStdlib 6.0, *)
 extension DataTransferReport {
 
-  public typealias Model = V1._DataTransferReport
+  /// In used persistent model typealias.
+  public typealias Model = V1.DataTransferReport
 
+  /// Create a new ``DataTransferReport`` from persistent data transfer report.
+  /// - Parameter persistentModel: Persistent data transfer report.
   public init(persistentModel: Model) {
     self.duration = persistentModel.duration
     self.aggregatePathReport = .init()
@@ -154,9 +157,12 @@ extension DataTransferReport {
 @available(SwiftStdlib 6.0, *)
 extension DataTransferReport.PathReport {
 
-  public typealias Model = V1._PathReport
+  /// In used persistent model typealias.
+  public typealias Model = V1.PathReport
 
-  public init(persistentModel: V1._PathReport) {
+  /// Create a new ``DataTransferReport`` from persistent data transfer report.
+  /// - Parameter persistentModel: Persistent data transfer report.
+  public init(persistentModel: V1.PathReport) {
     self.receivedIPPacketCount = persistentModel.receivedIPPacketCount
     self.sentIPPacketCount = persistentModel.sentIPPacketCount
     self.receivedTransportByteCount = persistentModel.receivedTransportByteCount

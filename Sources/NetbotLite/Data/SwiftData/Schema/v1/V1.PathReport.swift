@@ -29,8 +29,14 @@
 @available(SwiftStdlib 6.0, *)
 extension V1 {
 
-  /// A path report contains counters and statistics observed
-  /// by the connection along a single network path.
+  /// Statistics describing traffic observed on a network path.
+  ///
+  /// ``V1/PathReport`` contains packet counts, byte counts, retransmission
+  /// statistics, round-trip time measurements, and application-level
+  /// transfer metrics collected for a network path.
+  ///
+  /// Use this type to analyze network performance and data transfer
+  /// characteristics for a connection.
   #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
     @Model
   #else
@@ -38,7 +44,7 @@ extension V1 {
       @Observable
     #endif
   #endif
-  public class _PathReport {
+  public class PathReport {
 
     /// The number of IP packets received.
     public var receivedIPPacketCount: UInt64 = 0
@@ -46,22 +52,38 @@ extension V1 {
     /// The number of IP packets sent.
     public var sentIPPacketCount: UInt64 = 0
 
-    /// The number of transport protocol bytes (such as TCP stream bytes) received.
+    /// The number of transport-layer bytes received.
+    ///
+    /// For TCP connections, this value represents the number of bytes
+    /// received by the transport protocol.
     public var receivedTransportByteCount: UInt64 = 0
 
-    /// The number of transport protocol bytes received as duplicates.
+    /// The number of duplicate transport-layer bytes received.
+    ///
+    /// Duplicate bytes may occur when packets are retransmitted and
+    /// received more than once.
     public var receivedTransportDuplicateByteCount: UInt64 = 0
 
-    /// The number of transport protocol bytes received out of order.
+    /// The number of out-of-order transport-layer bytes received.
+    ///
+    /// These bytes arrived in a different order than originally sent.
     public var receivedTransportOutOfOrderByteCount: UInt64 = 0
 
-    /// The number of transport protocol bytes (such as TCP stream bytes) sent.
+    /// The number of transport-layer bytes sent.
+    ///
+    /// For TCP connections, this value represents the number of bytes
+    /// transmitted by the transport protocol.
     public var sentTransportByteCount: UInt64 = 0
 
-    /// The number of transport protocol bytes retransmitted as part of loss recovery.
+    /// The number of transport-layer bytes retransmitted.
+    ///
+    /// Retransmissions occur as part of packet loss recovery.
     public var retransmittedTransportByteCount: UInt64 = 0
 
-    /// The smoothed average of the transport protocol's round trip time, in seconds.
+    /// The smoothed round-trip time, in seconds.
+    ///
+    /// This value represents the transport protocol's calculated
+    /// smoothed RTT.
     public var transportSmoothedRTT: Double = 0
 
     /// The minimum value of the transport protocol's round trip time, in seconds.
@@ -76,7 +98,9 @@ extension V1 {
     /// The number of bytes sent by the application.
     public var sentApplicationByteCount: UInt64 = 0
 
-    /// Formatted path report including receivedApplicationByteCount and sentApplicationByteCout.
+    /// Human-readable representations of path report metrics.
+    ///
+    /// Use this type when displaying metrics in user interfaces.
     public struct Formatted: Codable, Hashable, Sendable {
 
       /// The formatted number of bytes received by the application.
@@ -94,30 +118,31 @@ extension V1 {
       }
     }
 
-    /// Formatted path report.
+    /// Human-readable representations of the metrics.
     public var formatted: Formatted = Formatted()
 
-    /// Data transfer report describe the relationship between ``V1._DataTransferReport`` and ``V1._PathReport``.
-    public var dataTransferReport: _DataTransferReport?
+    /// The data transfer report associated with this path report.
+    ///
+    /// This relationship identifies the report that owns the path metrics.
+    public var dataTransferReport: V1.DataTransferReport?
 
-    /// Create a new ``V1._PathReport`` instance.
+    /// Creates an empty ``V1/PathReport``.
     public init() {}
   }
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._PathReport {
+extension V1.PathReport {
 
-  /// Converts a runtime ``DataTransferReport.PathReport`` into a persistent
-  /// ``V1._PathReport`` snapshot.
+  /// Converts a runtime ``DataTransferReport/PathReport`` into a persistent
+  /// ``V1/PathReport`` snapshot.
   ///
   /// This method captures the current state of the path report at a point in time.
   /// Runtime-only fields (timers, live state transitions, observation locks)
   /// are flattened into persistable values.
   ///
-  /// - Parameter data: New ``DataTransferReport.PathReport`` to map.
-  /// - SeeAlso: ``DataTransferReport.PathReport.init(persistentModel:)``.
-  public func mergeValues(_ data: DataTransferReport.PathReport) {
+  /// - Parameter data: New ``DataTransferReport/PathReport`` to map.
+  public func mergeValues(_ data: NetbotLiteData.DataTransferReport.PathReport) {
     if self.sentApplicationByteCount != data.sentApplicationByteCount
       || self.receivedApplicationByteCount != data.receivedApplicationByteCount
     {

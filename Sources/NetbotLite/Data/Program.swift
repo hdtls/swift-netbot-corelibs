@@ -17,20 +17,42 @@
   import Foundation
 #endif
 
+/// Information about an application and its associated activity.
+///
+/// ``Program`` stores metadata describing an application, including its
+/// name, bundle location, executable, icon, and aggregated reporting data.
+///
+/// Use this type to associate network activity and data transfer metrics
+/// with a specific application.
+///
+/// Use ``Program`` when working with programs in memory.
+/// Use ``V1/Program-mewl`` when storing program data.
+///
+/// - SeeAlso: ``V1/Program-mewl``
 @available(SwiftStdlib 6.0, *)
 public struct Program: Hashable, Codable, Sendable {
 
-  /// Indicates the name of the program.
-  /// This is dependent on the current localization of the referenced program, and is suitable for presentation to the user.
-  public var localizedName: String = ""
+  /// The localized display name of the application.
+  ///
+  /// This value is intended for presentation to users and may vary
+  /// depending on the current locale.
+  public var localizedName: String
 
-  /// Indicates the URL to the application's bundle, or nil if the application does not have a bundle.
+  /// The URL of the application's bundle.
+  ///
+  /// This value identifies the bundle package that contains the
+  /// application's resources and executable.
   public var bundleURL: URL?
 
-  /// Indicates the URL to the application's executable.
+  /// The URL of the application's executable.
+  ///
+  /// This value identifies the executable file launched by the system.
   public var executableURL: URL?
 
-  /// Indicates the icon TIFF representation data of the application.
+  /// The application's icon in TIFF format.
+  ///
+  /// This value contains the raw TIFF representation of the application's
+  /// icon and may be used to recreate an image for display purposes.
   public var iconTIFFRepresentation: Data?
 
   package init(
@@ -56,8 +78,11 @@ extension Program: Identifiable {
 @available(SwiftStdlib 6.0, *)
 extension Program {
 
-  public typealias Model = V1._Program
+  /// In used persistent model typealias.
+  public typealias Model = V1.Program
 
+  /// Create a new ``Program`` from persistent program.
+  /// - Parameter persistentModel: Persistent prgram.
   public init(persistentModel: Model) {
     localizedName = persistentModel.localizedName
     bundleURL = persistentModel.bundleURL

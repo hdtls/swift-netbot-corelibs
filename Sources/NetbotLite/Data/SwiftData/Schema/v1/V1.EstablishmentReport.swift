@@ -26,9 +26,18 @@ import NEAddressProcessing
 extension V1 {
 
   #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-    @Model final public class _EstablishmentReport {
+    /// Information about a connection establishment attempt.
+    ///
+    /// ``V1/EstablishmentReport-6l7ln`` describes how a connection was established,
+    /// including endpoint resolution, retry information, proxy usage,
+    /// and the time required to complete the attempt.
+    ///
+    /// Use this type to analyze connection setup behavior and diagnose
+    /// connectivity issues.
+    @Model final public class EstablishmentReport {
 
       /// The duration of the connection's establishment in seconds.
+      ///
       /// This is the total time from when the successful connection
       /// attempt began until the connection becomes ready, including
       /// resolution, proxy evaluation, and protocol handshakes.
@@ -36,19 +45,27 @@ extension V1 {
       public var duration: Duration = Duration.zero
 
       /// The delay after calling start() before the successful connection
-      /// attempt began. For connections that succeed on the first attempt,
-      /// this value will be 0. For connections that move into the .waiting
-      /// state, this value will be greater than 0.
+      /// attempt began.
+      ///
+      /// For connections that succeed on the first attempt, this value will be 0.
+      /// For connections that move into the .waiting state, this value will be
+      /// greater than 0.
       public var attemptStartedAfterInterval: Double = 0
 
       /// The number of connection attempts made before the successful attempt.
+      ///
+      /// A value of 0 indicates that this was the first attempt.
       public var previousAttemptCount: Int = 0
 
-      /// The endpoint of the source.
+      /// The local endpoint used to initiate the connection.
       @Attribute(.transformable(by: SQLValueTransformer<Address>.self))
       public var sourceEndpoint: Address?
 
-      /// The endpoint of the remote.
+      /// The remote endpoint to which the connection was established.
+      ///
+      /// When a proxy is used, this value returns proxyEndpoint.
+      /// Otherwise, it returns the first successfully resolved endpoint,
+      /// if available.
       public var destinationEndpoint: Address? {
         guard usedProxy else {
           return resolutions.first?.successfulEndpoint
@@ -56,46 +73,74 @@ extension V1 {
         return proxyEndpoint
       }
 
-      /// A boolean indicating if the connection was established through a proxy.
+      /// A Boolean value indicating whether a proxy was used.
       public var usedProxy: Bool = false
 
       /// The endpoint of the proxy used by a connection, if applicable.
       @Attribute(.transformable(by: SQLValueTransformer<Address>.self))
       public var proxyEndpoint: Address?
 
+      /// A Resolution represents one step of endpoint resolution.
+      ///
+      /// - SeeAlso: ``EstablishmentReport/Resolution``.
+      public typealias Resolution = NetbotLiteData.EstablishmentReport.Resolution
+
       /// An array of zero or more Resolution reports, in order from first resolved
       /// to last resolved.
+      ///
+      /// Each resolution contains information about address lookup and
+      /// endpoint selection that occurred before the connection succeeded
+      /// or failed.
       public var resolutions: [Resolution] = []
 
-      public var connection: _Connection?
+      /// The connection associated with the establishment attempt.
+      public var connection: V1.Connection?
 
+      /// Creates an empty ``V1/EstablishmentReport-6l7ln``.
       public init() {}
     }
   #else
+    /// Information about a connection establishment attempt.
+    ///
+    /// ``V1/EstablishmentReport-6l7ln`` describes how a connection was established,
+    /// including endpoint resolution, retry information, proxy usage,
+    /// and the time required to complete the attempt.
+    ///
+    /// Use this type to analyze connection setup behavior and diagnose
+    /// connectivity issues.
     #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
-    final public class _EstablishmentReport {
+    final public class EstablishmentReport {
 
       /// The duration of the connection's establishment in seconds.
+      ///
       /// This is the total time from when the successful connection
       /// attempt began until the connection becomes ready, including
       /// resolution, proxy evaluation, and protocol handshakes.
       public var duration: Duration = Duration.zero
 
       /// The delay after calling start() before the successful connection
-      /// attempt began. For connections that succeed on the first attempt,
-      /// this value will be 0. For connections that move into the .waiting
-      /// state, this value will be greater than 0.
+      /// attempt began.
+      ///
+      /// For connections that succeed on the first attempt, this value will be 0.
+      /// For connections that move into the .waiting state, this value will be
+      /// greater than 0.
       public var attemptStartedAfterInterval: Double = 0
 
       /// The number of connection attempts made before the successful attempt.
+      ///
+      /// A value of 0 indicates that this was the first attempt.
       public var previousAttemptCount: Int = 0
 
-      /// The endpoint of the source.
+      /// The local endpoint used to initiate the connection.
       public var sourceEndpoint: Address?
 
-      /// The endpoint of the remote.
+      /// The remote endpoint to which the connection was established.
+      ///
+      /// When a proxy is used, this value returns proxyEndpoint.
+      /// Otherwise, it returns the first successfully resolved endpoint,
+      /// if available.
       public var destinationEndpoint: Address? {
         guard usedProxy else {
           return resolutions.first?.successfulEndpoint
@@ -103,71 +148,48 @@ extension V1 {
         return proxyEndpoint
       }
 
-      /// A boolean indicating if the connection was established through a proxy.
+      /// A Boolean value indicating whether a proxy was used.
       public var usedProxy: Bool = false
 
-      /// The endpoint of the proxy used by a connection, if applicable.
+      /// The proxy endpoint used for the connection.
+      ///
+      /// This value is meaningful only when usedProxy is true.
       public var proxyEndpoint: Address?
+
+      /// A Resolution represents one step of endpoint resolution.
+      ///
+      /// - SeeAlso: ``EstablishmentReport/Resolution``.
+      public typealias Resolution = NetbotLiteData.EstablishmentReport.Resolution
 
       /// An array of zero or more Resolution reports, in order from first resolved
       /// to last resolved.
+      ///
+      /// Each resolution contains information about address lookup and
+      /// endpoint selection that occurred before the connection succeeded
+      /// or failed.
       public var resolutions: [Resolution] = []
 
-      public var connection: _Connection?
+      /// The connection associated with the establishment attempt.
+      public var connection: V1.Connection?
 
+      /// Creates an empty ``V1/EstablishmentReport-6l7ln``.
       public init() {}
     }
   #endif
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._EstablishmentReport {
+extension V1.EstablishmentReport {
 
-  /// A Resolution report represents one step of endpoint resolution.
-  public struct Resolution: Codable, Hashable, Sendable {
-
-    /// The source of this resolution.
-    public var source: EstablishmentReport.Resolution.Source
-
-    /// The duration spent on this resolution step.
-    public var duration: Duration
-
-    /// The number of resolved endpoints discovered by the resolution step.
-    public var endpointCount: Int
-
-    /// The resolved endpoint that led to a successful connection.
-    public var successfulEndpoint: Address
-
-    /// The first resolved endpoint attempted, which may be the same as the successfulEndpoint.
-    public var preferredEndpoint: Address
-
-    /// The protocl of this DNS resolution.
-    public var dnsProtocol: EstablishmentReport.Resolution.DNSProtocol
-
-    public init(
-      source: EstablishmentReport.Resolution.Source,
-      duration: Duration,
-      endpointCount: Int,
-      successfulEndpoint: Address,
-      preferredEndpoint: Address,
-      dnsProtocol: EstablishmentReport.Resolution.DNSProtocol
-    ) {
-      self.source = source
-      self.duration = duration
-      self.endpointCount = endpointCount
-      self.successfulEndpoint = successfulEndpoint
-      self.preferredEndpoint = preferredEndpoint
-      self.dnsProtocol = dnsProtocol
-    }
-  }
-}
-
-@available(SwiftStdlib 6.0, *)
-extension V1._EstablishmentReport {
-
-  /// Merge new values from DTO.
-  /// - Parameter data: New `EstablishmentReport` to merge.
-  public func mergeValues(_ data: EstablishmentReport) {
+  /// Converts a runtime ``EstablishmentReport`` into a persistent
+  /// ``V1/EstablishmentReport-6l7ln`` snapshot.
+  ///
+  /// This method captures the current state of the establishment activity at a point in time.
+  /// Runtime-only fields (timers, live state transitions, observation locks)
+  /// are flattened into persistable values.
+  ///
+  /// - Parameter data: New ``EstablishmentReport`` to map.
+  public func mergeValues(_ data: NetbotLiteData.EstablishmentReport) {
     #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
       self.duration = data.duration
       self.attemptStartedAfterInterval = data.attemptStartedAfterInterval
@@ -175,16 +197,7 @@ extension V1._EstablishmentReport {
       self.sourceEndpoint = data.sourceEndpoint
       self.usedProxy = data.usedProxy
       self.proxyEndpoint = data.proxyEndpoint
-      self.resolutions = data.resolutions.map {
-        Resolution(
-          source: $0.source,
-          duration: $0.duration,
-          endpointCount: $0.endpointCount,
-          successfulEndpoint: $0.successfulEndpoint,
-          preferredEndpoint: $0.preferredEndpoint,
-          dnsProtocol: $0.dnsProtocol
-        )
-      }
+      self.resolutions = data.resolutions
     #else
       if self.duration != data.duration {
         self.duration = data.duration
@@ -204,18 +217,8 @@ extension V1._EstablishmentReport {
       if self.proxyEndpoint != data.proxyEndpoint {
         self.proxyEndpoint = data.proxyEndpoint
       }
-      let resolutions = data.resolutions.map {
-        Resolution(
-          source: $0.source,
-          duration: $0.duration,
-          endpointCount: $0.endpointCount,
-          successfulEndpoint: $0.successfulEndpoint,
-          preferredEndpoint: $0.preferredEndpoint,
-          dnsProtocol: $0.dnsProtocol
-        )
-      }
-      if self.resolutions != resolutions {
-        self.resolutions = resolutions
+      if self.resolutions != data.resolutions {
+        self.resolutions = data.resolutions
       }
     #endif
   }

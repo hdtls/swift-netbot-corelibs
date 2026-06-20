@@ -98,10 +98,10 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func dnsResolutionReportFromPersistentModel() throws {
-    let persistent = V1._DNSResolutionReport()
+    let persistent = V1.DNSResolutionReport()
     persistent.duration = .seconds(12.5)
     persistent.resolutions = [
-      V1._DNSResolutionReport.Resolution(
+      V1.DNSResolutionReport.Resolution(
         source: .query,
         duration: .seconds(3.5),
         dnsProtocol: .udp,
@@ -110,7 +110,7 @@ import Testing
           Address.hostPort(host: "3.3.3.3", port: 53),
         ]
       ),
-      V1._DNSResolutionReport.Resolution(
+      V1.DNSResolutionReport.Resolution(
         source: .cache,
         duration: .seconds(4.75),
         dnsProtocol: .tcp,

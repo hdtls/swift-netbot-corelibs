@@ -20,34 +20,56 @@ import NEAddressProcessing
   import Foundation
 #endif
 
-/// A `Request` object represents a proxy request.
+/// A persistent representation of a request.
+///
+/// ``Request`` stores the request metadata, payload, and associated
+/// connection information in a format suitable for persistence and
+/// data transfer.
+///
+/// Use ``Request`` when working with requests in memory.
+/// Use ``V1/Request-1640l`` when storing request data.
+///
+/// - SeeAlso: ``V1/Request-1640l``
 @available(SwiftStdlib 6.0, *)
 public struct Request: Codable, Hashable, Sendable {
 
-  /// The HTTP request object if present. otherwise returns `nil`.
+  /// The HTTP request head.
+  ///
+  /// Contains the request method, target URI, version,
+  /// and request header fields.
+  ///
+  /// - Important: Modify `httpRequest` also change `address`.
   public var httpRequest: HTTPRequest? {
     didSet {
       address = httpRequest?.address
     }
   }
 
-  /// The address of the receiver.
+  /// The destination address associated with the request.
+  ///
+  /// This value typically identifies the remote endpoint to which
+  /// the request was sent.
   public var address: Address?
 
-  /// The data is sent as the message body of the request.
+  /// The request body payload.
+  ///
+  /// This value contains the raw bytes sent as part of the request.
   public var body: Data?
 
-  /// The HTTP message trailer headers (Trailer / chunked encoding).
+  /// The trailing HTTP fields sent after the request body.
+  ///
+  /// Trailer fields are commonly used with chunked transfer encoding
+  /// to provide metadata that is only known after the body has been sent.
   public var trailerHTTPFields: HTTPFields?
 
-  /// Create an instance of `Request` from `HTTPRequest`.
+  /// Create an instance of ``Request`` from `HTTPRequest`.
   /// - Parameter httpRequest: Original HTTP request.
   package init(httpRequest: HTTPRequest) {
     self.httpRequest = httpRequest
     self.address = httpRequest.address
   }
 
-  /// Create an instance of `Request` from `Address`.
+  /// Create an instance of ``Request`` from ``NEAddressProcessing/Address``.
   /// - Parameter address: Request address.
   package init(address: Address) {
     self.address = address
@@ -77,11 +99,11 @@ public struct Request: Codable, Hashable, Sendable {
 @available(SwiftStdlib 6.0, *)
 extension Request {
 
-  /// Persistent model class
-  public typealias Model = V1._Request
+  /// In used persistent model typealias.
+  public typealias Model = V1.Request
 
-  /// Create an instance of `Request` from persistent model.
-  /// - Parameter persistentModel: Request persistent model.
+  /// Create a new ``Request`` from persistent request.
+  /// - Parameter persistentModel: Persistent request.
   public init(persistentModel: Model) {
     httpRequest = persistentModel.httpRequest
     address = persistentModel.address

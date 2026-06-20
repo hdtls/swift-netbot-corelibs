@@ -26,7 +26,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValues() async throws {
-    let source = V1._Response()
+    let source = V1.Response()
     #expect(source.httpResponse == nil)
     #expect(source.body == nil)
     #expect(source.trailerHTTPFields == nil)
@@ -36,7 +36,7 @@ import Testing
   @Test func setHTTPResponse() async throws {
     let httpResponse = HTTPResponse(status: .ok)
 
-    let source = V1._Response()
+    let source = V1.Response()
     source.httpResponse = httpResponse
     #expect(source.httpResponse == httpResponse)
 
@@ -51,7 +51,7 @@ import Testing
     data.body = Data([0])
     data.trailerHTTPFields = [.init("Digest")!: "sha-256=abc123..."]
 
-    let source = V1._Response()
+    let source = V1.Response()
     source.mergeValues(data)
 
     #expect(source.httpResponse == httpResponse)
@@ -70,7 +70,7 @@ import Testing
       SQL_initialized()
 
       let modelContainer = try ModelContainer(
-        for: V1._Response.self,
+        for: V1.Response.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
       )
       let modelContext = ModelContext(modelContainer)
@@ -79,11 +79,11 @@ import Testing
       data.body = Data([0])
       data.trailerHTTPFields = [.init("Digest")!: "sha-256=abc123..."]
 
-      let model = V1._Response()
+      let model = V1.Response()
       model.mergeValues(data)
       modelContext.insert(model)
 
-      let fetched = try modelContext.fetch(FetchDescriptor<V1._Response>()).first
+      let fetched = try modelContext.fetch(FetchDescriptor<V1.Response>()).first
       let persistentModel = try #require(fetched)
       let result = Response(persistentModel: persistentModel)
       #expect(result == data)

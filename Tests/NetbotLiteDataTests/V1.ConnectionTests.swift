@@ -31,7 +31,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValues() {
-    let connection = V1._Connection()
+    let connection = V1.Connection()
     #expect(connection.taskIdentifier == 0)
     #expect(connection.originalRequest == nil)
     #expect(connection.currentRequest == nil)
@@ -49,10 +49,10 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func connectionIdentifiable() {
     #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-      let connection = V1._Connection()
+      let connection = V1.Connection()
       #expect(connection.id == connection.persistentModelID)
     #else
-      let connection = V1._Connection()
+      let connection = V1.Connection()
       #expect(connection.persistentModelID == connection.taskIdentifier)
       #expect(connection.id == connection.persistentModelID)
     #endif
@@ -74,7 +74,7 @@ import Testing
       forwardingRule: nil
     )
 
-    let connection = V1._Connection()
+    let connection = V1.Connection()
     connection.taskIdentifier = 1
     connection.earliestBeginDate = date
     connection.taskDescription = "descB"
@@ -106,19 +106,19 @@ import Testing
       SQL_initialized()
 
       let modelContainer = try ModelContainer(
-        for: V1._Connection.self,
+        for: V1.Connection.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
       )
       let modelContext = ModelContext(modelContainer)
 
       let data = Connection()
 
-      let model = V1._Connection()
+      let model = V1.Connection()
       model.mergeValues(data)
       modelContext.insert(model)
 
       #expect(throws: Never.self) {
-        let fetched = try modelContext.fetch(FetchDescriptor<V1._Connection>()).first
+        let fetched = try modelContext.fetch(FetchDescriptor<V1.Connection>()).first
         #expect(fetched != nil)
       }
     }

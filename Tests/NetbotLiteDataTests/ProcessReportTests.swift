@@ -53,7 +53,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func initFromPersistentModel() throws {
-    let model = V1._ProcessReport()
+    let model = ProcessReport.Model()
     model.processIdentifier = 12345
     let report = ProcessReport(persistentModel: model)
     #expect(report.processIdentifier == 12345)

@@ -27,7 +27,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValues() async throws {
-    let source = V1._Request()
+    let source = V1.Request()
     #expect(source.httpRequest == nil)
     #expect(source.address == nil)
     #expect(source.hostname == nil)
@@ -38,7 +38,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func createRequestWithAddress() async throws {
-    let source = V1._Request()
+    let source = V1.Request()
     source.address = .hostPort(host: "swift.org", port: 443)
     #expect(source.httpRequest == nil)
     #expect(source.address == .hostPort(host: "swift.org", port: 443))
@@ -50,7 +50,7 @@ import Testing
   @Test func createRequestWithHTTPRequest() async throws {
     let httpRequest = HTTPRequest(
       method: .get, scheme: "https", authority: "swift.org:443", path: nil)
-    let source = V1._Request()
+    let source = V1.Request()
     source.httpRequest = httpRequest
     #expect(source.httpRequest == httpRequest)
     //      #expect(source.address == .hostPort(host: "swift.org", port: 443))
@@ -63,7 +63,7 @@ import Testing
     let httpRequest = HTTPRequest(
       method: .get, scheme: "https", authority: "swift.org:443", path: nil)
 
-    let source = V1._Request()
+    let source = V1.Request()
     source.address = .hostPort(host: "swift.org", port: 443)
     source.httpRequest = httpRequest
     #expect(source.httpRequest == httpRequest)
@@ -75,7 +75,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func setAddress() async throws {
     let address = Address.hostPort(host: "swift.org", port: 443)
-    let source = V1._Request()
+    let source = V1.Request()
     source.address = address
     #expect(source.address == address)
 
@@ -91,7 +91,7 @@ import Testing
     data.body = Data([0])
     data.trailerHTTPFields = [.init("Digest")!: "sha-256=abc123..."]
 
-    let source = V1._Request()
+    let source = V1.Request()
     source.mergeValues(data)
 
     #expect(source.httpRequest == httpRequest)
@@ -126,7 +126,7 @@ import Testing
       SQL_initialized()
 
       let modelContainer = try ModelContainer(
-        for: V1._Request.self,
+        for: V1.Request.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
       )
       let modelContext = ModelContext(modelContainer)
@@ -143,11 +143,11 @@ import Testing
       data.body = Data([0])
       data.trailerHTTPFields = [.init("Digest")!: "sha-256=abc123..."]
 
-      let model = V1._Request()
+      let model = V1.Request()
       model.mergeValues(data)
       modelContext.insert(model)
 
-      let fetched = try modelContext.fetch(FetchDescriptor<V1._Request>()).first
+      let fetched = try modelContext.fetch(FetchDescriptor<V1.Request>()).first
       let persistentModel = try #require(fetched)
       let result = Request(persistentModel: persistentModel)
       #expect(result == data)

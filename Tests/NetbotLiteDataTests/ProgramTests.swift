@@ -66,7 +66,7 @@ import Testing
     let bundleURL = URL(string: "file:///Applications/FakeApp.app")
     let execURL = URL(string: "file:///Applications/FakeApp.app/Contents/MacOS/FakeApp")
     let iconData = Data("icondata".utf8)
-    let persistent = V1._Program()
+    let persistent = Program.Model()
     persistent.localizedName = "FakeApp"
     persistent.bundleURL = bundleURL
     persistent.executableURL = execURL

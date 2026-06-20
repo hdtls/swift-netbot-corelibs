@@ -26,7 +26,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func persistentModelTypealias() {
-    #expect(DNSResolutionReport.Model.self == V1._DNSResolutionReport.self)
+    #expect(DNSResolutionReport.Model.self == V1.DNSResolutionReport.self)
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -56,7 +56,7 @@ import Testing
       ]
     )
 
-    let report = V1._DNSResolutionReport()
+    let report = V1.DNSResolutionReport()
     report.mergeValues(data)
 
     #expect(report.earliestBeginDate == earliestBeginDate)
@@ -94,7 +94,7 @@ import Testing
       SQL_initialized()
 
       let modelContainer = try ModelContainer(
-        for: V1._DNSResolutionReport.self,
+        for: V1.DNSResolutionReport.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
       )
       let modelContext = ModelContext(modelContainer)
@@ -110,11 +110,11 @@ import Testing
             ])
         ])
 
-      let model = V1._DNSResolutionReport()
+      let model = V1.DNSResolutionReport()
       model.mergeValues(data)
       modelContext.insert(model)
 
-      let fetched = try modelContext.fetch(FetchDescriptor<V1._DNSResolutionReport>()).first
+      let fetched = try modelContext.fetch(FetchDescriptor<V1.DNSResolutionReport>()).first
       let persistentModel = try #require(fetched)
       let result = DNSResolutionReport(persistentModel: persistentModel)
       #expect(result == data)

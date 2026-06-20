@@ -25,7 +25,12 @@ import NEAddressProcessing
 extension V1 {
 
   #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-    @Model final public class _DNSResolutionReport {
+    /// Information about a DNS resolution attempt.
+    ///
+    /// ``V1/DNSResolutionReport-psq7`` describes the resolution
+    /// process used to discover endpoints for a connection, including timing
+    /// information and the individual resolution steps that were performed.
+    @Model final public class DNSResolutionReport {
 
       /// The date when the DNS resolution begin.
       public var earliestBeginDate = Date.now
@@ -37,19 +42,29 @@ extension V1 {
       @Attribute(.transformable(by: SQLValueTransformer<Duration>.self))
       public var duration: Duration = Duration.zero
 
+      /// A Resolution report represents one step of endpoint resolution.
+      public typealias Resolution = NetbotLiteData.DNSResolutionReport.Resolution
+
       /// An array of zero or more Resolution reports, in order from first resolved
       /// to last resolved.
       public var resolutions: [Resolution] = []
 
-      public var connection: _Connection?
+      /// The connection associated with the DNS resolution attempt.
+      public var connection: V1.Connection?
 
+      /// Create an empty ``V1/DNSResolutionReport-psq7``.
       public init() {}
     }
   #else
+    /// Information about a DNS resolution attempt.
+    ///
+    /// ``V1/DNSResolutionReport-psq7`` describes the resolution
+    /// process used to discover endpoints for a connection, including timing
+    /// information and the individual resolution steps that were performed.
     #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
-    final public class _DNSResolutionReport {
+    final public class DNSResolutionReport {
 
       /// The date when the DNS resolution begin.
       public var earliestBeginDate = Date.now
@@ -60,71 +75,38 @@ extension V1 {
       /// resolution, proxy evaluation, and protocol handshakes.
       public var duration: Duration = Duration.zero
 
+      /// A Resolution report represents one step of endpoint resolution.
+      public typealias Resolution = NetbotLiteData.DNSResolutionReport.Resolution
+
       /// An array of zero or more Resolution reports, in order from first resolved
       /// to last resolved.
       public var resolutions: [Resolution] = []
 
-      public var connection: _Connection?
+      /// The connection associated with the DNS resolution attempt.
+      public var connection: V1.Connection?
 
+      /// Create an empty ``V1/DNSResolutionReport-psq7``.
       public init() {}
     }
   #endif
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._DNSResolutionReport {
-  /// A Resolution report represents one step of endpoint resolution.
-  public struct Resolution: Codable, Hashable, Sendable {
+extension V1.DNSResolutionReport {
 
-    public typealias Source = EstablishmentReport.Resolution.Source
-
-    /// The source of this resolution.
-    public var source: Source
-
-    /// The duration spent on this resolution step.
-    public var duration: Duration
-
-    /// The number of resolved endpoints discovered by the resolution step.
-    public var endpointCount: Int { endpoints.count }
-
-    public typealias DNSProtocol = EstablishmentReport.Resolution.DNSProtocol
-
-    /// The protocl of this DNS resolution.
-    public var dnsProtocol: DNSProtocol
-
-    public var endpoints: [Address]
-
-    public init(
-      source: Source,
-      duration: Duration,
-      dnsProtocol: DNSProtocol,
-      endpoints: [Address]
-    ) {
-      self.source = source
-      self.duration = duration
-      self.dnsProtocol = dnsProtocol
-      self.endpoints = endpoints
-    }
-  }
-}
-
-@available(SwiftStdlib 6.0, *)
-extension V1._DNSResolutionReport {
-
-  /// Merge new values from DTO.
-  /// - Parameter data: New `DNSResolutionReport` to merge.
-  public func mergeValues(_ data: DNSResolutionReport) {
+  /// Converts a runtime ``DNSResolutionReport`` into a persistent
+  /// ``V1/DNSResolutionReport-psq7`` snapshot.
+  ///
+  /// This method captures the current state of the DNS resolution activity at a point in time.
+  /// Runtime-only fields (timers, live state transitions, observation locks)
+  /// are flattened into persistable values.
+  ///
+  /// - Parameter data: New ``DNSResolutionReport`` to map.
+  public func mergeValues(_ data: NetbotLiteData.DNSResolutionReport) {
     #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
       self.earliestBeginDate = data.earliestBeginDate
       self.duration = data.duration
-      self.resolutions = data.resolutions.map {
-        Resolution(
-          source: $0.source,
-          duration: $0.duration,
-          dnsProtocol: $0.dnsProtocol,
-          endpoints: $0.endpoints
-        )
-      }
+      self.resolutions = data.resolutions
     #else
       if self.earliestBeginDate != data.earliestBeginDate {
         self.earliestBeginDate = data.earliestBeginDate
@@ -132,16 +114,8 @@ extension V1._DNSResolutionReport {
       if self.duration != data.duration {
         self.duration = data.duration
       }
-      let resolutions = data.resolutions.map {
-        Resolution(
-          source: $0.source,
-          duration: $0.duration,
-          dnsProtocol: $0.dnsProtocol,
-          endpoints: $0.endpoints
-        )
-      }
-      if self.resolutions != resolutions {
-        self.resolutions = resolutions
+      if self.resolutions != data.resolutions {
+        self.resolutions = data.resolutions
       }
     #endif
   }

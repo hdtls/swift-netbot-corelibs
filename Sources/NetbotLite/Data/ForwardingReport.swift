@@ -17,21 +17,36 @@
   import Foundation
 #endif
 
-/// A ForwardingReport report represents forwarding rule matching.
+/// Information about how a connection was forwarded.
+///
+/// ``ForwardingReport`` describes the forwarding
+/// mechanism used for a connection, including the forwarding protocol,
+/// matching rule, timing information, and the associated connection.
 @available(SwiftStdlib 6.0, *)
 public struct ForwardingReport: Codable, Hashable, Sendable {
 
-  /// The date when the forward lookup begin.
+  /// The earliest date and time at which forwarding began.
+  ///
+  /// This value identifies when forwarding activity was first observed
+  /// for the connection.
   public var earliestBeginDate: Date
 
-  /// Length of time in seconds spent on forwarding rule matching.
+  /// The duration of the forwarding activity.
+  ///
+  /// This value represents the elapsed time during which the connection
+  /// was forwarded.
   public var duration: Duration
 
-  /// Forward protocol used to forward requests.
+  /// The forwarding protocol used for the connection.
+  ///
+  /// Examples include direct forwarding and proxy-based forwarding.
   public var forwardProtocol: String
   package var _forwardProtocol: (any Sendable)?
 
-  /// Forwarding rule description for establishing connection.
+  /// The forwarding rule that matched the connection.
+  ///
+  /// This value may identify the rule, policy, or configuration entry
+  /// responsible for selecting the forwarding behavior.
   public var forwardingRule: String?
   package var _forwardingRule: (any Sendable)?
 
@@ -88,8 +103,11 @@ public struct ForwardingReport: Codable, Hashable, Sendable {
 @available(SwiftStdlib 6.0, *)
 extension ForwardingReport {
 
-  public typealias Model = V1._ForwardingReport
+  /// In used persistent model typealias.
+  public typealias Model = V1.ForwardingReport
 
+  /// Create a new ``ForwardingReport`` from persistent forwarding report.
+  /// - Parameter persistentModel: Persistent forwarding report.
   public init(persistentModel: Model) {
     self.earliestBeginDate = persistentModel.earliestBeginDate
     self.duration = persistentModel.duration

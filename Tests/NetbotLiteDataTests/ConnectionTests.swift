@@ -213,12 +213,12 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func persistentModel() {
     let source = Connection.Model.self
-    #expect(source == V1._Connection.self)
+    #expect(source == V1.Connection.self)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test func initializeConnectionFromPersistentModel() {
-    let data = V1._Connection()
+    let data = V1.Connection()
     data.taskIdentifier = 123
     data.earliestBeginDate = Date()
     data.taskDescription = "test"

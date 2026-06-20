@@ -301,10 +301,10 @@ public enum DataTransfer: Hashable, Sendable {
   #endif
   private func performBatchUpdates(_ models: [Connection]) async {
     func doInsert(_ model: Connection) throws {
-      var persistentModel: V1._Connection
+      var persistentModel: V1.Connection
       #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
         let term = model.taskIdentifier
-        var fd = FetchDescriptor<V1._Connection>(
+        var fd = FetchDescriptor<V1.Connection>(
           predicate: #Predicate { $0.taskIdentifier == term })
         fd.relationshipKeyPathsForPrefetching = [
           \.currentRequest,
@@ -328,7 +328,7 @@ public enum DataTransfer: Hashable, Sendable {
         persistentModel = _persistentModel
         persistentModel.mergeValues(model)
       } else {
-        persistentModel = V1._Connection()
+        persistentModel = V1.Connection()
         persistentModel.mergeValues(model)
         #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
           modelContext.insert(persistentModel)
@@ -475,14 +475,14 @@ public enum DataTransfer: Hashable, Sendable {
             modelContext.insert(dataTransferReport)
           #endif
 
-          let aggregatePathReport = V1._PathReport()
+          let aggregatePathReport = V1.PathReport()
           aggregatePathReport.mergeValues(backingData.aggregatePathReport)
           #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             modelContext.insert(aggregatePathReport)
           #endif
           dataTransferReport.aggregatePathReport = aggregatePathReport
 
-          let pathReport = V1._PathReport()
+          let pathReport = V1.PathReport()
           pathReport.mergeValues(backingData.pathReport)
           #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             modelContext.insert(pathReport)
@@ -551,7 +551,7 @@ public enum DataTransfer: Hashable, Sendable {
           var program: Program.Model
           #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
             let _program = try modelContext.fetch(
-              FetchDescriptor<V1._Program>(
+              FetchDescriptor<V1.Program>(
                 predicate: #Predicate {
                   $0.localizedName == backingData.localizedName
                 })
@@ -590,19 +590,19 @@ public enum DataTransfer: Hashable, Sendable {
             #endif
             persistentModel.processReport?.program = program
 
-            let dataTransferReport = V1._DataTransferReport()
+            let dataTransferReport = V1.DataTransferReport()
             #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
               modelContext.insert(dataTransferReport)
             #endif
             program.dataTransferReport = dataTransferReport
 
-            let aggregatePathReport = V1._PathReport()
+            let aggregatePathReport = V1.PathReport()
             #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
               modelContext.insert(aggregatePathReport)
             #endif
             dataTransferReport.aggregatePathReport = aggregatePathReport
 
-            let pathReport = V1._PathReport()
+            let pathReport = V1.PathReport()
             #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
               modelContext.insert(pathReport)
             #endif

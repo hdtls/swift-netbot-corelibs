@@ -235,7 +235,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test("Initialization from Model copies all properties")
   func initFromPersistentModel() throws {
-    let pathReport = V1._PathReport()
+    let pathReport = DataTransferReport.PathReport.Model()
     pathReport.receivedIPPacketCount = 10
     pathReport.sentIPPacketCount = 20
     pathReport.receivedTransportByteCount = 30
@@ -249,7 +249,7 @@ import Testing
     pathReport.receivedApplicationByteCount = 110
     pathReport.sentApplicationByteCount = 12
 
-    let model = V1._DataTransferReport()
+    let model = V1.DataTransferReport()
     model.duration = .seconds(1.5)
     model.aggregatePathReport = pathReport
     model.pathReport = pathReport

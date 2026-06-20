@@ -18,7 +18,7 @@
   import UniformTypeIdentifiers
 
   @available(SwiftStdlib 6.0, *)
-  @_spi(SwiftUI) extension V1._ProcessReport {
+  @_spi(SwiftUI) extension V1.ProcessReport {
 
     @MainActor private static let cache = NSCache<NSString, NSImage>()
 
@@ -78,7 +78,7 @@
   }
 
   @available(SwiftStdlib 6.0, *)
-  @_spi(SwiftUI) extension V1._Program {
+  @_spi(SwiftUI) extension V1.Program {
 
     @MainActor public var applicationIconImage: NSImage? {
       processReports.first(where: { $0.applicationIconImage != nil })?.applicationIconImage
@@ -98,12 +98,12 @@
     private let localizedName: String?
     private let nsImage: NSImage
 
-    public init(data: V1._ProcessReport) {
+    public init(data: V1.ProcessReport) {
       self.localizedName = data.program?.localizedName
       self.nsImage = data.applicationIconImage ?? .init()
     }
 
-    public init(data: V1._Program) {
+    public init(data: V1.Program) {
       self.localizedName = data.localizedName
       self.nsImage = data.applicationIconImage ?? .init()
     }

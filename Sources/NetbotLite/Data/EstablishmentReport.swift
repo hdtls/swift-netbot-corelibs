@@ -13,32 +13,45 @@
 
 import NEAddressProcessing
 
-/// An EstablishmentReport contains information about how an proxy tunnel connection
-/// became established. This is intended to be used for analysis of performance
-/// after connection establishment. The report cannot be gathered until a
-/// connection is in the .ready state.
+/// Information about a connection establishment attempt.
+///
+/// ``EstablishmentReport`` describes how a connection was established,
+/// including endpoint resolution, retry information, proxy usage,
+/// and the time required to complete the attempt.
+///
+/// Use this type to analyze connection setup behavior and diagnose
+/// connectivity issues.
 @available(SwiftStdlib 6.0, *)
 public struct EstablishmentReport: Codable, Hashable, Sendable {
 
   /// The duration of the connection's establishment in seconds.
+  ///
   /// This is the total time from when the successful connection
   /// attempt began until the connection becomes ready, including
   /// resolution, proxy evaluation, and protocol handshakes.
   public var duration: Duration
 
   /// The delay after calling start() before the successful connection
-  /// attempt began. For connections that succeed on the first attempt,
-  /// this value will be 0. For connections that move into the .waiting
-  /// state, this value will be greater than 0.
+  /// attempt began.
+  ///
+  /// For connections that succeed on the first attempt, this value will be 0.
+  /// For connections that move into the .waiting state, this value will be
+  /// greater than 0.
   public var attemptStartedAfterInterval: Double
 
   /// The number of connection attempts made before the successful attempt.
+  ///
+  /// A value of 0 indicates that this was the first attempt.
   public var previousAttemptCount: Int
 
-  /// The endpoint of the source.
+  /// The local endpoint used to initiate the connection.
   public var sourceEndpoint: Address?
 
-  /// The endpoint of the remote.
+  /// The remote endpoint to which the connection was established.
+  ///
+  /// When a proxy is used, this value returns proxyEndpoint.
+  /// Otherwise, it returns the first successfully resolved endpoint,
+  /// if available.
   public var destinationEndpoint: Address? {
     guard usedProxy else {
       return resolutions.first?.successfulEndpoint
@@ -46,10 +59,12 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
     return proxyEndpoint
   }
 
-  /// A boolean indicating if the connection was established through a proxy.
+  /// A Boolean value indicating whether a proxy was used.
   public var usedProxy: Bool
 
-  /// The endpoint of the proxy used by a connection, if applicable.
+  /// The proxy endpoint used for the connection.
+  ///
+  /// This value is meaningful only when usedProxy is true.
   public var proxyEndpoint: Address?
 
   /// A Resolution report represents one step of endpoint resolution.
@@ -58,17 +73,9 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
     /// A Resolution.Source indicates if the set of endpoints was
     /// resolved locally using a cache or a query sent over the
     /// network.
-    public enum Source: String, Codable, Hashable, Sendable {
-
-      /// A query was sent over the network.
-      case query
-
-      /// The local cache was used.
-      case cache
-
-      /// An expired entry in the local cache was used.
-      case expiredCache
-    }
+    ///
+    /// - SeeAlso: ``DNSResolutionReport/Resolution/Source``
+    public typealias Source = DNSResolutionReport.Resolution.Source
 
     /// The source of this resolution.
     public var source: Source
@@ -87,28 +94,23 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
 
     /// A Resolution.DNSProtocol indicates the protocol used to resolve the endpoint,
     /// such as using UDP, TCP, TLS, or HTTPS for DNS.
-    public enum DNSProtocol: String, Codable, Hashable, Sendable {
-
-      /// The protocol used is not known, or not applicable.
-      case unknown
-
-      /// Resolution used DNS over UDP.
-      case udp
-
-      /// Resolution used DNS over TCP.
-      case tcp
-
-      /// Resolution used DNS over TLS.
-      case tls
-
-      /// Resolution used DNS over HTTPS.
-      case https
-    }
+    ///
+    /// - SeeAlso: ``DNSResolutionReport/Resolution/DNSProtocol``.
+    public typealias DNSProtocol = DNSResolutionReport.Resolution.DNSProtocol
 
     /// The protocl of this DNS resolution.
     public var dnsProtocol: DNSProtocol
 
-    package init(
+    /// Creates a ``EstablishmentReport/Resolution``.
+    ///
+    /// - Parameters:
+    ///   - source: The source that produced the resolved endpoints.
+    ///   - duration: The time spent performing the resolution step.
+    ///   - endpointCount: The number of endpoints discovered during resolution.
+    ///   - successfulEndpoint: The endpoint that ultimately resulted in a successful connection.
+    ///   - preferredEndpoint: The first endpoint selected for connection attempts.
+    ///   - dnsProtocol: The DNS protocol used during resolution.
+    public init(
       source: Source,
       duration: Duration,
       endpointCount: Int,
@@ -127,6 +129,10 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
 
   /// An array of zero or more Resolution reports, in order from first resolved
   /// to last resolved.
+  ///
+  /// Each resolution contains information about address lookup and
+  /// endpoint selection that occurred before the connection succeeded
+  /// or failed.
   public var resolutions: [Resolution]
 
   package init(
@@ -159,8 +165,11 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
 @available(SwiftStdlib 6.0, *)
 extension EstablishmentReport {
 
-  public typealias Model = V1._EstablishmentReport
+  /// In used persistent model typealias.
+  public typealias Model = V1.EstablishmentReport
 
+  /// Create a new ``EstablishmentReport`` from persistent establishment report.
+  /// - Parameter persistentModel: Persistent establishment report.
   public init(persistentModel: Model) {
     duration = persistentModel.duration
     attemptStartedAfterInterval = persistentModel.attemptStartedAfterInterval
@@ -168,11 +177,6 @@ extension EstablishmentReport {
     sourceEndpoint = persistentModel.sourceEndpoint
     usedProxy = persistentModel.usedProxy
     proxyEndpoint = persistentModel.proxyEndpoint
-    resolutions = persistentModel.resolutions.map {
-      Resolution(
-        source: $0.source, duration: $0.duration, endpointCount: $0.endpointCount,
-        successfulEndpoint: $0.successfulEndpoint, preferredEndpoint: $0.preferredEndpoint,
-        dnsProtocol: $0.dnsProtocol)
-    }
+    resolutions = persistentModel.resolutions
   }
 }

@@ -25,7 +25,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func defaultProperties() async throws {
-    let report = V1._Program()
+    let report = V1.Program()
     #expect(report.localizedName == "")
     #expect(report.bundleURL == nil)
     #expect(report.executableURL == nil)
@@ -38,14 +38,14 @@ import Testing
       let program = Program()
       #expect(program.id == program.persistentModelID)
 
-      let programPersistentModel = V1._Program()
+      let programPersistentModel = V1.Program()
       #expect(programPersistentModel.id == programPersistentModel.persistentModelID)
     #else
       let program = Program(localizedName: "AnotherApp")
       #expect(program.persistentModelID == "AnotherApp")
       #expect(program.id == program.persistentModelID)
 
-      let programPersistentModel = V1._Program()
+      let programPersistentModel = V1.Program()
       programPersistentModel.localizedName = "AnotherApp"
       #expect(programPersistentModel.persistentModelID == "AnotherApp")
       #expect(programPersistentModel.id == programPersistentModel.persistentModelID)
@@ -55,7 +55,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() async throws {
     let oldIcon = Data("oldicon".utf8)
-    let persistent = V1._Program()
+    let persistent = V1.Program()
     persistent.localizedName = "OldApp"
     persistent.bundleURL = URL(string: "file:///old.bundle")
     persistent.executableURL = URL(string: "file:///old.exec")
@@ -85,7 +85,7 @@ import Testing
       SQL_initialized()
 
       let modelContainer = try ModelContainer(
-        for: V1._Program.self,
+        for: V1.Program.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
       )
       let modelContext = ModelContext(modelContainer)
@@ -97,11 +97,11 @@ import Testing
         iconTIFFRepresentation: nil
       )
 
-      let model = V1._Program()
+      let model = V1.Program()
       model.mergeValues(data)
       modelContext.insert(model)
 
-      let fetched = try modelContext.fetch(FetchDescriptor<V1._Program>()).first
+      let fetched = try modelContext.fetch(FetchDescriptor<V1.Program>()).first
       let persistentModel = try #require(fetched)
       let result = Program(persistentModel: persistentModel)
       #expect(result == data)

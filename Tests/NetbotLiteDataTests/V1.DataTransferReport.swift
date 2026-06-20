@@ -19,7 +19,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValues() async throws {
-    let source = V1._DataTransferReport()
+    let source = V1.DataTransferReport()
     #expect(source.duration == .zero)
     #expect(source.durationFormatted == "0ms")
     #expect(source.pathReport == nil)
@@ -28,7 +28,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() throws {
-    let model = V1._DataTransferReport()
+    let model = V1.DataTransferReport()
     model.duration = .seconds(1)
     model.aggregatePathReport = .init()
     model.pathReport = .init()
@@ -108,7 +108,7 @@ import Testing
       SQL_initialized()
 
       let modelContainer = try ModelContainer(
-        for: V1._DataTransferReport.self,
+        for: V1.DataTransferReport.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
       )
       let modelContext = ModelContext(modelContainer)
@@ -119,11 +119,11 @@ import Testing
         pathReport: .init()
       )
 
-      let model = V1._DataTransferReport()
+      let model = V1.DataTransferReport()
       model.mergeValues(data)
       modelContext.insert(model)
 
-      let fetched = try modelContext.fetch(FetchDescriptor<V1._DataTransferReport>()).first
+      let fetched = try modelContext.fetch(FetchDescriptor<V1.DataTransferReport>()).first
       let persistentModel = try #require(fetched)
       let result = DataTransferReport(persistentModel: persistentModel)
       #expect(result == data)

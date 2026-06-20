@@ -32,70 +32,139 @@ import NEAddressProcessing
 extension V1 {
 
   #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-    @Model final public class _Request {
+    /// A persistent representation of a request.
+    ///
+    /// ``V1/Request-1640l`` stores the request metadata, payload, and associated
+    /// connection information in a format suitable for persistence and
+    /// data transfer.
+    ///
+    /// Use ``Request`` when working with requests in memory.
+    /// Use ``V1/Request-1640l`` when storing request data.
+    ///
+    /// - SeeAlso: ``Request``
+    @Model final public class Request {
 
-      /// The HTTP request object if present. otherwise returns `nil`.
+      /// The HTTP request head.
+      ///
+      /// Contains the request method, target URI, version,
+      /// and request header fields.
       @Attribute(.transformable(by: SQLValueTransformer<HTTPRequest>.self))
       public var httpRequest: HTTPRequest?
 
-      /// The address of the receiver.
+      /// The destination address associated with the request.
+      ///
+      /// This value typically identifies the remote endpoint to which
+      /// the request was sent.
       @Attribute(.transformable(by: SQLValueTransformer<Address>.self))
       public var address: Address?
 
-      /// The HTTP message trailer headers (Trailer / chunked encoding).
+      /// The trailing HTTP fields sent after the request body.
+      ///
+      /// Trailer fields are commonly used with chunked transfer encoding
+      /// to provide metadata that is only known after the body has been sent.
       @Attribute(.transformable(by: SQLValueTransformer<HTTPFields>.self))
       public var trailerHTTPFields: HTTPFields?
 
-      /// The host of the receiver.
+      /// The hostname associated with the request.
+      ///
+      /// This value may originate from the request target, DNS resolution,
+      /// or the Host header field.
       public var hostname: String?
 
-      /// The URL string of the receiver.
+      /// The absolute URL string of the request.
+      ///
+      /// When available, this value contains the complete URL including
+      /// the scheme, host, path, and query components.
       public var absoluteURLString: String?
 
-      /// The data is sent as the message body of the request.
+      /// The request body payload.
+      ///
+      /// This value contains the raw bytes sent as part of the request.
       @Attribute(.externalStorage) public var body: Data?
 
-      public var connection: _Connection?
+      /// Information about the connection that carried the request.
+      ///
+      /// This value can be used to associate the request with a specific
+      /// network connection and its recorded metadata.
+      public var connection: V1.Connection?
 
+      /// Creates an empty ``V1/Request-1640l`` record.
       public init() {}
     }
   #else
+    /// A persistent representation of a request.
+    ///
+    /// ``V1/Request-1640l`` stores the request metadata, payload, and associated
+    /// connection information in a format suitable for persistence and
+    /// data transfer.
+    ///
+    /// Use ``Request`` when working with requests in memory.
+    /// Use ``V1/Request-1640l`` when storing request data.
+    ///
+    /// - SeeAlso: ``Request``
     #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
-    final public class _Request {
+    final public class Request {
 
-      /// The HTTP request object if present. otherwise returns `nil`.
+      /// The HTTP request head.
+      ///
+      /// Contains the request method, target URI, version,
+      /// and request header fields.
       public var httpRequest: HTTPRequest?
 
-      /// The address of the receiver.
+      /// The destination address associated with the request.
+      ///
+      /// This value typically identifies the remote endpoint to which
+      /// the request was sent.
       public var address: Address?
 
-      /// The HTTP message trailer headers (Trailer / chunked encoding).
+      /// The trailing HTTP fields sent after the request body.
+      ///
+      /// Trailer fields are commonly used with chunked transfer encoding
+      /// to provide metadata that is only known after the body has been sent.
       public var trailerHTTPFields: HTTPFields?
 
-      /// The host of the receiver.
+      /// The hostname associated with the request.
+      ///
+      /// This value may originate from the request target, DNS resolution,
+      /// or the Host header field.
       public var hostname: String?
 
-      /// The URL string of the receiver.
+      /// The absolute URL string of the request.
+      ///
+      /// When available, this value contains the complete URL including
+      /// the scheme, host, path, and query components.
       public var absoluteURLString: String?
 
-      /// The data is sent as the message body of the request.
+      /// The request body payload.
+      ///
+      /// This value contains the raw bytes sent as part of the request.
       public var body: Data?
 
-      public var connection: _Connection?
+      /// Information about the connection that carried the request.
+      ///
+      /// This value can be used to associate the request with a specific
+      /// network connection and its recorded metadata.
+      public var connection: V1.Connection?
 
+      /// Creates an empty ``V1/Request-1640l`` record.
       public init() {}
     }
   #endif
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._Request {
+extension V1.Request {
 
-  /// Merge new values from DTO.
-  /// - Parameter data: New `Request` to merge.
-  public func mergeValues(_ data: Request) {
+  /// Converts a runtime ``Request`` into a persistent ``V1/Request-1640l`` snapshot.
+  ///
+  /// This method captures the current state of the request at a point in time.
+  /// Runtime-only fields (timers, live state transitions, observation locks)
+  /// are flattened into persistable values.
+  ///
+  /// - Parameter data: New `Request` to map.
+  public func mergeValues(_ data: NetbotLiteData.Request) {
     var absoluteURLString = ""
     if let host = data.host(percentEncoded: false) {
       var portString = ""

@@ -29,56 +29,104 @@
 extension V1 {
 
   #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-    @Model public class _ForwardingReport {
+    /// Information about how a connection was forwarded.
+    ///
+    /// ``V1/ForwardingReport-6wcc`` describes the forwarding
+    /// mechanism used for a connection, including the forwarding protocol,
+    /// matching rule, timing information, and the associated connection.
+    @Model public class ForwardingReport {
 
-      /// The date when the DNS resolution begin.
+      /// The earliest date and time at which forwarding began.
+      ///
+      /// This value identifies when forwarding activity was first observed
+      /// for the connection.
       public var earliestBeginDate = Date.now
 
-      /// The length of time duration on this matching step.
+      /// The duration of the forwarding activity.
+      ///
+      /// This value represents the elapsed time during which the connection
+      /// was forwarded.
       @Attribute(.transformable(by: SQLValueTransformer<Duration>.self))
       public var duration: Duration = Duration.zero
 
-      /// Forward protocol used to forward requests.
+      /// The forwarding protocol used for the connection.
+      ///
+      /// Examples include direct forwarding and proxy-based forwarding.
       public var forwardProtocol = "DIRECT"
 
-      /// Forwarding rule description for establishing connection.
+      /// The forwarding rule that matched the connection.
+      ///
+      /// This value may identify the rule, policy, or configuration entry
+      /// responsible for selecting the forwarding behavior.
       public var forwardingRule: String?
 
-      public var connection: _Connection?
+      /// The connection associated with the forwarding activity.
+      ///
+      /// This value contains information about the network connection that
+      /// was attributed to the forwarding activity.
+      public var connection: V1.Connection?
 
+      /// Creates an empty ``V1/ForwardingReport-6wcc``.
       public init() {}
     }
   #else
+    /// Information about how a connection was forwarded.
+    ///
+    /// ``V1/ForwardingReport-6wcc`` describes the forwarding
+    /// mechanism used for a connection, including the forwarding protocol,
+    /// matching rule, timing information, and the associated connection.
     #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
-    public class _ForwardingReport {
+    public class ForwardingReport {
 
-      /// The date when the DNS resolution begin.
+      /// The earliest date and time at which forwarding began.
+      ///
+      /// This value identifies when forwarding activity was first observed
+      /// for the connection.
       public var earliestBeginDate = Date.now
 
-      /// The length of time duration on this matching step.
+      /// The duration of the forwarding activity.
+      ///
+      /// This value represents the elapsed time during which the connection
+      /// was forwarded.
       public var duration: Duration = Duration.zero
 
-      /// Forward protocol used to forward requests.
+      /// The forwarding protocol used for the connection.
+      ///
+      /// Examples include direct forwarding and proxy-based forwarding.
       public var forwardProtocol = "DIRECT"
 
-      /// Forwarding rule description for establishing connection.
+      /// The forwarding rule that matched the connection.
+      ///
+      /// This value may identify the rule, policy, or configuration entry
+      /// responsible for selecting the forwarding behavior.
       public var forwardingRule: String?
 
-      public var connection: _Connection?
+      /// The connection associated with the forwarding activity.
+      ///
+      /// This value contains information about the network connection that
+      /// was attributed to the forwarding activity.
+      public var connection: V1.Connection?
 
+      /// Creates an empty ``V1/ForwardingReport-6wcc``.
       public init() {}
     }
   #endif
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._ForwardingReport {
+extension V1.ForwardingReport {
 
-  /// Merge new values from DTO.
-  /// - Parameter data: New `ForwardingReport` to merge.
-  public func mergeValues(_ data: ForwardingReport) {
+  /// Converts a runtime ``ForwardingReport`` into a persistent
+  /// ``V1/ForwardingReport-6wcc`` snapshot.
+  ///
+  /// This method captures the current state of the forwarding activity at a point in time.
+  /// Runtime-only fields (timers, live state transitions, observation locks)
+  /// are flattened into persistable values.
+  ///
+  /// - Parameter data: New ``ForwardingReport`` to map.
+  public func mergeValues(_ data: NetbotLiteData.ForwardingReport) {
     #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
       self.earliestBeginDate = data.earliestBeginDate
       self.duration = data.duration

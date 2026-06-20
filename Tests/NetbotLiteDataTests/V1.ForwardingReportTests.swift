@@ -26,12 +26,12 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func persistentModelTypealias() {
-    #expect(ForwardingReport.Model.self == V1._ForwardingReport.self)
+    #expect(ForwardingReport.Model.self == V1.ForwardingReport.self)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() {
-    let model = V1._ForwardingReport()
+    let model = V1.ForwardingReport()
 
     let earliestBeginDate = Date.now
     let data = ForwardingReport(
@@ -59,7 +59,7 @@ import Testing
       SQL_initialized()
 
       let modelContainer = try ModelContainer(
-        for: V1._ForwardingReport.self,
+        for: V1.ForwardingReport.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
       )
       let modelContext = ModelContext(modelContainer)
@@ -71,11 +71,11 @@ import Testing
         forwardingRule: "DOMAIN-SUFIX example.com"
       )
 
-      let model = V1._ForwardingReport()
+      let model = V1.ForwardingReport()
       model.mergeValues(data)
       modelContext.insert(model)
 
-      let fetched = try modelContext.fetch(FetchDescriptor<V1._ForwardingReport>()).first
+      let fetched = try modelContext.fetch(FetchDescriptor<V1.ForwardingReport>()).first
       let persistentModel = try #require(fetched)
       let result = ForwardingReport(persistentModel: persistentModel)
       #expect(result == data)

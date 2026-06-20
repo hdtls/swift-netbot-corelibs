@@ -26,7 +26,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func resolutionPropertyInitialValues() async throws {
-    let resolution = V1._EstablishmentReport.Resolution.init(
+    let resolution = V1.EstablishmentReport.Resolution.init(
       source: .query, duration: .seconds(1.0), endpointCount: 1,
       successfulEndpoint: .hostPort(host: "127.0.0.1", port: 1111),
       preferredEndpoint: .hostPort(host: "127.0.0.1", port: 1111), dnsProtocol: .tcp)
@@ -40,7 +40,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func resolutionHashableConformance() async throws {
-    let resolution = V1._EstablishmentReport.Resolution.init(
+    let resolution = V1.EstablishmentReport.Resolution.init(
       source: .query, duration: .seconds(1.0), endpointCount: 1,
       successfulEndpoint: .hostPort(host: "127.0.0.1", port: 1111),
       preferredEndpoint: .hostPort(host: "127.0.0.1", port: 1111), dnsProtocol: .tcp)
@@ -48,26 +48,26 @@ import Testing
 
     #expect(resolution == expected)
 
-    let resolutions = Set<V1._EstablishmentReport.Resolution>([resolution, expected])
+    let resolutions = Set<V1.EstablishmentReport.Resolution>([resolution, expected])
     #expect(resolutions == [resolution])
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test func resolutionCodableConformance() async throws {
-    let resolution = V1._EstablishmentReport.Resolution.init(
+    let resolution = V1.EstablishmentReport.Resolution.init(
       source: .query, duration: .seconds(1.0), endpointCount: 1,
       successfulEndpoint: .hostPort(host: "127.0.0.1", port: 1111),
       preferredEndpoint: .hostPort(host: "127.0.0.1", port: 1111), dnsProtocol: .tcp)
 
     let data = try JSONEncoder().encode(resolution)
-    let result = try JSONDecoder().decode(V1._EstablishmentReport.Resolution.self, from: data)
+    let result = try JSONDecoder().decode(V1.EstablishmentReport.Resolution.self, from: data)
     #expect(result == resolution)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test func mutateResolutionSuccessfulEndpoint() async throws {
     let address = Address.hostPort(host: "1.1.1.1", port: 443)
-    var resolution = V1._EstablishmentReport.Resolution(
+    var resolution = V1.EstablishmentReport.Resolution(
       source: .cache, duration: .zero, endpointCount: 0,
       successfulEndpoint: .unix(path: "/var/run/tmp.socks"),
       preferredEndpoint: .unix(path: "/var/run/tmp.socks"), dnsProtocol: .udp)
@@ -78,7 +78,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func mutateResolutionPreferredEndpoint() async throws {
     let address = Address.hostPort(host: "1.1.1.1", port: 443)
-    var resolution = V1._EstablishmentReport.Resolution(
+    var resolution = V1.EstablishmentReport.Resolution(
       source: .cache, duration: .zero, endpointCount: 0,
       successfulEndpoint: .unix(path: "/var/run/tmp.socks"),
       preferredEndpoint: .unix(path: "/var/run/tmp.socks"), dnsProtocol: .udp)
@@ -88,7 +88,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValues() async throws {
-    let report = V1._EstablishmentReport()
+    let report = V1.EstablishmentReport()
 
     #expect(report.duration == .zero)
     #expect(report.attemptStartedAfterInterval == 0.0)
@@ -101,7 +101,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func destinationEndpoint() async throws {
-    let report = V1._EstablishmentReport()
+    let report = V1.EstablishmentReport()
     #expect(report.destinationEndpoint == nil)
 
     report.resolutions = [
@@ -125,7 +125,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func destinationEndpointWhenUseProxyIsEnabled() async throws {
-    let report = V1._EstablishmentReport()
+    let report = V1.EstablishmentReport()
     #expect(report.destinationEndpoint == nil)
     report.proxyEndpoint = .hostPort(host: "127.0.0.", port: 443)
     #expect(report.destinationEndpoint == nil)
@@ -136,7 +136,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func mutateSourceEndpoint() async throws {
     let address = Address.hostPort(host: "example.com", port: 443)
-    let establishmentReport = V1._EstablishmentReport()
+    let establishmentReport = V1.EstablishmentReport()
     establishmentReport.sourceEndpoint = address
     #expect(establishmentReport.sourceEndpoint == address)
 
@@ -147,7 +147,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func mutateProxyEndpoint() async throws {
     let address = Address.hostPort(host: "example.com", port: 443)
-    let establishmentReport = V1._EstablishmentReport()
+    let establishmentReport = V1.EstablishmentReport()
     establishmentReport.proxyEndpoint = address
     #expect(establishmentReport.proxyEndpoint == address)
 
@@ -170,7 +170,7 @@ import Testing
           successfulEndpoint: .hostPort(host: "127.0.0.1", port: 443),
           preferredEndpoint: .hostPort(host: "127.0.0.1", port: 443), dnsProtocol: .udp)
       ])
-    let establishmentReport = V1._EstablishmentReport()
+    let establishmentReport = V1.EstablishmentReport()
     establishmentReport.mergeValues(data)
     #expect(establishmentReport.duration == data.duration)
     #expect(establishmentReport.attemptStartedAfterInterval == data.attemptStartedAfterInterval)
@@ -192,7 +192,7 @@ import Testing
       SQL_initialized()
 
       let modelContainer = try ModelContainer(
-        for: V1._EstablishmentReport.self,
+        for: V1.EstablishmentReport.self,
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
       )
       let modelContext = ModelContext(modelContainer)
@@ -216,11 +216,11 @@ import Testing
         ]
       )
 
-      let model = V1._EstablishmentReport()
+      let model = V1.EstablishmentReport()
       model.mergeValues(data)
       modelContext.insert(model)
 
-      let fetched = try modelContext.fetch(FetchDescriptor<V1._EstablishmentReport>()).first
+      let fetched = try modelContext.fetch(FetchDescriptor<V1.EstablishmentReport>()).first
       let persistentModel = try #require(fetched)
       let result = EstablishmentReport(persistentModel: persistentModel)
       #expect(result == data)

@@ -65,12 +65,12 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func persistentModel() {
     let source = Response.Model.self
-    #expect(source == V1._Response.self)
+    #expect(source == V1.Response.self)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test func initializeResponseFromPersistentModel() async throws {
-    let persistentModel = V1._Response()
+    let persistentModel = Response.Model()
     persistentModel.httpResponse = .init(status: .ok)
     persistentModel.trailerHTTPFields = [.init("Digest")!: "sha-256=abc123..."]
 

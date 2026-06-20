@@ -34,8 +34,8 @@ import NEAddressProcessing
 
     /// A persistent representation of a network connection used for SwiftData storage.
     ///
-    /// ``V1._Connection`` is the storage-layer counterpart of the in-memory
-    /// ``Connection`` model. It mirrors the runtime properties of ``Connection``
+    /// ``V1/Connection-22tz1`` is the storage-layer counterpart of the in-memory
+    /// ``Connection`` model. It mirrors the runtime properties of `Connection`
     /// but is designed to be safely persisted using SwiftData.
     ///
     /// ## Design Purpose
@@ -46,20 +46,10 @@ import NEAddressProcessing
     /// - Enable versioned migrations (V1, V2, ...)
     /// - Avoid storing transient or non-persistable runtime state directly
     ///
-    /// ## Relationship to ``Connection``
-    ///
-    /// - ``Connection`` → runtime, observable, live network lifecycle model
-    /// - ``V1._Connection`` → persisted snapshot of a connection
-    ///
-    /// Data is typically mapped bidirectionally:
-    ///
-    /// - ``Connection`` → ``V1._Connection`` when saving state
-    /// - ``V1._Connection`` → ``Connection`` when restoring or querying history
-    ///
     /// ## Versioning
     ///
     /// This model is part of ``V1`` schema and may evolve in future versions.
-    /// New fields should be added via new schema versions (`V2._Connection`)
+    /// New fields should be added via new schema versions (`V2.Connection`)
     /// to support safe migrations.
     ///
     /// ## SwiftData Constraints
@@ -75,11 +65,11 @@ import NEAddressProcessing
     /// through mapping utilities.
     ///
     /// - SeeAlso: ``Connection``.
-    @Model final public class _Connection {
+    @Model final public class Connection {
 
-      #Unique<_Connection>([\.taskIdentifier])
+      #Unique<Connection>([\.taskIdentifier])
 
-      #Index<_Connection>([\.taskIdentifier])
+      #Index<Connection>([\.taskIdentifier])
 
       /// A unique identifier assigned to this connection task.
       ///
@@ -92,22 +82,22 @@ import NEAddressProcessing
       ///
       /// This value is set once at the beginning of the connection lifecycle
       /// and typically remains unchanged even if `currentRequest` is modified.
-      @Relationship(deleteRule: .cascade, inverse: \_Request.connection)
-      public var originalRequest: _Request?
+      @Relationship(deleteRule: .cascade, inverse: \V1.Request.connection)
+      public var originalRequest: V1.Request?
 
       /// The most recent request associated with this connection.
       ///
       /// This may change over time as redirects, rewrites, or proxy logic
       /// updates the active request being processed.
-      @Relationship(deleteRule: .cascade, inverse: \_Request.connection)
-      public var currentRequest: _Request?
+      @Relationship(deleteRule: .cascade, inverse: \V1.Request.connection)
+      public var currentRequest: V1.Request?
 
       /// The response received for this connection, if available.
       ///
       /// This is typically set after the connection completes or when
       /// a partial response is received from upstream.
-      @Relationship(deleteRule: .cascade, inverse: \_Response.connection)
-      public var response: _Response?
+      @Relationship(deleteRule: .cascade, inverse: \V1.Response.connection)
+      public var response: V1.Response?
 
       /// The earliest time at which this connection was initiated.
       ///
@@ -115,8 +105,6 @@ import NEAddressProcessing
       public var earliestBeginDate = Date.now
 
       /// The formatted earliest time at which this connection was initiated.
-      ///
-      /// - SeeAlso: ``V1._Connection.earliestBeginDate``.
       public var earliestBeginDateFormatted = ""
 
       /// The total duration of the connection lifecycle.
@@ -127,8 +115,6 @@ import NEAddressProcessing
       public var duration: Duration = Duration.zero
 
       /// The formatted total duration of the connection lifecycle.
-      ///
-      /// - SeeAlso: ``duration``.
       public var durationFormatted = "0ms"
 
       /// A human-readable description of the connection task.
@@ -144,7 +130,7 @@ import NEAddressProcessing
       public var tls = false
 
       /// A enum represents the progression of a `Connection` through stages.
-      public typealias State = Connection.State
+      public typealias State = NetbotLiteData.Connection.State
 
       /// The current lifecycle state of the connection.
       ///
@@ -157,45 +143,43 @@ import NEAddressProcessing
 
       /// The raw value of the current lifecycle state of the connection.
       ///
-      /// This raw value property is used in `Predicate` of a query.
-      ///
-      /// - SeeAlso: ``state``.
+      /// This `state` raw value property is used in `Predicate` of a query.
       public var _state = State.establishing.rawValue
 
       /// DNS resolution report associated with this connection, if any.
       ///
       /// Contains information such as resolved addresses, lookup timing,
       /// and resolution results used for establishing the connection.
-      @Relationship(deleteRule: .cascade, inverse: \_DNSResolutionReport.connection)
-      public var dnsResolutionReport: _DNSResolutionReport?
+      @Relationship(deleteRule: .cascade, inverse: \V1.DNSResolutionReport.connection)
+      public var dnsResolutionReport: V1.DNSResolutionReport?
 
       /// Report describing the connection establishment phase.
       ///
       /// Includes timing and metadata for TCP/TLS handshake or equivalent
       /// transport setup process.
-      @Relationship(deleteRule: .cascade, inverse: \_EstablishmentReport.connection)
-      public var establishmentReport: _EstablishmentReport?
+      @Relationship(deleteRule: .cascade, inverse: \V1.EstablishmentReport.connection)
+      public var establishmentReport: V1.EstablishmentReport?
 
       /// Report describing forwarding behavior.
       ///
       /// Captures routing decisions, proxy forwarding metadata,
       /// and intermediate transport details.
-      @Relationship(deleteRule: .cascade, inverse: \_ForwardingReport.connection)
-      public var forwardingReport: _ForwardingReport?
+      @Relationship(deleteRule: .cascade, inverse: \V1.ForwardingReport.connection)
+      public var forwardingReport: V1.ForwardingReport?
 
       /// Report describing the originating process of this connection.
       ///
       /// Useful for attribution, debugging, and per-process traffic analysis.
-      @Relationship(deleteRule: .cascade, inverse: \_ProcessReport.connection)
-      public var processReport: _ProcessReport?
+      @Relationship(deleteRule: .cascade, inverse: \V1.ProcessReport.connection)
+      public var processReport: V1.ProcessReport?
 
       /// Report describing data transfer statistics and progress.
       ///
       /// Includes metrics such as bytes sent/received and transfer timing.
-      @Relationship(deleteRule: .cascade, inverse: \_DataTransferReport.connection)
-      public var dataTransferReport: _DataTransferReport?
+      @Relationship(deleteRule: .cascade, inverse: \V1.DataTransferReport.connection)
+      public var dataTransferReport: V1.DataTransferReport?
 
-      /// Create a new ``V1._Connection`` instance.
+      /// Create a new ``V1/Connection-22tz1`` instance.
       public init() {
         self.earliestBeginDateFormatted = self.earliestBeginDate
           .formatted(.dateTime.hour().minute().second())
@@ -208,8 +192,8 @@ import NEAddressProcessing
 
     /// A persistent representation of a network connection used for persistent storage.
     ///
-    /// ``V1._Connection`` is the storage-layer counterpart of the in-memory
-    /// ``Connection`` model. It mirrors the runtime properties of ``Connection``
+    /// ``V1/Connection-22tz1`` is the storage-layer counterpart of the in-memory
+    /// ``Connection`` model. It mirrors the runtime properties of `Connection`
     /// but is designed to be safely persisted using db.
     ///
     /// ## Design Purpose
@@ -220,27 +204,17 @@ import NEAddressProcessing
     /// - Enable versioned migrations (V1, V2, ...)
     /// - Avoid storing transient or non-persistable runtime state directly
     ///
-    /// ## Relationship to ``Connection``
-    ///
-    /// - ``Connection`` → runtime, observable, live network lifecycle model
-    /// - ``V1._Connection`` → persisted snapshot of a connection
-    ///
-    /// Data is typically mapped bidirectionally:
-    ///
-    /// - ``Connection`` → ``V1._Connection`` when saving state
-    /// - ``V1._Connection`` → ``Connection`` when restoring or querying history
-    ///
     /// ## Versioning
     ///
     /// This model is part of ``V1`` schema and may evolve in future versions.
-    /// New fields should be added via new schema versions (`V2._Connection`)
+    /// New fields should be added via new schema versions (`V2.Connection`)
     /// to support safe migrations.
     ///
     /// - SeeAlso: ``Connection``.
     #if canImport(Darwin) || swift(>=6.3)
       @Observable
     #endif
-    final public class _Connection {
+    final public class Connection {
 
       public var persistentModelID: UInt64 { taskIdentifier }
 
@@ -254,19 +228,19 @@ import NEAddressProcessing
       ///
       /// This value is set once at the beginning of the connection lifecycle
       /// and typically remains unchanged even if `currentRequest` is modified.
-      public var originalRequest: _Request?
+      public var originalRequest: V1.Request?
 
       /// The most recent request associated with this connection.
       ///
       /// This may change over time as redirects, rewrites, or proxy logic
       /// updates the active request being processed.
-      public var currentRequest: _Request?
+      public var currentRequest: V1.Request?
 
       /// The response received for this connection, if available.
       ///
       /// This is typically set after the connection completes or when
       /// a partial response is received from upstream.
-      public var response: _Response?
+      public var response: V1.Response?
 
       /// The earliest time at which this connection was initiated.
       ///
@@ -274,8 +248,6 @@ import NEAddressProcessing
       public var earliestBeginDate = Date.now
 
       /// The formatted earliest time at which this connection was initiated.
-      ///
-      /// - SeeAlso: ``V1._Connection.earliestBeginDate``.
       public var earliestBeginDateFormatted = ""
 
       /// The total duration of the connection lifecycle.
@@ -285,8 +257,6 @@ import NEAddressProcessing
       public var duration = Duration.zero
 
       /// The formatted total duration of the connection lifecycle.
-      ///
-      /// - SeeAlso: ``V1._Connection.duration``.
       public var durationFormatted = "0ms"
 
       /// A human-readable description of the connection task.
@@ -302,7 +272,7 @@ import NEAddressProcessing
       public var tls = false
 
       /// A enum represents the progression of a `Connection` through stages.
-      public typealias State = Connection.State
+      public typealias State = NetbotLiteData.Connection.State
 
       /// The current lifecycle state of the connection.
       ///
@@ -314,31 +284,31 @@ import NEAddressProcessing
       ///
       /// Contains information such as resolved addresses, lookup timing,
       /// and resolution results used for establishing the connection.
-      public var dnsResolutionReport: _DNSResolutionReport?
+      public var dnsResolutionReport: V1.DNSResolutionReport?
 
       /// Report describing the connection establishment phase.
       ///
       /// Includes timing and metadata for TCP/TLS handshake or equivalent
       /// transport setup process.
-      public var establishmentReport: _EstablishmentReport?
+      public var establishmentReport: V1.EstablishmentReport?
 
       /// Report describing forwarding behavior.
       ///
       /// Captures routing decisions, proxy forwarding metadata,
       /// and intermediate transport details.
-      public var forwardingReport: _ForwardingReport?
+      public var forwardingReport: V1.ForwardingReport?
 
       /// Report describing the originating process of this connection.
       ///
       /// Useful for attribution, debugging, and per-process traffic analysis.
-      public var processReport: _ProcessReport?
+      public var processReport: V1.ProcessReport?
 
       /// Report describing data transfer statistics and progress.
       ///
       /// Includes metrics such as bytes sent/received and transfer timing.
-      public var dataTransferReport: _DataTransferReport?
+      public var dataTransferReport: V1.DataTransferReport?
 
-      /// Creates a new ``V1._Connection`` instance.
+      /// Creates a new ``V1/Connection-22tz1`` instance.
       public init() {
         self.taskIdentifier = 0
         self.earliestBeginDateFormatted = self.earliestBeginDate
@@ -348,15 +318,15 @@ import NEAddressProcessing
   }
 
   @available(SwiftStdlib 6.0, *)
-  extension V1._Connection: Identifiable {
+  extension V1.Connection: Identifiable {
     public var id: UInt64 { persistentModelID }
   }
 #endif
 
 @available(SwiftStdlib 6.0, *)
-extension V1._Connection {
+extension V1.Connection {
 
-  /// Converts a runtime ``Connection`` into a persistent ``V1._Connection`` snapshot.
+  /// Converts a runtime ``Connection`` into a persistent ``V1/Connection-22tz1`` snapshot.
   ///
   /// This method captures the current state of the connection at a point in time.
   /// Runtime-only fields (timers, live state transitions, observation locks)
@@ -364,8 +334,7 @@ extension V1._Connection {
   ///
   /// - Important: Relationship values will not be merged.
   /// - Parameter data: New ``Connection`` to map.
-  /// - SeeAlso: ``Connection.init(persistentModel:)``.
-  public func mergeValues(_ data: Connection) {
+  public func mergeValues(_ data: NetbotLiteData.Connection) {
     #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
       self.taskIdentifier = data.taskIdentifier
       if self.earliestBeginDate != data.earliestBeginDate {

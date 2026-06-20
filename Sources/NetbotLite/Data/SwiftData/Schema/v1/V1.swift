@@ -11,6 +11,7 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+/// First version of schema used for data persistent.
 @available(SwiftStdlib 6.0, *)
 public enum V1 {}
 
@@ -21,16 +22,16 @@ public enum V1 {}
   extension V1: VersionedSchema {
     public static var models: [any PersistentModel.Type] {
       [
-        _Connection.self,
-        _DataTransferReport.self,
-        _DNSResolutionReport.self,
-        _EstablishmentReport.self,
-        _ForwardingReport.self,
-        _PathReport.self,
-        _ProcessReport.self,
-        _Program.self,
-        _Request.self,
-        _Response.self,
+        V1.Connection.self,
+        V1.DataTransferReport.self,
+        V1.DNSResolutionReport.self,
+        V1.EstablishmentReport.self,
+        V1.ForwardingReport.self,
+        V1.PathReport.self,
+        V1.ProcessReport.self,
+        V1.Program.self,
+        V1.Request.self,
+        V1.Response.self,
       ]
     }
 
