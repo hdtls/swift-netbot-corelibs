@@ -17,6 +17,8 @@
 
 #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
+#else
+  import NetbotSQL
 #endif
 
 @available(SwiftStdlib 6.0, *)
@@ -29,14 +31,7 @@ extension V1 {
   ///
   /// Use this type to correlate network activity with the process and
   /// application that generated it.
-  #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-    @Model
-  #else
-    #if canImport(Darwin) || swift(>=6.3)
-      @Observable
-    #endif
-  #endif
-  final public class ProcessReport {
+  @Model public class ProcessReport {
 
     /// The identifier of the process.
     ///

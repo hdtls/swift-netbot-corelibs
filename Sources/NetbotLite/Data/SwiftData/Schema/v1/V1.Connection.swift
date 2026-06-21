@@ -26,307 +26,184 @@ import NEAddressProcessing
 
 #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
+#else
+  import NetbotSQL
 #endif
 
-#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-  @available(SwiftStdlib 6.0, *)
-  extension V1 {
+@available(SwiftStdlib 6.0, *)
+extension V1 {
 
-    /// A persistent representation of a network connection used for SwiftData storage.
+  /// A persistent representation of a network connection used for SwiftData storage.
+  ///
+  /// ``V1/Connection`` is the storage-layer counterpart of the in-memory
+  /// ``Connection`` model. It mirrors the runtime properties of `Connection`
+  /// but is designed to be safely persisted using SwiftData.
+  ///
+  /// ## Design Purpose
+  ///
+  /// This type exists to:
+  /// - Decouple runtime observation logic from persistence constraints
+  /// - Provide a stable schema for SwiftData storage
+  /// - Enable versioned migrations (V1, V2, ...)
+  /// - Avoid storing transient or non-persistable runtime state directly
+  ///
+  /// ## Versioning
+  ///
+  /// This model is part of ``V1`` schema and may evolve in future versions.
+  /// New fields should be added via new schema versions (`V2.Connection`)
+  /// to support safe migrations.
+  ///
+  /// ## SwiftData Constraints
+  ///
+  /// All properties in this model must conform to SwiftData storage rules:
+  /// - Value types or relationships only
+  /// - No transient computed-only fields unless marked non-persisted
+  ///
+  /// ## Usage
+  ///
+  /// This model is not intended for direct business logic usage.
+  /// It should be accessed via SwiftData `ModelContext` queries or
+  /// through mapping utilities.
+  ///
+  /// - SeeAlso: ``Connection``.
+  @Model public class Connection {
+
+    #Unique<Connection>([\.taskIdentifier])
+
+    #Index<Connection>([\.taskIdentifier])
+
+    /// A unique identifier assigned to this connection task.
     ///
-    /// ``V1/Connection-22tz1`` is the storage-layer counterpart of the in-memory
-    /// ``Connection`` model. It mirrors the runtime properties of `Connection`
-    /// but is designed to be safely persisted using SwiftData.
+    /// This value is typically used to correlate logs, reports, and
+    /// internal tracking for a single connection lifecycle.
+    @Attribute(.unique)
+    public var taskIdentifier: UInt64 = 0
+
+    /// The original request that initiated this connection.
     ///
-    /// ## Design Purpose
+    /// This value is set once at the beginning of the connection lifecycle
+    /// and typically remains unchanged even if `currentRequest` is modified.
+    @Relationship(deleteRule: .cascade, inverse: \V1.Request.connection)
+    public var originalRequest: V1.Request?
+
+    /// The most recent request associated with this connection.
     ///
-    /// This type exists to:
-    /// - Decouple runtime observation logic from persistence constraints
-    /// - Provide a stable schema for SwiftData storage
-    /// - Enable versioned migrations (V1, V2, ...)
-    /// - Avoid storing transient or non-persistable runtime state directly
+    /// This may change over time as redirects, rewrites, or proxy logic
+    /// updates the active request being processed.
+    @Relationship(deleteRule: .cascade, inverse: \V1.Request.connection)
+    public var currentRequest: V1.Request?
+
+    /// The response received for this connection, if available.
     ///
-    /// ## Versioning
+    /// This is typically set after the connection completes or when
+    /// a partial response is received from upstream.
+    @Relationship(deleteRule: .cascade, inverse: \V1.Response.connection)
+    public var response: V1.Response?
+
+    /// The earliest time at which this connection was initiated.
     ///
-    /// This model is part of ``V1`` schema and may evolve in future versions.
-    /// New fields should be added via new schema versions (`V2.Connection`)
-    /// to support safe migrations.
+    /// Used for latency measurement and lifecycle tracking.
+    public var earliestBeginDate = Date.now
+
+    /// The formatted earliest time at which this connection was initiated.
+    public var earliestBeginDateFormatted = ""
+
+    /// The total duration of the connection lifecycle.
     ///
-    /// ## SwiftData Constraints
+    /// This value is typically updated when the connection finishes,
+    /// representing total time spent from start to completion.
+    @Attribute(.transformable(by: SQLValueTransformer<Duration>.self))
+    public var duration: Duration = Duration.zero
+
+    /// The formatted total duration of the connection lifecycle.
+    public var durationFormatted = "0ms"
+
+    /// A human-readable description of the connection task.
     ///
-    /// All properties in this model must conform to SwiftData storage rules:
-    /// - Value types or relationships only
-    /// - No transient computed-only fields unless marked non-persisted
+    /// This can include debugging context such as URL, host,
+    /// routing decision, or internal pipeline stage.
+    public var taskDescription = ""
+
+    /// Indicates whether the connection is secured using TLS.
     ///
-    /// ## Usage
+    /// When `true`, the connection is expected to be encrypted
+    /// using TLS/SSL at the transport layer.
+    public var tls = false
+
+    /// A enum represents the progression of a `Connection` through stages.
+    public typealias State = NetbotLiteData.Connection.State
+
+    /// The current lifecycle state of the connection.
     ///
-    /// This model is not intended for direct business logic usage.
-    /// It should be accessed via SwiftData `ModelContext` queries or
-    /// through mapping utilities.
+    /// Represents the progression of the connection through stages
+    /// such as establishing, active, completed, failed or cancelled.
+    public var state: State {
+      get { State(rawValue: _state) ?? .establishing }
+      set { _state = newValue.rawValue }
+    }
+
+    /// The raw value of the current lifecycle state of the connection.
     ///
-    /// - SeeAlso: ``Connection``.
-    @Model final public class Connection {
+    /// This `state` raw value property is used in `Predicate` of a query.
+    public var _state = State.establishing.rawValue
 
-      #Unique<Connection>([\.taskIdentifier])
+    /// DNS resolution report associated with this connection, if any.
+    ///
+    /// Contains information such as resolved addresses, lookup timing,
+    /// and resolution results used for establishing the connection.
+    @Relationship(deleteRule: .cascade, inverse: \V1.DNSResolutionReport.connection)
+    public var dnsResolutionReport: V1.DNSResolutionReport?
 
-      #Index<Connection>([\.taskIdentifier])
+    /// Report describing the connection establishment phase.
+    ///
+    /// Includes timing and metadata for TCP/TLS handshake or equivalent
+    /// transport setup process.
+    @Relationship(deleteRule: .cascade, inverse: \V1.EstablishmentReport.connection)
+    public var establishmentReport: V1.EstablishmentReport?
 
-      /// A unique identifier assigned to this connection task.
-      ///
-      /// This value is typically used to correlate logs, reports, and
-      /// internal tracking for a single connection lifecycle.
-      @Attribute(.unique)
-      public var taskIdentifier: UInt64 = 0
+    /// Report describing forwarding behavior.
+    ///
+    /// Captures routing decisions, proxy forwarding metadata,
+    /// and intermediate transport details.
+    @Relationship(deleteRule: .cascade, inverse: \V1.ForwardingReport.connection)
+    public var forwardingReport: V1.ForwardingReport?
 
-      /// The original request that initiated this connection.
-      ///
-      /// This value is set once at the beginning of the connection lifecycle
-      /// and typically remains unchanged even if `currentRequest` is modified.
-      @Relationship(deleteRule: .cascade, inverse: \V1.Request.connection)
-      public var originalRequest: V1.Request?
+    /// Report describing the originating process of this connection.
+    ///
+    /// Useful for attribution, debugging, and per-process traffic analysis.
+    @Relationship(deleteRule: .cascade, inverse: \V1.ProcessReport.connection)
+    public var processReport: V1.ProcessReport?
 
-      /// The most recent request associated with this connection.
-      ///
-      /// This may change over time as redirects, rewrites, or proxy logic
-      /// updates the active request being processed.
-      @Relationship(deleteRule: .cascade, inverse: \V1.Request.connection)
-      public var currentRequest: V1.Request?
+    /// Report describing data transfer statistics and progress.
+    ///
+    /// Includes metrics such as bytes sent/received and transfer timing.
+    @Relationship(deleteRule: .cascade, inverse: \V1.DataTransferReport.connection)
+    public var dataTransferReport: V1.DataTransferReport?
 
-      /// The response received for this connection, if available.
-      ///
-      /// This is typically set after the connection completes or when
-      /// a partial response is received from upstream.
-      @Relationship(deleteRule: .cascade, inverse: \V1.Response.connection)
-      public var response: V1.Response?
-
-      /// The earliest time at which this connection was initiated.
-      ///
-      /// Used for latency measurement and lifecycle tracking.
-      public var earliestBeginDate = Date.now
-
-      /// The formatted earliest time at which this connection was initiated.
-      public var earliestBeginDateFormatted = ""
-
-      /// The total duration of the connection lifecycle.
-      ///
-      /// This value is typically updated when the connection finishes,
-      /// representing total time spent from start to completion.
-      @Attribute(.transformable(by: SQLValueTransformer<Duration>.self))
-      public var duration: Duration = Duration.zero
-
-      /// The formatted total duration of the connection lifecycle.
-      public var durationFormatted = "0ms"
-
-      /// A human-readable description of the connection task.
-      ///
-      /// This can include debugging context such as URL, host,
-      /// routing decision, or internal pipeline stage.
-      public var taskDescription = ""
-
-      /// Indicates whether the connection is secured using TLS.
-      ///
-      /// When `true`, the connection is expected to be encrypted
-      /// using TLS/SSL at the transport layer.
-      public var tls = false
-
-      /// A enum represents the progression of a `Connection` through stages.
-      public typealias State = NetbotLiteData.Connection.State
-
-      /// The current lifecycle state of the connection.
-      ///
-      /// Represents the progression of the connection through stages
-      /// such as establishing, active, completed, failed or cancelled.
-      public var state: State {
-        get { State(rawValue: _state) ?? .establishing }
-        set { _state = newValue.rawValue }
-      }
-
-      /// The raw value of the current lifecycle state of the connection.
-      ///
-      /// This `state` raw value property is used in `Predicate` of a query.
-      public var _state = State.establishing.rawValue
-
-      /// DNS resolution report associated with this connection, if any.
-      ///
-      /// Contains information such as resolved addresses, lookup timing,
-      /// and resolution results used for establishing the connection.
-      @Relationship(deleteRule: .cascade, inverse: \V1.DNSResolutionReport.connection)
-      public var dnsResolutionReport: V1.DNSResolutionReport?
-
-      /// Report describing the connection establishment phase.
-      ///
-      /// Includes timing and metadata for TCP/TLS handshake or equivalent
-      /// transport setup process.
-      @Relationship(deleteRule: .cascade, inverse: \V1.EstablishmentReport.connection)
-      public var establishmentReport: V1.EstablishmentReport?
-
-      /// Report describing forwarding behavior.
-      ///
-      /// Captures routing decisions, proxy forwarding metadata,
-      /// and intermediate transport details.
-      @Relationship(deleteRule: .cascade, inverse: \V1.ForwardingReport.connection)
-      public var forwardingReport: V1.ForwardingReport?
-
-      /// Report describing the originating process of this connection.
-      ///
-      /// Useful for attribution, debugging, and per-process traffic analysis.
-      @Relationship(deleteRule: .cascade, inverse: \V1.ProcessReport.connection)
-      public var processReport: V1.ProcessReport?
-
-      /// Report describing data transfer statistics and progress.
-      ///
-      /// Includes metrics such as bytes sent/received and transfer timing.
-      @Relationship(deleteRule: .cascade, inverse: \V1.DataTransferReport.connection)
-      public var dataTransferReport: V1.DataTransferReport?
-
-      /// Create a new ``V1/Connection-22tz1`` instance.
-      public init() {
-        self.earliestBeginDateFormatted = self.earliestBeginDate
-          .formatted(.dateTime.hour().minute().second())
-      }
+    /// Create a new ``V1/Connection`` instance.
+    public init() {
+      self.earliestBeginDateFormatted = self.earliestBeginDate
+        .formatted(.dateTime.hour().minute().second())
     }
   }
-#else
+}
+
+#if !canImport(SwiftData) || !SWTNE_REQUIRES_SQL
   @available(SwiftStdlib 6.0, *)
-  extension V1 {
-
-    /// A persistent representation of a network connection used for persistent storage.
-    ///
-    /// ``V1/Connection-22tz1`` is the storage-layer counterpart of the in-memory
-    /// ``Connection`` model. It mirrors the runtime properties of `Connection`
-    /// but is designed to be safely persisted using db.
-    ///
-    /// ## Design Purpose
-    ///
-    /// This type exists to:
-    /// - Decouple runtime observation logic from persistence constraints
-    /// - Provide a stable schema storage
-    /// - Enable versioned migrations (V1, V2, ...)
-    /// - Avoid storing transient or non-persistable runtime state directly
-    ///
-    /// ## Versioning
-    ///
-    /// This model is part of ``V1`` schema and may evolve in future versions.
-    /// New fields should be added via new schema versions (`V2.Connection`)
-    /// to support safe migrations.
-    ///
-    /// - SeeAlso: ``Connection``.
-    #if canImport(Darwin) || swift(>=6.3)
-      @Observable
-    #endif
-    final public class Connection {
-
-      public var persistentModelID: UInt64 { taskIdentifier }
-
-      /// A unique identifier assigned to this connection task.
-      ///
-      /// This value is typically used to correlate logs, reports, and
-      /// internal tracking for a single connection lifecycle.
-      public var taskIdentifier: UInt64
-
-      /// The original request that initiated this connection.
-      ///
-      /// This value is set once at the beginning of the connection lifecycle
-      /// and typically remains unchanged even if `currentRequest` is modified.
-      public var originalRequest: V1.Request?
-
-      /// The most recent request associated with this connection.
-      ///
-      /// This may change over time as redirects, rewrites, or proxy logic
-      /// updates the active request being processed.
-      public var currentRequest: V1.Request?
-
-      /// The response received for this connection, if available.
-      ///
-      /// This is typically set after the connection completes or when
-      /// a partial response is received from upstream.
-      public var response: V1.Response?
-
-      /// The earliest time at which this connection was initiated.
-      ///
-      /// Used for latency measurement and lifecycle tracking.
-      public var earliestBeginDate = Date.now
-
-      /// The formatted earliest time at which this connection was initiated.
-      public var earliestBeginDateFormatted = ""
-
-      /// The total duration of the connection lifecycle.
-      ///
-      /// This value is typically updated when the connection finishes,
-      /// representing total time spent from start to completion.
-      public var duration = Duration.zero
-
-      /// The formatted total duration of the connection lifecycle.
-      public var durationFormatted = "0ms"
-
-      /// A human-readable description of the connection task.
-      ///
-      /// This can include debugging context such as URL, host,
-      /// routing decision, or internal pipeline stage.
-      public var taskDescription = ""
-
-      /// Indicates whether the connection is secured using TLS.
-      ///
-      /// When `true`, the connection is expected to be encrypted
-      /// using TLS/SSL at the transport layer.
-      public var tls = false
-
-      /// A enum represents the progression of a `Connection` through stages.
-      public typealias State = NetbotLiteData.Connection.State
-
-      /// The current lifecycle state of the connection.
-      ///
-      /// Represents the progression of the connection through stages
-      /// such as establishing, active, completed, failed or cancelled.
-      public var state = State.establishing
-
-      /// DNS resolution report associated with this connection, if any.
-      ///
-      /// Contains information such as resolved addresses, lookup timing,
-      /// and resolution results used for establishing the connection.
-      public var dnsResolutionReport: V1.DNSResolutionReport?
-
-      /// Report describing the connection establishment phase.
-      ///
-      /// Includes timing and metadata for TCP/TLS handshake or equivalent
-      /// transport setup process.
-      public var establishmentReport: V1.EstablishmentReport?
-
-      /// Report describing forwarding behavior.
-      ///
-      /// Captures routing decisions, proxy forwarding metadata,
-      /// and intermediate transport details.
-      public var forwardingReport: V1.ForwardingReport?
-
-      /// Report describing the originating process of this connection.
-      ///
-      /// Useful for attribution, debugging, and per-process traffic analysis.
-      public var processReport: V1.ProcessReport?
-
-      /// Report describing data transfer statistics and progress.
-      ///
-      /// Includes metrics such as bytes sent/received and transfer timing.
-      public var dataTransferReport: V1.DataTransferReport?
-
-      /// Creates a new ``V1/Connection-22tz1`` instance.
-      public init() {
-        self.taskIdentifier = 0
-        self.earliestBeginDateFormatted = self.earliestBeginDate
-          .formatted(.dateTime.hour().minute().second())
-      }
-    }
+  extension V1.Connection {
+    public var persistentModelID: UInt64 { taskIdentifier }
   }
 
   @available(SwiftStdlib 6.0, *)
   extension V1.Connection: Identifiable {
-    public var id: UInt64 { persistentModelID }
+    public var id: UInt64 { taskIdentifier }
   }
 #endif
 
 @available(SwiftStdlib 6.0, *)
 extension V1.Connection {
 
-  /// Converts a runtime ``Connection`` into a persistent ``V1/Connection-22tz1`` snapshot.
+  /// Converts a runtime ``Connection`` into a persistent ``V1/Connection`` snapshot.
   ///
   /// This method captures the current state of the connection at a point in time.
   /// Runtime-only fields (timers, live state transitions, observation locks)

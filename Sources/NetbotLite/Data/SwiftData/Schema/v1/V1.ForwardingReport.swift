@@ -23,103 +23,60 @@
 
 #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
+#else
+  import NetbotSQL
 #endif
 
 @available(SwiftStdlib 6.0, *)
 extension V1 {
 
-  #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-    /// Information about how a connection was forwarded.
+  /// Information about how a connection was forwarded.
+  ///
+  /// ``V1/ForwardingReport`` describes the forwarding
+  /// mechanism used for a connection, including the forwarding protocol,
+  /// matching rule, timing information, and the associated connection.
+  @Model public class ForwardingReport {
+
+    /// The earliest date and time at which forwarding began.
     ///
-    /// ``V1/ForwardingReport-6wcc`` describes the forwarding
-    /// mechanism used for a connection, including the forwarding protocol,
-    /// matching rule, timing information, and the associated connection.
-    @Model public class ForwardingReport {
+    /// This value identifies when forwarding activity was first observed
+    /// for the connection.
+    public var earliestBeginDate = Date.now
 
-      /// The earliest date and time at which forwarding began.
-      ///
-      /// This value identifies when forwarding activity was first observed
-      /// for the connection.
-      public var earliestBeginDate = Date.now
-
-      /// The duration of the forwarding activity.
-      ///
-      /// This value represents the elapsed time during which the connection
-      /// was forwarded.
-      @Attribute(.transformable(by: SQLValueTransformer<Duration>.self))
-      public var duration: Duration = Duration.zero
-
-      /// The forwarding protocol used for the connection.
-      ///
-      /// Examples include direct forwarding and proxy-based forwarding.
-      public var forwardProtocol = "DIRECT"
-
-      /// The forwarding rule that matched the connection.
-      ///
-      /// This value may identify the rule, policy, or configuration entry
-      /// responsible for selecting the forwarding behavior.
-      public var forwardingRule: String?
-
-      /// The connection associated with the forwarding activity.
-      ///
-      /// This value contains information about the network connection that
-      /// was attributed to the forwarding activity.
-      public var connection: V1.Connection?
-
-      /// Creates an empty ``V1/ForwardingReport-6wcc``.
-      public init() {}
-    }
-  #else
-    /// Information about how a connection was forwarded.
+    /// The duration of the forwarding activity.
     ///
-    /// ``V1/ForwardingReport-6wcc`` describes the forwarding
-    /// mechanism used for a connection, including the forwarding protocol,
-    /// matching rule, timing information, and the associated connection.
-    #if canImport(Darwin) || swift(>=6.3)
-      @Observable
-    #endif
-    public class ForwardingReport {
+    /// This value represents the elapsed time during which the connection
+    /// was forwarded.
+    @Attribute(.transformable(by: SQLValueTransformer<Duration>.self))
+    public var duration: Duration = Duration.zero
 
-      /// The earliest date and time at which forwarding began.
-      ///
-      /// This value identifies when forwarding activity was first observed
-      /// for the connection.
-      public var earliestBeginDate = Date.now
+    /// The forwarding protocol used for the connection.
+    ///
+    /// Examples include direct forwarding and proxy-based forwarding.
+    public var forwardProtocol = "DIRECT"
 
-      /// The duration of the forwarding activity.
-      ///
-      /// This value represents the elapsed time during which the connection
-      /// was forwarded.
-      public var duration: Duration = Duration.zero
+    /// The forwarding rule that matched the connection.
+    ///
+    /// This value may identify the rule, policy, or configuration entry
+    /// responsible for selecting the forwarding behavior.
+    public var forwardingRule: String?
 
-      /// The forwarding protocol used for the connection.
-      ///
-      /// Examples include direct forwarding and proxy-based forwarding.
-      public var forwardProtocol = "DIRECT"
+    /// The connection associated with the forwarding activity.
+    ///
+    /// This value contains information about the network connection that
+    /// was attributed to the forwarding activity.
+    public var connection: V1.Connection?
 
-      /// The forwarding rule that matched the connection.
-      ///
-      /// This value may identify the rule, policy, or configuration entry
-      /// responsible for selecting the forwarding behavior.
-      public var forwardingRule: String?
-
-      /// The connection associated with the forwarding activity.
-      ///
-      /// This value contains information about the network connection that
-      /// was attributed to the forwarding activity.
-      public var connection: V1.Connection?
-
-      /// Creates an empty ``V1/ForwardingReport-6wcc``.
-      public init() {}
-    }
-  #endif
+    /// Creates an empty ``V1/ForwardingReport``.
+    public init() {}
+  }
 }
 
 @available(SwiftStdlib 6.0, *)
 extension V1.ForwardingReport {
 
   /// Converts a runtime ``ForwardingReport`` into a persistent
-  /// ``V1/ForwardingReport-6wcc`` snapshot.
+  /// ``V1/ForwardingReport`` snapshot.
   ///
   /// This method captures the current state of the forwarding activity at a point in time.
   /// Runtime-only fields (timers, live state transitions, observation locks)

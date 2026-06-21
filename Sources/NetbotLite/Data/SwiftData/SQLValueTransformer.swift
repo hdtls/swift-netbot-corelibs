@@ -62,4 +62,13 @@
       forName: .init(rawValue: "SQLValueTransformer<HTTPResponse>")
     )
   }
+#else
+  #if canImport(Darwin)
+    import Foundation
+  #else
+    import NetbotSQL
+  #endif
+
+  public class SQLValueTransformer<T: Codable>: ValueTransformer {
+  }
 #endif

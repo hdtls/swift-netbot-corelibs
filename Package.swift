@@ -71,6 +71,13 @@ let package = Package(
       ]
     ),
     .macro(
+      name: "NetbotSQLMacros",
+      dependencies: [
+        .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+        .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+      ]
+    ),
+    .macro(
       name: "SynchronizationMacros",
       dependencies: [
         .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
@@ -183,6 +190,7 @@ let package = Package(
     .target(
       name: "NetbotLiteData",
       dependencies: [
+        "NetbotSQL",
         "SynchronizationExtras",
         .product(name: "HTTPTypes", package: "swift-http-types"),
         .product(name: "NEAddressProcessing", package: "swift-netbot-protoimpl"),
@@ -211,7 +219,9 @@ let package = Package(
       dependencies: [
         "SynchronizationExtras",
         .product(name: "Logging", package: "swift-log"),
-      ]),
+      ]
+    ),
+    .target(name: "NetbotSQL", dependencies: ["NetbotSQLMacros"]),
     .target(
       name: "SynchronizationExtras",
       dependencies: [
@@ -249,6 +259,13 @@ let package = Package(
         .product(name: "NIOWebSocket", package: "swift-nio"),
       ],
       exclude: ["External Resource"]
+    ),
+    .testTarget(
+      name: "NetbotSQLMacrosTests",
+      dependencies: [
+        "NetbotSQLMacros",
+        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
+      ]
     ),
     .testTarget(
       name: "SynchronizationMacrosTests",

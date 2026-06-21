@@ -23,10 +23,6 @@ import Testing
   import Foundation
 #endif
 
-#if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-  import SwiftData
-#endif
-
 @Suite struct V1_ConnectionTests {
 
   @available(SwiftStdlib 6.0, *)

@@ -26,9 +26,9 @@
 /// with a specific application.
 ///
 /// Use ``Program`` when working with programs in memory.
-/// Use ``V1/Program-mewl`` when storing program data.
+/// Use ``V1/Program`` when storing program data.
 ///
-/// - SeeAlso: ``V1/Program-mewl``
+/// - SeeAlso: ``V1/Program``
 @available(SwiftStdlib 6.0, *)
 public struct Program: Hashable, Codable, Sendable {
 

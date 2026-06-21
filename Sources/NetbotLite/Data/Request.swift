@@ -27,9 +27,9 @@ import NEAddressProcessing
 /// data transfer.
 ///
 /// Use ``Request`` when working with requests in memory.
-/// Use ``V1/Request-1640l`` when storing request data.
+/// Use ``V1/Request`` when storing request data.
 ///
-/// - SeeAlso: ``V1/Request-1640l``
+/// - SeeAlso: ``V1/Request``
 @available(SwiftStdlib 6.0, *)
 public struct Request: Codable, Hashable, Sendable {
 

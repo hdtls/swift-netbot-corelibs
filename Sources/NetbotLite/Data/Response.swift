@@ -25,9 +25,9 @@ import HTTPTypes
 /// information in a format suitable for persistence.
 ///
 /// Use ``Response`` when working with responses in memory.
-/// Use ``V1/Response-21n45`` when storing response data.
+/// Use ``V1/Response`` when storing response data.
 ///
-/// - SeeAlso: ``V1/Response-21n45``
+/// - SeeAlso: ``V1/Response``
 @available(SwiftStdlib 6.0, *)
 public struct Response: Codable, Hashable, Sendable {
 

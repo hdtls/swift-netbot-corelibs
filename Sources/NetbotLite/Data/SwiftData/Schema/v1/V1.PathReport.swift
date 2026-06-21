@@ -24,6 +24,8 @@
 
 #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
   import SwiftData
+#else
+  import NetbotSQL
 #endif
 
 @available(SwiftStdlib 6.0, *)
@@ -37,14 +39,7 @@ extension V1 {
   ///
   /// Use this type to analyze network performance and data transfer
   /// characteristics for a connection.
-  #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-    @Model
-  #else
-    #if canImport(Darwin) || swift(>=6.3)
-      @Observable
-    #endif
-  #endif
-  public class PathReport {
+  @Model public class PathReport {
 
     /// The number of IP packets received.
     public var receivedIPPacketCount: UInt64 = 0
