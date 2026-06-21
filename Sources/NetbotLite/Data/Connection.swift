@@ -26,7 +26,7 @@ import SynchronizationExtras
 
 // swift-format-ignore: AlwaysUseLowerCamelCase
 @available(SwiftStdlib 6.0, *)
-public let SQL_lastInsertedID = Atomic<UInt64>(0)
+private let SQL_lastInsertedID = Atomic<UInt64>(0)
 
 /// A model representing a single network connection lifecycle.
 ///
@@ -140,10 +140,12 @@ public let SQL_lastInsertedID = Atomic<UInt64>(0)
   ///
   /// - Parameter taskIdentifier: A unique identifier for the connection. If not provided,
   ///   a default identifier is generated using a monotonic counter.
-  public init(
-    taskIdentifier: UInt64 = SQL_lastInsertedID.wrappingAdd(1, ordering: .relaxed).oldValue
-  ) {
+  package init(taskIdentifier: UInt64) {
     self.taskIdentifier = taskIdentifier
+  }
+
+  public convenience init() {
+    self.init(taskIdentifier: SQL_lastInsertedID.wrappingAdd(1, ordering: .relaxed).oldValue)
   }
 }
 
