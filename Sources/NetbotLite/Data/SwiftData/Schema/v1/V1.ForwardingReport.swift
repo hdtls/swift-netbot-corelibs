@@ -84,12 +84,7 @@ extension V1.ForwardingReport {
   ///
   /// - Parameter data: New ``ForwardingReport`` to map.
   public func mergeValues(_ data: NetbotLiteData.ForwardingReport) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
-      self.earliestBeginDate = data.earliestBeginDate
-      self.duration = data.duration
-      self.forwardingRule = data.forwardingRule
-      self.forwardProtocol = data.forwardProtocol
-    #else
+    #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
       if self.earliestBeginDate != data.earliestBeginDate {
         self.earliestBeginDate = data.earliestBeginDate
       }
@@ -102,6 +97,11 @@ extension V1.ForwardingReport {
       if self.forwardProtocol != data.forwardProtocol {
         self.forwardProtocol = data.forwardProtocol
       }
+    #else
+      self.earliestBeginDate = data.earliestBeginDate
+      self.duration = data.duration
+      self.forwardingRule = data.forwardingRule
+      self.forwardProtocol = data.forwardProtocol
     #endif
   }
 }

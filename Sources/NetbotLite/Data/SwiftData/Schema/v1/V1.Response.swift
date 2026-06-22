@@ -84,11 +84,7 @@ extension V1.Response {
   ///
   /// - Parameter data: New `Response` to map.
   public func mergeValues(_ data: NetbotLiteData.Response) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
-      httpResponse = data.httpResponse
-      trailerHTTPFields = data.trailerHTTPFields
-      body = data.body
-    #else
+    #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
       if httpResponse != data.httpResponse {
         httpResponse = data.httpResponse
       }
@@ -98,6 +94,10 @@ extension V1.Response {
       if body != data.body {
         body = data.body
       }
+    #else
+      httpResponse = data.httpResponse
+      trailerHTTPFields = data.trailerHTTPFields
+      body = data.body
     #endif
   }
 }

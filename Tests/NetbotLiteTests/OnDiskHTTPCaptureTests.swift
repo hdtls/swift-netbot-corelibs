@@ -18,12 +18,10 @@ import Testing
 
 struct OnDiskHTTPCaptureTests {
 
-  #if swift(>=6.2)
-    @available(SwiftStdlib 6.0, *)
-    @Test func unsupportedHeadT() async throws {
-      await #expect(processExitsWith: .failure) {
-        _ = OnDiskHTTPCapture<Int>(connection: .init(), captureFilters: [])
-      }
+  @available(SwiftStdlib 6.0, *)
+  @Test func unsupportedHeadT() async throws {
+    await #expect(processExitsWith: .failure) {
+      _ = OnDiskHTTPCapture<Int>(connection: .init(), captureFilters: [])
     }
-  #endif
+  }
 }

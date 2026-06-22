@@ -123,14 +123,7 @@ extension V1.Request {
       }
     }
 
-    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
-      self.httpRequest = data.httpRequest
-      self.address = data.address
-      self.trailerHTTPFields = data.trailerHTTPFields
-      self.body = data.body
-      self.hostname = data.host(percentEncoded: false)
-      self.absoluteURLString = absoluteURLString
-    #else
+    #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
       if self.httpRequest != data.httpRequest {
         self.httpRequest = data.httpRequest
       }
@@ -149,6 +142,13 @@ extension V1.Request {
       if self.body != data.body {
         self.body = data.body
       }
+    #else
+      self.httpRequest = data.httpRequest
+      self.address = data.address
+      self.trailerHTTPFields = data.trailerHTTPFields
+      self.body = data.body
+      self.hostname = data.host(percentEncoded: false)
+      self.absoluteURLString = absoluteURLString
     #endif
   }
 }

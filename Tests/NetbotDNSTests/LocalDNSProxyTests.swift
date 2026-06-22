@@ -34,7 +34,7 @@ struct LocalDNSProxyTests {
   final class MockDNSServer: @unchecked Sendable {
     let queryCalls: Atomic<Int> = .init(0)
     let response: [any ResourceRecord]
-    let parser = NLDNSParser()
+    let parser = DNSParser()
 
     #if canImport(Network)
       private var channel: (any Channel)?

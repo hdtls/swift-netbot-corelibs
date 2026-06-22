@@ -11,9 +11,7 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-#if compiler(>=6.2)
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 public struct Lockable {
 
   public enum AccessLevel {
@@ -31,15 +29,11 @@ public struct Lockable {
   }
 }
 
-#if compiler(>=6.2)
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @attached(memberAttribute)
 public macro Lockable() = #externalMacro(module: "SynchronizationMacros", type: "LockableMacro")
 
-#if compiler(>=6.2)
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @attached(accessor, names: named(init), named(get), named(set))
 @attached(peer, names: prefixed(`$`))
 public macro LockableTracked(
@@ -47,9 +41,7 @@ public macro LockableTracked(
   accessors: Lockable.Accessor...
 ) = #externalMacro(module: "SynchronizationMacros", type: "LockableTrackedMacro")
 
-#if compiler(>=6.2)
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @attached(peer)
 public macro LockableIgnored() =
   #externalMacro(module: "SynchronizationMacros", type: "LockableIgnoredMacro")
@@ -57,9 +49,7 @@ public macro LockableIgnored() =
 #if canImport(Darwin) || swift(>=6.3)
   import Observation
 
-  #if compiler(>=6.2)
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @attached(
     member, names: named(_$observationRegistrar), named(access), named(withMutation),
     named(shouldNotifyObservers)) @attached(memberAttribute)
@@ -68,27 +58,21 @@ public macro LockableIgnored() =
   public macro ObservationLockable() =
     #externalMacro(module: "SynchronizationMacros", type: "ObservationLockableMacro")
 #else
-  #if compiler(>=6.2)
-    @available(SwiftStdlib 6.0, *)
-  #endif
+  @available(SwiftStdlib 6.0, *)
   @attached(member, names: named(access), named(withMutation))
   @attached(memberAttribute)
   public macro ObservationLockable() =
     #externalMacro(module: "SynchronizationMacros", type: "ObservationLockableMacro")
 #endif
 
-#if compiler(>=6.2)
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @attached(accessor, names: named(init), named(get), named(set))
 @attached(peer, names: prefixed(`$`))
 public macro ObservationLockableTracked(
   accessLevel: Lockable.AccessLevel = .private
 ) = #externalMacro(module: "SynchronizationMacros", type: "ObservationLockableTrackedMacro")
 
-#if compiler(>=6.2)
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @attached(peer)
 public macro ObservationLockableIgnored() =
   #externalMacro(module: "SynchronizationMacros", type: "ObservationLockableIgnoredMacro")

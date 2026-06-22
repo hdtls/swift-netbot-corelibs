@@ -117,31 +117,14 @@
       }
     #endif
 
-    #if swift(>=6.2)
-      /// Test latency using specific `url` and `timeoutInterval`.
-      ///
-      /// This operation update `dnsLatency`, `routerLatency` and `internetLatency` after test finished.
-      ///
-      /// - Parameters:
-      ///   - url: `URL` for internet latency tests.
-      ///   - timeoutInterval: Time out interval for all latency tests.
-      @concurrent public func testLatency(url: URL? = nil, timeoutInterval: Double = 5) async {
-        await _testLatency(url: url, timeoutInterval: timeoutInterval)
-      }
-    #else
-      /// Test latency using specific `url` and `timeoutInterval`.
-      ///
-      /// This operation update `dnsLatency`, `routerLatency` and `internetLatency` after test finished.
-      ///
-      /// - Parameters:
-      ///   - url: `URL` for internet latency tests.
-      ///   - timeoutInterval: Time out interval for all latency tests.
-      nonisolated public func testLatency(url: URL? = nil, timeoutInterval: Double = 5) async {
-        await _testLatency(url: url, timeoutInterval: timeoutInterval)
-      }
-    #endif
-
-    nonisolated private func _testLatency(url: URL? = nil, timeoutInterval: Double = 5) async {
+    /// Test latency using specific `url` and `timeoutInterval`.
+    ///
+    /// This operation update `dnsLatency`, `routerLatency` and `internetLatency` after test finished.
+    ///
+    /// - Parameters:
+    ///   - url: `URL` for internet latency tests.
+    ///   - timeoutInterval: Time out interval for all latency tests.
+    @concurrent public func testLatency(url: URL? = nil, timeoutInterval: Double = 5) async {
       await withTaskGroup { g in
         g.addTask { [weak self] in
           guard let self else { return }

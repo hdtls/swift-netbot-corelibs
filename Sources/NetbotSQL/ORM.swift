@@ -109,7 +109,7 @@
     hashModifier: String? = nil
   ) = #externalMacro(module: "NetbotSQLMacros", type: "AttributePropertyMacro")
 
-  #if swift(>=6.3)
+  #if canImport(Darwin) || swift(>=6.3)
     @attached(
       member, conformances: Observable, Sendable, names: named(_$observationRegistrar),
       named(access),

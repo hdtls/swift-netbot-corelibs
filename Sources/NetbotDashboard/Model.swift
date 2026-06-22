@@ -119,11 +119,7 @@ public enum DataTransfer: Hashable, Sendable {
   private var fetchTask: Task<Void, Never>?
 
   #if canImport(NetworkExtension)
-    #if swift(>=6.2)
-      private var vpnStatusObservationTask: Task<Void, Never>?
-    #else
-      nonisolated private let vpnStatusObservationTask: Mutex<Task<Void, Never>?>
-    #endif
+    private var vpnStatusObservationTask: Task<Void, Never>?
   #endif
 
   nonisolated public convenience init() {
@@ -178,14 +174,9 @@ public enum DataTransfer: Hashable, Sendable {
         }
       }
 
-      #if swift(>=6.2)
-        Task { @MainActor [weak self] in
-          self?.vpnStatusObservationTask = task
-        }
-      #else
-        self.vpnStatusObservationTask = .init(nil)
-        self.vpnStatusObservationTask.withLock { $0 = task }
-      #endif
+      Task { @MainActor [weak self] in
+        self?.vpnStatusObservationTask = task
+      }
     #endif
   }
 
@@ -295,9 +286,7 @@ public enum DataTransfer: Hashable, Sendable {
   }
 
   #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
-    #if swift(>=6.2)
-      @concurrent
-    #endif
+    @concurrent
   #endif
   private func performBatchUpdates(_ models: [Connection]) async {
     func doInsert(_ model: Connection) throws {

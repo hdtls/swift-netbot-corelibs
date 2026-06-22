@@ -166,27 +166,8 @@ public enum CertbotError: Error {
   nonisolated public init() {
   }
 
-  #if swift(>=6.2)
-    /// Load certificate from base64 encoded PKCS#12 bundle string.
-    @concurrent public func loadFromBase64EncodedP12String(
-      _ base64String: String?, passphrase: String?
-    )
-      async throws
-    {
-      try await _loadFromBase64EncodedP12String(base64String, passphrase: passphrase)
-    }
-  #else
-    /// Load certificate from base64 encoded PKCS#12 bundle string.
-    nonisolated public func loadFromBase64EncodedP12String(
-      _ base64String: String?, passphrase: String?
-    )
-      async throws
-    {
-      try await _loadFromBase64EncodedP12String(base64String, passphrase: passphrase)
-    }
-  #endif
-
-  nonisolated private func _loadFromBase64EncodedP12String(
+  /// Load certificate from base64 encoded PKCS#12 bundle string.
+  @concurrent public func loadFromBase64EncodedP12String(
     _ base64String: String?, passphrase: String?
   )
     async throws
@@ -210,19 +191,8 @@ public enum CertbotError: Error {
     }
   }
 
-  #if swift(>=6.2)
-    /// Load certificate from url where PKCS#12 bundle saved.
-    @concurrent public func loadFromP12File(at url: URL, passphrase: String?) async throws {
-      try await _loadFromP12File(at: url, passphrase: passphrase)
-    }
-  #else
-    /// Load certificate from url where PKCS#12 bundle saved.
-    nonisolated public func loadFromP12File(at url: URL, passphrase: String?) async throws {
-      try await _loadFromP12File(at: url, passphrase: passphrase)
-    }
-  #endif
-
-  nonisolated private func _loadFromP12File(at url: URL, passphrase: String?) async throws {
+  /// Load certificate from url where PKCS#12 bundle saved.
+  @concurrent public func loadFromP12File(at url: URL, passphrase: String?) async throws {
     let data = try Data(contentsOf: url)
     let backing = try await self.loadFromP12Data(data, passphrase: passphrase)
     let isTrusted = try self.trustEvaluate(certificate: backing.representation)
@@ -255,27 +225,12 @@ public enum CertbotError: Error {
     )
   }
 
-  #if swift(>=6.2)
-    /// Generate new certificate using specified passphrase strategy.
-    ///
-    /// This will perform certificate generation, after success content will be updated.
-    /// - Parameter strategy: Strategy for how to privide PKCS#12 passphrase. Defaults to `.auto`.
-    ///
-    @concurrent public func generate(using strategy: PassphraseStrategy = .auto) async throws {
-      try await self._generate(using: strategy)
-    }
-  #else
-    /// Generate new certificate using specified passphrase strategy.
-    ///
-    /// This will perform certificate generation, after success content will be updated.
-    /// - Parameter strategy: Strategy for how to privide PKCS#12 passphrase. Defaults to `.auto`.
-    ///
-    nonisolated public func generate(using strategy: PassphraseStrategy = .auto) async throws {
-      try await self._generate(using: strategy)
-    }
-  #endif
-
-  private func _generate(using strategy: PassphraseStrategy = .auto) async throws {
+  /// Generate new certificate using specified passphrase strategy.
+  ///
+  /// This will perform certificate generation, after success content will be updated.
+  /// - Parameter strategy: Strategy for how to privide PKCS#12 passphrase. Defaults to `.auto`.
+  ///
+  public func generate(using strategy: PassphraseStrategy = .auto) async throws {
     if generatingTask == nil || generatingTask?.isCancelled == true {
       generatingTask = Task {
         try await self.generate0(using: strategy)
@@ -297,21 +252,7 @@ public enum CertbotError: Error {
     }
   }
 
-  #if swift(>=6.2)
-    @concurrent private func generate0(using strategy: PassphraseStrategy = .auto) async throws
-      -> Backing
-    {
-      return try await self._generate0(using: strategy)
-    }
-  #else
-    nonisolated private func generate0(using strategy: PassphraseStrategy = .auto) async throws
-      -> Backing
-    {
-      return try await self._generate0(using: strategy)
-    }
-  #endif
-
-  nonisolated private func _generate0(using strategy: PassphraseStrategy = .auto) async throws
+  @concurrent private func generate0(using strategy: PassphraseStrategy = .auto) async throws
     -> Backing
   {
     let privateKey = try _RSA.Signing.PrivateKey(keySize: .bits2048)
@@ -394,17 +335,10 @@ public enum CertbotError: Error {
     return Data(bytes).base64EncodedString()
   }
 
-  #if swift(>=6.2)
-    /// Install and trust loaded or generated certificate.
-    @concurrent public func trustLoadedCertificate() async throws {
-      try await self._trustLoadedCertificate()
-    }
-  #else
-    /// Install and trust loaded or generated certificate.
-    nonisolated public func trustLoadedCertificate() async throws {
-      try await self._trustLoadedCertificate()
-    }
-  #endif
+  /// Install and trust loaded or generated certificate.
+  @concurrent public func trustLoadedCertificate() async throws {
+    try await self._trustLoadedCertificate()
+  }
 
   #if canImport(Security)
     nonisolated private func _trustLoadedCertificate() async throws {

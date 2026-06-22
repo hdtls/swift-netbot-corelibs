@@ -110,17 +110,7 @@ public actor ProfileAssistant {
   }
 
   /// Reload all profiles in the current active profiles directory, profiles contains invalid syntax will be ignored.
-  #if swift(>=6.2)
-    @concurrent public func reloadAllProfiles() async {
-      await _reloadAllProfiles()
-    }
-  #else
-    nonisolated public func reloadAllProfiles() async {
-      await _reloadAllProfiles()
-    }
-  #endif
-
-  nonisolated private func _reloadAllProfiles() async {
+  @concurrent public func reloadAllProfiles() async {
     var profiles: [ProfileInfo] = await loadAllProfiles(at: profilesDirectory).map {
       .init(
         url: $0.url, numberOfRules: $0.lazyForwardingRules.count,
@@ -182,17 +172,7 @@ public actor ProfileAssistant {
   ///
   /// - Parameter url: URL for the profile file.
   /// - Returns: Loaded profile if success.
-  #if swift(>=6.2)
-    @concurrent public func profile(identified url: URL) async throws -> Profile {
-      try await _profile(identified: url)
-    }
-  #else
-    nonisolated public func profile(identified url: URL) async throws -> Profile {
-      try await _profile(identified: url)
-    }
-  #endif
-
-  nonisolated private func _profile(identified url: URL) async throws -> Profile {
+  @concurrent public func profile(identified url: URL) async throws -> Profile {
     let profileURL = await virtualProfileURL
     guard url != profileURL else {
       return Profile()
@@ -228,17 +208,7 @@ public actor ProfileAssistant {
   ///
   /// - Parameter name: Name of the profile to be loaded.
   /// - Returns: Loaded profile if success.
-  #if swift(>=6.2)
-    @concurrent public func profile(identified name: String) async throws -> Profile {
-      try await _profile(identified: name)
-    }
-  #else
-    nonisolated public func profile(identified name: String) async throws -> Profile {
-      try await _profile(identified: name)
-    }
-  #endif
-
-  nonisolated private func _profile(identified name: String) async throws -> Profile {
+  @concurrent public func profile(identified name: String) async throws -> Profile {
     let profilesDirectory = await profileURL.deletingLastPathComponent()
     let url = profilesDirectory.appending(path: name).appendingPathExtension(.profilePathExtension)
     return try await profile(identified: url)
@@ -446,35 +416,9 @@ public actor ProfileAssistant {
   }
 
   /// Modify in-used Profile contents within file access intents.
-  #if swift(>=6.2)
-    @concurrent func modify(
-      readingOptions: NSFileCoordinator.ReadingOptions = [],
-      writingOptions: NSFileCoordinator.WritingOptions = [.forReplacing],
-      accessor: @escaping @Sendable (NSFileAccessIntent, NSFileAccessIntent) throws -> Void
-    ) async throws {
-      try await _modify(
-        readingOptions: readingOptions,
-        writingOptions: writingOptions,
-        accessor: accessor
-      )
-    }
-  #else
-    nonisolated func modify(
-      readingOptions: NSFileCoordinator.ReadingOptions = [],
-      writingOptions: NSFileCoordinator.WritingOptions = [.forReplacing],
-      accessor: @escaping @Sendable (NSFileAccessIntent, NSFileAccessIntent) throws -> Void
-    ) async throws {
-      try await _modify(
-        readingOptions: readingOptions,
-        writingOptions: writingOptions,
-        accessor: accessor
-      )
-    }
-  #endif
-
-  nonisolated private func _modify(
-    readingOptions: NSFileCoordinator.ReadingOptions,
-    writingOptions: NSFileCoordinator.WritingOptions,
+  @concurrent func modify(
+    readingOptions: NSFileCoordinator.ReadingOptions = [],
+    writingOptions: NSFileCoordinator.WritingOptions = [.forReplacing],
     accessor: @escaping @Sendable (NSFileAccessIntent, NSFileAccessIntent) throws -> Void
   ) async throws {
     let profileURL = await profileURL

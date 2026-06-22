@@ -70,11 +70,7 @@ extension V1.DNSResolutionReport {
   ///
   /// - Parameter data: New ``DNSResolutionReport`` to map.
   public func mergeValues(_ data: NetbotLiteData.DNSResolutionReport) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
-      self.earliestBeginDate = data.earliestBeginDate
-      self.duration = data.duration
-      self.resolutions = data.resolutions
-    #else
+    #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
       if self.earliestBeginDate != data.earliestBeginDate {
         self.earliestBeginDate = data.earliestBeginDate
       }
@@ -84,6 +80,10 @@ extension V1.DNSResolutionReport {
       if self.resolutions != data.resolutions {
         self.resolutions = data.resolutions
       }
+    #else
+      self.earliestBeginDate = data.earliestBeginDate
+      self.duration = data.duration
+      self.resolutions = data.resolutions
     #endif
   }
 }

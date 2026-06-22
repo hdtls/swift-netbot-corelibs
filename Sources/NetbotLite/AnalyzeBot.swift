@@ -103,7 +103,7 @@ import Tracing
 
   private var quiescing: [ServerQuiescingHelper] = []
 
-  private let eventLoopGroup: any EventLoopGroup
+  private let group: any EventLoopGroup
 
   private var processName: String {
     "AnalyzeBot"
@@ -116,7 +116,7 @@ import Tracing
     webProxyListenAddress: SocketAddress = try! .init(ipAddress: "127.0.0.1", port: 6152),
     socksProxyListenAddress: SocketAddress = try! .init(ipAddress: "127.0.0.1", port: 6153)
   ) {
-    self.eventLoopGroup = group
+    self.group = group
     self.logger = logger
     self.$webProxyListenAddress = .init(webProxyListenAddress)
     self.$socksProxyListenAddress = .init(socksProxyListenAddress)
@@ -252,7 +252,7 @@ import Tracing
     renamed: "shutdownGracefully"
   )
   private func syncShutdownGracefully() throws {
-    try eventLoopGroup.next().makeFutureWithTask { try await self.shutdownGracefully() }.wait()
+    try group.next().makeFutureWithTask { try await self.shutdownGracefully() }.wait()
   }
 
   /// Fully shutdown service.
@@ -273,7 +273,7 @@ import Tracing
     try await withThrowingTaskGroup(of: Void.self) { g in
       for quiescing in self.quiescing {
         g.addTask {
-          let promise = self.eventLoopGroup.next().makePromise(of: Void.self)
+          let promise = self.group.next().makePromise(of: Void.self)
           quiescing.initiateShutdown(promise: promise)
           // Wait until all child channels closed.
           try await promise.futureResult.get()
@@ -293,9 +293,9 @@ import Tracing
   ///   - address: The server for VPN tunnel to bind.
   /// - Returns: Started VPN tunnel and server quiescing helper pair.
   private func startVPNTunnel(protocol: Proxy.`Protocol`, address: SocketAddress) async throws {
-    let quiescing = ServerQuiescingHelper(group: eventLoopGroup)
+    let quiescing = ServerQuiescingHelper(group: group)
 
-    let channel = try await ServerBootstrap(group: eventLoopGroup)
+    let channel = try await ServerBootstrap(group: group)
       .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
       .serverChannelOption(ChannelOptions.socketOption(.init(rawValue: SO_REUSEPORT)), value: 1)
       .serverChannelInitializer { channel in
@@ -393,10 +393,9 @@ import Tracing
         )
 
         // Create peer channel.
-        let forwardProtocol = session.forwardingReport.asForwardProtocol()
-        let outputStream = try await forwardProtocol.makeConnection(
-          logger: logger, connection: session, on: inputStream.eventLoop.next()
-        )
+        let outputStream = try await session.forwardingReport
+          .asForwardProtocol()
+          .makeConnection(logger: logger, connection: session, on: group.next())
 
         session.state = .active
 

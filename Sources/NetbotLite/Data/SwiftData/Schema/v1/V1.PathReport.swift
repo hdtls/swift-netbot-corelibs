@@ -149,20 +149,7 @@ extension V1.PathReport {
       )
     }
 
-    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
-      self.receivedIPPacketCount = data.receivedIPPacketCount
-      self.sentIPPacketCount = data.sentIPPacketCount
-      self.receivedTransportByteCount = data.receivedTransportByteCount
-      self.receivedTransportDuplicateByteCount = data.receivedTransportDuplicateByteCount
-      self.receivedTransportOutOfOrderByteCount = data.receivedTransportOutOfOrderByteCount
-      self.sentTransportByteCount = data.sentTransportByteCount
-      self.retransmittedTransportByteCount = data.retransmittedTransportByteCount
-      self.transportSmoothedRTT = data.transportSmoothedRTT
-      self.transportMinimumRTT = data.transportMinimumRTT
-      self.transportRTTVariance = data.transportRTTVariance
-      self.receivedApplicationByteCount = data.receivedApplicationByteCount
-      self.sentApplicationByteCount = data.sentApplicationByteCount
-    #else
+    #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
       if self.receivedIPPacketCount != data.receivedIPPacketCount {
         self.receivedIPPacketCount = data.receivedIPPacketCount
       }
@@ -199,6 +186,19 @@ extension V1.PathReport {
       if self.sentApplicationByteCount != data.sentApplicationByteCount {
         self.sentApplicationByteCount = data.sentApplicationByteCount
       }
+    #else
+      self.receivedIPPacketCount = data.receivedIPPacketCount
+      self.sentIPPacketCount = data.sentIPPacketCount
+      self.receivedTransportByteCount = data.receivedTransportByteCount
+      self.receivedTransportDuplicateByteCount = data.receivedTransportDuplicateByteCount
+      self.receivedTransportOutOfOrderByteCount = data.receivedTransportOutOfOrderByteCount
+      self.sentTransportByteCount = data.sentTransportByteCount
+      self.retransmittedTransportByteCount = data.retransmittedTransportByteCount
+      self.transportSmoothedRTT = data.transportSmoothedRTT
+      self.transportMinimumRTT = data.transportMinimumRTT
+      self.transportRTTVariance = data.transportRTTVariance
+      self.receivedApplicationByteCount = data.receivedApplicationByteCount
+      self.sentApplicationByteCount = data.sentApplicationByteCount
     #endif
   }
 }

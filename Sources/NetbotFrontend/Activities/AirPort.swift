@@ -407,17 +407,10 @@ import SynchronizationExtras
     stopListening()
   }
 
-  #if swift(>=6.2)
-    /// Request public IPs for current connected Wi-Fi.
-    @concurrent public func requestPublicIPs() async throws {
-      try await monitor.requestPublicIPs()
-    }
-  #else
-    /// Request public IPs for current connected Wi-Fi.
-    nonisolated public func requestPublicIPs() async throws {
-      try await monitor.requestPublicIPs()
-    }
-  #endif
+  /// Request public IPs for current connected Wi-Fi.
+  @concurrent public func requestPublicIPs() async throws {
+    try await monitor.requestPublicIPs()
+  }
 
   /// Start listening Wi-Fi changes.
   nonisolated public func startListening() {
@@ -492,25 +485,7 @@ import SynchronizationExtras
         }
       }
 
-      #if swift(>=6.2)
-        @concurrent private func requestAirPortInfo() async {
-          await _requestAirPortInfo()
-        }
-
-        @concurrent func requestPublicIPs() async {
-          await _requestPublicIPs()
-        }
-      #else
-        nonisolated private func requestAirPortInfo() async {
-          await _requestAirPortInfo()
-        }
-
-        nonisolated func requestPublicIPs() async {
-          await _requestPublicIPs()
-        }
-      #endif
-
-      nonisolated private func _requestAirPortInfo() async {
+      @concurrent private func requestAirPortInfo() async {
         if let interface = CWWiFiClient.shared().interface() {
           $currentPath.withLock { currentPath in
             currentPath.name = interface.interfaceName ?? "N/A"
@@ -662,7 +637,7 @@ import SynchronizationExtras
         }
       }
 
-      nonisolated private func _requestPublicIPs() async {
+      @concurrent func requestPublicIPs() async {
         let configuration = URLSessionConfiguration.default
         configuration.proxyConfigurations = []
         configuration.connectionProxyDictionary = [:]
@@ -755,15 +730,9 @@ import SynchronizationExtras
     }
   }
 
-  #if swift(>=6.2)
-    @available(SwiftStdlib 6.0, *)
-    extension AirPort.CWAirPortMonitor: nonisolated CWEventDelegate {
-    }
-  #else
-    @available(SwiftStdlib 6.0, *)
-    extension AirPort.CWAirPortMonitor: @preconcurrency CWEventDelegate {
-    }
-  #endif
+  @available(SwiftStdlib 6.0, *)
+  extension AirPort.CWAirPortMonitor: nonisolated CWEventDelegate {
+  }
 
   @available(SwiftStdlib 6.0, *)
   extension AirPort.AirPortMonitor {

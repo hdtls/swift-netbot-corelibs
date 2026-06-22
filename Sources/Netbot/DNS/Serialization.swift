@@ -21,11 +21,11 @@ import NIOCore
 #endif
 
 @available(SwiftStdlib 6.0, *)
-public struct NLDNSParser: Sendable {
+package struct DNSParser: Sendable {
 
-  public init() {}
+  package init() {}
 
-  public func parse(_ parseInput: ByteBuffer) throws(DNSError) -> Message {
+  package func parse(_ parseInput: ByteBuffer) throws(DNSError) -> Message {
     try parse0(parseInput).0
   }
 

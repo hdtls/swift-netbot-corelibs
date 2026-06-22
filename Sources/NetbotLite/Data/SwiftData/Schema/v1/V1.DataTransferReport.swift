@@ -126,13 +126,8 @@ extension V1.DataTransferReport {
           maximumUnitCount: 3
         )
       )
-    }
-    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
+
       self.duration = data.duration
-    #else
-      if self.duration != data.duration {
-        self.duration = data.duration
-      }
-    #endif
+    }
   }
 }

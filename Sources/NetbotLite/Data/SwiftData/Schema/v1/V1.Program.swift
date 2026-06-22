@@ -104,12 +104,7 @@ extension V1.Program {
   ///
   /// - Parameter data: New `Program` to map.
   public func mergeValues(_ data: NetbotLiteData.Program) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
-      localizedName = data.localizedName
-      bundleURL = data.bundleURL
-      executableURL = data.executableURL
-      iconTIFFRepresentation = data.iconTIFFRepresentation
-    #else
+    #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
       if localizedName != data.localizedName {
         localizedName = data.localizedName
       }
@@ -122,6 +117,11 @@ extension V1.Program {
       if iconTIFFRepresentation != data.iconTIFFRepresentation {
         iconTIFFRepresentation = data.iconTIFFRepresentation
       }
+    #else
+      localizedName = data.localizedName
+      bundleURL = data.bundleURL
+      executableURL = data.executableURL
+      iconTIFFRepresentation = data.iconTIFFRepresentation
     #endif
   }
 }

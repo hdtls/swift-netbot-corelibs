@@ -21,24 +21,18 @@
 ///        var name: String = ""
 ///        var needsRepairs: Bool = false
 ///     }
-#if compiler(>=6.2)
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @attached(member, names: named(_storage), named(_Storage))
 @attached(memberAttribute)
 public macro _cowOptimization() =
   #externalMacro(module: "CoWOptimizationMacros", type: "CoWOptimizationMacro")
 
-#if compiler(>=6.2)
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @attached(accessor, names: named(get), named(_modify))
 public macro _cowOptimizationTracked() =
   #externalMacro(module: "CoWOptimizationMacros", type: "CoWOptimizationTrackedMacro")
 
-#if compiler(>=6.2)
-  @available(SwiftStdlib 6.0, *)
-#endif
+@available(SwiftStdlib 6.0, *)
 @attached(peer)
 public macro _cowOptimizationIgnored() =
   #externalMacro(module: "CoWOptimizationMacros", type: "CoWOptimizationIgnoredMacro")

@@ -67,12 +67,12 @@ extension V1.ProcessReport {
   ///
   /// - Parameter data: New `ProcessReport` to map.
   public func mergeValues(_ data: NetbotLiteData.ProcessReport) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
-      processIdentifier = data.processIdentifier
-    #else
+    #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
       if processIdentifier != data.processIdentifier {
         processIdentifier = data.processIdentifier
       }
+    #else
+      processIdentifier = data.processIdentifier
     #endif
   }
 }

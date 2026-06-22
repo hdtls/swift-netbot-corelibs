@@ -21,7 +21,7 @@ import Testing
 struct SerializationTests {
 
   @available(SwiftStdlib 6.0, *)
-  private var parser: NLDNSParser { NLDNSParser() }
+  private var parser: DNSParser { DNSParser() }
 
   @available(SwiftStdlib 6.0, *)
   @Test func parseAResponse() async throws {

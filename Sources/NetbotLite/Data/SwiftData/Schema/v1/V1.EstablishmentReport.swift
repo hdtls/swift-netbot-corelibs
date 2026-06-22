@@ -119,15 +119,7 @@ extension V1.EstablishmentReport {
   ///
   /// - Parameter data: New ``EstablishmentReport`` to map.
   public func mergeValues(_ data: NetbotLiteData.EstablishmentReport) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
-      self.duration = data.duration
-      self.attemptStartedAfterInterval = data.attemptStartedAfterInterval
-      self.previousAttemptCount = data.previousAttemptCount
-      self.sourceEndpoint = data.sourceEndpoint
-      self.usedProxy = data.usedProxy
-      self.proxyEndpoint = data.proxyEndpoint
-      self.resolutions = data.resolutions
-    #else
+    #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
       if self.duration != data.duration {
         self.duration = data.duration
       }
@@ -149,6 +141,14 @@ extension V1.EstablishmentReport {
       if self.resolutions != data.resolutions {
         self.resolutions = data.resolutions
       }
+    #else
+      self.duration = data.duration
+      self.attemptStartedAfterInterval = data.attemptStartedAfterInterval
+      self.previousAttemptCount = data.previousAttemptCount
+      self.sourceEndpoint = data.sourceEndpoint
+      self.usedProxy = data.usedProxy
+      self.proxyEndpoint = data.proxyEndpoint
+      self.resolutions = data.resolutions
     #endif
   }
 }

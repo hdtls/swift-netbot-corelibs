@@ -212,27 +212,7 @@ extension V1.Connection {
   /// - Important: Relationship values will not be merged.
   /// - Parameter data: New ``Connection`` to map.
   public func mergeValues(_ data: NetbotLiteData.Connection) {
-    #if swift(>=6.2) && !(canImport(SwiftData) && SWTNE_REQUIRES_SQL)
-      self.taskIdentifier = data.taskIdentifier
-      if self.earliestBeginDate != data.earliestBeginDate {
-        self.earliestBeginDateFormatted = data.earliestBeginDate
-          .formatted(.dateTime.hour().minute().second())
-      }
-      self.earliestBeginDate = data.earliestBeginDate
-      if self.duration != data.duration {
-        self.durationFormatted = data.duration.formatted(
-          .units(
-            allowed: [.hours, .minutes, .seconds, .milliseconds],
-            width: .narrow,
-            maximumUnitCount: 3
-          )
-        )
-      }
-      self.duration = data.duration
-      self.taskDescription = data.taskDescription
-      self.tls = data.tls
-      self.state = data.state
-    #else
+    #if canImport(SwiftData) && SWTNE_REQUIRES_SQL
       if self.taskIdentifier != data.taskIdentifier {
         self.taskIdentifier = data.taskIdentifier
       }
@@ -260,6 +240,26 @@ extension V1.Connection {
       if self.state != data.state {
         self.state = data.state
       }
+    #else
+      self.taskIdentifier = data.taskIdentifier
+      if self.earliestBeginDate != data.earliestBeginDate {
+        self.earliestBeginDateFormatted = data.earliestBeginDate
+          .formatted(.dateTime.hour().minute().second())
+      }
+      self.earliestBeginDate = data.earliestBeginDate
+      if self.duration != data.duration {
+        self.durationFormatted = data.duration.formatted(
+          .units(
+            allowed: [.hours, .minutes, .seconds, .milliseconds],
+            width: .narrow,
+            maximumUnitCount: 3
+          )
+        )
+      }
+      self.duration = data.duration
+      self.taskDescription = data.taskDescription
+      self.tls = data.tls
+      self.state = data.state
     #endif
   }
 }
