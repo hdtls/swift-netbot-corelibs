@@ -15,6 +15,7 @@ import Logging
 import Metrics
 import NEAddressProcessing
 import NIOCore
+import NetbotDNS
 import NetbotLiteData
 import Synchronization
 import Tracing
@@ -163,7 +164,9 @@ extension Connection {
   /// resolution accordingly. Completion is signaled via a promise and the function returns only after at least one query
   /// path has produced a result (or both have failed). The entire process runs within a tracing span named "dns query".
   ///
-  func dnsLookup(logger: Logger, resolver: any Resolver, on eventLoop: any EventLoop) async throws {
+  func dnsLookup(logger: Logger, resolver: any DNSResolver, on eventLoop: any EventLoop)
+    async throws
+  {
     #if swift(>=6.3)
       @inline(always)
     #else
@@ -188,30 +191,28 @@ extension Connection {
             await withTaskGroup(of: Result<DNSResolutionReport.Resolution, any Error>.self) { g in
               g.addTask {
                 await Result {
-                  DNSResolutionReport.Resolution(
-                    source: .query,
-                    duration: startTime.duration(to: .now),
-                    dnsProtocol: .udp,
-                    endpoints:
-                      try await resolver
-                      .initiateAAAAQuery(host: hostname, port: port)
-                      .flatMapThrowing({ try $0.map({ try $0.asAddress() }) })
-                      .get()
+                  let resolution = try await resolver.queryAAAA(name: hostname)
+                  return DNSResolutionReport.Resolution(
+                    source: resolution.source,
+                    duration: resolution.duration,
+                    dnsProtocol: resolution.dnsProtocol,
+                    endpoints: resolution.records.map {
+                      Address.hostPort(host: .ipv6($0.data), port: .init(rawValue: UInt16(port)))
+                    }
                   )
                 }
               }
 
               g.addTask {
                 await Result {
-                  DNSResolutionReport.Resolution(
-                    source: .query,
-                    duration: startTime.duration(to: .now),
-                    dnsProtocol: .udp,
-                    endpoints:
-                      try await resolver
-                      .initiateAQuery(host: hostname, port: port)
-                      .flatMapThrowing({ try $0.map({ try $0.asAddress() }) })
-                      .get()
+                  let resolution = try await resolver.queryA(name: hostname)
+                  return DNSResolutionReport.Resolution(
+                    source: resolution.source,
+                    duration: resolution.duration,
+                    dnsProtocol: resolution.dnsProtocol,
+                    endpoints: resolution.records.map {
+                      Address.hostPort(host: .ipv4($0.data), port: .init(rawValue: UInt16(port)))
+                    }
                   )
                 }
               }
@@ -383,7 +384,7 @@ extension Connection {
 
   func protocolLookup(
     logger: Logger, outboundMode: OutboundMode, forwardProtocol: any ForwardProtocolConvertible,
-    proc: any ProcessReporting, resolver: any Resolver, rules: any RulesEngine,
+    proc: any ProcessReporting, resolver: any DNSResolver, rules: any RulesEngine,
     eventLoop: any EventLoop
   ) async throws {
     #if swift(>=6.3)

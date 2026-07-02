@@ -14,6 +14,7 @@
 import Logging
 import NEAddressProcessing
 import NIOCore
+import NetbotDNS
 import NetbotLiteData
 import Synchronization
 import SynchronizationExtras

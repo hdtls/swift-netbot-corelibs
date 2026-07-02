@@ -12,6 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 import NEAddressProcessing
+import NetbotDNS
 import Testing
 
 @testable import NetbotLiteData

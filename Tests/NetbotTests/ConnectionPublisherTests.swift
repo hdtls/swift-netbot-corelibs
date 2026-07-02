@@ -13,6 +13,7 @@
 
 import NEAddressProcessing
 import NIOCore
+import NetbotDNS
 import NetbotLite
 import NetbotLiteData
 import Testing

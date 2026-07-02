@@ -19,6 +19,7 @@ import NIOCore
 import NIOExtras
 import NIOHTTP1
 import NIOSSL
+import NetbotDNS
 import NetbotLiteData
 import Synchronization
 import SynchronizationExtras
@@ -74,7 +75,7 @@ import Tracing
 
   /// The dns resolver.
   @LockableTracked(accessors: .get)
-  public var resolver: any Resolver
+  public var resolver: any DNSResolver
 
   /// The RulesEngine evaluates the Rules.
   @LockableTracked(accessors: .get)
@@ -120,7 +121,7 @@ import Tracing
     self.logger = logger
     self.$webProxyListenAddress = .init(webProxyListenAddress)
     self.$socksProxyListenAddress = .init(socksProxyListenAddress)
-    self.$resolver = .init(DefaultResolver(eventLoop: group.next()))
+    self.$resolver = .init(DefaultDNSResolver())
     self.$rulesEngine = .init(DefaultRulesEngine(logger: logger))
   }
 
@@ -161,7 +162,7 @@ import Tracing
   }
 
   /// Modify the DNS resolver.
-  public func setResolver(_ resolver: some Resolver) async {
+  public func setResolver(_ resolver: some DNSResolver) async {
     self.$resolver.withLock { $0 = resolver }
   }
 

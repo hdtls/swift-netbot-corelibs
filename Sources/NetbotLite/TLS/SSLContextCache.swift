@@ -29,6 +29,7 @@
 import Logging
 import NIOCore
 import NIOSSL
+import NetbotDNS
 
 @available(SwiftStdlib 6.0, *)
 final public class SSLContextCache: Sendable {

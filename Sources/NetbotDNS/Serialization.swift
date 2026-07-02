@@ -650,7 +650,7 @@ extension Message {
   /// Returns the bytes serialized in DNS message format.
   ///
   /// - throws: notImplemented if resource record is not supported yet.
-  public var serializedBytes: [UInt8] {
+  package var serializedBytes: [UInt8] {
     get throws(DNSError) {
       var serializedBytes: [UInt8] = []
       var compression: [String: Int] = [:]

@@ -11,54 +11,13 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import NEAddressProcessing
-import NIOCore
-
 #if canImport(Network)
+  import NEAddressProcessing
   import Network
-#endif
 
-@available(SwiftStdlib 6.0, *)
-extension SocketAddress {
-
-  public func asAddress() throws -> Address {
-    switch self {
-    case .v4:
-      return .hostPort(host: .init(ipAddress!), port: .init(rawValue: UInt16(port!)))
-    case .v6:
-      return .hostPort(host: .init(ipAddress!), port: .init(rawValue: UInt16(port!)))
-    case .unixDomainSocket:
-      return .unix(path: pathname!)
-    }
-  }
-}
-
-@available(SwiftStdlib 6.0, *)
-extension Address {
-
-  public func asAddress() throws -> SocketAddress {
-    switch self {
-    case .hostPort(let host, let port):
-      switch host {
-      case .name:
-        throw AnalyzeError.operationUnsupported
-      case .ipv4(let address):
-        return try SocketAddress(ipAddress: "\(address)", port: Int(port.rawValue))
-      case .ipv6(let address):
-        return try SocketAddress(ipAddress: "\(address)", port: Int(port.rawValue))
-      }
-    case .unix(let path):
-      return try SocketAddress(unixDomainSocketPath: path)
-    case .url:
-      throw AnalyzeError.operationUnsupported
-    }
-  }
-}
-
-#if canImport(Network)
   @available(SwiftStdlib 6.0, *)
   extension Address {
-    public func asEndpoint() throws -> NWEndpoint {
+    package func asEndpoint() throws -> NWEndpoint {
       switch self {
       case .hostPort(let host, let port):
         let h: NWEndpoint.Host
@@ -81,7 +40,7 @@ extension Address {
 
   @available(SwiftStdlib 6.0, *)
   extension NWEndpoint {
-    public func asAddress() throws -> Address {
+    package func asAddress() throws -> Address {
       switch self {
       case .hostPort(let host, let port):
         let h: Address.Host

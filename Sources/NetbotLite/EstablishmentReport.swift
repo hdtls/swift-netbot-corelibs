@@ -12,6 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 import NIOCore
+import NetbotDNS
 import NetbotLiteData
 
 #if canImport(Network)

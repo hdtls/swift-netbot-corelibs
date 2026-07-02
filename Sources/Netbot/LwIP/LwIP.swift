@@ -259,7 +259,9 @@
             // Consider as invalid connection if we can't query valid PTR records,
             // and close the connection.
             let prefix = "\(address)".split(separator: ".").reversed().joined(separator: ".")
-            let name = try? await self.dns.queryPTR(name: "\(prefix).in-addr.arpa").first?.data
+            let name = try? await self.dns.queryPTR(
+              name: "\(prefix).in-addr.arpa"
+            ).records.first?.data
             guard let name else {
               throw AnalyzeError.outputStreamEndpointInvalid
             }

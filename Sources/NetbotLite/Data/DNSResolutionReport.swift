@@ -12,6 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 import NEAddressProcessing
+import NetbotDNS
 
 /// Information about a DNS resolution attempt.
 ///
@@ -39,17 +40,7 @@ public struct DNSResolutionReport: Codable, Hashable, Sendable {
     /// A Resolution.Source indicates if the set of endpoints was
     /// resolved locally using a cache or a query sent over the
     /// network.
-    public enum Source: String, Codable, Hashable, Sendable {
-
-      /// A query was sent over the network.
-      case query
-
-      /// The local cache was used.
-      case cache
-
-      /// An expired entry in the local cache was used.
-      case expiredCache
-    }
+    public typealias Source = DNSResolutionSource
 
     /// The source of this resolution.
     public var source: Source
@@ -62,23 +53,7 @@ public struct DNSResolutionReport: Codable, Hashable, Sendable {
 
     /// A Resolution.DNSProtocol indicates the protocol used to resolve the endpoint,
     /// such as using UDP, TCP, TLS, or HTTPS for DNS.
-    public enum DNSProtocol: String, Codable, Hashable, Sendable {
-
-      /// The protocol used is not known, or not applicable.
-      case unknown
-
-      /// Resolution used DNS over UDP.
-      case udp
-
-      /// Resolution used DNS over TCP.
-      case tcp
-
-      /// Resolution used DNS over TLS.
-      case tls
-
-      /// Resolution used DNS over HTTPS.
-      case https
-    }
+    public typealias DNSProtocol = NetbotDNS.DNSProtocol
 
     /// The protocl of this DNS resolution.
     public var dnsProtocol: DNSProtocol

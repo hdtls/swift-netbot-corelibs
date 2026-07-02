@@ -15,6 +15,7 @@ import HTTPTypes
 import Logging
 import NEAddressProcessing
 import NIOCore
+import NetbotDNS
 import NetbotLiteData
 import Synchronization
 import Testing
@@ -25,10 +26,6 @@ import Testing
   import FoundationEssentials
 #else
   import Foundation
-#endif
-
-#if !canImport(Network)
-  import NIOPosix
 #endif
 
 @Suite struct ConnectionTests {
@@ -45,27 +42,74 @@ import Testing
   }
 
   @available(SwiftStdlib 6.0, *)
-  struct MockDNSResolver: NetbotLite.Resolver {
+  struct MockDNSResolver: DNSResolver {
+
     let eventLoop: any EventLoop
     let v4Result: Result<[Address], any Error>
     let v6Result: Result<[Address], any Error>
 
-    func initiateAQuery(host: String, port: Int) -> NIOCore.EventLoopFuture<[NIOCore.SocketAddress]>
-    {
-      eventLoop.makeCompletedFuture {
-        try v4Result.get().map { try $0.asAddress() }
+    func queryA(name: String) async throws -> ResolutionResult<ARecord> {
+      try await ResolutionResult(source: .query, dnsProtocol: .udp) {
+        try v4Result.get().compactMap {
+          guard case .hostPort(let host, _) = $0, case .ipv4(let address) = host else {
+            return Optional<ARecord>.none
+          }
+          return ARecord(domainName: name, ttl: 0, data: address)
+        }
       }
     }
 
-    func initiateAAAAQuery(host: String, port: Int)
-      -> NIOCore.EventLoopFuture<[NIOCore.SocketAddress]>
-    {
-      eventLoop.makeCompletedFuture {
-        try v6Result.get().map { try $0.asAddress() }
+    func queryAAAA(name: String) async throws -> ResolutionResult<AAAARecord> {
+      try await ResolutionResult(source: .query, dnsProtocol: .udp) {
+        try v6Result.get().compactMap {
+          guard case .hostPort(let host, _) = $0, case .ipv6(let address) = host else {
+            return Optional<AAAARecord>.none
+          }
+          return AAAARecord(domainName: name, ttl: 0, data: address)
+        }
       }
     }
 
-    func cancelQueries() {
+    func queryNS(name: String) async throws -> ResolutionResult<NSRecord> {
+      await ResolutionResult(source: .query, dnsProtocol: .udp) {
+        []
+      }
+    }
+
+    func queryCNAME(name: String) async throws -> ResolutionResult<CNAMERecord> {
+      await ResolutionResult(source: .query, dnsProtocol: .udp) {
+        []
+      }
+    }
+
+    func querySOA(name: String) async throws -> ResolutionResult<SOARecord> {
+      await ResolutionResult(source: .query, dnsProtocol: .udp) {
+        []
+      }
+    }
+
+    func queryPTR(name: String) async throws -> ResolutionResult<PTRRecord> {
+      await ResolutionResult(source: .query, dnsProtocol: .udp) {
+        []
+      }
+    }
+
+    func queryMX(name: String) async throws -> ResolutionResult<MXRecord> {
+      await ResolutionResult(source: .query, dnsProtocol: .udp) {
+        []
+      }
+    }
+
+    func queryTXT(name: String) async throws -> ResolutionResult<TXTRecord> {
+      await ResolutionResult(source: .query, dnsProtocol: .udp) {
+        []
+      }
+    }
+
+    func querySRV(name: String) async throws -> ResolutionResult<SRVRecord> {
+      await ResolutionResult(source: .query, dnsProtocol: .udp) {
+        []
+      }
     }
   }
 
@@ -144,7 +188,7 @@ import Testing
     try await connection
       .dnsLookup(
         logger: .init(label: "dns"),
-        resolver: DefaultResolver(eventLoop: eventLoop),
+        resolver: DefaultDNSResolver(),
         on: eventLoop
       )
     let report = try #require(connection.dnsResolutionReport)
@@ -167,7 +211,7 @@ import Testing
     try await connection
       .dnsLookup(
         logger: .init(label: "dns"),
-        resolver: DefaultResolver(eventLoop: eventLoop),
+        resolver: DefaultDNSResolver(),
         on: eventLoop
       )
     let report = try #require(connection.dnsResolutionReport)
@@ -190,7 +234,7 @@ import Testing
     try await connection
       .dnsLookup(
         logger: .init(label: "dns"),
-        resolver: DefaultResolver(eventLoop: eventLoop),
+        resolver: DefaultDNSResolver(),
         on: eventLoop
       )
     let report = try #require(connection.dnsResolutionReport)

@@ -12,9 +12,8 @@
 // ===----------------------------------------------------------------------=== //
 
 import Dispatch
+import NetbotDNS
 import Testing
-
-@testable import NetbotLite
 
 @Suite struct LRUCacheTests {
 

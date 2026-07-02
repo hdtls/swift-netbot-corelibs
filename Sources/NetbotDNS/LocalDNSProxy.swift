@@ -15,7 +15,6 @@ import Dispatch
 import Logging
 import NEAddressProcessing
 import NIOCore
-import NetbotLite
 import NetbotProfile
 import Synchronization
 import SynchronizationExtras

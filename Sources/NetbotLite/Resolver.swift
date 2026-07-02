@@ -11,56 +11,61 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the SwiftNIO open source project
-//
-// Copyright (c) 2017-2021 Apple Inc. and the SwiftNIO project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftNIO project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
-import NIOCore
-
-/// A protocol that covers an object that does DNS lookups.
-///
-/// In general the rules for the resolver are relatively broad: there are no specific requirements on how
-/// it operates. However, the rest of the code assumes that it obeys RFC 6724, particularly section 6 on
-/// ordering returned addresses. That is, the IPv6 and IPv4 responses should be ordered by the destination
-/// address ordering rules from that RFC. This specification is widely implemented by getaddrinfo
-/// implementations, so any implementation based on getaddrinfo will work just fine. In the future, a custom
-/// resolver will need also to implement these sorting rules.
-///
-/// - SeeAlso: NIOPosix.Resolver for more informations.
-@available(SwiftStdlib 6.0, *)
-public protocol Resolver: Sendable {
-
-  func initiateAQuery(host: String, port: Int) -> EventLoopFuture<[SocketAddress]>
-
-  func initiateAAAAQuery(host: String, port: Int) -> EventLoopFuture<[SocketAddress]>
-
-  func cancelQueries()
-}
+import NetbotDNS
 
 @available(SwiftStdlib 6.0, *)
-struct DefaultResolver: Resolver, Sendable {
-  let eventLoop: any EventLoop
-
-  func initiateAQuery(host: String, port: Int) -> NIOCore.EventLoopFuture<[NIOCore.SocketAddress]> {
-    eventLoop.makeSucceededFuture([])
+struct DefaultDNSResolver: DNSResolver, Sendable {
+  func queryA(name: String) async throws -> ResolutionResult<ARecord> {
+    await ResolutionResult(source: .query, dnsProtocol: .udp) {
+      []
+    }
   }
 
-  func initiateAAAAQuery(host: String, port: Int)
-    -> NIOCore.EventLoopFuture<[NIOCore.SocketAddress]>
-  {
-    eventLoop.makeSucceededFuture([])
+  func queryAAAA(name: String) async throws -> ResolutionResult<AAAARecord> {
+    await ResolutionResult(source: .query, dnsProtocol: .udp) {
+      []
+    }
   }
 
-  func cancelQueries() {
+  func queryNS(name: String) async throws -> ResolutionResult<NSRecord> {
+    await ResolutionResult(source: .query, dnsProtocol: .udp) {
+      []
+    }
+  }
+
+  func queryCNAME(name: String) async throws -> ResolutionResult<CNAMERecord> {
+    await ResolutionResult(source: .query, dnsProtocol: .udp) {
+      []
+    }
+  }
+
+  func querySOA(name: String) async throws -> ResolutionResult<SOARecord> {
+    await ResolutionResult(source: .query, dnsProtocol: .udp) {
+      []
+    }
+  }
+
+  func queryPTR(name: String) async throws -> ResolutionResult<PTRRecord> {
+    await ResolutionResult(source: .query, dnsProtocol: .udp) {
+      []
+    }
+  }
+
+  func queryMX(name: String) async throws -> ResolutionResult<MXRecord> {
+    await ResolutionResult(source: .query, dnsProtocol: .udp) {
+      []
+    }
+  }
+
+  func queryTXT(name: String) async throws -> ResolutionResult<TXTRecord> {
+    await ResolutionResult(source: .query, dnsProtocol: .udp) {
+      []
+    }
+  }
+
+  func querySRV(name: String) async throws -> ResolutionResult<SRVRecord> {
+    await ResolutionResult(source: .query, dnsProtocol: .udp) {
+      []
+    }
   }
 }

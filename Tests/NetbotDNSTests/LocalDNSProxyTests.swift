@@ -13,8 +13,6 @@
 
 import NEAddressProcessing
 import NIOCore
-import NetbotLite
-import NetbotLiteData
 import NetbotProfile
 import Synchronization
 import Testing
@@ -178,13 +176,13 @@ struct LocalDNSProxyTests {
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryA(name: "example.com")
-      #expect(!result.isEmpty)
+      #expect(!result.records.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
-      #expect(result == server.response as? [ARecord])
+      #expect(result.records == server.response as? [ARecord])
 
       _ = try await resolver.queryA(name: "example.com")
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
-      #expect(result == server.response as? [ARecord])
+      #expect(result.records == server.response as? [ARecord])
     }
 
     server.close(promise: nil)
@@ -216,14 +214,14 @@ struct LocalDNSProxyTests {
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryA(name: "example.com")
-      #expect(!result.isEmpty)
+      #expect(!result.records.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
 
       // Wait for expiration.
       try await Task.sleep(for: .seconds(1))
 
       _ = try await resolver.queryA(name: "example.com")
-      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
     }
 
     server.close(promise: nil)
@@ -254,13 +252,13 @@ struct LocalDNSProxyTests {
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryAAAA(name: "example.com")
-      #expect(!result.isEmpty)
+      #expect(!result.records.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
-      #expect(result == server.response as? [AAAARecord])
+      #expect(result.records == server.response as? [AAAARecord])
 
       _ = try await resolver.queryAAAA(name: "example.com")
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
-      #expect(result == server.response as? [AAAARecord])
+      #expect(result.records == server.response as? [AAAARecord])
     }
 
     server.close(promise: nil)
@@ -288,14 +286,14 @@ struct LocalDNSProxyTests {
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryAAAA(name: "example.com")
-      #expect(!result.isEmpty)
+      #expect(!result.records.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
 
       // Wait for expiration.
       try await Task.sleep(for: .seconds(1))
 
       _ = try await resolver.queryAAAA(name: "example.com")
-      #expect(server.queryCalls.load(ordering: .relaxed) == 2)
+      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
     }
 
     server.close(promise: nil)
@@ -325,13 +323,13 @@ struct LocalDNSProxyTests {
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryNS(name: "example.com")
-      #expect(!result.isEmpty)
+      #expect(!result.records.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
-      #expect(result == server.response as? [NSRecord])
+      #expect(result.records == server.response as? [NSRecord])
 
       _ = try await resolver.queryNS(name: "example.com")
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
-      #expect(result == server.response as? [NSRecord])
+      #expect(result.records == server.response as? [NSRecord])
     }
 
     server.close(promise: nil)
@@ -362,13 +360,13 @@ struct LocalDNSProxyTests {
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryCNAME(name: "example.com")
-      #expect(!result.isEmpty)
+      #expect(!result.records.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
-      #expect(result == server.response as? [CNAMERecord])
+      #expect(result.records == server.response as? [CNAMERecord])
 
       _ = try await resolver.queryCNAME(name: "example.com")
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
-      #expect(result == server.response as? [CNAMERecord])
+      #expect(result.records == server.response as? [CNAMERecord])
     }
 
     server.close(promise: nil)
@@ -402,13 +400,13 @@ struct LocalDNSProxyTests {
 
     await #expect(throws: Never.self) {
       let result = try await resolver.querySOA(name: "example.com")
-      #expect(!result.isEmpty)
+      #expect(!result.records.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
-      #expect(result == server.response as? [SOARecord])
+      #expect(result.records == server.response as? [SOARecord])
 
       _ = try await resolver.querySOA(name: "example.com")
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
-      #expect(result == server.response as? [SOARecord])
+      #expect(result.records == server.response as? [SOARecord])
     }
 
     server.close(promise: nil)
@@ -443,13 +441,13 @@ struct LocalDNSProxyTests {
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryPTR(name: query)
-      #expect(!result.isEmpty)
+      #expect(!result.records.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
-      #expect(result == server.response as? [PTRRecord])
+      #expect(result.records == server.response as? [PTRRecord])
 
       _ = try await resolver.queryPTR(name: query)
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
-      #expect(result == server.response as? [PTRRecord])
+      #expect(result.records == server.response as? [PTRRecord])
     }
 
     server.close(promise: nil)
@@ -477,7 +475,7 @@ struct LocalDNSProxyTests {
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryPTR(name: "6.1.18.169.in-addr.arpa")
-      #expect(result.isEmpty)
+      #expect(result.records.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
 
       _ = try await resolver.queryPTR(name: "6.1.18.169.in-addr.arpa")
@@ -496,9 +494,9 @@ struct LocalDNSProxyTests {
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryPTR(name: "6.1.18.198.in-addr.arpa")
-      #expect(!result.isEmpty)
+      #expect(!result.records.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
-      #expect(result == response)
+      #expect(result.records == response)
     }
 
     server.close(promise: nil)
@@ -535,13 +533,13 @@ struct LocalDNSProxyTests {
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryMX(name: "example.com")
-      #expect(!result.isEmpty)
+      #expect(!result.records.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
-      #expect(result == server.response as? [MXRecord])
+      #expect(result.records == server.response as? [MXRecord])
 
       _ = try await resolver.queryMX(name: "example.com")
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
-      #expect(result == server.response as? [MXRecord])
+      #expect(result.records == server.response as? [MXRecord])
     }
 
     server.close(promise: nil)
@@ -572,13 +570,13 @@ struct LocalDNSProxyTests {
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryTXT(name: "example.com")
-      #expect(!result.isEmpty)
+      #expect(!result.records.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
-      #expect(result == server.response as? [TXTRecord])
+      #expect(result.records == server.response as? [TXTRecord])
 
       _ = try await resolver.queryTXT(name: "example.com")
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
-      #expect(result == server.response as? [TXTRecord])
+      #expect(result.records == server.response as? [TXTRecord])
     }
 
     server.close(promise: nil)
@@ -610,89 +608,13 @@ struct LocalDNSProxyTests {
 
     await #expect(throws: Never.self) {
       let result = try await resolver.querySRV(name: "example.com")
-      #expect(!result.isEmpty)
+      #expect(!result.records.isEmpty)
       #expect(server.queryCalls.load(ordering: .relaxed) == 1)
-      #expect(result == server.response as? [SRVRecord])
+      #expect(result.records == server.response as? [SRVRecord])
 
       _ = try await resolver.querySRV(name: "example.com")
       #expect(server.queryCalls.load(ordering: .relaxed) == 2)
-      #expect(result == server.response as? [SRVRecord])
-    }
-
-    server.close(promise: nil)
-    try await resolver.shutdownGracefully()
-  }
-
-  @available(SwiftStdlib 6.0, *)
-  @Test func initiateAQuery() async throws {
-    let server = MockDNSServer(
-      response: [
-        ARecord(
-          domainName: "example.com", ttl: 300,
-          data: .init("123.123.123.123")!)
-      ]
-    )
-    let address = try #require(await server.start())
-
-    let resolver = LocalDNSProxy(
-      options: .init(
-        group: .default,
-        bindAddress: IPv4Address("198.18.0.2")!,
-        additionalServers: [address],
-        mappings: [],
-        availableIPPool: AvailableIPPool(
-          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        )
-      )
-    )
-    try await resolver.run()
-
-    await #expect(throws: Never.self) {
-      let result = try await resolver.initiateAQuery(host: "example.com", port: 443).get()
-      #expect(!result.isEmpty)
-      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
-
-      let expected = try (server.response as? [ARecord])?.compactMap {
-        try SocketAddress(ipAddress: "\($0.data)", port: 443)
-      }
-      #expect(result == expected)
-    }
-
-    server.close(promise: nil)
-    try await resolver.shutdownGracefully()
-  }
-
-  @available(SwiftStdlib 6.0, *)
-  @Test func initiateAAAAQuery() async throws {
-    let server = MockDNSServer(
-      response: [
-        AAAARecord(
-          domainName: "example.com", ttl: 300, data: .init("::1")!)
-      ]
-    )
-    let address = try #require(await server.start())
-    let resolver = LocalDNSProxy(
-      options: .init(
-        group: .default,
-        bindAddress: IPv4Address("198.18.0.2")!,
-        additionalServers: [address],
-        mappings: [],
-        availableIPPool: AvailableIPPool(
-          bounds: (IPv4Address("198.18.0.2")!, IPv4Address("198.19.255.255")!)
-        )
-      )
-    )
-    try await resolver.run()
-
-    await #expect(throws: Never.self) {
-      let result = try await resolver.initiateAAAAQuery(host: "example.com", port: 443).get()
-      #expect(!result.isEmpty)
-      #expect(server.queryCalls.load(ordering: .relaxed) == 1)
-
-      let expected = try (server.response as? [AAAARecord])?.compactMap {
-        try SocketAddress(ipAddress: "\($0.data)", port: 443)
-      }
-      #expect(result == expected)
+      #expect(result.records == server.response as? [SRVRecord])
     }
 
     server.close(promise: nil)

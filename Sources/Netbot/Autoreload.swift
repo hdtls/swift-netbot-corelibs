@@ -13,17 +13,18 @@
 
 #if canImport(NetworkExtension)
   import Alamofire
-  import NetbotLite
-  import NetbotLiteData
   import Combine
   import Foundation
   import Logging
   import MaxMindDB
   import NIOCore
   import NIOSSL
-  import Preference
+  import NetbotDNS
+  import NetbotLite
+  import NetbotLiteData
   import NetbotPreferences
   import NetbotProfile
+  import Preference
 
   #if canImport(FoundationNetworking)
     import FoundationNetworking
