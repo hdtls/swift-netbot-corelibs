@@ -14,6 +14,7 @@
 import Logging
 import NIOCore
 import NetbotLiteData
+import NetbotNIO
 
 #if canImport(Network)
   import Network

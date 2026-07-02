@@ -11,13 +11,9 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import NIOCore
-
 #if canImport(Network)
+  import NIOCore
   import NIOTransportServices
-
-  @available(SwiftStdlib 6.0, *)
-  public typealias MultiThreadedEventLoopGroup = NIOTransportServices.NIOTSEventLoopGroup
 
   @available(SwiftStdlib 6.0, *)
   typealias DatagramClientBootstrap = NIOTSDatagramBootstrap
@@ -37,12 +33,3 @@ import NIOCore
 
   typealias DatagramClientBootstrap = DatagramBootstrap
 #endif
-
-@available(SwiftStdlib 6.0, *)
-extension EventLoopGroup where Self == MultiThreadedEventLoopGroup {
-
-  /// A globally default, lazily initialized, singleton ``MultiThreadedEventLoopGroup``.
-  public static var `default`: any EventLoopGroup {
-    MultiThreadedEventLoopGroup.singleton
-  }
-}

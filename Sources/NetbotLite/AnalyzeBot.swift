@@ -21,6 +21,7 @@ import NIOHTTP1
 import NIOSSL
 import NetbotDNS
 import NetbotLiteData
+import NetbotNIO
 import Synchronization
 import SynchronizationExtras
 import Tracing

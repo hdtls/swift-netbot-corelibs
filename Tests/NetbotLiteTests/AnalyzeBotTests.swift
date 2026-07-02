@@ -14,6 +14,7 @@
 import Logging
 import NIOCore
 import NIOSSL
+import NetbotNIO
 import Testing
 
 @testable import NetbotLite

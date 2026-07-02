@@ -20,6 +20,7 @@
   import NIOExtras
   import NetbotDNS
   import NetbotLite
+  import NetbotNIO
   import Synchronization
   import SynchronizationExtras
 

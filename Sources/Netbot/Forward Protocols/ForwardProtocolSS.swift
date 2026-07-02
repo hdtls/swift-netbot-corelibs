@@ -18,6 +18,7 @@ import NESS
 import NIOCore
 import NetbotLite
 import NetbotLiteData
+import NetbotNIO
 
 #if canImport(Network)
   import Network

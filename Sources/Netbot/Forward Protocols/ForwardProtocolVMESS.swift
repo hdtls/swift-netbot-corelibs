@@ -22,6 +22,7 @@ import NIOTLS
 import NIOWebSocket
 import NetbotLite
 import NetbotLiteData
+import NetbotNIO
 import NetbotProfile
 
 #if canImport(FoundationEssentials)
@@ -29,6 +30,7 @@ import NetbotProfile
 #else
   import Foundation
 #endif
+
 #if canImport(Network)
   import Network
   import NIOTransportServices

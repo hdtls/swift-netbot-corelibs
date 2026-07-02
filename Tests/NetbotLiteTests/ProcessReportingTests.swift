@@ -12,26 +12,17 @@
 // ===----------------------------------------------------------------------=== //
 
 import Logging
-import NIOCore
 import NetbotLiteData
+import NetbotNIO
 import Testing
 
 @testable import NetbotLite
-
-#if canImport(Network)
-  import NIOTransportServices
-#else
-  import NIOPosix
-#endif
 
 @Suite struct ProcessReportingTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func processReportService() async throws {
-    let application = AnalyzeBot(
-      group: MultiThreadedEventLoopGroup.singleton,
-      logger: .init(label: "")
-    )
+    let application = AnalyzeBot(group: .default, logger: .init(label: ""))
 
     #expect(application.processInfo is DefaultProcessReporting)
     let p = try await application.processInfo.processInfo(connection: .init())

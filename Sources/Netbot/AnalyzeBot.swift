@@ -17,6 +17,7 @@ import NIOCore
 import NIOSSL
 import NetbotDNS
 import NetbotLite
+import NetbotNIO
 import NetbotProfile
 import Synchronization
 

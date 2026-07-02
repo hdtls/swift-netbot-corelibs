@@ -14,6 +14,7 @@
 import NEAddressProcessing
 import NIOCore
 import NetbotLite
+import NetbotNIO
 
 @available(SwiftStdlib 6.0, *)
 extension NIOClientTCPBootstrap {

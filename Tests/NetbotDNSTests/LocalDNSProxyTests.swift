@@ -13,6 +13,7 @@
 
 import NEAddressProcessing
 import NIOCore
+import NetbotNIO
 import NetbotProfile
 import Synchronization
 import Testing

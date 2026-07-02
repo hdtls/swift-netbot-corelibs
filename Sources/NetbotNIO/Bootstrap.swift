@@ -15,33 +15,9 @@ import NEAddressProcessing
 import NIOCore
 
 #if canImport(Network)
-  import Network
   import NIOTransportServices
-
-  @available(SwiftStdlib 6.0, *)
-  public typealias ClientBootstrap = NIOTransportServices.NIOTSConnectionBootstrap
-
-  @available(SwiftStdlib 6.0, *)
-  public typealias ServerBootstrap = NIOTransportServices.NIOTSListenerBootstrap
-
-  @available(SwiftStdlib 6.0, *)
-  public typealias MultiThreadedEventLoopGroup = NIOTransportServices.NIOTSEventLoopGroup
-
-  @available(SwiftStdlib 6.0, *)
-  extension MultiThreadedEventLoopGroup {
-
-    public convenience init(numberOfThreads: Int) {
-      self.init(loopCount: numberOfThreads)
-    }
-  }
 #else
   import NIOPosix
-
-  public typealias ClientBootstrap = NIOPosix.ClientBootstrap
-
-  public typealias ServerBootstrap = NIOPosix.ServerBootstrap
-
-  public typealias MultiThreadedEventLoopGroup = NIOPosix.MultiThreadedEventLoopGroup
 #endif
 
 @available(SwiftStdlib 6.0, *)
@@ -72,7 +48,7 @@ extension ClientBootstrap {
     case .unix(let path):
       return try await connect(unixDomainSocketPath: path, channelInitializer: channelInitializer)
     case .url:
-      throw AnalyzeError.operationUnsupported
+      fatalError("operationUnsupported")
     }
   }
 

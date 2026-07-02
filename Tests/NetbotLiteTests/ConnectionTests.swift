@@ -17,6 +17,7 @@ import NEAddressProcessing
 import NIOCore
 import NetbotDNS
 import NetbotLiteData
+import NetbotNIO
 import Synchronization
 import Testing
 

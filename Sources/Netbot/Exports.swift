@@ -13,7 +13,9 @@
 
 @_exported import Logging
 @_exported import NIOSSL
+@_exported import NetbotDNS
 @_exported import NetbotLite
+@_exported import NetbotNIO
 @_exported import NetbotPreferences
 @_exported import NetbotProfile
 

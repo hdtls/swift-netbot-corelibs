@@ -19,9 +19,9 @@
   import MaxMindDB
   import NIOCore
   import NIOSSL
-  import NetbotDNS
   import NetbotLite
   import NetbotLiteData
+  import NetbotNIO
   import NetbotPreferences
   import NetbotProfile
   import Preference

@@ -134,6 +134,7 @@ let package = Package(
     .target(
       name: "NetbotDNS",
       dependencies: [
+        "NetbotNIO",
         "NetbotProfile",
         "SynchronizationExtras",
         .product(name: "Logging", package: "swift-log"),
@@ -166,6 +167,7 @@ let package = Package(
       dependencies: [
         "NetbotDNS",
         "NetbotLiteData",
+        "NetbotNIO",
         "SynchronizationExtras",
         .product(name: "CryptoExtras", package: "swift-crypto"),
         .product(name: "Metrics", package: "swift-metrics"),
@@ -197,6 +199,15 @@ let package = Package(
         .product(name: "NEAddressProcessing", package: "swift-netbot-protoimpl"),
       ],
       path: "Sources/NetbotLite/Data"
+    ),
+    .target(
+      name: "NetbotNIO",
+      dependencies: [
+        .product(name: "NIOCore", package: "swift-nio"),
+        .product(name: "NIOPosix", package: "swift-nio"),
+        .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
+        .product(name: "NEAddressProcessing", package: "swift-netbot-protoimpl"),
+      ]
     ),
     .target(
       name: "NetbotPreferences",
