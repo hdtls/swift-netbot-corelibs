@@ -242,9 +242,11 @@ extension ProfileAssistant {
       guard !other.isEmpty else { return }
 
       let replacement = other.map {
-        var modified = $0
-        modified.url = destination
-        return modified
+        ProfileInfo(
+          url: destination,
+          numberOfRules: $0.numberOfRules,
+          numberOfProxies: $0.numberOfProxies
+        )
       }
 
       profileResource.profiles.replace(other, with: replacement)

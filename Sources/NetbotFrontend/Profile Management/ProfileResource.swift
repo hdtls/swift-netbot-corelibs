@@ -17,32 +17,33 @@
   import Foundation
 #endif
 
-#if canImport(Combine)
-  import Combine
-#else
-  import OpenCombine
+#if canImport(Darwin) || swift(>=6.3)
+  import Observation
 #endif
 
 @available(SwiftStdlib 6.0, *)
-public struct ProfileInfo: Equatable, Hashable, Identifiable, Sendable {
+public struct ProfileInfo: Hashable, Identifiable, Sendable {
 
   public var id: URL { url }
 
-  public var url: URL
+  public let url: URL
 
   public var name: String {
     url.deletingPathExtension().lastPathComponent
   }
 
-  public var numberOfRules: Int
+  public let numberOfRules: Int
 
-  public var numberOfProxies: Int
+  public let numberOfProxies: Int
 }
 
 @available(SwiftStdlib 6.0, *)
-@MainActor final public class ProfileResource: ObservableObject {
+#if canImport(Darwin) || swift(>=6.3)
+  @Observable
+#endif
+@MainActor final public class ProfileResource {
 
-  @Published public var profiles: [ProfileInfo] = []
+  public var profiles: [ProfileInfo] = []
 
   nonisolated internal init() {
 
