@@ -72,9 +72,9 @@ public enum CertbotError: Error {
 #if canImport(Darwin) || swift(>=6.3)
   @Observable
 #endif
-@MainActor final public class Certbot: @unchecked Sendable {
+@MainActor final public class Certbot: Sendable {
 
-  private struct Backing: Sendable {
+  private struct Backing: Hashable, Sendable {
 
     let representation: Certificate
 
@@ -93,6 +93,8 @@ public enum CertbotError: Error {
     let passphrase: String?
 
     let base64EncodedP12String: String
+
+    var isTrusted = false
   }
 
   /// Strategy describe how to make passphrase for PKCS#12 bundle.
@@ -142,9 +144,8 @@ public enum CertbotError: Error {
 
   /// Returns a boolean value determine whether the loaded certificate is trusted by user or not.
   public var isTrusted: Bool {
-    _isTrusted
+    backing?.isTrusted ?? false
   }
-  private var _isTrusted: Bool = false
 
   #if canImport(Security)
     /// Returns the loaded certificate object for use in Security framework.
@@ -182,24 +183,22 @@ public enum CertbotError: Error {
       throw CertbotError.certificateLoadFailed(reason: .inputFileReadFailed)
     }
 
-    let backing = try await self.loadFromP12Data(buffer, passphrase: passphrase)
-    let isTrusted = try self.trustEvaluate(certificate: backing.representation)
+    var backing = try await self.loadFromP12Data(buffer, passphrase: passphrase)
+    backing.isTrusted = try self.trustEvaluate(certificate: backing.representation)
 
     await MainActor.run {
       self.backing = backing
-      self._isTrusted = isTrusted
     }
   }
 
   /// Load certificate from url where PKCS#12 bundle saved.
   @concurrent public func loadFromP12File(at url: URL, passphrase: String?) async throws {
     let data = try Data(contentsOf: url)
-    let backing = try await self.loadFromP12Data(data, passphrase: passphrase)
-    let isTrusted = try self.trustEvaluate(certificate: backing.representation)
+    var backing = try await self.loadFromP12Data(data, passphrase: passphrase)
+    backing.isTrusted = try self.trustEvaluate(certificate: backing.representation)
 
     await MainActor.run {
       self.backing = backing
-      self._isTrusted = isTrusted
     }
   }
 
@@ -230,20 +229,27 @@ public enum CertbotError: Error {
   /// This will perform certificate generation, after success content will be updated.
   /// - Parameter strategy: Strategy for how to privide PKCS#12 passphrase. Defaults to `.auto`.
   ///
-  public func generate(using strategy: PassphraseStrategy = .auto) async throws {
-    if generatingTask == nil || generatingTask?.isCancelled == true {
-      generatingTask = Task {
-        try await self.generate0(using: strategy)
+  @concurrent public func generate(using strategy: PassphraseStrategy = .auto) async throws {
+    let task = await generatingTask
+
+    if task == nil || task?.isCancelled == true {
+      await MainActor.run {
+        generatingTask = Task { [unowned self] in
+          try await self.generate0(using: strategy)
+        }
       }
     }
 
-    guard let task = generatingTask else { return }
+    guard let task = await generatingTask else { return }
 
     do {
-      let backing = try await task.value
-      self.backing = backing
-      self._isTrusted = try self.trustEvaluate(certificate: backing.representation)
-      generatingTask = nil
+      var backing = try await task.value
+      backing.isTrusted = try self.trustEvaluate(certificate: backing.representation)
+
+      await MainActor.run {
+        self.backing = backing
+        generatingTask = nil
+      }
       logger.trace("Generate certificate success")
       return
     } catch {
@@ -335,13 +341,9 @@ public enum CertbotError: Error {
     return Data(bytes).base64EncodedString()
   }
 
-  /// Install and trust loaded or generated certificate.
-  @concurrent public func trustLoadedCertificate() async throws {
-    try await self._trustLoadedCertificate()
-  }
-
   #if canImport(Security)
-    nonisolated private func _trustLoadedCertificate() async throws {
+    /// Install and trust loaded or generated certificate.
+    @concurrent public func trustLoadedCertificate() async throws {
       guard let backing = await backing, let certificate = try backing.certificate else { return }
 
       var status: OSStatus
@@ -376,11 +378,11 @@ public enum CertbotError: Error {
       let isTrusted = try self.trustEvaluate(certificate: backing.representation)
 
       await MainActor.run {
-        self._isTrusted = isTrusted
+        self.backing?.isTrusted = isTrusted
       }
     }
   #else
-    nonisolated private func _trustLoadedCertificate() async throws {
+    @concurrent public func trustLoadedCertificate() async throws {
       // TODO: Trust Evaluation
       throw CertbotError.operationUnsupported
     }
