@@ -128,7 +128,7 @@ extension Profile {
           // Resolve current selected proxy for this group.
           var records: [String: String] = [:]
           let key = Prefs.Name.selectionRecordForGroups
-          if let data = UserDefaults.__shared?.string(forKey: key)?.data(using: .utf8) {
+          if let data = UserDefaults.shared?.string(forKey: key)?.data(using: .utf8) {
             records = (try? JSONDecoder().decode([String: String].self, from: data)) ?? [:]
           }
           if let foreignKey = records[name] {
@@ -147,7 +147,7 @@ extension Profile {
 
   func asForwardProtocol() -> any ForwardProtocolConvertible {
     var records: [String: String] = [:]
-    let store = UserDefaults.__shared
+    let store = UserDefaults.shared
     let key = Prefs.Name.selectionRecordForGroups
     if let data = store?.string(forKey: key)?.data(using: .utf8) {
       records = (try? JSONDecoder().decode([String: String].self, from: data)) ?? [:]

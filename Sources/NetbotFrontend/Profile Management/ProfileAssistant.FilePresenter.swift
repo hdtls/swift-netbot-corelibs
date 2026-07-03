@@ -53,16 +53,16 @@ extension ProfileAssistant {
 
     private weak var profileAssistant: ProfileAssistant?
 
-    @Preference(Prefs.Name.profileURL, store: .__shared)
+    @Preference(Prefs.Name.profileURL, store: .shared)
     private var profileURL: URL = .profile
 
-    @Preference(Prefs.Name.profileLastContentModificationDate, store: .__shared)
+    @Preference(Prefs.Name.profileLastContentModificationDate, store: .shared)
     private var profileLastContentModificationDate = Date.distantFuture
 
-    @Preference(Prefs.Name.profilesDirectory, store: .__shared)
+    @Preference(Prefs.Name.profilesDirectory, store: .shared)
     private var profilesDirectory: URL = .profile.deletingLastPathComponent()
 
-    @Preference(Prefs.Name.profileAutoreload, store: .__shared)
+    @Preference(Prefs.Name.profileAutoreload, store: .shared)
     private var profileAutoreload = false
 
     let permitted = Permitted()

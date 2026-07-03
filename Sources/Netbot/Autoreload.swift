@@ -48,37 +48,37 @@
   @available(SwiftStdlib 6.0, *)
   @MainActor final public class ProfileAutoreload {
 
-    @Preference(Prefs.Name.profileURL, store: .__shared)
+    @Preference(Prefs.Name.profileURL, store: .shared)
     public var profileURL = URL.profile
 
-    @Preference(Prefs.Name.profileLastContentModificationDate, store: .__shared)
+    @Preference(Prefs.Name.profileLastContentModificationDate, store: .shared)
     public var profileLastContentModificationDate = Date.distantFuture
 
-    @Preference(Prefs.Name.profileAutoreload, store: .__shared)
+    @Preference(Prefs.Name.profileAutoreload, store: .shared)
     public var profileAutoreload = false
 
-    @Preference(Prefs.Name.proxyMode, store: .__shared)
+    @Preference(Prefs.Name.proxyMode, store: .shared)
     public var proxyMode: ProxyMode = [.webProxy]
 
-    @Preference(Prefs.Name.outboundMode, store: .__shared)
+    @Preference(Prefs.Name.outboundMode, store: .shared)
     public var outboundMode = OutboundMode.direct
 
-    @Preference(Prefs.Name.enabledHTTPCapabilities, store: .__shared)
+    @Preference(Prefs.Name.enabledHTTPCapabilities, store: .shared)
     public var enabledHTTPCapabilities = CapabilityFlags()
 
-    @Preference(Prefs.Name.selectionRecordForGroups, store: .__shared)
+    @Preference(Prefs.Name.selectionRecordForGroups, store: .shared)
     public var selectionRecords = "{}"
 
-    @Preference(Prefs.Name.maxminddbDownloadURL, store: .__shared)
+    @Preference(Prefs.Name.maxminddbDownloadURL, store: .shared)
     public var maxminddbDownloadURL = URL(string: "https://git.io/GeoLite2-Country.mmdb")!
 
-    @Preference(Prefs.Name.maxminddbLastUpdatedDate, store: .__shared)
+    @Preference(Prefs.Name.maxminddbLastUpdatedDate, store: .shared)
     public var maxminddbLastUpdatedDate = Date.distantFuture
 
-    @Preference(Prefs.Name.maxminddbKeepUpToDate, store: .__shared)
+    @Preference(Prefs.Name.maxminddbKeepUpToDate, store: .shared)
     public var maxminddbKeepUpToDate = true
 
-    @Preference(Prefs.Name.forwardingRuleResourcesLastUpdatedDate, store: .__shared)
+    @Preference(Prefs.Name.forwardingRuleResourcesLastUpdatedDate, store: .shared)
     public var forwardingRuleResourcesLastUpdatedDate = Date.distantFuture
 
     private var cancellables = Set<AnyCancellable>()

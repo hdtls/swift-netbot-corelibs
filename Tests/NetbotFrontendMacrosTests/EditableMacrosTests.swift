@@ -38,7 +38,7 @@
         expandedSource: """
           struct Presentation {
 
-            @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+            @AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile
 
             @Environment(\\.dismiss) private var dismiss
 
@@ -99,13 +99,13 @@
         """
         @Editable<Data> struct Presentation {
 
-          @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+          @AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile
         }
         """,
         expandedSource: """
           struct Presentation {
 
-            @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+            @AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile
 
             @Environment(\\.dismiss) private var dismiss
 
@@ -174,7 +174,7 @@
 
             @Environment(\\.dismiss) private var dismiss
 
-            @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+            @AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile
 
             @Environment(\\.modelContext) private var modelContext
 
@@ -241,7 +241,7 @@
 
             @Environment(\\.modelContext) private var modelContext
 
-            @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+            @AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile
 
             @Environment(\\.dismiss) private var dismiss
 
@@ -308,7 +308,7 @@
 
             @Environment(\\.profileAssistant) private var profileAssistant
 
-            @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+            @AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile
 
             @Environment(\\.dismiss) private var dismiss
 
@@ -375,7 +375,7 @@
 
             @State private var data: Data
 
-            @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+            @AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile
 
             @Environment(\\.dismiss) private var dismiss
 
@@ -442,7 +442,7 @@
 
             private let persistentModel: Data.Model?
 
-            @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+            @AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile
 
             @Environment(\\.dismiss) private var dismiss
 
@@ -523,7 +523,7 @@
               }
             }
 
-            @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+            @AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile
 
             @Environment(\\.dismiss) private var dismiss
 
@@ -601,7 +601,7 @@
 
             init() {}
 
-            @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+            @AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile
 
             @Environment(\\.dismiss) private var dismiss
 
@@ -675,7 +675,7 @@
               }
             }
 
-            @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+            @AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile
 
             @Environment(\\.dismiss) private var dismiss
 
@@ -749,7 +749,7 @@
               }
             }
 
-            @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+            @AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile
 
             @Environment(\\.dismiss) private var dismiss
 
@@ -820,7 +820,7 @@
             private func save() {
             }
 
-            @AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile
+            @AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile
 
             @Environment(\\.dismiss) private var dismiss
 

@@ -19,7 +19,7 @@
   @available(SwiftStdlib 6.0, *)
   @_spi(SwiftUI) public struct CapabilitiesToggle<Label>: View where Label: View {
 
-    @AppStorage(Prefs.Name.enabledHTTPCapabilities, store: .__shared)
+    @AppStorage(Prefs.Name.enabledHTTPCapabilities, store: .shared)
     private var enabledHTTPCapabilities: CapabilityFlags = []
 
     private let operand: CapabilityFlags

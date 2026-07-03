@@ -69,7 +69,7 @@ public struct EditableMacro: MemberMacro, Sendable {
 
     if !properties.contains("profileURL") {
       declarations.append(
-        "@AppStorage(Prefs.Name.profileURL, store: .__shared) private var profileURL = URL.profile"
+        "@AppStorage(Prefs.Name.profileURL, store: .shared) private var profileURL = URL.profile"
       )
     }
 
