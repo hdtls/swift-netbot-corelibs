@@ -69,6 +69,7 @@
     import NetbotSQL
   #endif
 
+  @available(SwiftStdlib 6.0, *)
   public class SQLValueTransformer<T: Codable>: ValueTransformer {
   }
 #endif
