@@ -96,7 +96,7 @@ public struct HTTPFieldsRewrite: Equatable, Hashable, Sendable {
 @available(SwiftStdlib 6.0, *)
 extension HTTPFieldsRewrite {
 
-  public typealias Model = V1._HTTPFieldsRewrite
+  public typealias Model = V1.HTTPFieldsRewrite
 
   public init(persistentModel: Model) {
     self.init()

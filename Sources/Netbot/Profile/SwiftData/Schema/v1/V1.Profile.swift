@@ -37,10 +37,11 @@ extension V1 {
       @Observable
     #endif
   #endif
-  public class _Profile {
+  public class Profile {
 
-    //            //      @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, *)
-    //      @Unique<_Profile>([\.url])
+    #if canImport(SwiftData)
+      #Unique<Profile>([\.url])
+    #endif
 
     /// The url the resource was storaged.
     #if canImport(SwiftData)
@@ -115,53 +116,53 @@ extension V1 {
 
     /// The proxies included in this profile.
     #if canImport(SwiftData)
-      @Relationship(inverse: \_AnyProxy.lazyProfile)
+      @Relationship(inverse: \AnyProxy.lazyProfile)
     #endif
-    public var lazyProxies: [_AnyProxy] = []
+    public var lazyProxies: [AnyProxy] = []
 
     /// The policy groups included in this profile.
     #if canImport(SwiftData)
-      @Relationship(inverse: \_AnyProxyGroup.lazyProfile)
+      @Relationship(inverse: \AnyProxyGroup.lazyProfile)
     #endif
-    public var lazyProxyGroups: [_AnyProxyGroup] = []
+    public var lazyProxyGroups: [AnyProxyGroup] = []
 
     /// The rules included in this profile.
     #if canImport(SwiftData)
-      @Relationship(inverse: \_AnyForwardingRule.lazyProfile)
+      @Relationship(inverse: \AnyForwardingRule.lazyProfile)
     #endif
-    public var lazyForwardingRules: [_AnyForwardingRule] = []
+    public var lazyForwardingRules: [AnyForwardingRule] = []
 
     /// The DNS mappings included in this profile.
     #if canImport(SwiftData)
-      @Relationship(inverse: \_ProtocolDNS._Mapping.lazyProfile)
+      @Relationship(inverse: \ProtocolDNS.Mapping.lazyProfile)
     #endif
-    public var lazyDNSMappings: [_ProtocolDNS._Mapping] = []
+    public var lazyDNSMappings: [ProtocolDNS.Mapping] = []
 
     /// The URL rewriting included in this profile.
     #if canImport(SwiftData)
-      @Relationship(inverse: \_URLRewrite.lazyProfile)
+      @Relationship(inverse: \URLRewrite.lazyProfile)
     #endif
-    public var lazyURLRewrites: [_URLRewrite] = []
+    public var lazyURLRewrites: [URLRewrite] = []
 
     /// The HTTP fields rewriting included in this profile.
     #if canImport(SwiftData)
-      @Relationship(inverse: \_HTTPFieldsRewrite.lazyProfile)
+      @Relationship(inverse: \HTTPFieldsRewrite.lazyProfile)
     #endif
-    public var lazyHTTPFieldsRewrites: [_HTTPFieldsRewrite] = []
+    public var lazyHTTPFieldsRewrites: [HTTPFieldsRewrite] = []
 
     /// The stubbed HTTP responses included in this profile.
     #if canImport(SwiftData)
-      @Relationship(inverse: \_StubbedHTTPResponse.lazyProfile)
+      @Relationship(inverse: \StubbedHTTPResponse.lazyProfile)
     #endif
-    public var lazyStubbedHTTPResponses: [_StubbedHTTPResponse] = []
+    public var lazyStubbedHTTPResponses: [StubbedHTTPResponse] = []
 
-    /// Initialize a `_Profile` using default url.
+    /// Initialize a `Profile` using default url.
     public init() {}
   }
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._Profile {
+extension V1.Profile {
 
   /// Merge new values from DTO.
   /// - Parameter data: New `Profile` to merge.

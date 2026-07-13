@@ -16,7 +16,7 @@ import NetbotProfile
 
 /// Duplicate a new object.
 @available(SwiftStdlib 6.0, *)
-public protocol Duplicable {
+package protocol Duplicable {
 
   /// Make a copy.
   func copy() -> Self
@@ -37,7 +37,7 @@ extension Sequence where Element: Duplicable {
   ///   - elementToDuplicate: The element to duplicate.
   ///   - name: The name keyPath identifier duplicated element.
   /// - Returns: Duplicated element.
-  public func duplicate(_ elementToDuplicate: Element, name: WritableKeyPath<Element, String>)
+  package func duplicate(_ elementToDuplicate: Element, name: WritableKeyPath<Element, String>)
     -> Element
   {
     let prefix = "\(elementToDuplicate[keyPath: name]) copy"
@@ -108,10 +108,10 @@ extension Sequence where Element == String {
 }
 
 @available(SwiftStdlib 6.0, *)
-extension NetbotProfile.V1._AnyProxy {
+extension AnyProxy.Model {
 
-  public func copy() -> NetbotProfile.V1._AnyProxy {
-    let duplicated = NetbotProfile.V1._AnyProxy()
+  public func copy() -> AnyProxy.Model {
+    let duplicated = AnyProxy.Model()
     duplicated.name = lazyProfile?.lazyProxies.map(\.name).duplicate(name) ?? name
     duplicated.source = source
     duplicated.kind = kind
@@ -138,10 +138,10 @@ extension NetbotProfile.V1._AnyProxy {
 }
 
 @available(SwiftStdlib 6.0, *)
-extension NetbotProfile.V1._AnyProxyGroup {
+extension AnyProxyGroup.Model {
 
-  public func copy() -> NetbotProfile.V1._AnyProxyGroup {
-    let duplicated = NetbotProfile.V1._AnyProxyGroup()
+  public func copy() -> AnyProxyGroup.Model {
+    let duplicated = AnyProxyGroup.Model()
     duplicated.name = lazyProfile?.lazyProxyGroups.map(\.name).duplicate(name) ?? name
     duplicated.kind = kind
     duplicated.resource = resource

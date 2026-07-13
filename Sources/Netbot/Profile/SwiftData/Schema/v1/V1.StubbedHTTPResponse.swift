@@ -37,7 +37,7 @@ extension V1 {
       @Observable
     #endif
   #endif
-  public class _StubbedHTTPResponse {
+  public class StubbedHTTPResponse {
 
     /// A boolean value determinse whether this rule is enabled or disabled.
     public var isEnabled = true
@@ -60,8 +60,8 @@ extension V1 {
     /// The time the resource was created.
     public var creationDate = Date.now
 
-    /// Relationship with `_Profile`.
-    public var lazyProfile: _Profile?
+    /// Relationship with `Profile`.
+    public var lazyProfile: Profile?
 
     public init() {
     }
@@ -69,7 +69,7 @@ extension V1 {
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._StubbedHTTPResponse {
+extension V1.StubbedHTTPResponse {
 
   /// Merge new values from DTO.
   /// - Parameter data: New `StubbedHTTPResponse` to merge.

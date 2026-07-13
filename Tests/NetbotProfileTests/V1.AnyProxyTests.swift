@@ -20,7 +20,7 @@ struct V1_AnyProxyTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() async throws {
-    let proxy = V1._AnyProxy()
+    let proxy = V1.AnyProxy()
     //      #expect(proxy.name == "sample")
     #expect(proxy.source == AnyProxy.Source.userDefined.rawValue)
     #expect(proxy.kind == .http)
@@ -45,7 +45,7 @@ struct V1_AnyProxyTests {
   @available(SwiftStdlib 6.0, *)
   @Test("AnyProxy.init(persistentModel:)")
   func initWithPersistentModel() {
-    let persistentModel = V1._AnyProxy()
+    let persistentModel = V1.AnyProxy()
     let proxy = AnyProxy(persistentModel: persistentModel)
 
     #expect(proxy.name == persistentModel.name)
@@ -73,7 +73,7 @@ struct V1_AnyProxyTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() async throws {
-    let persistentModel = V1._AnyProxy()
+    let persistentModel = V1.AnyProxy()
     let proxy = AnyProxy()
     persistentModel.mergeValues(proxy)
 
@@ -106,48 +106,48 @@ struct V1_AnyProxy_KindTests {
   @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
-      V1._AnyProxy.Kind.allCases,
+      V1.AnyProxy.Kind.allCases,
       [
         "DIRECT", "REJECT-TINYGIF", "REJECT", "HTTPS", "HTTP", "SOCKS5 over TLS", "SOCKS5",
         "Shadowsocks", "VMESS",
       ])
   )
-  func localizedName(_ kind: V1._AnyProxy.Kind, _ localizedName: String) async throws {
+  func localizedName(_ kind: V1.AnyProxy.Kind, _ localizedName: String) async throws {
     #expect(kind.localizedName == localizedName)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
-      V1._AnyProxy.Kind.allCases,
+      V1.AnyProxy.Kind.allCases,
       [
         "direct", "reject-tinygif", "reject", "https", "http", "socks5-over-tls", "socks5",
         "ss", "vmess",
       ])
   )
-  func rawRepresentableConformance(_ kind: V1._AnyProxy.Kind, _ rawValue: String) async throws {
+  func rawRepresentableConformance(_ kind: V1.AnyProxy.Kind, _ rawValue: String) async throws {
     #expect(kind.rawValue == rawValue)
-    #expect(V1._AnyProxy.Kind(rawValue: rawValue) == kind)
-    #expect(V1._AnyProxy.Kind(rawValue: "unknown") == nil)
+    #expect(V1.AnyProxy.Kind(rawValue: rawValue) == kind)
+    #expect(V1.AnyProxy.Kind(rawValue: "unknown") == nil)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
-      V1._AnyProxy.Kind.allCases, [false, false, false, true, true, true, true, true, true]
+      V1.AnyProxy.Kind.allCases, [false, false, false, true, true, true, true, true, true]
     )
   )
-  func isProxy(_ kind: V1._AnyProxy.Kind, _ isProxy: Bool) {
+  func isProxy(_ kind: V1.AnyProxy.Kind, _ isProxy: Bool) {
     #expect(kind.isProxyable == isProxy)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
-      V1._AnyProxy.Kind.allCases, [false, false, false, true, false, true, false, false, true]
+      V1.AnyProxy.Kind.allCases, [false, false, false, true, false, true, false, false, true]
     )
   )
-  func supportTLSSettings(_ kind: V1._AnyProxy.Kind, _ supportTLSSettings: Bool) {
+  func supportTLSSettings(_ kind: V1.AnyProxy.Kind, _ supportTLSSettings: Bool) {
     #expect(kind.supportTLSSettings == supportTLSSettings)
   }
 }
@@ -157,7 +157,7 @@ struct V1_AnyProxy_ObfuscationTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() async throws {
-    let obfuscation = V1._AnyProxy.Obfuscation()
+    let obfuscation = V1.AnyProxy.Obfuscation()
     #expect(!obfuscation.isEnabled)
     #expect(obfuscation.strategy == .http)
     #expect(obfuscation.hostname == "")
@@ -168,21 +168,21 @@ struct V1_AnyProxy_ObfuscationTests {
 struct V1_AnyProxy_Obfuscation_StrategyTests {
 
   @available(SwiftStdlib 6.0, *)
-  @Test(arguments: zip(V1._AnyProxy.Obfuscation.Strategy.allCases, [1, 2]))
-  func optionSetConformance(_ strategy: V1._AnyProxy.Obfuscation.Strategy, _ rawValue: Int) {
+  @Test(arguments: zip(V1.AnyProxy.Obfuscation.Strategy.allCases, [1, 2]))
+  func optionSetConformance(_ strategy: V1.AnyProxy.Obfuscation.Strategy, _ rawValue: Int) {
     #expect(strategy.rawValue == rawValue)
-    #expect(V1._AnyProxy.Obfuscation.Strategy(rawValue: rawValue) == strategy)
+    #expect(V1.AnyProxy.Obfuscation.Strategy(rawValue: rawValue) == strategy)
   }
 
   @available(SwiftStdlib 6.0, *)
-  @Test(arguments: zip(V1._AnyProxy.Obfuscation.Strategy.allCases, ["HTTP", "TLS"]))
-  func localizedName(_ strategy: V1._AnyProxy.Obfuscation.Strategy, _ localizedName: String) {
+  @Test(arguments: zip(V1.AnyProxy.Obfuscation.Strategy.allCases, ["HTTP", "TLS"]))
+  func localizedName(_ strategy: V1.AnyProxy.Obfuscation.Strategy, _ localizedName: String) {
     #expect(strategy.localizedName == localizedName)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() async throws {
-    #expect(V1._AnyProxy.Obfuscation.Strategy.allCases == [.http, .tls])
+    #expect(V1.AnyProxy.Obfuscation.Strategy.allCases == [.http, .tls])
   }
 }
 
@@ -191,7 +191,7 @@ struct V1_AnyProxy_TLSTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() async throws {
-    let tls = V1._AnyProxy.TLS()
+    let tls = V1.AnyProxy.TLS()
     #expect(!tls.isEnabled)
     #expect(!tls.skipCertificateVerification)
     #expect(tls.sni == "")
@@ -204,7 +204,7 @@ struct V1_AnyProxy_WebSocketTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() async throws {
-    let ws = V1._AnyProxy.WebSocket()
+    let ws = V1.AnyProxy.WebSocket()
     #expect(!ws.isEnabled)
     #expect(ws.uri == "/")
     #expect(ws.additionalHTTPFields == nil)
@@ -216,7 +216,7 @@ struct V1_AnyProx_EngressTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() async throws {
-    let engress = V1._AnyProxy.Engress()
+    let engress = V1.AnyProxy.Engress()
     #expect(engress.interfaceName == "")
     #expect(!engress.backToDefaultIfNICUnavailable)
     #expect(engress.packetToS == 0)
@@ -225,18 +225,18 @@ struct V1_AnyProx_EngressTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test(
-    "V1._AnyProxy.Engress.VersionStrategy RawRepresentable conformance",
-    arguments: zip(V1._AnyProxy.Engress.VersionStrategy.allCases, ["v4", "v6", "dual"]))
+    "V1.AnyProxy.Engress.VersionStrategy RawRepresentable conformance",
+    arguments: zip(V1.AnyProxy.Engress.VersionStrategy.allCases, ["v4", "v6", "dual"]))
   func versionStrategyRawRepresentableConformance(
-    _ strategy: V1._AnyProxy.Engress.VersionStrategy, _ rawValue: String
+    _ strategy: V1.AnyProxy.Engress.VersionStrategy, _ rawValue: String
   ) async throws {
     #expect(strategy.rawValue == rawValue)
-    #expect(V1._AnyProxy.Engress.VersionStrategy(rawValue: rawValue) == strategy)
+    #expect(V1.AnyProxy.Engress.VersionStrategy(rawValue: rawValue) == strategy)
   }
 
   @available(SwiftStdlib 6.0, *)
-  @Test("V1._AnyProxy.Engress.VersionStrategy CaseIterable conformance")
+  @Test("V1.AnyProxy.Engress.VersionStrategy CaseIterable conformance")
   func versionStrategyCaseIterableConformance() async throws {
-    #expect(V1._AnyProxy.Engress.VersionStrategy.allCases == [.v4, .v6, .dual])
+    #expect(V1.AnyProxy.Engress.VersionStrategy.allCases == [.v4, .v6, .dual])
   }
 }

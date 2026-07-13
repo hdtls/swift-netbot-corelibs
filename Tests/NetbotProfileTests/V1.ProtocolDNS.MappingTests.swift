@@ -20,7 +20,7 @@ struct V1_ProtocolDNS_MappingTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
-    let data = V1._ProtocolDNS._Mapping()
+    let data = V1.ProtocolDNS.Mapping()
     #expect(data.strategy == .mapping)
     #expect(data.isEnabled)
     #expect(data.domainName == "")
@@ -31,7 +31,7 @@ struct V1_ProtocolDNS_MappingTests {
   @available(SwiftStdlib 6.0, *)
   @Test("ProtocolDNS.Mapping.init(persistentModel:)")
   func initWithPersistentModel() {
-    let persistentModel = V1._ProtocolDNS._Mapping()
+    let persistentModel = V1.ProtocolDNS.Mapping()
     let data = ProtocolDNS.Mapping(persistentModel: persistentModel)
 
     #expect(data.strategy == persistentModel.strategy)
@@ -42,7 +42,7 @@ struct V1_ProtocolDNS_MappingTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() {
-    let persistentModel = V1._ProtocolDNS._Mapping()
+    let persistentModel = V1.ProtocolDNS.Mapping()
     let data = ProtocolDNS.Mapping()
     persistentModel.mergeValues(data)
 

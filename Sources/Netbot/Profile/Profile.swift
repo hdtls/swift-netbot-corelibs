@@ -239,7 +239,7 @@ extension Profile {
 @available(SwiftStdlib 6.0, *)
 extension Profile {
 
-  public typealias Model = V1._Profile
+  public typealias Model = V1.Profile
 
   public init(persistentModel: Model) {
     self.init()

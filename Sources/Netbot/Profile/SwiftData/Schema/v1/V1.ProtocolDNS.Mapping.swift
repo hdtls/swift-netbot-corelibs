@@ -29,11 +29,11 @@
 extension V1 {
 
   @available(SwiftStdlib 6.0, *)
-  public enum _ProtocolDNS {}
+  public enum ProtocolDNS {}
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._ProtocolDNS {
+extension V1.ProtocolDNS {
 
   /// An object declaring DNS mappings.
   #if canImport(SwiftData)
@@ -43,13 +43,13 @@ extension V1._ProtocolDNS {
       @Observable
     #endif
   #endif
-  public class _Mapping {
+  public class Mapping {
 
     /// A boolean value determinse whether this mapping is enabled.
     public var isEnabled = true
 
     /// The strategy of the mapping.
-    public var strategy = ProtocolDNS.MappingStrategy.mapping
+    public var strategy = NetbotProfile.ProtocolDNS.MappingStrategy.mapping
 
     /// The domain to perform local DNS mapping.
     public var domainName = ""
@@ -67,8 +67,8 @@ extension V1._ProtocolDNS {
     /// The date when the mapping created.
     public var creationDate = Date.now
 
-    /// Relationship with `_Profile`.
-    public var lazyProfile: V1._Profile?
+    /// Relationship with `Profile`.
+    public var lazyProfile: V1.Profile?
 
     public init() {
     }
@@ -76,7 +76,7 @@ extension V1._ProtocolDNS {
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._ProtocolDNS._Mapping {
+extension V1.ProtocolDNS.Mapping {
 
   /// Merge new values from DTO.
   /// - Parameter data: New `ProtocolDNS.Mapping` to merge.

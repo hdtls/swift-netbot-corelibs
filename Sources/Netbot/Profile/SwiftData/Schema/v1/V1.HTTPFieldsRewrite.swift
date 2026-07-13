@@ -35,13 +35,13 @@ extension V1 {
       @Observable
     #endif
   #endif
-  public class _HTTPFieldsRewrite {
+  public class HTTPFieldsRewrite {
 
     /// A boolean value determinse whether this rule is enabled or disabled.
     public var isEnabled = true
 
     /// An enum define HTTP directions.
-    public typealias Direction = HTTPFieldsRewrite.Direction
+    public typealias Direction = NetbotProfile.HTTPFieldsRewrite.Direction
 
     /// Direction of HTTP communication.
     public var direction = Direction.request
@@ -50,7 +50,7 @@ extension V1 {
     public var pattern = ""
 
     /// An enum define modification actions.
-    public typealias Action = HTTPFieldsRewrite.Action
+    public typealias Action = NetbotProfile.HTTPFieldsRewrite.Action
 
     /// Action for modification.
     public var action = Action.add
@@ -67,8 +67,8 @@ extension V1 {
     /// The time the resource was created.
     public var creationDate = Date.now
 
-    /// Relationship with `_Profile`.
-    public var lazyProfile: _Profile?
+    /// Relationship with `Profile`.
+    public var lazyProfile: Profile?
 
     /// Create a `HTTPFieldsRewrite.Model` with default values.
     public init() {
@@ -77,7 +77,7 @@ extension V1 {
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._HTTPFieldsRewrite {
+extension V1.HTTPFieldsRewrite {
 
   /// Merge new values from DTO.
   /// - Parameter data: New `HTTPFieldsRewrite` to merge.

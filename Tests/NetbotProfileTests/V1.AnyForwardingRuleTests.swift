@@ -20,7 +20,7 @@ struct V1_AnyForwardingRuleTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
-    let data = V1._AnyForwardingRule()
+    let data = V1.AnyForwardingRule()
     #expect(data.isEnabled)
     #expect(data.kind == .domain)
     #expect(data.value == "")
@@ -31,7 +31,7 @@ struct V1_AnyForwardingRuleTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() {
-    let persistentModel = V1._AnyForwardingRule()
+    let persistentModel = V1.AnyForwardingRule()
     let forwardingRule = AnyForwardingRule()
     persistentModel.mergeValues(forwardingRule)
 
@@ -49,28 +49,28 @@ struct V1_AnyForwardingRule_KindTests {
   @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
-      V1._AnyForwardingRule.Kind.allCases,
+      V1.AnyForwardingRule.Kind.allCases,
       [
         "DOMAIN", "DOMAIN-KEYWORD", "DOMAIN-SUFFIX", "DOMAIN-SET", "RULE-SET", "GEOIP",
         "IP-CIDR", "PROCESS-NAME", "FINAL",
       ]
     ))
-  func rawRepresentableConformance(_ kind: V1._AnyForwardingRule.Kind, _ rawValue: String) {
-    #expect(V1._AnyForwardingRule.Kind(rawValue: rawValue) == kind)
+  func rawRepresentableConformance(_ kind: V1.AnyForwardingRule.Kind, _ rawValue: String) {
+    #expect(V1.AnyForwardingRule.Kind(rawValue: rawValue) == kind)
     #expect(kind.rawValue == rawValue)
-    #expect(V1._AnyForwardingRule.Kind(rawValue: "unknown") == nil)
+    #expect(V1.AnyForwardingRule.Kind(rawValue: "unknown") == nil)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
-      V1._AnyForwardingRule.Kind.allCases,
+      V1.AnyForwardingRule.Kind.allCases,
       [
         "DOMAIN", "DOMAIN-KEYWORD", "DOMAIN-SUFFIX", "DOMAIN-SET", "RULE-SET", "GEOIP",
         "IP-CIDR", "PROCESS-NAME", "FINAL",
       ]
     ))
-  func localizedName(_ kind: V1._AnyForwardingRule.Kind, _ localizedName: String) {
+  func localizedName(_ kind: V1.AnyForwardingRule.Kind, _ localizedName: String) {
     #expect(kind.localizedName == localizedName)
   }
 }
@@ -80,7 +80,7 @@ struct V1_AnyForwardingRule_NotificationTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
-    let notification = V1._AnyForwardingRule.Notification()
+    let notification = V1.AnyForwardingRule.Notification()
     #expect(notification.message == "")
     #expect(!notification.showNotification)
     #expect(notification.timeInterval == 300)
@@ -88,8 +88,8 @@ struct V1_AnyForwardingRule_NotificationTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func equatableConformance() async throws {
-    let lhs = V1._AnyForwardingRule.Notification()
-    let rhs = V1._AnyForwardingRule.Notification()
+    let lhs = V1.AnyForwardingRule.Notification()
+    let rhs = V1.AnyForwardingRule.Notification()
     #expect(lhs == rhs)
   }
 }

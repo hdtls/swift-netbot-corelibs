@@ -138,7 +138,7 @@ public struct AnyProxy: Equatable, Hashable, Sendable {
 @available(SwiftStdlib 6.0, *)
 extension AnyProxy {
 
-  public typealias Model = V1._AnyProxy
+  public typealias Model = V1.AnyProxy
 
   public init(persistentModel: Model) {
     name = persistentModel.name

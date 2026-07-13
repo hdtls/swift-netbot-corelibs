@@ -29,13 +29,13 @@ extension V1 {
       @Observable
     #endif
   #endif
-  public class _AnyForwardingRule {
+  public class AnyForwardingRule {
 
     /// A boolean value determinse whether the forwardingRule is enabled.
     public var isEnabled = true
 
     /// The kind of the available proxy rules.
-    public typealias Kind = AnyForwardingRule.Kind
+    public typealias Kind = NetbotProfile.AnyForwardingRule.Kind
 
     /// Kind of the forwardingRule.
     public var kind = Kind.domain
@@ -49,19 +49,19 @@ extension V1 {
     /// Sort priority of the forwardingRule.
     public var order = 0
 
-    public typealias Notification = AnyForwardingRule.Notification
+    public typealias Notification = NetbotProfile.AnyForwardingRule.Notification
 
     /// forwardingRule matched notification.
     public var notification = Notification()
 
-    /// Relationship with `_AnyProxyGroup`.
-    public var lazyProxyGroup: _AnyProxyGroup?
+    /// Relationship with `AnyProxyGroup`.
+    public var lazyProxyGroup: AnyProxyGroup?
 
-    /// Relationship with `_AnyProxy`.
-    public var lazyProxy: _AnyProxy?
+    /// Relationship with `AnyProxy`.
+    public var lazyProxy: AnyProxy?
 
-    /// Relationship with `_Profile`.
-    public var lazyProfile: _Profile?
+    /// Relationship with `Profile`.
+    public var lazyProfile: Profile?
 
     public init() {
     }
@@ -69,7 +69,7 @@ extension V1 {
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._AnyForwardingRule {
+extension V1.AnyForwardingRule {
 
   /// Merge new values from DTO.
   /// - Parameter data: New `AnyForwardingRule` to merge.

@@ -20,7 +20,7 @@ struct V1_AnyProxyGroupTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
-    let persistentModel = V1._AnyProxyGroup()
+    let persistentModel = V1.AnyProxyGroup()
     #expect(persistentModel.kind == .select)
     #expect(persistentModel.resource == .init())
   }
@@ -28,7 +28,7 @@ struct V1_AnyProxyGroupTests {
   @available(SwiftStdlib 6.0, *)
   @Test("AnyProxyGroup.init(persistentModel:)")
   func initWithPersistentModel() {
-    let persistentModel = V1._AnyProxyGroup()
+    let persistentModel = V1.AnyProxyGroup()
     let group = AnyProxyGroup(persistentModel: persistentModel)
 
     #expect(group.name == persistentModel.name)
@@ -41,7 +41,7 @@ struct V1_AnyProxyGroupTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func mergeValues() {
-    let persistentModel = V1._AnyProxyGroup()
+    let persistentModel = V1.AnyProxyGroup()
     let group = AnyProxyGroup()
     persistentModel.mergeValues(group)
 
@@ -60,21 +60,21 @@ struct V1_AnyProxyGroup_KindTests {
   @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
-      V1._AnyProxyGroup.Kind.allCases,
+      V1.AnyProxyGroup.Kind.allCases,
       [
         "Select Group", "Auto URL Test Group", "Fallback Group", "SSID Group",
         "Load Balance Group",
       ]
     )
   )
-  func localizedName(_ kind: V1._AnyProxyGroup.Kind, _ localizedName: String) {
+  func localizedName(_ kind: V1.AnyProxyGroup.Kind, _ localizedName: String) {
     #expect(kind.localizedName == localizedName)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
-      V1._AnyProxyGroup.Kind.allCases,
+      V1.AnyProxyGroup.Kind.allCases,
       [
         "Select which policy will be used on user interface.",
         "Automatically select which policy will be used by benchmarking the latency to a URL.",
@@ -84,27 +84,27 @@ struct V1_AnyProxyGroup_KindTests {
       ]
     )
   )
-  func localizedDescription(_ kind: V1._AnyProxyGroup.Kind, _ description: String) {
+  func localizedDescription(_ kind: V1.AnyProxyGroup.Kind, _ description: String) {
     #expect(kind.localizedDescription == description)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
     #expect(
-      V1._AnyProxyGroup.Kind.allCases == [.select, .urlTest, .fallback, .ssid, .loadBalance])
+      V1.AnyProxyGroup.Kind.allCases == [.select, .urlTest, .fallback, .ssid, .loadBalance])
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
-      V1._AnyProxyGroup.Kind.allCases,
+      V1.AnyProxyGroup.Kind.allCases,
       ["select", "url-test", "fallback", "ssid", "load-balance"]
     )
   )
-  func rawRepresentableConformance(_ kind: V1._AnyProxyGroup.Kind, _ rawValue: String) {
+  func rawRepresentableConformance(_ kind: V1.AnyProxyGroup.Kind, _ rawValue: String) {
     #expect(kind.rawValue == rawValue)
-    #expect(V1._AnyProxyGroup.Kind(rawValue: rawValue) == kind)
-    #expect(V1._AnyProxyGroup.Kind(rawValue: "unknown") == nil)
+    #expect(V1.AnyProxyGroup.Kind(rawValue: rawValue) == kind)
+    #expect(V1.AnyProxyGroup.Kind(rawValue: "unknown") == nil)
   }
 }
 
@@ -113,7 +113,7 @@ struct V1_AnyProxyGroup_ResourceTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() {
-    let resource = V1._AnyProxyGroup.Resource()
+    let resource = V1.AnyProxyGroup.Resource()
     #expect(resource.source == .cache)
     #expect(resource.externalProxiesURL == nil)
     #expect(resource.externalProxiesAutoUpdateTimeInterval == 86400)
@@ -125,6 +125,6 @@ struct V1_AnyProxyGroup_Resource_SourceTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
-    #expect(V1._AnyProxyGroup.Resource.Source.allCases == [.cache, .query])
+    #expect(V1.AnyProxyGroup.Resource.Source.allCases == [.cache, .query])
   }
 }

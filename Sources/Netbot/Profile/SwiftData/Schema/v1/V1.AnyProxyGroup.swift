@@ -35,7 +35,7 @@ extension V1 {
       @Observable
     #endif
   #endif
-  public class _AnyProxyGroup {
+  public class AnyProxyGroup {
 
     /// Name of the policy group.
     #if canImport(SwiftData)
@@ -43,13 +43,13 @@ extension V1 {
     #endif
     public var name = UUID().uuidString
 
-    public typealias Kind = AnyProxyGroup.Kind
+    public typealias Kind = NetbotProfile.AnyProxyGroup.Kind
 
     /// Type of the policy group.
     public var kind = Kind.select
 
     /// An object representing external proxies resource.
-    public typealias Resource = AnyProxyGroup.Resource
+    public typealias Resource = NetbotProfile.AnyProxyGroup.Resource
 
     /// Resource of policies.
     public var resource = Resource()
@@ -63,17 +63,17 @@ extension V1 {
     /// The group's creation date.
     public var creationDate = Date.now
 
-    /// Relationship with `_AnyProxy`.
-    public var lazyProxies: [_AnyProxy] = []
+    /// Relationship with `AnyProxy`.
+    public var lazyProxies: [AnyProxy] = []
 
-    /// Relationship with `_AnyForwardingRule`.
+    /// Relationship with `AnyForwardingRule`.
     #if canImport(SwiftData)
-      @Relationship(inverse: \_AnyForwardingRule.lazyProxyGroup)
+      @Relationship(inverse: \AnyForwardingRule.lazyProxyGroup)
     #endif
-    public var lazyForwardingRules: [_AnyForwardingRule] = []
+    public var lazyForwardingRules: [AnyForwardingRule] = []
 
-    /// Relationship with `_Profile`..
-    public var lazyProfile: _Profile?
+    /// Relationship with `Profile`..
+    public var lazyProfile: Profile?
 
     /// Create an instance of `AnyPolicy` with default values.
     public init() {
@@ -82,7 +82,7 @@ extension V1 {
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._AnyProxyGroup {
+extension V1.AnyProxyGroup {
 
   /// Merge new values from DTO.
   /// - Parameter data: New `AnyProxyGroup` to merge.

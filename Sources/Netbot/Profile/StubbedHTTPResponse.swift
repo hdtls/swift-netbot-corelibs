@@ -61,7 +61,7 @@ public struct StubbedHTTPResponse: Equatable, Hashable, Sendable {
 @available(SwiftStdlib 6.0, *)
 extension StubbedHTTPResponse {
 
-  public typealias Model = V1._StubbedHTTPResponse
+  public typealias Model = V1.StubbedHTTPResponse
 
   public init(persistentModel: Model) {
     self.init()

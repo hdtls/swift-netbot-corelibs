@@ -35,20 +35,24 @@ extension V1 {
       @Observable
     #endif
   #endif
-  public class _AnyProxy {
+  public class AnyProxy {
 
-    /// The name of this policy.
     #if canImport(SwiftData)
+      #Unique([\AnyProxy.name])
+    #endif
+
+    #if canImport(SwiftData)
+      /// The name of this policy.
       @Attribute(.unique)
     #endif
     public var name = UUID().uuidString
 
-    public typealias Source = AnyProxy.Source
+    public typealias Source = NetbotProfile.AnyProxy.Source
 
     /// Source of this policy.
     public var source = Source.userDefined.rawValue
 
-    public typealias Kind = AnyProxy.Kind
+    public typealias Kind = NetbotProfile.AnyProxy.Kind
 
     /// Policy type, defaults to `http`.
     public var kind = Kind.http
@@ -81,7 +85,7 @@ extension V1 {
     public var algorithm = Algorithm.aes128Gcm
 
     /// Data obfuscation settings.
-    public typealias Obfuscation = AnyProxy.Obfuscation
+    public typealias Obfuscation = NetbotProfile.AnyProxy.Obfuscation
 
     /// The data obfuscation settings.
     public var obfuscation = Obfuscation()
@@ -93,19 +97,19 @@ extension V1 {
     public var transactionMetrics = TransactionMetrics()
 
     /// WebSocket settings for VMESS protocol.
-    public typealias TLS = AnyProxy.TLS
+    public typealias TLS = NetbotProfile.AnyProxy.TLS
 
     /// TLS configuration used to secure transport connections make by this policy.
     public var tls = TLS()
 
     /// WebSocket settings for VMESS protocol.
-    public typealias WebSocket = AnyProxy.WebSocket
+    public typealias WebSocket = NetbotProfile.AnyProxy.WebSocket
 
     /// WebSocket settings for VMESS protocol.
     public var ws = WebSocket()
 
     /// Engress IP settings
-    public typealias Engress = AnyProxy.Engress
+    public typealias Engress = NetbotProfile.AnyProxy.Engress
 
     /// Engress controls settings.
     public var engress = Engress()
@@ -127,18 +131,18 @@ extension V1 {
 
     /// Relationship with `AnyProxyGroup.Model`.
     #if canImport(SwiftData)
-      @Relationship(inverse: \_AnyProxyGroup.lazyProxies)
+      @Relationship(inverse: \AnyProxyGroup.lazyProxies)
     #endif
-    public var lazyProxyGroups: [_AnyProxyGroup] = []
+    public var lazyProxyGroups: [AnyProxyGroup] = []
 
     /// Relationship with `AnyForwardingRule.Model`.
     #if canImport(SwiftData)
-      @Relationship(inverse: \_AnyForwardingRule.lazyProxy)
+      @Relationship(inverse: \AnyForwardingRule.lazyProxy)
     #endif
-    public var lazyForwardingRules: [_AnyForwardingRule] = []
+    public var lazyForwardingRules: [AnyForwardingRule] = []
 
-    /// Relationship with `_Profile`.
-    public var lazyProfile: _Profile?
+    /// Relationship with `Profile`.
+    public var lazyProfile: Profile?
 
     /// Create an instance of `AnyPolicy` with default values.
     public init() {
@@ -151,7 +155,7 @@ extension V1 {
 }
 
 @available(SwiftStdlib 6.0, *)
-extension V1._AnyProxy {
+extension V1.AnyProxy {
 
   /// Merge new values from DTO.
   /// - Parameter data: New `AnyProxy` to merge.

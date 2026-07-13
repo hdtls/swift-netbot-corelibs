@@ -86,7 +86,7 @@ extension AnyProxyGroup._Storage: @unchecked Sendable {}
 @available(SwiftStdlib 6.0, *)
 extension AnyProxyGroup {
 
-  public typealias Model = V1._AnyProxyGroup
+  public typealias Model = V1.AnyProxyGroup
 
   public init(persistentModel: Model) {
     self.init()

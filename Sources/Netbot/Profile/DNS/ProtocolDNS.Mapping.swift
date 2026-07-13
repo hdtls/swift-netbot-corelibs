@@ -75,7 +75,7 @@ extension ProtocolDNS {
 @available(SwiftStdlib 6.0, *)
 extension ProtocolDNS.Mapping {
 
-  public typealias Model = V1._ProtocolDNS._Mapping
+  public typealias Model = V1.ProtocolDNS.Mapping
 
   public init(persistentModel: Model) {
     self.init()

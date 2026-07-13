@@ -100,7 +100,7 @@ public struct AnyForwardingRule: Equatable, Hashable, Sendable {
 @available(SwiftStdlib 6.0, *)
 extension AnyForwardingRule {
 
-  public typealias Model = V1._AnyForwardingRule
+  public typealias Model = V1.AnyForwardingRule
 
   public init(persistentModel: Model) {
     self.init()

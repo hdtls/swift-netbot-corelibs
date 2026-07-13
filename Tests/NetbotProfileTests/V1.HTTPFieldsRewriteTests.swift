@@ -20,7 +20,7 @@ struct V1_HTTPFieldsRewriteTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() async throws {
-    let data = V1._HTTPFieldsRewrite()
+    let data = V1.HTTPFieldsRewrite()
     #expect(data.isEnabled)
     #expect(data.direction == .request)
     #expect(data.pattern == "")
@@ -37,18 +37,18 @@ struct V1_HTTPFieldsRewrite_DirectionTests {
   @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
-      V1._HTTPFieldsRewrite.Direction.allCases, ["request", "response"]
+      V1.HTTPFieldsRewrite.Direction.allCases, ["request", "response"]
     )
   )
-  func rawRepresentableConformance(_ type: V1._HTTPFieldsRewrite.Direction, _ rawValue: String) {
-    #expect(V1._HTTPFieldsRewrite.Direction(rawValue: rawValue) == type)
+  func rawRepresentableConformance(_ type: V1.HTTPFieldsRewrite.Direction, _ rawValue: String) {
+    #expect(V1.HTTPFieldsRewrite.Direction(rawValue: rawValue) == type)
     #expect(type.rawValue == rawValue)
-    #expect(V1._HTTPFieldsRewrite.Direction(rawValue: "unknown") == nil)
+    #expect(V1.HTTPFieldsRewrite.Direction(rawValue: "unknown") == nil)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
-    #expect(V1._HTTPFieldsRewrite.Direction.allCases == [.request, .response])
+    #expect(V1.HTTPFieldsRewrite.Direction.allCases == [.request, .response])
   }
 }
 
@@ -58,17 +58,17 @@ struct V1_HTTPFieldsRewrite_ActionTests {
   @available(SwiftStdlib 6.0, *)
   @Test(
     arguments: zip(
-      V1._HTTPFieldsRewrite.Action.allCases, ["add", "remove", "replace"]
+      V1.HTTPFieldsRewrite.Action.allCases, ["add", "remove", "replace"]
     )
   )
-  func rawRepresentableConformance(_ type: V1._HTTPFieldsRewrite.Action, _ rawValue: String) {
-    #expect(V1._HTTPFieldsRewrite.Action(rawValue: rawValue) == type)
+  func rawRepresentableConformance(_ type: V1.HTTPFieldsRewrite.Action, _ rawValue: String) {
+    #expect(V1.HTTPFieldsRewrite.Action(rawValue: rawValue) == type)
     #expect(type.rawValue == rawValue)
-    #expect(V1._HTTPFieldsRewrite.Action(rawValue: "unknown") == nil)
+    #expect(V1.HTTPFieldsRewrite.Action(rawValue: "unknown") == nil)
   }
 
   @available(SwiftStdlib 6.0, *)
   @Test func caseIterableConformance() {
-    #expect(V1._HTTPFieldsRewrite.Action.allCases == [.add, .remove, .replace])
+    #expect(V1.HTTPFieldsRewrite.Action.allCases == [.add, .remove, .replace])
   }
 }
