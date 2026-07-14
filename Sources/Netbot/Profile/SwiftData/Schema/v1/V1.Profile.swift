@@ -19,34 +19,25 @@ import Logging
   import Foundation
 #endif
 
-#if canImport(SwiftData)
-  import SwiftData
+#if canImport(Darwin) || swift(>=6.3)
+  import Observation
 #endif
 
-#if swift(>=6.3)
-  import Observation
+#if canImport(SwiftData)
+  import SwiftData
+#else
+  import NetbotSQL
 #endif
 
 @available(SwiftStdlib 6.0, *)
 extension V1 {
 
-  #if canImport(SwiftData)
-    @Model
-  #else
-    #if swift(>=6.3)
-      @Observable
-    #endif
-  #endif
-  public class Profile {
+  @Model public class Profile {
 
-    #if canImport(SwiftData)
-      #Unique<Profile>([\.url])
-    #endif
+    #Unique<Profile>([\.url])
 
     /// The url the resource was storaged.
-    #if canImport(SwiftData)
-      @Attribute(.unique)
-    #endif
+    @Attribute(.unique)
     public var url = URL.profile
 
     /// Log level use for `Logger`.`
@@ -115,45 +106,31 @@ extension V1 {
     public var creationDate = Date.now
 
     /// The proxies included in this profile.
-    #if canImport(SwiftData)
-      @Relationship(inverse: \AnyProxy.lazyProfile)
-    #endif
+    @Relationship(inverse: \AnyProxy.lazyProfile)
     public var lazyProxies: [AnyProxy] = []
 
     /// The policy groups included in this profile.
-    #if canImport(SwiftData)
-      @Relationship(inverse: \AnyProxyGroup.lazyProfile)
-    #endif
+    @Relationship(inverse: \AnyProxyGroup.lazyProfile)
     public var lazyProxyGroups: [AnyProxyGroup] = []
 
     /// The rules included in this profile.
-    #if canImport(SwiftData)
-      @Relationship(inverse: \AnyForwardingRule.lazyProfile)
-    #endif
+    @Relationship(inverse: \AnyForwardingRule.lazyProfile)
     public var lazyForwardingRules: [AnyForwardingRule] = []
 
     /// The DNS mappings included in this profile.
-    #if canImport(SwiftData)
-      @Relationship(inverse: \ProtocolDNS.Mapping.lazyProfile)
-    #endif
+    @Relationship(inverse: \ProtocolDNS.Mapping.lazyProfile)
     public var lazyDNSMappings: [ProtocolDNS.Mapping] = []
 
     /// The URL rewriting included in this profile.
-    #if canImport(SwiftData)
-      @Relationship(inverse: \URLRewrite.lazyProfile)
-    #endif
+    @Relationship(inverse: \URLRewrite.lazyProfile)
     public var lazyURLRewrites: [URLRewrite] = []
 
     /// The HTTP fields rewriting included in this profile.
-    #if canImport(SwiftData)
-      @Relationship(inverse: \HTTPFieldsRewrite.lazyProfile)
-    #endif
+    @Relationship(inverse: \HTTPFieldsRewrite.lazyProfile)
     public var lazyHTTPFieldsRewrites: [HTTPFieldsRewrite] = []
 
     /// The stubbed HTTP responses included in this profile.
-    #if canImport(SwiftData)
-      @Relationship(inverse: \StubbedHTTPResponse.lazyProfile)
-    #endif
+    @Relationship(inverse: \StubbedHTTPResponse.lazyProfile)
     public var lazyStubbedHTTPResponses: [StubbedHTTPResponse] = []
 
     /// Initialize a `Profile` using default url.

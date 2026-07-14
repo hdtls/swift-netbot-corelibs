@@ -17,12 +17,14 @@
   import Foundation
 #endif
 
-#if canImport(SwiftData)
-  import SwiftData
+#if canImport(Darwin) || swift(>=6.3)
+  import Observation
 #endif
 
-#if swift(>=6.3)
-  import Observation
+#if canImport(SwiftData)
+  import SwiftData
+#else
+  import NetbotSQL
 #endif
 
 @available(SwiftStdlib 6.0, *)
@@ -36,14 +38,7 @@ extension V1 {
 extension V1.ProtocolDNS {
 
   /// An object declaring DNS mappings.
-  #if canImport(SwiftData)
-    @Model
-  #else
-    #if swift(>=6.3)
-      @Observable
-    #endif
-  #endif
-  public class Mapping {
+  @Model public class Mapping {
 
     /// A boolean value determinse whether this mapping is enabled.
     public var isEnabled = true

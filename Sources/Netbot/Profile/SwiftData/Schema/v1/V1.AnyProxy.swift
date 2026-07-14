@@ -17,34 +17,25 @@
   import Foundation
 #endif
 
-#if canImport(SwiftData)
-  import SwiftData
+#if canImport(Darwin) || swift(>=6.3)
+  import Observation
 #endif
 
-#if swift(>=6.3)
-  import Observation
+#if canImport(SwiftData)
+  import SwiftData
+#else
+  import NetbotSQL
 #endif
 
 @available(SwiftStdlib 6.0, *)
 extension V1 {
 
-  #if canImport(SwiftData)
-    @Model
-  #else
-    #if swift(>=6.3)
-      @Observable
-    #endif
-  #endif
-  public class AnyProxy {
+  @Model public class AnyProxy {
 
-    #if canImport(SwiftData)
-      #Unique([\AnyProxy.name])
-    #endif
+    #Unique<AnyProxy>([\.name])
 
-    #if canImport(SwiftData)
-      /// The name of this policy.
-      @Attribute(.unique)
-    #endif
+    /// The name of this policy.
+    @Attribute(.unique)
     public var name = UUID().uuidString
 
     public typealias Source = NetbotProfile.AnyProxy.Source
@@ -130,15 +121,11 @@ extension V1 {
     public var creationDate = Date.now
 
     /// Relationship with `AnyProxyGroup.Model`.
-    #if canImport(SwiftData)
-      @Relationship(inverse: \AnyProxyGroup.lazyProxies)
-    #endif
+    @Relationship(inverse: \AnyProxyGroup.lazyProxies)
     public var lazyProxyGroups: [AnyProxyGroup] = []
 
     /// Relationship with `AnyForwardingRule.Model`.
-    #if canImport(SwiftData)
-      @Relationship(inverse: \AnyForwardingRule.lazyProxy)
-    #endif
+    @Relationship(inverse: \AnyForwardingRule.lazyProxy)
     public var lazyForwardingRules: [AnyForwardingRule] = []
 
     /// Relationship with `Profile`.

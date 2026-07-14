@@ -11,25 +11,20 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-#if canImport(SwiftData)
-  import SwiftData
+#if canImport(Darwin) || swift(>=6.3)
+  import Observation
 #endif
 
-#if swift(>=6.3)
-  import Observation
+#if canImport(SwiftData)
+  import SwiftData
+#else
+  import NetbotSQL
 #endif
 
 @available(SwiftStdlib 6.0, *)
 extension V1 {
 
-  #if canImport(SwiftData)
-    @Model
-  #else
-    #if swift(>=6.3)
-      @Observable
-    #endif
-  #endif
-  public class AnyForwardingRule {
+  @Model public class AnyForwardingRule {
 
     /// A boolean value determinse whether the forwardingRule is enabled.
     public var isEnabled = true

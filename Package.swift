@@ -221,6 +221,7 @@ let package = Package(
       name: "NetbotProfile",
       dependencies: [
         "CoWOptimization",
+        "NetbotSQL",
         .product(name: "HTTPTypes", package: "swift-http-types"),
         .product(name: "Logging", package: "swift-log"),
       ],

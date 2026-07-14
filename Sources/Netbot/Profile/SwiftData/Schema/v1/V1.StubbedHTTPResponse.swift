@@ -19,25 +19,20 @@ import HTTPTypes
   import Foundation
 #endif
 
-#if canImport(SwiftData)
-  import SwiftData
+#if canImport(Darwin) || swift(>=6.3)
+  import Observation
 #endif
 
-#if swift(>=6.3)
-  import Observation
+#if canImport(SwiftData)
+  import SwiftData
+#else
+  import NetbotSQL
 #endif
 
 @available(SwiftStdlib 6.0, *)
 extension V1 {
 
-  #if canImport(SwiftData)
-    @Model
-  #else
-    #if swift(>=6.3)
-      @Observable
-    #endif
-  #endif
-  public class StubbedHTTPResponse {
+  @Model public class StubbedHTTPResponse {
 
     /// A boolean value determinse whether this rule is enabled or disabled.
     public var isEnabled = true
