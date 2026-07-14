@@ -39,7 +39,7 @@ public actor ProfileAssistant {
 
     /// Default model container for `Profile`.
     private static var modelContainer: ModelContainer {
-      let schema: Schema = Schema(versionedSchema: _VersionedSchema.self)
+      let schema: Schema = Schema(versionedSchema: V1.self)
       let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
       let modelContainer = try! ModelContainer(for: schema, configurations: [configuration])
       return modelContainer

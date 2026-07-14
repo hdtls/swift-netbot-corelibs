@@ -31,7 +31,7 @@ let __dir = UUID()
 @available(SwiftStdlib 6.0, *)
 func withManagedProfile(body: (ProfileAssistant) async throws -> Void) async throws {
   #if canImport(SwiftData)
-    let schema: Schema = Schema(versionedSchema: _VersionedSchema.self)
+    let schema: Schema = Schema(versionedSchema: NetbotProfile.V1.self)
     let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
     let modelContainer = try ModelContainer(for: schema, configurations: configuration)
     let profileAssistant = ProfileAssistant(modelContainer: modelContainer)
