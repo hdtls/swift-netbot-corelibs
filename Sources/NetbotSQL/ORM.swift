@@ -19,6 +19,7 @@
   #if canImport(Darwin)
     import Foundation
   #else
+    @available(SwiftStdlib 6.0, *)
     open class ValueTransformer {
       public init?() {}
 
@@ -40,8 +41,103 @@
     }
   #endif
 
-  public class Schema {}
+  #if canImport(Darwin) || swift(>=6.3)
+    @available(SwiftStdlib 6.0, *)
+    public protocol PersistentModel: AnyObject, Observable, Hashable, Identifiable, SendableMetatype
+    {
+    }
+  #else
+    @available(SwiftStdlib 6.0, *)
+    public protocol PersistentModel: AnyObject, Hashable, Identifiable, SendableMetatype {
+    }
+  #endif
 
+  @available(SwiftStdlib 6.0, *)
+  extension PersistentModel {
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+      lhs.id == rhs.id
+    }
+
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(id)
+    }
+
+    public var id: ObjectIdentifier {
+      ObjectIdentifier(self)
+    }
+  }
+
+  @available(SwiftStdlib 6.0, *)
+  final public class Schema: Codable, Hashable {
+
+    final public let version: Schema.Version
+
+    public init() {
+      version = Version(1, 0, 0)
+    }
+
+    public init(version: Version = Version(1, 0, 0)) {
+      self.version = version
+    }
+
+    public convenience init(versionedSchema: any VersionedSchema.Type) {
+      self.init(version: versionedSchema.versionIdentifier)
+    }
+
+    public static func == (lhs: Schema, rhs: Schema) -> Bool {
+      lhs.version == rhs.version
+    }
+
+    final public func hash(into hasher: inout Hasher) {
+      hasher.combine(version)
+    }
+
+    public struct Version: Codable, Comparable, CustomStringConvertible, Hashable {
+
+      /// The major version according to the semantic versioning standard.
+      public let major: Int
+
+      /// The minor version according to the semantic versioning standard.
+      public let minor: Int
+
+      /// The patch version according to the semantic versioning standard.
+      public let patch: Int
+
+      /// Initializes a version struct with the provided components of a semantic version.
+      ///
+      /// - Parameters:
+      ///   - major: The major version number.
+      ///   - minor: The minor version number.
+      ///   - patch: The patch version number.
+      ///
+      /// - Precondition: `major >= 0 && minor >= 0 && patch >= 0`.
+      public init(_ major: Int, _ minor: Int, _ patch: Int) {
+        precondition(major >= 0 && minor >= 0 && patch >= 0)
+        self.major = major
+        self.minor = minor
+        self.patch = patch
+      }
+
+      /// Returns a Boolean value indicating whether the value of the first
+      /// argument is less than that of the second argument.
+      ///
+      /// The precedence is determined according to rules described in the [Semantic Versioning 2.0.0](https://semver.org) standard, paragraph 11.
+      ///
+      /// - Parameters:
+      ///   - lhs: A value to compare.
+      ///   - rhs: Another value to compare.
+      public static func < (lhs: Schema.Version, rhs: Schema.Version) -> Bool {
+        false
+      }
+
+      /// A textual description of the version object.
+      public var description: String { "\(major).\(minor).\(patch)" }
+    }
+
+  }
+
+  @available(SwiftStdlib 6.0, *)
   extension Schema {
 
     /// An object that describes the configuration and behavior of a specific property of a model class.
@@ -104,37 +200,62 @@
     }
   }
 
-  @attached(peer) public macro Attribute(
+  /// An interface for describing a specific version of a schema, including the models it contains.
+  @available(SwiftStdlib 6.0, *)
+  public protocol VersionedSchema: SendableMetatype {
+
+    /// The models to include in this version of the schema.
+    static var models: [any PersistentModel.Type] { get }
+
+    /// The textual description of the migration’s version or purpose.
+    static var versionIdentifier: Schema.Version { get }
+  }
+
+  @available(SwiftStdlib 6.0, *)
+  @attached(peer)
+  public macro Attribute(
     _ options: Schema.Attribute.Option..., originalName: String? = nil,
     hashModifier: String? = nil
   ) = #externalMacro(module: "NetbotSQLMacros", type: "AttributePropertyMacro")
 
   #if canImport(Darwin) || swift(>=6.3)
+    @available(SwiftStdlib 6.0, *)
     @attached(
-      member, conformances: Observable, Sendable, names: named(_$observationRegistrar),
-      named(access),
-      named(withMutation), named(shouldNotifyObservers))
+      member,
+      conformances: Observable, PersistentModel, Sendable,
+      names: named(_$observationRegistrar), named(access), named(withMutation),
+      named(shouldNotifyObservers)
+    )
     @attached(memberAttribute)
-    @attached(extension, conformances: Observable, Sendable)
+    @attached(extension, conformances: Observable, PersistentModel, Sendable)
     public macro Model() = #externalMacro(module: "NetbotSQLMacros", type: "PersistentModelMacro")
   #else
-    @attached(extension, conformances: Sendable)
+    @available(SwiftStdlib 6.0, *)
+    @attached(extension, conformances: PersistentModel, Sendable)
     public macro Model() = #externalMacro(module: "NetbotSQLMacros", type: "PersistentModelMacro")
   #endif
 
-  @attached(peer) public macro Relationship(
+  @available(SwiftStdlib 6.0, *)
+  @attached(peer)
+  public macro Relationship(
     _ options: Schema.Relationship.Option...,
     deleteRule: Schema.Relationship.DeleteRule = .nullify,
     minimumModelCount: Int? = 0, maximumModelCount: Int? = 0, originalName: String? = nil,
     inverse: AnyKeyPath? = nil, hashModifier: String? = nil
   ) = #externalMacro(module: "NetbotSQLMacros", type: "RelationshipPropertyMacro")
 
-  @freestanding(declaration) public macro Index<T>(_ indices: Schema.Index<T>.Types<T>...) =
+  @available(SwiftStdlib 6.0, *)
+  @freestanding(declaration)
+  public macro Index<T>(_ indices: Schema.Index<T>.Types<T>...) =
     #externalMacro(module: "NetbotSQLMacros", type: "IndexMacro")
 
-  @freestanding(declaration) public macro Index<T>(_ indices: [PartialKeyPath<T>]...) =
+  @available(SwiftStdlib 6.0, *)
+  @freestanding(declaration)
+  public macro Index<T>(_ indices: [PartialKeyPath<T>]...) =
     #externalMacro(module: "NetbotSQLMacros", type: "IndexMacro")
 
-  @freestanding(declaration) public macro Unique<T>(_ constraints: [PartialKeyPath<T>]...) =
+  @available(SwiftStdlib 6.0, *)
+  @freestanding(declaration)
+  public macro Unique<T>(_ constraints: [PartialKeyPath<T>]...) =
     #externalMacro(module: "NetbotSQLMacros", type: "UniqueConstraintsMacro")
 #endif

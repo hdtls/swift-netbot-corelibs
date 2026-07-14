@@ -11,29 +11,31 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+#if canImport(SwiftData)
+  import SwiftData
+#else
+  import NetbotSQL
+#endif
+
 @available(SwiftStdlib 6.0, *)
 public enum V1 {}
 
-#if canImport(SwiftData)
-  import SwiftData
-
-  @available(SwiftStdlib 6.0, *)
-  extension V1: VersionedSchema {
-    public static var models: [any PersistentModel.Type] {
-      [
-        Profile.self,
-        AnyProxy.self,
-        AnyProxyGroup.self,
-        AnyForwardingRule.self,
-        ProtocolDNS.Mapping.self,
-        HTTPFieldsRewrite.self,
-        StubbedHTTPResponse.self,
-        URLRewrite.self,
-      ]
-    }
-
-    public static var versionIdentifier: Schema.Version {
-      .init(1, 0, 0)
-    }
+@available(SwiftStdlib 6.0, *)
+extension V1: VersionedSchema {
+  public static var models: [any PersistentModel.Type] {
+    [
+      V1.Profile.self,
+      V1.AnyProxy.self,
+      V1.AnyProxyGroup.self,
+      V1.AnyForwardingRule.self,
+      V1.ProtocolDNS.Mapping.self,
+      V1.HTTPFieldsRewrite.self,
+      V1.StubbedHTTPResponse.self,
+      V1.URLRewrite.self,
+    ]
   }
-#endif
+
+  public static var versionIdentifier: Schema.Version {
+    .init(1, 0, 0)
+  }
+}

@@ -62,6 +62,9 @@
                 }
               }
 
+              extension Contact: nonisolated NetbotSQL.PersistentModel {
+              }
+
               extension Contact: nonisolated Observation.Observable {
               }
 
@@ -84,6 +87,9 @@
               class Contact {
                 var givenName: String
                 var familyName: String
+              }
+
+              extension Contact: nonisolated NetbotSQL.PersistentModel {
               }
 
               @available(swift, deprecated: 5.9, message: "PersistentModels are not Sendable, consider utilizing a ModelActor or use Contact's persistentModelID instead")

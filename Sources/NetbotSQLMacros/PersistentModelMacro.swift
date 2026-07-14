@@ -106,21 +106,33 @@
       in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [SwiftSyntax.ExtensionDeclSyntax] {
 
-      let sendability: DeclSyntax = """
+      let sendable: DeclSyntax = """
         @available(swift, deprecated: 5.9, message: "PersistentModels are not Sendable, consider utilizing a ModelActor or use \(raw: type.trimmedDescription)'s persistentModelID instead")
         @available(*, unavailable, message: "PersistentModels are not Sendable, consider utilizing a ModelActor or use \(raw: type.trimmedDescription)'s persistentModelID instead")
         extension \(raw: type.trimmedDescription): Sendable {
         }
         """
+
+      let persistentModel: DeclSyntax = """
+        extension \(raw: type.trimmedDescription): nonisolated NetbotSQL.PersistentModel {
+        }
+        """
+
       #if canImport(Darwin) || swift(>=6.3)
-        let decl: DeclSyntax = """
+        let observable: DeclSyntax = """
           extension \(raw: type.trimmedDescription): nonisolated Observation.Observable {
           }
           """
-        let ext = decl.cast(ExtensionDeclSyntax.self)
-        return [ext, sendability.cast(ExtensionDeclSyntax.self)]
+        return [
+          persistentModel.cast(ExtensionDeclSyntax.self),
+          observable.cast(ExtensionDeclSyntax.self),
+          sendable.cast(ExtensionDeclSyntax.self),
+        ]
       #else
-        return [sendability.cast(ExtensionDeclSyntax.self)]
+        return [
+          persistentModel.cast(ExtensionDeclSyntax.self),
+          sendable.cast(ExtensionDeclSyntax.self),
+        ]
       #endif
     }
   }
