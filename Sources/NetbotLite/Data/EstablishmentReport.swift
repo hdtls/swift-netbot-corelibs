@@ -110,7 +110,7 @@ public struct EstablishmentReport: Codable, Hashable, Sendable {
     ///   - successfulEndpoint: The endpoint that ultimately resulted in a successful connection.
     ///   - preferredEndpoint: The first endpoint selected for connection attempts.
     ///   - dnsProtocol: The DNS protocol used during resolution.
-    public init(
+    package init(
       source: Source,
       duration: Duration,
       endpointCount: Int,

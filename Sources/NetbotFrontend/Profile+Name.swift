@@ -21,7 +21,7 @@ import NetbotProfile
 
 @available(SwiftStdlib 6.0, *)
 extension Profile {
-  public var name: String {
+  package var name: String {
     url.deletingPathExtension().lastPathComponent
   }
 }
@@ -29,7 +29,7 @@ extension Profile {
 #if canImport(SwiftData)
   @available(SwiftStdlib 6.0, *)
   extension Profile.Model {
-    public var name: String {
+    package var name: String {
       url.deletingPathExtension().lastPathComponent
     }
   }

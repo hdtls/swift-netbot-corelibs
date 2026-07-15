@@ -182,7 +182,7 @@ extension DataTransferReport.PathReport {
 @available(SwiftStdlib 6.0, *)
 extension DataTransferReport.PathReport {
 
-  public static func &+ (lhs: DataTransferReport.PathReport, rhs: DataTransferReport.PathReport)
+  package static func &+ (lhs: DataTransferReport.PathReport, rhs: DataTransferReport.PathReport)
     -> DataTransferReport.PathReport
   {
     DataTransferReport.PathReport(
@@ -205,7 +205,7 @@ extension DataTransferReport.PathReport {
     )
   }
 
-  public static func &- (lhs: DataTransferReport.PathReport, rhs: DataTransferReport.PathReport)
+  package static func &- (lhs: DataTransferReport.PathReport, rhs: DataTransferReport.PathReport)
     -> DataTransferReport.PathReport
   {
     DataTransferReport.PathReport(
@@ -228,13 +228,13 @@ extension DataTransferReport.PathReport {
     )
   }
 
-  public static func &+= (
+  package static func &+= (
     lhs: inout DataTransferReport.PathReport, rhs: DataTransferReport.PathReport
   ) {
     lhs = lhs &+ rhs
   }
 
-  public static func &-= (
+  package static func &-= (
     lhs: inout DataTransferReport.PathReport, rhs: DataTransferReport.PathReport
   ) {
     lhs = lhs &- rhs
