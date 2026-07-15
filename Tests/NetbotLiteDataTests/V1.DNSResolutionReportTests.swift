@@ -61,11 +61,11 @@ import Testing
     report.mergeValues(data)
 
     #expect(report.earliestBeginDate == earliestBeginDate)
-    #expect(report.duration.seconds == 12.5)
+    #expect(report.duration == .seconds(12.5))
     #expect(report.resolutions.count == 2)
 
     let first = report.resolutions[0]
-    #expect(first.duration.seconds == 3.5)
+    #expect(first.duration == .seconds(3.5))
     #expect(first.source == .query)
     #expect(first.dnsProtocol == .udp)
     #expect(
@@ -75,7 +75,7 @@ import Testing
       ])
 
     let second = report.resolutions[1]
-    #expect(second.duration.seconds == 4.75)
+    #expect(second.duration == .seconds(4.75))
     #expect(second.source == .cache)
     #expect(second.dnsProtocol == .tcp)
     #expect(

@@ -50,7 +50,7 @@ import Testing
     )
 
     #expect(resolution.endpointCount == 2)
-    #expect(resolution.duration.seconds == 1.25)
+    #expect(resolution.duration == .seconds(1.25))
     #expect(resolution.endpoints == addresses)
   }
 
@@ -90,7 +90,7 @@ import Testing
     #expect(decoded.resolutions.count == report.resolutions.count)
 
     for (original, decodedResolution) in zip(report.resolutions, decoded.resolutions) {
-      #expect(decodedResolution.duration.seconds == original.duration.seconds)
+      #expect(decodedResolution.duration == original.duration)
       #expect(decodedResolution.source == original.source)
       #expect(decodedResolution.dnsProtocol == original.dnsProtocol)
       #expect(decodedResolution.endpoints == original.endpoints)
@@ -123,11 +123,11 @@ import Testing
 
     let report = DNSResolutionReport(persistentModel: persistent)
 
-    #expect(report.duration.seconds == 12.5)
+    #expect(report.duration == .seconds(12.5))
     #expect(report.resolutions.count == 2)
 
     let first = report.resolutions[0]
-    #expect(first.duration.seconds == 3.5)
+    #expect(first.duration == .seconds(3.5))
     #expect(first.source == .query)
     #expect(first.dnsProtocol == .udp)
     #expect(
@@ -137,7 +137,7 @@ import Testing
       ])
 
     let second = report.resolutions[1]
-    #expect(second.duration.seconds == 4.75)
+    #expect(second.duration == .seconds(4.75))
     #expect(second.source == .cache)
     #expect(second.dnsProtocol == .tcp)
     #expect(

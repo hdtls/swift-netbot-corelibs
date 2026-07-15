@@ -112,7 +112,7 @@ extension Connection {
 
       span.updateAttributes { attributes in
         attributes["establishment.use_proxy"] = metrics?.usedProxy
-        attributes["establishment.duration"] = metrics?.duration.seconds
+        attributes["establishment.duration"] = metrics?.duration.description
         attributes["establishment.resolutions"] = metrics?.resolutions.count
       }
       span.setStatus(.init(code: .ok))
@@ -335,7 +335,7 @@ extension Connection {
 
       span.updateAttributes { attributes in
         attributes["dns.query.earliest_begin_date"] = metrics?.earliestBeginDate.formatted()
-        attributes["dns.query.duration"] = metrics?.duration.seconds
+        attributes["dns.query.duration"] = metrics?.duration.description
         attributes["dns.query.resolutions"] = metrics?.resolutions.count
       }
       span.setStatus(.init(code: .ok))
@@ -374,7 +374,7 @@ extension Connection {
 
       span.updateAttributes { attributes in
         attributes["rule.lookup.earliest_begin_date"] = metrics?.earliestBeginDate.formatted()
-        attributes["rule.lookup.duration"] = metrics?.duration.seconds
+        attributes["rule.lookup.duration"] = metrics?.duration.description
         attributes["rule.forward_protocol"] = metrics?.forwardProtocol
         attributes["rule.description"] = metrics?.forwardingRule
       }
@@ -453,7 +453,7 @@ extension Connection {
 
       span.updateAttributes { attributes in
         attributes["forwarder.lookup.earliest_begin_date"] = earliestBeginDate.formatted()
-        attributes["forwarder.lookup.duration"] = metrics?.duration.seconds
+        attributes["forwarder.lookup.duration"] = metrics?.duration.description
         attributes["forwarder.protocol"] = metrics.asForwardProtocol().name
       }
       span.setStatus(.init(code: .ok))
