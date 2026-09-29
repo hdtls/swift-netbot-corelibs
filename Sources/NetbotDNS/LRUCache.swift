@@ -14,7 +14,7 @@
 import Synchronization
 
 @available(SwiftStdlib 6.0, *)
-final public class LRUCache<Key, Value> where Key: Hashable & Sendable, Value: Sendable {
+final package class LRUCache<Key, Value> where Key: Hashable & Sendable, Value: Sendable {
 
   private let _represention: Mutex<[Key: Node]>
   private var head: Node?
