@@ -16,12 +16,6 @@
   import Logging
   import UserNotifications
 
-  #if canImport(AppKit)
-    import AppKit
-  #elseif canImport(UIKit)
-    import UIKit
-  #endif
-
   @available(SwiftStdlib 6.0, *)
   private enum UserNotificationError: Error {
     case denied
@@ -62,18 +56,6 @@
           "perform user notification failure with error: \(error.localizedDescription)"
         )
       }
-    }
-  }
-
-  @available(SwiftStdlib 6.0, *)
-  extension Notification.Name {
-
-    internal static var applicationWillTerminate: Notification.Name {
-      #if os(iOS)
-        return UIApplication.willTerminateNotification
-      #else
-        return NSApplication.willTerminateNotification
-      #endif
     }
   }
 #endif
