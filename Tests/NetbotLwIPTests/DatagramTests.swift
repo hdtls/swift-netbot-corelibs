@@ -15,7 +15,7 @@ import NEAddressProcessing
 import NIOCore
 import Testing
 
-@testable import Netbot
+@testable import NetbotLwIP
 
 @Suite struct DatagramTests {
 

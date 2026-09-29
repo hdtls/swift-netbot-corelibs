@@ -88,7 +88,6 @@ let package = Package(
         "NetbotProfile",
         "NetbotXPC",
         "SynchronizationExtras",
-        .target(name: "CNELwIP", condition: .when(platforms: [.macOS])),
         .product(name: "MaxMindDB", package: "swift-maxminddb"),
         .product(name: "Preference", package: "swift-preference"),
         .product(name: "X509", package: "swift-certificates"),
@@ -181,6 +180,22 @@ let package = Package(
       exclude: ["Data"]
     ),
     .target(
+      name: "NetbotLwIP",
+      dependencies: [
+        "NetbotDNS",
+        "NetbotNIO",
+        "NetbotLite",
+        "SynchronizationExtras",
+        .target(name: "CNELwIP", condition: .when(platforms: [.macOS])),
+        .product(name: "Logging", package: "swift-log"),
+        .product(name: "NIOCore", package: "swift-nio"),
+        .product(name: "NIOPosix", package: "swift-nio"),
+        .product(name: "NESOCKS", package: "swift-netbot-protoimpl"),
+        .product(name: "NIOExtras", package: "swift-nio-extras"),
+        .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
+      ]
+    ),
+    .target(
       name: "NetbotLiteData",
       dependencies: [
         "NetbotDNS",
@@ -252,6 +267,8 @@ let package = Package(
     .testTarget(name: "NetbotFrontendTests", dependencies: ["NetbotFrontend"]),
     .testTarget(name: "NetbotLiteDataTests", dependencies: ["NetbotLiteData"]),
     .testTarget(name: "NetbotLiteTests", dependencies: ["NetbotLite"]),
+    .testTarget(name: "NetbotLwIPTests", dependencies: ["NetbotLwIP"]),
+    .testTarget(name: "NetbotNIOTests", dependencies: ["NetbotNIO"]),
     .testTarget(name: "NetbotProfileTests", dependencies: ["NetbotProfile"]),
     .testTarget(
       name: "NetbotTests",

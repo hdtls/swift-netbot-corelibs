@@ -14,7 +14,7 @@
 import NIOCore
 import Testing
 
-@testable import Netbot
+@testable import NetbotNIO
 
 struct ByteBufferShimsTests {
 

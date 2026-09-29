@@ -14,6 +14,7 @@
 #if SWTNE_REQUIRES_LWIP
   import CNELwIP
   import NIOCore
+  import NetbotNIO
 
   @available(SwiftStdlib 6.0, *)
   final class LwIPConnection: BaseSocketChannel<Socket>, @unchecked Sendable {

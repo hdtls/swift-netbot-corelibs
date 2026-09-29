@@ -29,9 +29,7 @@ final class ProcessResolver: ProcessReporting {
 
   private let assistantd: any _ProcessInspector
 
-  static let shared = ProcessResolver()
-
-  private convenience init() {
+  convenience init() {
     #if os(macOS)
       self.init(backing: PHTSession.shared)
     #else

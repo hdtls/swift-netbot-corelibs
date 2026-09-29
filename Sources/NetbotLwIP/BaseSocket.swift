@@ -49,7 +49,7 @@
     /// - Throws: An `IOError` if the retrieval of the address failed.
     final func localAddress() throws -> SocketAddress {
       let port = self.descriptor.pointee.local_port
-      let host = try LwIP.inet_ntoa(self.descriptor.pointee.local_ip)
+      let host = try AnalyzeIPBot.inet_ntoa(self.descriptor.pointee.local_ip)
       return try SocketAddress(ipAddress: host, port: Int(port))
     }
 
@@ -59,7 +59,7 @@
     /// - Throws: An `IOError` if the retrieval of the address failed.
     final func remoteAddress() throws -> SocketAddress {
       let port = self.descriptor.pointee.remote_port
-      let host = try LwIP.inet_ntoa(self.descriptor.pointee.remote_ip)
+      let host = try AnalyzeIPBot.inet_ntoa(self.descriptor.pointee.remote_ip)
       return try SocketAddress(ipAddress: host, port: Int(port))
     }
 
@@ -69,7 +69,7 @@
       }
 
       var ipaddr: ip_addr_t = ip_addr_any
-      try LwIP.inet_aton(host, &ipaddr)
+      try AnalyzeIPBot.inet_aton(host, &ipaddr)
       let errno = err_to_errno(tcp_bind(descriptor, &ipaddr, UInt16(port)))
       if errno != 0 {
         throw IOError(errnoCode: errno, reason: #function)

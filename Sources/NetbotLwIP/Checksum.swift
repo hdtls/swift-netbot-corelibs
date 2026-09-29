@@ -13,6 +13,7 @@
 
 import NEAddressProcessing
 import NIOCore
+import NetbotNIO
 
 @available(SwiftStdlib 6.0, *)
 func _chksum(_ data: ByteBuffer, zeroization: Bool = false, offset: Int = 10) -> UInt16 {

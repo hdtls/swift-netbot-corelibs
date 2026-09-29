@@ -12,9 +12,10 @@
 // ===----------------------------------------------------------------------=== //
 
 import NIOCore
+import NetbotNIO
 
 @available(SwiftStdlib 6.0, *)
-public struct Datagram: Hashable, Sendable {
+struct Datagram: Hashable, Sendable {
 
   public typealias Data = ByteBuffer
 
@@ -64,11 +65,13 @@ public struct Datagram: Hashable, Sendable {
   /// The payload of the UDP packet.
   public var payload: Data? {
     get {
-      let startIndex = _storage.index(_storage.startIndex, offsetBy: MemoryLayout<UInt16>.size * 4)
+      let startIndex = _storage.index(
+        _storage.startIndex, offsetBy: MemoryLayout<UInt16>.size * 4)
       return _storage[startIndex...]
     }
     set {
-      let startIndex = _storage.index(_storage.startIndex, offsetBy: MemoryLayout<UInt16>.size * 4)
+      let startIndex = _storage.index(
+        _storage.startIndex, offsetBy: MemoryLayout<UInt16>.size * 4)
       if let newValue {
         _storage.replaceSubrange(startIndex..., with: newValue)
       } else {

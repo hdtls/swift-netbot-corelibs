@@ -14,6 +14,7 @@
 import Logging
 import NIOCore
 import NetbotDNS
+import NetbotNIO
 
 @available(SwiftStdlib 6.0, *)
 extension LocalDNSProxy {

@@ -31,7 +31,7 @@
   #endif
 
   @available(SwiftStdlib 6.0, *)
-  @Lockable final class LwIP: @unchecked Sendable {
+  @Lockable final public class AnalyzeIPBot: @unchecked Sendable {
 
     // swift-format-ignore: AlwaysUseLowerCamelCase
     static func inet_aton(_ cp: String, _ address: UnsafeMutablePointer<ip_addr_t>) throws {
@@ -63,8 +63,12 @@
 
     private var packetsReadLoop: Task<Void, any Error>? = nil
 
-    init(group: any EventLoopGroup = .default, packetFlow: any PacketTunnelFlow, dns: LocalDNSProxy)
-    {
+    @LockableTracked(accessors: .get)
+    public var addressTable: [Address: Address] = [:]
+
+    public init(
+      group: any EventLoopGroup = .default, packetFlow: any PacketTunnelFlow, dns: LocalDNSProxy
+    ) {
       let eventLoop = group.next()
       self.eventLoop = eventLoop
       self.group = group
@@ -79,13 +83,13 @@
 
       // Configure network interface in custom IP stack.
       var _ipaddr = ip_addr_any
-      try! LwIP.inet_aton("198.18.0.1", &_ipaddr)
+      try! AnalyzeIPBot.inet_aton("198.18.0.1", &_ipaddr)
 
       var _netmask = ip_addr_any
-      try! LwIP.inet_aton("255.254.0.0", &_netmask)
+      try! AnalyzeIPBot.inet_aton("255.254.0.0", &_netmask)
 
       var _gateway = ip_addr_any
-      try! LwIP.inet_aton("198.18.0.1", &_gateway)
+      try! AnalyzeIPBot.inet_aton("198.18.0.1", &_gateway)
 
       netif_add(
         self.device, &_ipaddr.u_addr.ip4, &_netmask.u_addr.ip4, &_gateway.u_addr.ip4,
@@ -103,7 +107,7 @@
               return ERR_IF
             }
 
-            let device = Unmanaged<LwIP>.fromOpaque(opaquePtr).takeUnretainedValue()
+            let device = Unmanaged<AnalyzeIPBot>.fromOpaque(opaquePtr).takeUnretainedValue()
 
             var byteBuffer = ByteBuffer()
             byteBuffer.writeWithUnsafeMutableBytes(minimumWritableBytes: Int(data.pointee.tot_len))
@@ -138,14 +142,14 @@
       self.device.deallocate()
     }
 
-    func run() async throws {
+    public func run() async throws {
       // FIXME: [#NoUseUnstructuredThrowingTask]
       _ = Task {
         try await run0()
       }
     }
 
-    func run0() async throws {
+    public func run0() async throws {
       let address = try SocketAddress(ipAddress: "0.0.0.0", port: 0)
 
       try await eventLoop.submit { netif_set_up(self.device) }.get()
@@ -160,7 +164,7 @@
       try await listener.closeFuture.get()
     }
 
-    func shutdownGracefully() async throws {
+    public func shutdownGracefully() async throws {
       quiescing.initiateShutdown(promise: nil)
       try await eventLoop.submit { netif_set_down(self.device) }.get()
       packetsReadLoop?.cancel()
@@ -279,13 +283,12 @@
               socks.configureSOCKSConnectionPipeline(destinationAddress: destinationAddress) {
                 socks.eventLoop.makeCompletedFuture {
                   try socks.pipeline.syncOperations.addHandler(AutoReplyResponse(tun.channel))
-                  guard let localAddress = socks.localAddress else {
+                  guard let localAddress = try? socks.localAddress?.asAddress() else {
                     throw ChannelError.unknownLocalAddress
                   }
-                  try ProcessResolver.shared.store(
-                    localAddress.asAddress(),
-                    to: .hostPort(host: "127.0.0.1", port: sourcePort)
-                  )
+                  self.$addressTable.withLock {
+                    $0[localAddress] = .hostPort(host: "127.0.0.1", port: sourcePort)
+                  }
                   return socks
                 }
               }
@@ -310,7 +313,7 @@
   }
 
   @available(SwiftStdlib 6.0, *)
-  extension LwIP {
+  extension AnalyzeIPBot {
     final private class AutoReplyResponse: ChannelInboundHandler, Sendable {
       typealias InboundIn = ByteBuffer
 

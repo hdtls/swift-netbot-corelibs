@@ -12,6 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 import NIOCore
+import NetbotNIO
 
 /// An `NEPacket` object represents the data, protocol family associated with an IP packet.
 @available(SwiftStdlib 6.0, *)

@@ -16,13 +16,13 @@ import NIOCore
 import NetbotDNS
 import NetbotLite
 import NetbotLiteData
+import NetbotNIO
 import Synchronization
 import Testing
 
-@testable import Netbot
+@testable import NetbotLwIP
 
-@Suite(.tags(.dns))
-struct LocalDNSProxyTests {
+@Suite struct LocalDNSProxyTests {
 
   @available(SwiftStdlib 6.0, *)
   final class MockTunnelFlow: PacketTunnelFlow {

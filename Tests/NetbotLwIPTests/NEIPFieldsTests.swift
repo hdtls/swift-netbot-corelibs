@@ -13,9 +13,10 @@
 
 import NEAddressProcessing
 import NIOCore
+import NetbotNIO
 import Testing
 
-@testable import Netbot
+@testable import NetbotLwIP
 
 @Suite struct NEIPFieldsTests {
 

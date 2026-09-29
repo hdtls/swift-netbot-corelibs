@@ -13,6 +13,7 @@
 
 import NEAddressProcessing
 import NIOCore
+import NetbotNIO
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

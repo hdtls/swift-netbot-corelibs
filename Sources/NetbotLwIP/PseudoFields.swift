@@ -16,7 +16,7 @@ import NIOCore
 
 /// Pseudo fields for datagram.
 @available(SwiftStdlib 6.0, *)
-public struct PseudoFields: Hashable, Sendable {
+struct PseudoFields: Hashable, Sendable {
 
   /// The IPv4 address of the sender of the packet.
   public var sourceAddress: IPv4Address

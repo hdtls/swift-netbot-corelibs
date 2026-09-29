@@ -42,13 +42,8 @@ import Synchronization
 @available(SwiftStdlib 6.0, *)
 public actor AnalyzeBot {
 
-  nonisolated private let dns: LocalDNSProxy
   nonisolated private let core: NetbotLite.AnalyzeBot
-
-  #if SWTNE_REQUIRES_LWIP
-    private var coreLwIP: LwIP?
-  #endif
-
+  nonisolated public let dns: LocalDNSProxy
   nonisolated public let group: any EventLoopGroup
   public var logger: Logger = Logger(label: "AnalyzeBot")
 
@@ -66,7 +61,8 @@ public actor AnalyzeBot {
       let toolVersion = try await PHTSession.shared.toolVersion()
       logger.trace("PHT version: \(toolVersion)")
 
-      await self.core.setProcessInfo(ProcessResolver.shared)
+      let processInfo = ProcessResolver()
+      await self.core.setProcessInfo(processInfo)
     #endif
 
     let publisher = ConnectionPulse(group: group, address: .hostPort(host: "127.0.0.1", port: 6170))
@@ -172,16 +168,4 @@ public actor AnalyzeBot {
       }
     }
   #endif
-
-  public func setLwIPEnabled(_ enabled: Bool, packetFlow: any PacketTunnelFlow) async throws {
-    #if SWTNE_REQUIRES_LWIP
-      if enabled {
-        self.coreLwIP = LwIP(group: group, packetFlow: packetFlow, dns: dns)
-        try await self.coreLwIP?.run()
-      } else {
-        try await self.coreLwIP?.shutdownGracefully()
-        self.coreLwIP = nil
-      }
-    #endif
-  }
 }
