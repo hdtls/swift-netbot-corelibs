@@ -12,6 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 import Logging
+import NEAddressProcessing
 import NIOCore
 import NIOSSL
 import NetbotNIO
@@ -100,10 +101,8 @@ import Testing
   @Test func initializer() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let bot = AnalyzeBot(group: group, logger: .init(label: ""))
-    #expect(bot.webProxyListenAddress == (try! SocketAddress(ipAddress: "127.0.0.1", port: 6152)))
-    #expect(
-      bot.socksProxyListenAddress == (try! SocketAddress(ipAddress: "127.0.0.1", port: 6153))
-    )
+    #expect(bot.webProxyListenAddress == .hostPort(host: "127.0.0.1", port: 6152))
+    #expect(bot.socksProxyListenAddress == .hostPort(host: "127.0.0.1", port: 1080))
     #expect(bot.outboundMode == .direct)
     #expect(bot.forwardProtocol.asForwardProtocol().name == "DIRECT")
     #expect(bot.forwardingRules.isEmpty)

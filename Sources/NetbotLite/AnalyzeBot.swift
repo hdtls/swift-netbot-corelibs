@@ -48,15 +48,15 @@ import Tracing
   /// Logger object used to log messages.
   public let logger: Logger
 
-  public typealias NetworkSettings = (SocketAddress, SocketAddress)
+  public typealias NetworkSettings = (Address, Address)
 
   /// Address of web proxy (HTTP/HTTPS) server will bind if present.
   @LockableTracked(accessors: .get)
-  public var webProxyListenAddress: SocketAddress
+  public var webProxyListenAddress: Address = .hostPort(host: "127.0.0.1", port: 6152)
 
   /// Address of SOCKS proxy server will bind if present.
   @LockableTracked(accessors: .get)
-  public var socksProxyListenAddress: SocketAddress
+  public var socksProxyListenAddress: Address = .hostPort(host: "127.0.0.1", port: 1080)
 
   /// The outbound mode control how requests will be process.
   @LockableTracked(accessors: .get)
@@ -102,16 +102,9 @@ import Tracing
   private let group: any EventLoopGroup
 
   /// Initialize an instance of `Netbot` with specified settings.
-  public init(
-    group: any EventLoopGroup,
-    logger: Logger,
-    webProxyListenAddress: SocketAddress = try! .init(ipAddress: "127.0.0.1", port: 6152),
-    socksProxyListenAddress: SocketAddress = try! .init(ipAddress: "127.0.0.1", port: 6153)
-  ) {
+  public init(group: any EventLoopGroup, logger: Logger) {
     self.group = group
     self.logger = logger
-    self.$webProxyListenAddress = .init(webProxyListenAddress)
-    self.$socksProxyListenAddress = .init(socksProxyListenAddress)
     self.$rulesEngine = .init(DefaultRulesEngine(logger: logger))
   }
 
@@ -252,7 +245,7 @@ import Tracing
   ///   - address: The server for VPN tunnel to bind.
   /// - Returns: Started VPN tunnel and server quiescing helper pair.
   private func startVPNTunnel<Child: Sendable>(
-    address: SocketAddress,
+    address: Address,
     childChannelInitializer: @escaping @Sendable (any Channel) -> EventLoopFuture<Child>,
     _ body: (NIOAsyncChannelInboundStream<Child>) async throws -> Void
   ) async throws {
@@ -269,7 +262,7 @@ import Tracing
         }
       }
       .childChannelOption(ChannelOptions.tcpOption(.tcp_nodelay), value: 1)
-      .bind(to: address, childChannelInitializer: childChannelInitializer)
+      .bind(to: address.asAddress(), childChannelInitializer: childChannelInitializer)
 
     try await withTaskCancellationHandler {
       try await withGracefulShutdownHandler {

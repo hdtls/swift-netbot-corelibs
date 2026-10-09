@@ -114,12 +114,14 @@ public actor AnalyzeBot {
 
     try await core.setTunnelNetworkSettings(
       (
-        SocketAddress(
-          ipAddress: proxySettings?.httpsServer?.address ?? "127.0.0.1",
-          port: proxySettings?.httpsServer?.port ?? 6152),
-        SocketAddress(
-          ipAddress: proxySettings?.socksServer?.address ?? "127.0.0.1",
-          port: proxySettings?.socksServer?.port ?? 6153)
+        .hostPort(
+          host: .init(proxySettings?.httpsServer?.address ?? "127.0.0.1"),
+          port: .init(rawValue: UInt16(proxySettings?.httpsServer?.port ?? 6152))
+        ),
+        .hostPort(
+          host: .init(proxySettings?.socksServer?.address ?? "127.0.0.1"),
+          port: .init(rawValue: UInt16(proxySettings?.socksServer?.port ?? 1080))
+        )
       )
     )
 
