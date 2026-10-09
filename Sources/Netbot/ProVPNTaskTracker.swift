@@ -35,7 +35,7 @@ import SynchronizationExtras
 #endif
 
 @available(SwiftStdlib 6.0, *)
-@Lockable final class ConnectionPulse: ConnectionPublisher, Sendable {
+@Lockable final public class ProVPNTaskTracker: CoreVPNTaskTracker, Sendable {
 
   private let group: any EventLoopGroup
   private let address: Address
@@ -50,13 +50,13 @@ import SynchronizationExtras
 
   private var requestTaskMap: [UInt64: Connection] = [:]
 
-  init(group: any EventLoopGroup, address: Address) {
+  public init(group: any EventLoopGroup, address: Address) {
     self.group = group
     self.address = address
   }
 
   #if canImport(Network)
-    func run() async throws {
+    public func run() async throws {
       let parameters = NWParameters.tcp
       parameters.requiredLocalEndpoint = try address.asEndpoint()
       let options = NWProtocolWebSocket.Options()
@@ -171,7 +171,7 @@ import SynchronizationExtras
       }
     }
   #else
-    func run() async throws {
+    public func run() async throws {
       let serverQuiescingHelper = ServerQuiescingHelper(group: group)
 
       let serverChannel = try await ServerBootstrap(group: group)
@@ -291,7 +291,7 @@ import SynchronizationExtras
     }
   #endif
 
-  func send(_ conn: Connection) async {
+  public func broadcast(_ conn: Connection) async {
     self.$requestTaskMap.withLock {
       $0[conn.taskIdentifier] = conn
     }

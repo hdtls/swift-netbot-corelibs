@@ -13,15 +13,15 @@
 
 import NetbotLiteData
 
-/// `ConnectionPublisher` prtocol define a service to transfer connections.
+/// `CoreVPNTaskTracker` prtocol define a service to broadcast all VPN task connections.
 @available(SwiftStdlib 6.0, *)
-public protocol ConnectionPublisher: Sendable {
+public protocol CoreVPNTaskTracker: Sendable {
 
-  func send(_ connection: Connection) async
+  func broadcast(_ task: Connection) async
 }
 
 @available(SwiftStdlib 6.0, *)
-struct DefaultConnectionPublisher: ConnectionPublisher {
-  func send(_ connection: Connection) async {
+struct DefaultVPNTaskTracker: CoreVPNTaskTracker {
+  func broadcast(_ task: Connection) async {
   }
 }

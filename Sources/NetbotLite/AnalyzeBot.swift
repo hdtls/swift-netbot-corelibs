@@ -87,9 +87,9 @@ import Tracing
   @LockableTracked(accessors: .get)
   public var processResolver: any ProcessResolver = DefaultProcessResolver()
 
-  /// A publisher publish connection states.
+  /// A tracker broadcast all VPN task states.
   @LockableTracked(accessors: .get)
-  public var connectionPublisher: any ConnectionPublisher = DefaultConnectionPublisher()
+  public var coreVPNTaskTracker: any CoreVPNTaskTracker = DefaultVPNTaskTracker()
 
   /// DNS names that allow HTTPS decryption.
   @LockableTracked(accessors: .get)
@@ -108,7 +108,7 @@ import Tracing
     self.$rulesEngine = .init(DefaultRulesEngine(logger: logger))
   }
 
-  /// Modify Web and SOCKS proxy settings.
+  /// Set current Web and SOCKS proxy settings to new `networkSettings`.
   public func setTunnelNetworkSettings(_ networkSettings: NetworkSettings) async throws {
     guard networkSettings.0 != webProxyListenAddress || networkSettings.1 != socksProxyListenAddress
     else {
@@ -119,47 +119,47 @@ import Tracing
     $socksProxyListenAddress.withLock { $0 = networkSettings.1 }
   }
 
-  /// Modify outbound mode.
+  /// Set current outbound mode to new `outboundMode`.
   public func setOutboundMode(_ outboundMode: OutboundMode) async {
     self.$outboundMode.withLock { $0 = outboundMode }
   }
 
-  /// Modify global forward protocol.
-  public func setForwardProtocol(_ newForwardProtocol: any ForwardProtocolConvertible) async {
-    self.$forwardProtocol.withLock { $0 = newForwardProtocol }
+  /// Set current global forward protocol to new `forwardProtocol`.
+  public func setForwardProtocol(_ forwardProtocol: any ForwardProtocolConvertible) async {
+    self.$forwardProtocol.withLock { $0 = forwardProtocol }
   }
 
-  /// Modify forwarding rules.
+  /// Set current forwarding rules to new `forwardingRules`.
   public func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) async {
     self.rulesEngine.setForwardingRules(forwardingRules)
   }
 
-  /// Modify enabled HTTP capabilities.
+  /// Set current enabled HTTP capabilities to new `enabledHTTPCapabilities`.
   public func setEnabledHTTPCapabilities(_ enabledHTTPCapabilities: CapabilityFlags) async {
     self.$capabilities.withLock { $0 = enabledHTTPCapabilities }
   }
 
-  /// Modify the DNS resolver.
+  /// Set current the DNS resolver to new `resolver`.
   public func setDNSResolver(_ resolver: some DNSResolver) async {
     self.$dnsResolver.withLock { $0 = resolver }
   }
 
-  /// Modify forwarding rules engine.
+  /// Set current forwarding rules engine to new `rulesEngine`.
   public func setRulesEngine(_ rulesEngine: some RulesEngine) async {
     self.$rulesEngine.withLock { $0 = rulesEngine }
   }
 
-  /// Modify default process resolver.
+  /// Set current default process resolver to new `resolver`.
   public func setProcessResolver(_ resolver: some ProcessResolver) async {
     self.$processResolver.withLock { $0 = resolver }
   }
 
-  /// Modify default connection publisher.
-  public func setConnectionPublisher(_ publisher: some ConnectionPublisher) async {
-    self.$connectionPublisher.withLock { $0 = publisher }
+  /// Set current VPN task tracker to new `tracker`.
+  public func setCoreVPNTaskTracker(_ tracker: some CoreVPNTaskTracker) async {
+    self.$coreVPNTaskTracker.withLock { $0 = tracker }
   }
 
-  /// Modify HTTPS decryption PKCS#12 bundle.
+  /// Set current HTTPS decryption PKCS#12 bundle to new `sslPKCS12Bundle`.
   public func setDecryptionSSLPKCS12Bundle(_ sslPKCS12Bundle: NIOSSLPKCS12Bundle?) async {
     guard sslPKCS12Bundle != self.decryptionSSLPKCS12Bundle else {
       return
@@ -316,7 +316,7 @@ import Tracing
         }
 
         // Publish session changes using connection publisher.
-        await session.publish(using: connectionPublisher)
+        await session.publish(using: coreVPNTaskTracker)
 
         // Update transport metrics.
         await session.transportMetrics(on: nil)

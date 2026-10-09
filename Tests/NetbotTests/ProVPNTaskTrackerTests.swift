@@ -27,7 +27,7 @@ import Testing
   import NIOPosix
 #endif
 
-struct ConnectionPublisherTests {
+struct ProVPNTaskTrackerTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func failedToRunIfAddressAlreadyInUsed() async throws {
@@ -38,11 +38,11 @@ struct ConnectionPublisherTests {
 
     #if canImport(Network)
       await #expect(throws: NWError.posix(.EADDRINUSE)) {
-        try await ConnectionPulse(group: .default, address: address).run()
+        try await ProVPNTaskTracker(group: .default, address: address).run()
       }
     #else
       await #expect(throws: IOError.self) {
-        try await ConnectionPulse(group: .default, address: address).run()
+        try await ProVPNTaskTracker(group: .default, address: address).run()
       }
     #endif
   }

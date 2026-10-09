@@ -464,7 +464,7 @@ extension Connection {
     }
   }
 
-  func publish(using publisher: any ConnectionPublisher) async {
+  func publish(using tracker: any CoreVPNTaskTracker) async {
     #if swift(>=6.3)
       @inline(always)
     #else
@@ -473,7 +473,7 @@ extension Connection {
     @Sendable func finish() async {
       // Reset the data transfer report metrics and publish changes.
       $dataTransferReport.withLock { $0?.pathReport = .init() }
-      await publisher.send(self)
+      await tracker.broadcast(self)
     }
 
     #if canImport(Darwin) || swift(>=6.3)
@@ -496,7 +496,7 @@ extension Connection {
             return .next(())
           }
           for await _ in observations {
-            await publisher.send(self)
+            await tracker.broadcast(self)
           }
           await finish()
         } else {
@@ -528,7 +528,7 @@ extension Connection {
             installTracking()
           }
           for await _ in observations {
-            await publisher.send(self)
+            await tracker.broadcast(self)
           }
           await finish()
         }

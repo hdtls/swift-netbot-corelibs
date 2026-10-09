@@ -57,21 +57,7 @@ public actor AnalyzeBot {
 
   /// Start analyze tunnel.
   public func run() async throws {
-    let publisher = ConnectionPulse(group: group, address: .hostPort(host: "127.0.0.1", port: 6170))
-    await self.core.setConnectionPublisher(publisher)
-    await self.core.setDNSResolver(dns)
-
-    try await withThrowingDiscardingTaskGroup { g in
-      g.addTask {
-        try await publisher.run()
-      }
-      g.addTask {
-        try await self.dns.run()
-      }
-      g.addTask {
-        try await self.core.run()
-      }
-    }
+    try await self.core.run()
   }
 
   public func setLogger(_ logger: Logger) async {
