@@ -183,7 +183,7 @@
         await delegate?.setOutboundMode(outboundMode)
         await delegate?.setEnabledHTTPCapabilities(enabledHTTPCapabilities)
         await delegate?.setForwardProtocol(profile.asForwardProtocol())
-        await delegate?.setDecryptionPKCS12Bundle(try? profile.asDecryptionPKCS12Bundle())
+        await delegate?.setDecryptionPKCS12Bundle(try? profile.decryptionSSLPKCS12Bundle)
         await delegate?.setForwardingRules(profile.asForwardingRules(maxminddb: maxminddb))
         try await delegate?.setTunnelNetworkSettings(
           profile.asTunnelNetworkSettings(mode: proxyMode))
@@ -198,7 +198,7 @@
               let profile = try await self.profile
               await delegate?.setForwardingRules(profile.asForwardingRules(maxminddb: maxminddb))
               await delegate?.setForwardProtocol(profile.asForwardProtocol())
-              await delegate?.setDecryptionPKCS12Bundle(try profile.asDecryptionPKCS12Bundle())
+              await delegate?.setDecryptionPKCS12Bundle(try profile.decryptionSSLPKCS12Bundle)
               try await delegate?.setTunnelNetworkSettings(
                 profile.asTunnelNetworkSettings(mode: mode))
             }
@@ -339,4 +339,29 @@
 
   @available(SwiftStdlib 6.0, *)
   extension CapabilityFlags: PreferenceRepresentable {}
+
+  @available(SwiftStdlib 6.0, *)
+  extension Profile {
+    fileprivate func asForwardingRules(defaults: UserDefaults? = .shared, maxminddb: MaxMindDB?)
+      -> [any ForwardingRuleConvertible]
+    {
+      var properties: [String: String] = [:]
+      let key = Prefs.Name.selectionRecordForGroups
+      if let data = defaults?.string(forKey: key)?.data(using: .utf8) {
+        properties = (try? JSONDecoder().decode([String: String].self, from: data)) ?? [:]
+      }
+      return makeForwardingRules(defaults: properties, maxminddb: maxminddb)
+    }
+
+    fileprivate func asForwardProtocol(defaults: UserDefaults? = .shared)
+      -> any ForwardProtocolConvertible
+    {
+      var properties: [String: String] = [:]
+      let key = Prefs.Name.selectionRecordForGroups
+      if let data = defaults?.string(forKey: key)?.data(using: .utf8) {
+        properties = (try? JSONDecoder().decode([String: String].self, from: data)) ?? [:]
+      }
+      return makeForwardProtocol(defaults: properties)
+    }
+  }
 #endif

@@ -24,7 +24,6 @@ import X509
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
-  import class Foundation.UserDefaults
 #else
   import Foundation
 #endif
@@ -110,7 +109,9 @@ extension Profile {
     return tunnelNetworkSettings
   }
 
-  func asForwardingRules(maxminddb: MaxMindDB?) -> [any ForwardingRuleConvertible] {
+  public func makeForwardingRules(defaults: [String: String], maxminddb: MaxMindDB?)
+    -> [any ForwardingRuleConvertible]
+  {
     var lazyProxies = self.lazyProxies
     lazyProxies.append(contentsOf: [
       AnyProxy(name: "DIRECT", source: .builtin, kind: .direct),
@@ -125,13 +126,7 @@ extension Profile {
 
       if proxy == nil {
         if let name = lazyProxyGroups.first(where: { $0.name == data.foreignKey })?.name {
-          // Resolve current selected proxy for this group.
-          var records: [String: String] = [:]
-          let key = Prefs.Name.selectionRecordForGroups
-          if let data = UserDefaults.shared?.string(forKey: key)?.data(using: .utf8) {
-            records = (try? JSONDecoder().decode([String: String].self, from: data)) ?? [:]
-          }
-          if let foreignKey = records[name] {
+          if let foreignKey = defaults[name] {
             proxy = lazyProxies.first { $0.name == foreignKey }
           }
         }
@@ -145,17 +140,10 @@ extension Profile {
     }
   }
 
-  func asForwardProtocol() -> any ForwardProtocolConvertible {
-    var records: [String: String] = [:]
-    let store = UserDefaults.shared
-    let key = Prefs.Name.selectionRecordForGroups
-    if let data = store?.string(forKey: key)?.data(using: .utf8) {
-      records = (try? JSONDecoder().decode([String: String].self, from: data)) ?? [:]
-    }
-
+  public func makeForwardProtocol(defaults: [String: String]) -> any ForwardProtocolConvertible {
     let fallback = AnyProxy(name: "DIRECT", source: .builtin, kind: .direct)
 
-    guard let name = records["Global Proxies"] else {
+    guard let name = defaults["Global Proxies"] else {
       return fallback.asForwardProtocol()
     }
 
@@ -174,7 +162,7 @@ extension Profile {
       return fallback.asForwardProtocol()
     }
 
-    guard let name = records[lazyProxyGroup.name],
+    guard let name = defaults[lazyProxyGroup.name],
       let lazyProxy = lazyProxies.first(where: { $0.name == name })
     else {
       return fallback.asForwardProtocol()
@@ -182,62 +170,64 @@ extension Profile {
     return lazyProxy.asForwardProtocol()
   }
 
-  func asDecryptionPKCS12Bundle() throws -> NIOSSLPKCS12Bundle? {
-    // Step 1: Decode and extract CA cert & key
-    guard let data = Data(base64Encoded: base64EncodedP12String) else {
-      return nil
+  public var decryptionSSLPKCS12Bundle: NIOSSLPKCS12Bundle? {
+    get throws {
+      // Step 1: Decode and extract CA cert & key
+      guard let data = Data(base64Encoded: base64EncodedP12String) else {
+        return nil
+      }
+
+      let p12 = try NIOSSLPKCS12Bundle(buffer: Array(data), passphrase: passphrase.utf8)
+      guard let caCert = p12.certificateChain.first else {
+        return nil
+      }
+      let caPKey = p12.privateKey
+
+      // Step 2: Extract CA subject (issuer DN)
+      let issuer = try Certificate(derEncoded: caCert.toDERBytes()).subject
+
+      // Step 3: Extract CA private key
+      let caPrivateKey = try Certificate.PrivateKey(
+        _RSA.Signing.PrivateKey(derRepresentation: caPKey.derBytes)
+      )
+
+      // Step 4: Generate leaf key and leaf cert (signed by CA)
+      let leafPrivateKey = try _RSA.Signing.PrivateKey(keySize: .bits2048)
+      let subject = try DistinguishedName { CommonName("*") }
+      let extensions = try Certificate.Extensions {
+        SubjectAlternativeNames(hostnames.map { .dnsName($0) })
+      }
+
+      let notValidBefore = Date.now
+
+      let leafCert = try Certificate(
+        version: .v3,
+        serialNumber: .init(),
+        publicKey: .init(leafPrivateKey.publicKey),
+        notValidBefore: notValidBefore,
+        notValidAfter: notValidBefore.addingTimeInterval(60 * 60 * 24 * 30),
+        issuer: issuer,
+        subject: subject,
+        signatureAlgorithm: .sha256WithRSAEncryption,
+        extensions: extensions,
+        issuerPrivateKey: caPrivateKey
+      )
+      var leafSerializer = DER.Serializer()
+      try leafSerializer.serialize(leafCert)
+
+      // Step 5: Return PKCS12 bundle with chain [leaf], private key = leaf
+      return try NIOSSLPKCS12Bundle(
+        certificateChain: [NIOSSLCertificate(bytes: leafSerializer.serializedBytes, format: .der)],
+        privateKey: .init(bytes: Array(leafPrivateKey.derRepresentation), format: .der)
+      )
     }
-
-    let p12 = try NIOSSLPKCS12Bundle(buffer: Array(data), passphrase: passphrase.utf8)
-    guard let caCert = p12.certificateChain.first else {
-      return nil
-    }
-    let caPKey = p12.privateKey
-
-    // Step 2: Extract CA subject (issuer DN)
-    let issuer = try Certificate(derEncoded: caCert.toDERBytes()).subject
-
-    // Step 3: Extract CA private key
-    let caPrivateKey = try Certificate.PrivateKey(
-      _RSA.Signing.PrivateKey(derRepresentation: caPKey.derBytes)
-    )
-
-    // Step 4: Generate leaf key and leaf cert (signed by CA)
-    let leafPrivateKey = try _RSA.Signing.PrivateKey(keySize: .bits2048)
-    let subject = try DistinguishedName { CommonName("*") }
-    let extensions = try Certificate.Extensions {
-      SubjectAlternativeNames(hostnames.map { .dnsName($0) })
-    }
-
-    let notValidBefore = Date.now
-
-    let leafCert = try Certificate(
-      version: .v3,
-      serialNumber: .init(),
-      publicKey: .init(leafPrivateKey.publicKey),
-      notValidBefore: notValidBefore,
-      notValidAfter: notValidBefore.addingTimeInterval(60 * 60 * 24 * 30),
-      issuer: issuer,
-      subject: subject,
-      signatureAlgorithm: .sha256WithRSAEncryption,
-      extensions: extensions,
-      issuerPrivateKey: caPrivateKey
-    )
-    var leafSerializer = DER.Serializer()
-    try leafSerializer.serialize(leafCert)
-
-    // Step 5: Return PKCS12 bundle with chain [leaf], private key = leaf
-    return try NIOSSLPKCS12Bundle(
-      certificateChain: [NIOSSLCertificate(bytes: leafSerializer.serializedBytes, format: .der)],
-      privateKey: .init(bytes: Array(leafPrivateKey.derRepresentation), format: .der)
-    )
   }
 }
 
 @available(SwiftStdlib 6.0, *)
 extension AnyProxy {
 
-  func asForwardProtocol() -> any ForwardProtocolConvertible {
+  fileprivate func asForwardProtocol() -> any ForwardProtocolConvertible {
     let forwardProtocol: any ForwardProtocolConvertible
     switch kind {
     case .direct:
@@ -313,7 +303,7 @@ extension AnyProxy {
 @available(SwiftStdlib 6.0, *)
 extension AnyForwardingRule {
 
-  func asForwardingRule(
+  fileprivate func asForwardingRule(
     maxminddb: MaxMindDB?,
     forwardProtocol `protocol`: any ForwardProtocolConvertible
   ) -> any ForwardingRuleConvertible {
