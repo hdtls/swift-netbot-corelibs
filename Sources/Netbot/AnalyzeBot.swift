@@ -57,17 +57,9 @@ public actor AnalyzeBot {
 
   /// Start analyze tunnel.
   public func run() async throws {
-    #if os(macOS)
-      let toolVersion = try await PHTSession.shared.toolVersion()
-      logger.trace("PHT version: \(toolVersion)")
-
-      let processInfo = ProcessResolver()
-      await self.core.setProcessInfo(processInfo)
-    #endif
-
     let publisher = ConnectionPulse(group: group, address: .hostPort(host: "127.0.0.1", port: 6170))
     await self.core.setConnectionPublisher(publisher)
-    await self.core.setResolver(dns)
+    await self.core.setDNSResolver(dns)
 
     try await withThrowingDiscardingTaskGroup { g in
       g.addTask {

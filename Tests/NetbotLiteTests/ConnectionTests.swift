@@ -32,17 +32,6 @@ import Testing
 @Suite struct ConnectionTests {
 
   @available(SwiftStdlib 6.0, *)
-  struct MockProcessReporting: ProcessReporting {
-    let processReportResult: Result<ProcessReport, any Error>
-
-    func processInfo(connection: NetbotLiteData.Connection) async throws
-      -> NetbotLiteData.ProcessReport
-    {
-      try processReportResult.get()
-    }
-  }
-
-  @available(SwiftStdlib 6.0, *)
   struct MockDNSResolver: DNSResolver {
 
     let eventLoop: any EventLoop
@@ -163,7 +152,7 @@ import Testing
     try await connection
       .processLookup(
         logger: .init(label: "test"),
-        proc: MockProcessReporting(processReportResult: .success(.init()))
+        processResolver: DefaultProcessResolver()
       )
     #expect(connection.processReport == nil)
 
@@ -173,7 +162,7 @@ import Testing
     try await connection
       .processLookup(
         logger: .init(label: "test"),
-        proc: MockProcessReporting(processReportResult: .success(.init()))
+        processResolver: DefaultProcessResolver()
       )
     #expect(connection.processReport != nil)
   }
@@ -493,8 +482,8 @@ import Testing
           logger: .init(label: "proto"),
           outboundMode: .direct,
           forwardProtocol: .direct,
-          proc: MockProcessReporting(processReportResult: .success(.init())),
-          resolver: MockDNSResolver(
+          processResolver: DefaultProcessResolver(),
+          dnsResolver: MockDNSResolver(
             eventLoop: eventLoop,
             v4Result: .failure(CancellationError()),
             v6Result: .success([])
@@ -528,6 +517,12 @@ import Testing
       }
     }
 
+    struct MockProgressResolver: ProcessResolver {
+      func processInfo(connection: Connection) async throws -> ProcessReport {
+        throw CancellationError()
+      }
+    }
+
     let group: any EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let eventLoop = group.next()
     let connection = Connection()
@@ -547,8 +542,8 @@ import Testing
           logger: .init(label: "proto"),
           outboundMode: .direct,
           forwardProtocol: .direct,
-          proc: MockProcessReporting(processReportResult: .failure(CancellationError())),
-          resolver: MockDNSResolver(
+          processResolver: MockProgressResolver(),
+          dnsResolver: MockDNSResolver(
             eventLoop: eventLoop,
             v4Result: .success([]),
             v6Result: .success([])
@@ -592,8 +587,8 @@ import Testing
         logger: .init(label: "proto"),
         outboundMode: .direct,
         forwardProtocol: .direct,
-        proc: MockProcessReporting(processReportResult: .success(.init())),
-        resolver: MockDNSResolver(
+        processResolver: DefaultProcessResolver(),
+        dnsResolver: MockDNSResolver(
           eventLoop: eventLoop,
           v4Result: .success([]),
           v6Result: .success([])
@@ -640,8 +635,8 @@ import Testing
         logger: .init(label: "proto"),
         outboundMode: .globalProxy,
         forwardProtocol: .rejectTinyGIF,
-        proc: MockProcessReporting(processReportResult: .success(.init())),
-        resolver: MockDNSResolver(
+        processResolver: DefaultProcessResolver(),
+        dnsResolver: MockDNSResolver(
           eventLoop: eventLoop,
           v4Result: .success([]),
           v6Result: .success([])
@@ -697,8 +692,8 @@ import Testing
         logger: .init(label: "proto"),
         outboundMode: .ruleBased,
         forwardProtocol: .direct,
-        proc: MockProcessReporting(processReportResult: .success(.init())),
-        resolver: MockDNSResolver(
+        processResolver: DefaultProcessResolver(),
+        dnsResolver: MockDNSResolver(
           eventLoop: eventLoop,
           v4Result: .success([]),
           v6Result: .success([])

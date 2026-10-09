@@ -14,24 +14,18 @@
 import NEAddressProcessing
 import NetbotLiteData
 
-/// Protocol for process report generator
+/// Protocol for process resolver
 @available(SwiftStdlib 6.0, *)
-public protocol ProcessReporting: Sendable {
+public protocol ProcessResolver: Sendable {
 
-  /// Request process info with socket address.
-  ///
-  /// - Parameter connection: Connection the requested process runs on.
-  /// - Returns: Generated process report.
+  /// Resolve process info with connection.
   func processInfo(connection: Connection) async throws -> ProcessReport
 }
 
-/// A default `ProcessReporting` object.
-///
-/// Return an empty report entity for process info report request by default.
 @available(SwiftStdlib 6.0, *)
-struct DefaultProcessReporting: ProcessReporting {
+struct DefaultProcessResolver: ProcessResolver {
 
   func processInfo(connection: Connection) async throws -> ProcessReport {
-    return .init()
+    .init()
   }
 }

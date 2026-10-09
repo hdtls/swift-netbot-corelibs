@@ -15,6 +15,7 @@ import NetbotDNS
 
 @available(SwiftStdlib 6.0, *)
 struct DefaultDNSResolver: DNSResolver, Sendable {
+
   func queryA(name: String) async throws -> ResolutionResult<ARecord> {
     await ResolutionResult(source: .query, dnsProtocol: .udp) {
       []

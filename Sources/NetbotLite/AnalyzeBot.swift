@@ -77,7 +77,7 @@ import Tracing
 
   /// The dns resolver.
   @LockableTracked(accessors: .get)
-  public var resolver: any DNSResolver
+  public var dnsResolver: any DNSResolver = DefaultDNSResolver()
 
   /// The RulesEngine evaluates the Rules.
   @LockableTracked(accessors: .get)
@@ -85,7 +85,7 @@ import Tracing
 
   /// A service help detect the process that the current connection is created.
   @LockableTracked(accessors: .get)
-  public var processInfo: any ProcessReporting = DefaultProcessReporting()
+  public var processResolver: any ProcessResolver = DefaultProcessResolver()
 
   /// A publisher publish connection states.
   @LockableTracked(accessors: .get)
@@ -112,7 +112,6 @@ import Tracing
     self.logger = logger
     self.$webProxyListenAddress = .init(webProxyListenAddress)
     self.$socksProxyListenAddress = .init(socksProxyListenAddress)
-    self.$resolver = .init(DefaultDNSResolver())
     self.$rulesEngine = .init(DefaultRulesEngine(logger: logger))
   }
 
@@ -148,8 +147,8 @@ import Tracing
   }
 
   /// Modify the DNS resolver.
-  public func setResolver(_ resolver: some DNSResolver) async {
-    self.$resolver.withLock { $0 = resolver }
+  public func setDNSResolver(_ resolver: some DNSResolver) async {
+    self.$dnsResolver.withLock { $0 = resolver }
   }
 
   /// Modify forwarding rules engine.
@@ -157,9 +156,9 @@ import Tracing
     self.$rulesEngine.withLock { $0 = rulesEngine }
   }
 
-  /// Modify default process info detector.
-  public func setProcessInfo(_ processInfo: some ProcessReporting) async {
-    self.$processInfo.withLock { $0 = processInfo }
+  /// Modify default process resolver.
+  public func setProcessResolver(_ resolver: some ProcessResolver) async {
+    self.$processResolver.withLock { $0 = resolver }
   }
 
   /// Modify default connection publisher.
@@ -333,8 +332,8 @@ import Tracing
           logger: logger,
           outboundMode: outboundMode,
           forwardProtocol: forwardProtocol,
-          proc: processInfo,
-          resolver: resolver,
+          processResolver: processResolver,
+          dnsResolver: dnsResolver,
           rules: rulesEngine,
           eventLoop: inputStream.eventLoop
         )

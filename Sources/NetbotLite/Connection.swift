@@ -119,7 +119,7 @@ extension Connection {
     }
   }
 
-  func processLookup(logger: Logger, proc: any ProcessReporting) async throws {
+  func processLookup(logger: Logger, processResolver: any ProcessResolver) async throws {
     // We don't care error of process report generating, so we can use optional try.
     guard establishmentReport?.sourceEndpoint != nil else {
       return
@@ -131,7 +131,7 @@ extension Connection {
       @inline(__always)
     #endif
     func execute() async throws -> ProcessReport? {
-      let metrics = try await proc.processInfo(connection: self)
+      let metrics = try await processResolver.processInfo(connection: self)
       processReport = metrics
       return metrics
     }
@@ -383,8 +383,12 @@ extension Connection {
   }
 
   func protocolLookup(
-    logger: Logger, outboundMode: OutboundMode, forwardProtocol: any ForwardProtocolConvertible,
-    proc: any ProcessReporting, resolver: any DNSResolver, rules: any RulesEngine,
+    logger: Logger,
+    outboundMode: OutboundMode,
+    forwardProtocol: any ForwardProtocolConvertible,
+    processResolver: any ProcessResolver,
+    dnsResolver: any DNSResolver,
+    rules: any RulesEngine,
     eventLoop: any EventLoop
   ) async throws {
     #if swift(>=6.3)
@@ -395,10 +399,10 @@ extension Connection {
     func execute() async throws -> ForwardingReport? {
       try await withThrowingTaskGroup(of: Void.self) { g in
         g.addTask {
-          try await self.processLookup(logger: logger, proc: proc)
+          try await self.processLookup(logger: logger, processResolver: processResolver)
         }
         g.addTask {
-          try await self.dnsLookup(logger: logger, resolver: resolver, on: eventLoop)
+          try await self.dnsLookup(logger: logger, resolver: dnsResolver, on: eventLoop)
         }
         try await g.waitForAll()
       }

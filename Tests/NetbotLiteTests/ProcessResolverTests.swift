@@ -18,14 +18,14 @@ import Testing
 
 @testable import NetbotLite
 
-@Suite struct ProcessReportingTests {
+@Suite struct ProcessResolverTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func processReportService() async throws {
     let application = AnalyzeBot(group: .default, logger: .init(label: ""))
 
-    #expect(application.processInfo is DefaultProcessReporting)
-    let p = try await application.processInfo.processInfo(connection: .init())
+    #expect(application.processResolver is DefaultProcessResolver)
+    let p = try await application.processResolver.processInfo(connection: .init())
     #expect(p == .init())
   }
 }
