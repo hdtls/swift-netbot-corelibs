@@ -51,8 +51,6 @@ import Testing
     )
     let p = LocalDNSProxy(options: options)
 
-    try await p.run()
-
     var message = Message(
       headerFields: .init(
         transactionID: 0,
@@ -157,7 +155,5 @@ import Testing
     #expect(response.destinationAddress == datagram.pseudoFields.destinationAddress)
     #expect(response.options == nil)
     #expect(packet.payload == datagram.data)
-
-    try await p.shutdownGracefully()
   }
 }

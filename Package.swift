@@ -45,6 +45,7 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.4.1"),
     .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.11.1"),
     .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "604.0.0"),
+    .package(url: "https://github.com/swift-server/swift-service-lifecycle.git", from: "2.12.1"),
   ],
   targets: [
     .macro(
@@ -176,6 +177,7 @@ let package = Package(
         .product(name: "NESOCKS", package: "swift-netbot-protoimpl"),
         .product(name: "NESS", package: "swift-netbot-protoimpl"),
         .product(name: "NEVMESS", package: "swift-netbot-protoimpl"),
+        .product(name: "ServiceLifecycle", package: "swift-service-lifecycle"),
       ],
       exclude: ["Data"]
     ),

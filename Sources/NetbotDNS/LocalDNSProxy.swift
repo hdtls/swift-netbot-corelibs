@@ -123,27 +123,24 @@ import SynchronizationExtras
   }
 
   public func run() async throws {
-    // FIXME: [#NoUseUnstructuredThrowingTask]
-    _ = Task {
-      try await run0()
-    }
-  }
+    let closePromise = group.next().makePromise(of: Void.self)
+    try await withTaskCancellationHandler {
+      try await closePromise.futureResult.get()
+    } onCancel: {
+      self.$queries.withLock {
+        for queries in $0.values {
+          for query in queries.queries {
+            // Fail all in-progress queries with CancellationError.
+            query.value.fail(ChannelError.ioOnClosedChannel)
+          }
 
-  public func run0() async throws {}
-
-  public func shutdownGracefully() async throws {
-    self.$queries.withLock {
-      for queries in $0.values {
-        for query in queries.queries {
-          // Fail all in-progress queries with CancellationError.
-          query.value.fail(ChannelError.ioOnClosedChannel)
+          // Finish all in-progress query stream.
+          queries.continuation.finish()
         }
 
-        // Finish all in-progress query stream.
-        queries.continuation.finish()
+        $0.removeAll()
       }
-
-      $0.removeAll()
+      closePromise.succeed()
     }
   }
 

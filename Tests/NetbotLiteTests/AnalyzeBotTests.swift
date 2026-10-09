@@ -110,7 +110,6 @@ import Testing
     #expect(bot.capabilities.isEmpty)
     #expect(bot.decryptionDNSNames.isEmpty)
     #expect(bot.decryptionSSLPKCS12Bundle == nil)
-    #expect(!bot.isActive)
   }
 
   @available(SwiftStdlib 6.0, *)

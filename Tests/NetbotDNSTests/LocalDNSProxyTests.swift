@@ -173,7 +173,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryA(name: "example.com")
@@ -187,7 +186,6 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    try await resolver.shutdownGracefully()
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -211,7 +209,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryA(name: "example.com")
@@ -226,7 +223,6 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    try await resolver.shutdownGracefully()
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -249,7 +245,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryAAAA(name: "example.com")
@@ -263,7 +258,6 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    try await resolver.shutdownGracefully()
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -283,7 +277,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryAAAA(name: "example.com")
@@ -298,7 +291,6 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    try await resolver.shutdownGracefully()
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -320,7 +312,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryNS(name: "example.com")
@@ -334,7 +325,6 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    try await resolver.shutdownGracefully()
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -357,7 +347,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryCNAME(name: "example.com")
@@ -371,7 +360,6 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    try await resolver.shutdownGracefully()
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -397,7 +385,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     await #expect(throws: Never.self) {
       let result = try await resolver.querySOA(name: "example.com")
@@ -411,7 +398,6 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    try await resolver.shutdownGracefully()
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -438,7 +424,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryPTR(name: query)
@@ -452,7 +437,6 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    try await resolver.shutdownGracefully()
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -472,7 +456,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryPTR(name: "6.1.18.169.in-addr.arpa")
@@ -501,7 +484,6 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    try await resolver.shutdownGracefully()
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -530,7 +512,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryMX(name: "example.com")
@@ -544,7 +525,6 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    try await resolver.shutdownGracefully()
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -567,7 +547,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     await #expect(throws: Never.self) {
       let result = try await resolver.queryTXT(name: "example.com")
@@ -581,7 +560,6 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    try await resolver.shutdownGracefully()
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -605,7 +583,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     await #expect(throws: Never.self) {
       let result = try await resolver.querySRV(name: "example.com")
@@ -619,7 +596,6 @@ struct LocalDNSProxyTests {
     }
 
     server.close(promise: nil)
-    try await resolver.shutdownGracefully()
   }
 
   @available(SwiftStdlib 6.0, *)
@@ -717,7 +693,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     let expected = Message(
       headerFields: .init(
@@ -776,7 +751,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     let expected = Message(
       headerFields: .init(
@@ -835,7 +809,6 @@ struct LocalDNSProxyTests {
         )
       )
     )
-    try await resolver.run()
 
     let expected = Message(
       headerFields: .init(

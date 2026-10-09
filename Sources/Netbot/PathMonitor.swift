@@ -64,13 +64,11 @@
     /// be ignored.
     /// Once started, the path monitor must be explicitly cancelled when it is no longer needed.
     public func run() async throws {
-      pathMonitor.start(queue: .global())
-    }
-
-    /// Cancel the path monitor, after which point no more path updates will
-    /// be delivered.
-    public func shutdownGracefully() async {
-      pathMonitor.cancel()
+      await withTaskCancellationHandler {
+        pathMonitor.start(queue: .global())
+      } onCancel: {
+        pathMonitor.cancel()
+      }
     }
 
     private func pathUpdateHandler0(_ path: NWPath) {

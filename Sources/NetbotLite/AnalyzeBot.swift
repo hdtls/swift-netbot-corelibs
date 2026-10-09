@@ -22,6 +22,7 @@ import NIOSSL
 import NetbotDNS
 import NetbotLiteData
 import NetbotNIO
+import ServiceLifecycle
 import Synchronization
 import SynchronizationExtras
 import Tracing
@@ -98,18 +99,7 @@ import Tracing
   @LockableTracked(accessors: .get)
   public var decryptionSSLPKCS12Bundle: NIOSSLPKCS12Bundle? = nil
 
-  /// True if this `AnalyzeBot` is currently active. `isActive` is defined as the period
-  /// of time after the `run` and before `shutdownGracefully` has fired.
-  @LockableTracked(accessors: .get)
-  public var isActive: Bool = false
-
-  private var quiescing: [ServerQuiescingHelper] = []
-
   private let group: any EventLoopGroup
-
-  private var processName: String {
-    "AnalyzeBot"
-  }
 
   /// Initialize an instance of `Netbot` with specified settings.
   public init(
@@ -135,11 +125,6 @@ import Tracing
 
     $webProxyListenAddress.withLock { $0 = networkSettings.0 }
     $socksProxyListenAddress.withLock { $0 = networkSettings.1 }
-
-    if isActive {
-      try await shutdownGracefully0()
-      try await run0()
-    }
   }
 
   /// Modify outbound mode.
@@ -212,76 +197,49 @@ import Tracing
 
   /// Run analyze services.
   public func run() async throws {
-    try await withTaskCancellationHandler {
-      try await withSpan("run") { _ in
-        do {
-          guard !isActive else {
-            return
+    try await withSpan("run") { _ in
+      try await withThrowingDiscardingTaskGroup { g in
+        g.addTask(name: "HTTP over \(self.webProxyListenAddress)") {
+          try await withSpan("HTTP") { _ in
+            try await self.startVPNTunnel(
+              address: self.webProxyListenAddress,
+              childChannelInitializer: { channel in
+                return channel.configureHTTPListenerPipeline { _, req in
+                  channel.eventLoop.makeFutureWithTask {
+                    try await self.initializeFlow(channel, originalRequest: .init(httpRequest: req))
+                  }
+                }
+              }
+            ) { inbound in
+              try await withThrowingDiscardingTaskGroup { _ in
+                for try await _ in inbound {
+
+                }
+              }
+            }
           }
-          $isActive.withLock { $0 = true }
+        }
 
-          try await run0()
-        } catch {
-          $isActive.withLock { $0 = false }
-          throw error
+        g.addTask(name: "SOCKS5 over \(self.socksProxyListenAddress)") {
+          try await withSpan("SOCKS5") { _ in
+            try await self.startVPNTunnel(
+              address: self.webProxyListenAddress,
+              childChannelInitializer: { channel in
+                return channel.configureSOCKSListenerPipeline { address in
+                  channel.eventLoop.makeFutureWithTask {
+                    try await self.initializeFlow(channel, originalRequest: .init(address: address))
+                  }
+                }
+              }
+            ) { inbound in
+              try await withThrowingDiscardingTaskGroup { _ in
+                for try await _ in inbound {
+                }
+              }
+            }
+          }
         }
       }
-    } onCancel: {
-      try? syncShutdownGracefully()
-    }
-  }
-
-  private func run0() async throws {
-    try await withThrowingDiscardingTaskGroup { g in
-      g.addTask {
-        try await withSpan("HTTP") { _ in
-          try await self.startVPNTunnel(protocol: .http, address: self.webProxyListenAddress)
-        }
-      }
-
-      g.addTask {
-        try await withSpan("SOCKS5") { _ in
-          try await self.startVPNTunnel(
-            protocol: .socks5, address: self.socksProxyListenAddress)
-        }
-      }
-    }
-  }
-
-  @available(
-    *, noasync,
-    message: "This can potentially block the thread and should not be called in an async context",
-    renamed: "shutdownGracefully"
-  )
-  private func syncShutdownGracefully() throws {
-    try group.next().makeFutureWithTask { try await self.shutdownGracefully() }.wait()
-  }
-
-  /// Fully shutdown service.
-  public func shutdownGracefully() async throws {
-    guard self.isActive else {
-      return
-    }
-
-    $isActive.withLock { $0 = false }
-
-    try await shutdownGracefully0()
-
-    logger.trace("\(processName) fully shutdown complete.")
-  }
-
-  private func shutdownGracefully0() async throws {
-    // Wait until all channels closed.
-    try await withThrowingTaskGroup(of: Void.self) { g in
-      for quiescing in self.quiescing {
-        g.addTask {
-          let promise = self.group.next().makePromise(of: Void.self)
-          quiescing.initiateShutdown(promise: promise)
-          // Wait until all child channels closed.
-          try await promise.futureResult.get()
-        }
-      }
-      try await g.waitForAll()
     }
   }
 
@@ -294,61 +252,48 @@ import Tracing
   ///   - protocol: The VPN protocol.
   ///   - address: The server for VPN tunnel to bind.
   /// - Returns: Started VPN tunnel and server quiescing helper pair.
-  private func startVPNTunnel(protocol: Proxy.`Protocol`, address: SocketAddress) async throws {
-    let quiescing = ServerQuiescingHelper(group: group)
+  private func startVPNTunnel<Child: Sendable>(
+    address: SocketAddress,
+    childChannelInitializer: @escaping @Sendable (any Channel) -> EventLoopFuture<Child>,
+    _ body: (NIOAsyncChannelInboundStream<Child>) async throws -> Void
+  ) async throws {
+    let serverQuiescingHelper = ServerQuiescingHelper(group: group)
 
-    let channel = try await ServerBootstrap(group: group)
+    let serverChannel = try await ServerBootstrap(group: group)
       .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
-      .serverChannelOption(ChannelOptions.socketOption(.init(rawValue: SO_REUSEPORT)), value: 1)
+      .serverChannelOption(ChannelOptions.socketOption(.so_reuseport), value: 1)
       .serverChannelInitializer { channel in
         channel.eventLoop.makeCompletedFuture {
           try channel.pipeline.syncOperations.addHandler(
-            quiescing.makeServerChannelHandler(channel: channel)
+            serverQuiescingHelper.makeServerChannelHandler(channel: channel)
           )
         }
       }
       .childChannelOption(ChannelOptions.tcpOption(.tcp_nodelay), value: 1)
-      .bind(to: address) { channel in
-        switch `protocol` {
-        case .http:
-          return channel.configureHTTPListenerPipeline { _, req in
-            channel.eventLoop.makeFutureWithTask {
-              try await self.initializeFlow(channel, originalRequest: .init(httpRequest: req))
-            }
-          }
-        case .socks5:
-          return channel.configureSOCKSListenerPipeline { address in
-            channel.eventLoop.makeFutureWithTask {
-              try await self.initializeFlow(channel, originalRequest: .init(address: address))
-            }
-          }
+      .bind(to: address, childChannelInitializer: childChannelInitializer)
+
+    try await withTaskCancellationHandler {
+      try await withGracefulShutdownHandler {
+        if Task.isCancelled {
+          // The cancellation/shutdown handler will have closed the socket. Just await the closeFuture here.
+          try? await serverChannel.channel.closeFuture.get()
+          return
         }
-      }
 
-    guard let localAddress = try? channel.channel.localAddress?.asAddress() else {
-      fatalError(
-        "Address was unable to bind. Please check that the socket was not closed or that the address family was understood."
-      )
-    }
-
-    self.logger.info(
-      "\(processName) \(`protocol`.rawValue.uppercased()) started and listening on \(localAddress)"
-    )
-
-    self.$quiescing.withLock {
-      $0.append(quiescing)
-    }
-
-    _ = Task {
-      try await withThrowingDiscardingTaskGroup { g in
-        try await channel.executeThenClose { inbound in
-          for try await _ in inbound {
-            g.addTask {
-              await Task.yield()
-            }
-          }
+        guard (try? serverChannel.channel.localAddress?.asAddress()) != nil else {
+          fatalError(
+            "Address was unable to bind. Please check that the socket was not closed or that the address family was understood."
+          )
         }
+
+        try await serverChannel.executeThenClose { inbound in
+          try await body(inbound)
+        }
+      } onGracefulShutdown: {
+        serverQuiescingHelper.initiateShutdown(promise: nil)
       }
+    } onCancel: {
+      serverChannel.channel.close(promise: nil)
     }
   }
 
@@ -453,10 +398,6 @@ import Tracing
   }
 
   deinit {
-    logger.trace("\(processName) deinitialized, goodbye!")
-    guard isActive else {
-      return
-    }
-    try? syncShutdownGracefully()
+    logger.trace("AnalyzeBot deinitialized, goodbye!")
   }
 }

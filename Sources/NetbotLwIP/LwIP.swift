@@ -143,32 +143,25 @@
     }
 
     public func run() async throws {
-      // FIXME: [#NoUseUnstructuredThrowingTask]
-      _ = Task {
-        try await run0()
+      try await withTaskCancellationHandler {
+        let address = try SocketAddress(ipAddress: "0.0.0.0", port: 0)
+
+        try await eventLoop.submit { netif_set_up(self.device) }.get()
+
+        try await listener.register()
+        try await listener.bind(to: address)
+
+        packetsReadLoop = Task { [weak self] in
+          guard let self else { return }
+          await readPacketsIfActive()
+        }
+        try await listener.closeFuture.get()
+      } onCancel: {
+        quiescing.initiateShutdown(promise: nil)
+        eventLoop.execute { netif_set_down(self.device) }
+        packetsReadLoop?.cancel()
+        packetsReadLoop = nil
       }
-    }
-
-    public func run0() async throws {
-      let address = try SocketAddress(ipAddress: "0.0.0.0", port: 0)
-
-      try await eventLoop.submit { netif_set_up(self.device) }.get()
-
-      try await listener.register()
-      try await listener.bind(to: address)
-
-      packetsReadLoop = Task { [weak self] in
-        guard let self else { return }
-        await readPacketsIfActive()
-      }
-      try await listener.closeFuture.get()
-    }
-
-    public func shutdownGracefully() async throws {
-      quiescing.initiateShutdown(promise: nil)
-      try await eventLoop.submit { netif_set_down(self.device) }.get()
-      packetsReadLoop?.cancel()
-      packetsReadLoop = nil
     }
 
     private func readPacketsIfActive() async {

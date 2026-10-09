@@ -46,14 +46,4 @@ struct ConnectionPublisherTests {
       }
     #endif
   }
-
-  @available(SwiftStdlib 6.0, *)
-  @Test func shutdownGracefully() async throws {
-    let publisher = ConnectionPulse(
-      group: .default, address: .hostPort(host: "127.0.0.1", port: .any))
-    try await publisher.run()
-    await #expect(throws: Never.self) {
-      try await publisher.shutdownGracefully()
-    }
-  }
 }

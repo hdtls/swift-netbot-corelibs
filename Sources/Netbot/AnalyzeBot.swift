@@ -68,15 +68,18 @@ public actor AnalyzeBot {
     let publisher = ConnectionPulse(group: group, address: .hostPort(host: "127.0.0.1", port: 6170))
     await self.core.setConnectionPublisher(publisher)
     await self.core.setResolver(dns)
-    try await publisher.run()
-    try await self.core.run()
-  }
 
-  /// Stop current running analyze tunnel.
-  public func shutdownGracefully() async {
-    let publisher = self.core.connectionPublisher as? ConnectionPulse
-    try? await publisher?.shutdownGracefully()
-    try? await self.core.shutdownGracefully()
+    try await withThrowingDiscardingTaskGroup { g in
+      g.addTask {
+        try await publisher.run()
+      }
+      g.addTask {
+        try await self.dns.run()
+      }
+      g.addTask {
+        try await self.core.run()
+      }
+    }
   }
 
   public func setLogger(_ logger: Logger) async {

@@ -178,83 +178,93 @@
     }
 
     public func run() async throws {
-      let profile = try await profile
-      await delegate?.setOutboundMode(outboundMode)
-      await delegate?.setEnabledHTTPCapabilities(enabledHTTPCapabilities)
-      await delegate?.setForwardProtocol(profile.asForwardProtocol())
-      await delegate?.setDecryptionPKCS12Bundle(try? profile.asDecryptionPKCS12Bundle())
-      await delegate?.setForwardingRules(profile.asForwardingRules(maxminddb: maxminddb))
-      try await delegate?.setTunnelNetworkSettings(profile.asTunnelNetworkSettings(mode: proxyMode))
+      try await withTaskCancellationHandler {
+        let profile = try await profile
+        await delegate?.setOutboundMode(outboundMode)
+        await delegate?.setEnabledHTTPCapabilities(enabledHTTPCapabilities)
+        await delegate?.setForwardProtocol(profile.asForwardProtocol())
+        await delegate?.setDecryptionPKCS12Bundle(try? profile.asDecryptionPKCS12Bundle())
+        await delegate?.setForwardingRules(profile.asForwardingRules(maxminddb: maxminddb))
+        try await delegate?.setTunnelNetworkSettings(
+          profile.asTunnelNetworkSettings(mode: proxyMode))
 
-      $profileURL
-        .combineLatest($proxyMode, $profileLastContentModificationDate, $selectionRecords)
-        .dropFirst()
-        .map { ($0.0, $0.1) }
-        .sink { url, mode in
-          _ = Task { [weak self] in
-            guard let self else { return }
-            let profile = try await self.profile
-            await delegate?.setForwardingRules(profile.asForwardingRules(maxminddb: maxminddb))
-            await delegate?.setForwardProtocol(profile.asForwardProtocol())
-            await delegate?.setDecryptionPKCS12Bundle(try profile.asDecryptionPKCS12Bundle())
-            try await delegate?.setTunnelNetworkSettings(
-              profile.asTunnelNetworkSettings(mode: mode))
+        $profileURL
+          .combineLatest($proxyMode, $profileLastContentModificationDate, $selectionRecords)
+          .dropFirst()
+          .map { ($0.0, $0.1) }
+          .sink { url, mode in
+            _ = Task { [weak self] in
+              guard let self else { return }
+              let profile = try await self.profile
+              await delegate?.setForwardingRules(profile.asForwardingRules(maxminddb: maxminddb))
+              await delegate?.setForwardProtocol(profile.asForwardProtocol())
+              await delegate?.setDecryptionPKCS12Bundle(try profile.asDecryptionPKCS12Bundle())
+              try await delegate?.setTunnelNetworkSettings(
+                profile.asTunnelNetworkSettings(mode: mode))
+            }
           }
-        }
-        .store(in: &cancellables)
+          .store(in: &cancellables)
 
-      $enabledHTTPCapabilities
-        .dropFirst()
-        .sink { capabilities in
-          Task { [weak self] in
-            guard let self else { return }
-            await delegate?.setEnabledHTTPCapabilities(capabilities)
+        $enabledHTTPCapabilities
+          .dropFirst()
+          .sink { capabilities in
+            Task { [weak self] in
+              guard let self else { return }
+              await delegate?.setEnabledHTTPCapabilities(capabilities)
+            }
           }
-        }
-        .store(in: &cancellables)
+          .store(in: &cancellables)
 
-      $outboundMode
-        .dropFirst()
-        .sink { mode in
-          Task { [weak self] in
-            guard let self else { return }
-            await delegate?.setOutboundMode(mode)
+        $outboundMode
+          .dropFirst()
+          .sink { mode in
+            Task { [weak self] in
+              guard let self else { return }
+              await delegate?.setOutboundMode(mode)
+            }
           }
-        }
-        .store(in: &cancellables)
+          .store(in: &cancellables)
 
-      // Maxmind db auto update.
-      $maxminddbDownloadURL.combineLatest($maxminddbLastUpdatedDate, $maxminddbKeepUpToDate)
-        .sink { [weak self] url, date, keepUpToDate in
-          guard let self else { return }
-          guard keepUpToDate else {
-            // Cancel auto update task.
+        // Maxmind db auto update.
+        $maxminddbDownloadURL.combineLatest($maxminddbLastUpdatedDate, $maxminddbKeepUpToDate)
+          .sink { [weak self] url, date, keepUpToDate in
+            guard let self else { return }
+            guard keepUpToDate else {
+              // Cancel auto update task.
+              maxminddbAutoreload?.cancel()
+              return
+            }
+            let now = Date.now
+            let timeIntervalPast = date > now ? 86400 * 7 : Int64(now.timeIntervalSince(date))
+            let initialDelay = TimeAmount.seconds(max(0, 86400 * 7 - timeIntervalPast))
             maxminddbAutoreload?.cancel()
-            return
+            maxminddbAutoreload = group.next().scheduleTask(deadline: .now() + initialDelay) {
+              Task { try await self.downloadMaxmindDBs(url) }
+            }
           }
-          let now = Date.now
-          let timeIntervalPast = date > now ? 86400 * 7 : Int64(now.timeIntervalSince(date))
-          let initialDelay = TimeAmount.seconds(max(0, 86400 * 7 - timeIntervalPast))
-          maxminddbAutoreload?.cancel()
-          maxminddbAutoreload = group.next().scheduleTask(deadline: .now() + initialDelay) {
-            Task { try await self.downloadMaxmindDBs(url) }
-          }
-        }
-        .store(in: &cancellables)
+          .store(in: &cancellables)
 
-      // External forwarding rule resources auto update.
-      $forwardingRuleResourcesLastUpdatedDate
-        .sink { [weak self] date in
-          guard let self else { return }
-          let now = Date.now
-          let timeIntervalPast = date > now ? 24 * 3600 : Int64(now.timeIntervalSince(date))
-          let initialDelay = TimeAmount.seconds(max(0, 24 * 60 * 60 - timeIntervalPast))
-          externalRulesAutoreload?.cancel()
-          externalRulesAutoreload = group.next().scheduleTask(deadline: .now() + initialDelay) {
-            Task { try await self.downloadExternalRules() }
+        // External forwarding rule resources auto update.
+        $forwardingRuleResourcesLastUpdatedDate
+          .sink { [weak self] date in
+            guard let self else { return }
+            let now = Date.now
+            let timeIntervalPast = date > now ? 24 * 3600 : Int64(now.timeIntervalSince(date))
+            let initialDelay = TimeAmount.seconds(max(0, 24 * 60 * 60 - timeIntervalPast))
+            externalRulesAutoreload?.cancel()
+            externalRulesAutoreload = group.next().scheduleTask(deadline: .now() + initialDelay) {
+              Task { try await self.downloadExternalRules() }
+            }
           }
+          .store(in: &cancellables)
+
+      } onCancel: {
+        Task { @MainActor in
+          cancellables = []
+          maxminddbAutoreload?.cancel()
+          externalRulesAutoreload?.cancel()
         }
-        .store(in: &cancellables)
+      }
     }
 
     @concurrent private func downloadMaxmindDBs(_ url: URL) async throws {
@@ -324,12 +334,6 @@
       }
 
       await delegate?.setForwardingRules(profile.asForwardingRules(maxminddb: maxminddb))
-    }
-
-    public func shutdownGracefully() async {
-      cancellables = []
-      maxminddbAutoreload?.cancel()
-      externalRulesAutoreload?.cancel()
     }
   }
 
