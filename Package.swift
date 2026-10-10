@@ -37,7 +37,7 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-crypto.git", from: "4.3.0"),
     .package(url: "https://github.com/apple/swift-certificates.git", from: "1.18.0"),
     .package(url: "https://github.com/apple/swift-log.git", from: "1.11.0"),
-    .package(url: "https://github.com/apple/swift-nio.git", from: "2.97.1"),
+    .package(url: "https://github.com/apple/swift-nio.git", from: "2.104.0"),
     .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.36.1"),
     .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.28.0"),
     .package(url: "https://github.com/apple/swift-nio-extras.git", from: "1.33.0"),
