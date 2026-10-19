@@ -12,6 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 @_exported import Logging
+@_exported import MaxMindDB
 @_exported import NIOSSL
 @_exported import NetbotDNS
 @_exported import NetbotLite

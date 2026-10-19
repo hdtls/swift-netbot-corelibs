@@ -12,7 +12,6 @@
 // ===----------------------------------------------------------------------=== //
 
 import ArgumentParser
-import MaxMindDB
 import Netbot
 
 #if canImport(FoundationEssentials)
@@ -32,7 +31,7 @@ struct Application: AsyncParsableCommand {
   var enabledHTTPCapabilities: CapabilityFlags = []
 
   @Argument(
-    help: "MaxMind DB file path. If omitted, all GEOIP rule will be disabled",
+    help: "MaxMind DB file path. If omitted, all GEOIP rule will be disabled.",
     completion: .file(), transform: URL.init(fileURLWithPath:))
   var maxminddb: URL? = nil
 
