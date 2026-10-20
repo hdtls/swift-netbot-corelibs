@@ -98,8 +98,8 @@ import Tracing
 
   private let group: any EventLoopGroup
 
-  /// Initialize an instance of `Netbot` with specified settings.
-  public init(group: any EventLoopGroup) {
+  /// Initialize an new instance of `AnalyzeBot`.
+  public init(group: any EventLoopGroup = .default) {
     self.group = group
     self.$rulesEngine = .init(DefaultRulesEngine())
   }
