@@ -11,7 +11,7 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-#if SWTNE_REQUIRES_LWIP
+#if ExperimentalLwIP
   import Dispatch
   import NEAddressProcessing
   import NIOCore

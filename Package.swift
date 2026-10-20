@@ -30,6 +30,15 @@ let package = Package(
     .library(name: "NetbotXPC", targets: ["NetbotXPC"]),
     .library(name: "NetbotFrontend", targets: ["NetbotFrontend"]),
   ],
+  traits: [
+    .default(enabledTraits: []),
+    .trait(
+      name: "ExperimentalLwIP",
+      description: """
+        Enables source unstable LwIP components in NetbotLwIP module.
+        """
+    ),
+  ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.8.2"),
     .package(url: "https://github.com/apple/swift-asn1.git", from: "1.6.0"),
@@ -189,7 +198,10 @@ let package = Package(
         "NetbotNIO",
         "NetbotLite",
         "SynchronizationExtras",
-        .target(name: "CNELwIP", condition: .when(platforms: [.macOS])),
+        .target(
+          name: "CNELwIP",
+          condition: .when(platforms: [.macOS], traits: ["ExperimentalLwIP"])
+        ),
         .product(name: "Logging", package: "swift-log"),
         .product(name: "NIOCore", package: "swift-nio"),
         .product(name: "NIOPosix", package: "swift-nio"),
@@ -325,7 +337,6 @@ if Context.environment["SWTNE_REQUIRES_LOCAL_DEPS"] != nil {
 
 for target in package.targets {
   var settings = target.swiftSettings ?? []
-  settings.append(.define("SWTNE_REQUIRES_LWIP", .when(platforms: [.macOS])))
   settings.append(
     .enableExperimentalFeature(
       "AvailabilityMacro=SwiftStdlib 6.0:iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0"
