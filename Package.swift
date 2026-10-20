@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.4
 // ===----------------------------------------------------------------------=== //
 //
 // This source file is part of the Netbot open source project
@@ -17,13 +17,6 @@ import PackageDescription
 
 let package = Package(
   name: "swift-netbot-corelibs",
-  platforms: [
-    .iOS(.v13),
-    .macOS(.v10_15),
-    .tvOS(.v13),
-    .watchOS(.v6),
-    .macCatalyst(.v13),
-  ],
   products: [
     .library(name: "NetbotDashboard", targets: ["NetbotDashboard"]),
     .library(name: "Netbot", targets: ["Netbot"]),
@@ -56,6 +49,9 @@ let package = Package(
     .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.11.1"),
     .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "604.0.0"),
     .package(url: "https://github.com/swift-server/swift-service-lifecycle.git", from: "2.12.1"),
+    .package(url: "https://github.com/hdtls/swift-netbot-protoimpl.git", branch: "main"),
+    .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.3.0"),
+    .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
   ],
   targets: [
     .macro(
@@ -320,20 +316,6 @@ let package = Package(
     ),
   ]
 )
-
-if Context.environment["SWTNE_REQUIRES_LOCAL_DEPS"] != nil {
-  package.dependencies += [
-    .package(path: "../swift-netbot-protoimpl"),
-    .package(path: "../swift-maxminddb"),
-    .package(path: "../swift-preference"),
-  ]
-} else {
-  package.dependencies += [
-    .package(url: "https://github.com/hdtls/swift-netbot-protoimpl.git", branch: "main"),
-    .package(url: "https://github.com/hdtls/swift-maxminddb.git", from: "1.3.0"),
-    .package(url: "https://github.com/hdtls/swift-preference.git", from: "1.0.0"),
-  ]
-}
 
 for target in package.targets {
   var settings = target.swiftSettings ?? []
