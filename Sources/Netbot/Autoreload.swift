@@ -15,7 +15,6 @@
   import Alamofire
   import Combine
   import Foundation
-  import Logging
   import MaxMindDB
   import NIOCore
   import NIOSSL
@@ -86,8 +85,6 @@
     private var externalRulesAutoreload: Scheduled<Task<Void, any Error>>?
 
     public weak var delegate: (any ProfileAutoreloadDelegate)?
-
-    public let logger = Logger(label: "AnalyzeBot-autoreload")
 
     private let group: any EventLoopGroup
 

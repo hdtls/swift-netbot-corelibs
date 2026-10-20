@@ -11,7 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Logging
 import NIOCore
 import NetbotLiteData
 
@@ -29,9 +28,10 @@ public struct ForwardProtocolRejectTinyGIF: Equatable, Hashable, Sendable {
 @available(SwiftStdlib 6.0, *)
 extension ForwardProtocolRejectTinyGIF: ForwardProtocol {
 
-  public func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
-    async throws -> any Channel
-  {
+  public func makeConnection(
+    context: Connection,
+    on eventLoop: any EventLoop
+  ) async throws -> any Channel {
     throw AnalyzeError.connectionRefused
   }
 }

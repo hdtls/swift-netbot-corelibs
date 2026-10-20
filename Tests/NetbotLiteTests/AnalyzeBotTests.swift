@@ -11,7 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Logging
 import NEAddressProcessing
 import NIOCore
 import NIOSSL
@@ -100,7 +99,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func initializer() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    let bot = AnalyzeBot(group: group, logger: .init(label: ""))
+    let bot = AnalyzeBot(group: group)
     #expect(bot.webProxyListenAddress == .hostPort(host: "127.0.0.1", port: 6152))
     #expect(bot.socksProxyListenAddress == .hostPort(host: "127.0.0.1", port: 1080))
     #expect(bot.outboundMode == .direct)
@@ -114,7 +113,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func setOutboundMode() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    let bot = AnalyzeBot(group: group, logger: .init(label: ""))
+    let bot = AnalyzeBot(group: group)
     await bot.setOutboundMode(.ruleBased)
     #expect(bot.outboundMode == .ruleBased)
   }
@@ -122,7 +121,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func setForwardingProtocol() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    let bot = AnalyzeBot(group: group, logger: .init(label: ""))
+    let bot = AnalyzeBot(group: group)
     await bot.setForwardProtocol(.reject)
     #expect(bot.forwardProtocol.asForwardProtocol().name == "REJECT")
   }
@@ -130,7 +129,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func setForwardingRules() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    let bot = AnalyzeBot(group: group, logger: .init(label: ""))
+    let bot = AnalyzeBot(group: group)
     await bot.setForwardingRules([_FinalForwardingRule()])
     #expect(bot.forwardingRules.count == 1)
   }
@@ -138,7 +137,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func setEnabledHTTPCapabilities() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    let bot = AnalyzeBot(group: group, logger: .init(label: ""))
+    let bot = AnalyzeBot(group: group)
     await bot.setEnabledHTTPCapabilities(.httpsDecryption)
     #expect(bot.capabilities == .httpsDecryption)
   }
@@ -146,7 +145,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func setDecryptionSSLPKCS12Bundle() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    let bot = AnalyzeBot(group: group, logger: .init(label: ""))
+    let bot = AnalyzeBot(group: group)
 
     await bot.setDecryptionSSLPKCS12Bundle(decryptionSSLPKCS12Bundle)
     #expect(bot.decryptionDNSNames == ["example.com", "*.example.com"])
@@ -156,7 +155,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func preventSetSameDecryptionSSLPKCS12Bundle() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    let bot = AnalyzeBot(group: group, logger: .init(label: ""))
+    let bot = AnalyzeBot(group: group)
 
     await bot.setDecryptionSSLPKCS12Bundle(decryptionSSLPKCS12Bundle)
     await bot.setDecryptionSSLPKCS12Bundle(decryptionSSLPKCS12Bundle)
@@ -167,7 +166,7 @@ import Testing
   @available(SwiftStdlib 6.0, *)
   @Test func setDecryptionSSLPKCS12BundleToNil() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    let bot = AnalyzeBot(group: group, logger: .init(label: ""))
+    let bot = AnalyzeBot(group: group)
 
     await bot.setDecryptionSSLPKCS12Bundle(decryptionSSLPKCS12Bundle)
     #expect(bot.decryptionDNSNames == ["example.com", "*.example.com"])

@@ -149,21 +149,13 @@ import Testing
   @Test func processLookup() async throws {
     let connection = Connection()
     connection.establishmentReport = .init()
-    try await connection
-      .processLookup(
-        logger: .init(label: "test"),
-        processResolver: DefaultProcessResolver()
-      )
+    try await connection.processLookup(resolver: DefaultProcessResolver())
     #expect(connection.processReport == nil)
 
     connection.$establishmentReport.withLock {
       $0?.sourceEndpoint = .hostPort(host: "127.0.0.1", port: 6232)
     }
-    try await connection
-      .processLookup(
-        logger: .init(label: "test"),
-        processResolver: DefaultProcessResolver()
-      )
+    try await connection.processLookup(resolver: DefaultProcessResolver())
     #expect(connection.processReport != nil)
   }
 
@@ -175,12 +167,7 @@ import Testing
     let connection = Connection()
     #expect(connection.dnsResolutionReport == nil)
 
-    try await connection
-      .dnsLookup(
-        logger: .init(label: "dns"),
-        resolver: DefaultDNSResolver(),
-        on: eventLoop
-      )
+    try await connection.dnsLookup(resolver: DefaultDNSResolver(), on: eventLoop)
     let report = try #require(connection.dnsResolutionReport)
     #expect(report.resolutions.isEmpty)
   }
@@ -198,12 +185,7 @@ import Testing
     connection.originalRequest = originalRequest
     #expect(connection.dnsResolutionReport == nil)
 
-    try await connection
-      .dnsLookup(
-        logger: .init(label: "dns"),
-        resolver: DefaultDNSResolver(),
-        on: eventLoop
-      )
+    try await connection.dnsLookup(resolver: DefaultDNSResolver(), on: eventLoop)
     let report = try #require(connection.dnsResolutionReport)
     #expect(report.resolutions.isEmpty)
   }
@@ -221,12 +203,7 @@ import Testing
     connection.originalRequest = originalRequest
     #expect(connection.dnsResolutionReport == nil)
 
-    try await connection
-      .dnsLookup(
-        logger: .init(label: "dns"),
-        resolver: DefaultDNSResolver(),
-        on: eventLoop
-      )
+    try await connection.dnsLookup(resolver: DefaultDNSResolver(), on: eventLoop)
     let report = try #require(connection.dnsResolutionReport)
     #expect(report.resolutions.count == 1)
     let resolution = try #require(report.resolutions.first)
@@ -250,16 +227,11 @@ import Testing
       v4Result: .success([Address.hostPort(host: "127.0.0.1", port: 0)]),
       v6Result: .success([Address.hostPort(host: "::1", port: 0)])
     )
-    try await connection
-      .dnsLookup(
-        logger: .init(label: "dns"),
-        resolver: dnsResolver,
-        on: eventLoop
-      )
+    try await connection.dnsLookup(resolver: dnsResolver, on: eventLoop)
     let report = try #require(connection.dnsResolutionReport)
     #expect(!report.resolutions.isEmpty)
 
-    // `dnsLookup(logger:resolver:on)` immediately returned if any of it's query
+    // `dnsLookup(resolver:on)` immediately returned if any of it's query
     // success, so we sleep for a while (0.5 second should be enough as this is
     // a mock dns resolver, it response very quickly) to wait for all query
     // completed.
@@ -294,12 +266,7 @@ import Testing
     )
 
     await #expect(throws: CancellationError.self) {
-      try await connection
-        .dnsLookup(
-          logger: .init(label: "dns"),
-          resolver: dnsResolver,
-          on: eventLoop
-        )
+      try await connection.dnsLookup(resolver: dnsResolver, on: eventLoop)
     }
   }
 
@@ -319,12 +286,7 @@ import Testing
     )
 
     await #expect(throws: CancellationError.self) {
-      try await connection
-        .dnsLookup(
-          logger: .init(label: "dns"),
-          resolver: dnsResolver,
-          on: eventLoop
-        )
+      try await connection.dnsLookup(resolver: dnsResolver, on: eventLoop)
     }
   }
 
@@ -344,12 +306,7 @@ import Testing
     )
 
     await #expect(throws: Never.self) {
-      try await connection
-        .dnsLookup(
-          logger: .init(label: "dns"),
-          resolver: dnsResolver,
-          on: eventLoop
-        )
+      try await connection.dnsLookup(resolver: dnsResolver, on: eventLoop)
 
       let report = try #require(connection.dnsResolutionReport)
       #expect(report.resolutions.count == 1)
@@ -372,12 +329,7 @@ import Testing
     )
 
     await #expect(throws: Never.self) {
-      try await connection
-        .dnsLookup(
-          logger: .init(label: "dns"),
-          resolver: dnsResolver,
-          on: eventLoop
-        )
+      try await connection.dnsLookup(resolver: dnsResolver, on: eventLoop)
 
       let report = try #require(connection.dnsResolutionReport)
       #expect(report.resolutions.count == 1)
@@ -400,12 +352,7 @@ import Testing
     )
 
     await #expect(throws: CancellationError.self) {
-      try await connection
-        .dnsLookup(
-          logger: .init(label: "dns"),
-          resolver: dnsResolver,
-          on: eventLoop
-        )
+      try await connection.dnsLookup(resolver: dnsResolver, on: eventLoop)
     }
   }
 
@@ -439,17 +386,14 @@ import Testing
     connection.establishmentReport = .init()
     #expect(connection.forwardingReport == nil)
 
-    try await connection
-      .ruleLookup(
-        logger: .init(label: "rule"),
-        rulesEngine: MockRuleEngine(
-          forwardingReport: .init(
-            earliestBeginDate: .now,
-            duration: .seconds(1),
-            forwardingRule: MockForwardingRule()
-          )
+    try await connection.ruleLookup(
+      engine: MockRuleEngine(
+        forwardingReport: .init(
+          earliestBeginDate: .now,
+          duration: .seconds(1),
+          forwardingRule: MockForwardingRule()
         )
-      )
+      ))
 
     #expect(connection.forwardingReport != nil)
   }
@@ -479,7 +423,6 @@ import Testing
     await #expect(throws: CancellationError.self) {
       try await connection
         .protocolLookup(
-          logger: .init(label: "proto"),
           outboundMode: .direct,
           forwardProtocol: .direct,
           processResolver: DefaultProcessResolver(),
@@ -539,7 +482,6 @@ import Testing
     await #expect(throws: CancellationError.self) {
       try await connection
         .protocolLookup(
-          logger: .init(label: "proto"),
           outboundMode: .direct,
           forwardProtocol: .direct,
           processResolver: MockProgressResolver(),
@@ -584,7 +526,6 @@ import Testing
 
     try await connection
       .protocolLookup(
-        logger: .init(label: "proto"),
         outboundMode: .direct,
         forwardProtocol: .direct,
         processResolver: DefaultProcessResolver(),
@@ -632,7 +573,6 @@ import Testing
 
     try await connection
       .protocolLookup(
-        logger: .init(label: "proto"),
         outboundMode: .globalProxy,
         forwardProtocol: .rejectTinyGIF,
         processResolver: DefaultProcessResolver(),
@@ -689,7 +629,6 @@ import Testing
 
     try await connection
       .protocolLookup(
-        logger: .init(label: "proto"),
         outboundMode: .ruleBased,
         forwardProtocol: .direct,
         processResolver: DefaultProcessResolver(),

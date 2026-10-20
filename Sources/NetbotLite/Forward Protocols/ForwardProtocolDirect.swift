@@ -11,7 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Logging
 import NIOCore
 import NetbotLiteData
 import NetbotNIO
@@ -37,10 +36,11 @@ public struct ForwardProtocolDirect: Equatable, Hashable, Sendable {
 @available(SwiftStdlib 6.0, *)
 extension ForwardProtocolDirect: ForwardProtocol {
 
-  public func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
-    async throws -> any Channel
-  {
-    guard let destination = connection.originalRequest?.address else {
+  public func makeConnection(
+    context: Connection,
+    on eventLoop: any EventLoop
+  ) async throws -> any Channel {
+    guard let destination = context.originalRequest?.address else {
       throw AnalyzeError.outputStreamEndpointInvalid
     }
 

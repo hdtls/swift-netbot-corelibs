@@ -45,9 +45,6 @@ import Tracing
 @available(SwiftStdlib 6.0, *)
 @Lockable final public class AnalyzeBot: Sendable {
 
-  /// Logger object used to log messages.
-  public let logger: Logger
-
   public typealias NetworkSettings = (Address, Address)
 
   /// Address of web proxy (HTTP/HTTPS) server will bind if present.
@@ -102,10 +99,9 @@ import Tracing
   private let group: any EventLoopGroup
 
   /// Initialize an instance of `Netbot` with specified settings.
-  public init(group: any EventLoopGroup, logger: Logger) {
+  public init(group: any EventLoopGroup) {
     self.group = group
-    self.logger = logger
-    self.$rulesEngine = .init(DefaultRulesEngine(logger: logger))
+    self.$rulesEngine = .init(DefaultRulesEngine())
   }
 
   /// Set current Web and SOCKS proxy settings to new `networkSettings`.
@@ -294,102 +290,101 @@ import Tracing
   {
     try await withSpan("initialize Proxy Flow") { span in
       let session = Connection()
-      do {
-        session.originalRequest = originalRequest
-        session.currentRequest = originalRequest
-        guard let sourceEndpoint = try inputStream.remoteAddress?.asAddress() else {
-          throw AnalyzeError.inputStreamEndpointInvalid
+      session.originalRequest = originalRequest
+      session.currentRequest = originalRequest
+      return try await withLogger(mergingMetadata: session.metadata) { logger in
+        do {
+          guard let sourceEndpoint = try inputStream.remoteAddress?.asAddress() else {
+            throw AnalyzeError.inputStreamEndpointInvalid
+          }
+          session.establishmentReport = EstablishmentReport(
+            duration: .zero,
+            attemptStartedAfterInterval: 0,
+            previousAttemptCount: 0,
+            sourceEndpoint: sourceEndpoint,
+            usedProxy: false,
+            proxyEndpoint: nil,
+            resolutions: []
+          )
+
+          span.updateAttributes { attributes in
+            attributes["id"] = "\(session.taskIdentifier)"
+            attributes["establishment.source"] = "\(sourceEndpoint)"
+          }
+
+          // Publish session changes using connection publisher.
+          await session.publish(using: coreVPNTaskTracker)
+
+          // Update transport metrics.
+          await session.transportMetrics(on: nil)
+
+          try await session.protocolLookup(
+            outboundMode: outboundMode,
+            forwardProtocol: forwardProtocol,
+            processResolver: processResolver,
+            dnsResolver: dnsResolver,
+            rules: rulesEngine,
+            eventLoop: inputStream.eventLoop
+          )
+
+          // Create peer channel.
+          let outputStream = try await session.forwardingReport
+            .asForwardProtocol()
+            .makeConnection(context: session, on: group.next())
+
+          session.state = .active
+
+          await session.establishmentMetrics(on: outputStream)
+
+          // Update transport metrics.
+          await session.transportMetrics(on: outputStream)
+
+          // Setup HTTP capabilities pipeline
+          try await inputStream.eventLoop.submit {
+            self.capabilities
+              .buildTLS(
+                connection: session,
+                decryptionDNSNames: self.decryptionDNSNames,
+                decryptionSSLPKCS12Bundle: self.decryptionSSLPKCS12Bundle,
+                inputStream: inputStream,
+                outputStream: outputStream
+              )
+
+            self.capabilities
+              .buildHTTP(
+                connection: session,
+                inMemoryHTTPCaptureFilters: [],
+                onDiskHTTPCaptureFilters: [],
+                inputStream: inputStream,
+                outputStream: outputStream
+              )
+
+            let connectionClose = ConnectionClose(connection: session)
+            try? outputStream.pipeline.syncOperations.addHandler(connectionClose)
+
+            // Exchange server and client data over GlueHandler.
+            let (localGlue, peerGlue) = GlueHandler.matchedPair()
+
+            try? inputStream.pipeline.syncOperations.addHandler(localGlue)
+            try? outputStream.pipeline.syncOperations.addHandlers(peerGlue)
+          }.get()
+
+          span.setStatus(.init(code: .ok))
+          return (inputStream, outputStream, session)
+        } catch {
+          session.duration = .seconds(-session.earliestBeginDate.timeIntervalSinceNow)
+          session.state = .failed
+          logger.error(
+            "Connection failure with error: \(error)",
+            metadata: session.metadata
+          )
+          throw error
         }
-        session.establishmentReport = EstablishmentReport(
-          duration: .zero,
-          attemptStartedAfterInterval: 0,
-          previousAttemptCount: 0,
-          sourceEndpoint: sourceEndpoint,
-          usedProxy: false,
-          proxyEndpoint: nil,
-          resolutions: []
-        )
-
-        span.updateAttributes { attributes in
-          attributes["id"] = "\(session.taskIdentifier)"
-          attributes["establishment.source"] = "\(sourceEndpoint)"
-        }
-
-        // Publish session changes using connection publisher.
-        await session.publish(using: coreVPNTaskTracker)
-
-        // Update transport metrics.
-        await session.transportMetrics(on: nil)
-
-        try await session.protocolLookup(
-          logger: logger,
-          outboundMode: outboundMode,
-          forwardProtocol: forwardProtocol,
-          processResolver: processResolver,
-          dnsResolver: dnsResolver,
-          rules: rulesEngine,
-          eventLoop: inputStream.eventLoop
-        )
-
-        // Create peer channel.
-        let outputStream = try await session.forwardingReport
-          .asForwardProtocol()
-          .makeConnection(logger: logger, connection: session, on: group.next())
-
-        session.state = .active
-
-        await session.establishmentMetrics(on: outputStream)
-
-        // Update transport metrics.
-        await session.transportMetrics(on: outputStream)
-
-        // Setup HTTP capabilities pipeline
-        try await inputStream.eventLoop.submit {
-          self.capabilities
-            .buildTLS(
-              logger: self.logger,
-              connection: session,
-              decryptionDNSNames: self.decryptionDNSNames,
-              decryptionSSLPKCS12Bundle: self.decryptionSSLPKCS12Bundle,
-              inputStream: inputStream,
-              outputStream: outputStream
-            )
-
-          self.capabilities
-            .buildHTTP(
-              logger: self.logger,
-              connection: session,
-              inMemoryHTTPCaptureFilters: [],
-              onDiskHTTPCaptureFilters: [],
-              inputStream: inputStream,
-              outputStream: outputStream
-            )
-
-          let connectionClose = ConnectionClose(connection: session)
-          try? outputStream.pipeline.syncOperations.addHandler(connectionClose)
-
-          // Exchange server and client data over GlueHandler.
-          let (localGlue, peerGlue) = GlueHandler.matchedPair()
-
-          try? inputStream.pipeline.syncOperations.addHandler(localGlue)
-          try? outputStream.pipeline.syncOperations.addHandlers(peerGlue)
-        }.get()
-
-        span.setStatus(.init(code: .ok))
-        return (inputStream, outputStream, session)
-      } catch {
-        session.duration = .seconds(-session.earliestBeginDate.timeIntervalSinceNow)
-        session.state = .failed
-        self.logger.error(
-          "Connection failure with error: \(error)",
-          metadata: session.metadata
-        )
-        throw error
       }
     }
   }
 
   deinit {
-    logger.trace("AnalyzeBot deinitialized, goodbye!")
+    Logger.current.trace("AnalyzeBot deinitialized, goodbye!")
   }
 }

@@ -119,7 +119,7 @@ extension Connection {
     }
   }
 
-  func processLookup(logger: Logger, processResolver: any ProcessResolver) async throws {
+  func processLookup(resolver: any ProcessResolver) async throws {
     // We don't care error of process report generating, so we can use optional try.
     guard establishmentReport?.sourceEndpoint != nil else {
       return
@@ -131,7 +131,7 @@ extension Connection {
       @inline(__always)
     #endif
     func execute() async throws -> ProcessReport? {
-      let metrics = try await processResolver.processInfo(connection: self)
+      let metrics = try await resolver.processInfo(connection: self)
       processReport = metrics
       return metrics
     }
@@ -164,9 +164,7 @@ extension Connection {
   /// resolution accordingly. Completion is signaled via a promise and the function returns only after at least one query
   /// path has produced a result (or both have failed). The entire process runs within a tracing span named "dns query".
   ///
-  func dnsLookup(logger: Logger, resolver: any DNSResolver, on eventLoop: any EventLoop)
-    async throws
-  {
+  func dnsLookup(resolver: any DNSResolver, on eventLoop: any EventLoop) async throws {
     #if swift(>=6.3)
       @inline(always)
     #else
@@ -312,7 +310,7 @@ extension Connection {
 
       dnsResolutionReport = metrics
 
-      logger.debug(
+      Logger.current.debug(
         "DNS evaluating end with \(metrics.duration.formatted(.prettyPrinted())).",
         metadata: metadata
       )
@@ -342,22 +340,23 @@ extension Connection {
     }
   }
 
-  func ruleLookup(logger: Logger, rulesEngine: any RulesEngine) async throws {
+  func ruleLookup(engine: any RulesEngine) async throws {
     #if swift(>=6.3)
       @inline(always)
     #else
       @inline(__always)
     #endif
     func execute() async -> ForwardingReport? {
-      let metrics = await rulesEngine.executeAllRules(connection: self)
+      let metrics = await engine.executeAllRules(connection: self)
       assert(metrics._forwardingRule != nil)
       assert(metrics._forwardProtocol != nil)
       forwardingReport = metrics
 
-      logger.debug(
+      Logger.current.debug(
         "Rule evaluating end with \(metrics.duration.formatted(.prettyPrinted())).",
         metadata: metadata)
-      logger.debug("Rule matched - \(metrics.forwardingRule ?? "FINAL")", metadata: metadata)
+      Logger.current.debug(
+        "Rule matched - \(metrics.forwardingRule ?? "FINAL")", metadata: metadata)
       return metrics
     }
 
@@ -365,7 +364,7 @@ extension Connection {
       let label = "task.rule-lookup.duration"
       let dimensions = [
         ("task.id", "\(id)"),
-        ("task.rule-lookup.rule_count", "\(rulesEngine.forwardingRules.count)"),
+        ("task.rule-lookup.rule_count", "\(engine.forwardingRules.count)"),
         ("task.rule-lookup.earliest_begin_date", Date.now.formatted()),
       ]
       let metrics = await Timer.measure(label: label, dimensions: dimensions) {
@@ -383,7 +382,6 @@ extension Connection {
   }
 
   func protocolLookup(
-    logger: Logger,
     outboundMode: OutboundMode,
     forwardProtocol: any ForwardProtocolConvertible,
     processResolver: any ProcessResolver,
@@ -399,10 +397,10 @@ extension Connection {
     func execute() async throws -> ForwardingReport? {
       try await withThrowingTaskGroup(of: Void.self) { g in
         g.addTask {
-          try await self.processLookup(logger: logger, processResolver: processResolver)
+          try await self.processLookup(resolver: processResolver)
         }
         g.addTask {
-          try await self.dnsLookup(logger: logger, resolver: dnsResolver, on: eventLoop)
+          try await self.dnsLookup(resolver: dnsResolver, on: eventLoop)
         }
         try await g.waitForAll()
       }
@@ -425,7 +423,7 @@ extension Connection {
           forwardProtocol: forwardProtocol.asForwardProtocol()
         )
       case .ruleBased:
-        try await self.ruleLookup(logger: logger, rulesEngine: rules)
+        try await self.ruleLookup(engine: rules)
         precondition(forwardingReport != nil)
         metrics = forwardingReport!
       }
@@ -438,7 +436,7 @@ extension Connection {
         $establishmentReport.withLock { $0?.usedProxy = true }
       }
 
-      logger.debug("Policy evaluating - \(`protocol`.name)", metadata: metadata)
+      Logger.current.debug("Policy evaluating - \(`protocol`.name)", metadata: metadata)
 
       return metrics
     }

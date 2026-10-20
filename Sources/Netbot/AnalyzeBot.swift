@@ -52,7 +52,7 @@ public actor AnalyzeBot {
   public init(group: any EventLoopGroup = .default) {
     self.group = group
     self.dns = .init(group: group)
-    self.core = .init(group: group, logger: logger)
+    self.core = .init(group: group)
   }
 
   /// Start analyze tunnel.
@@ -119,7 +119,6 @@ public actor AnalyzeBot {
     dns.$options.withLock {
       $0 = .init(
         group: $0.group,
-        logger: $0.logger,
         bindAddress: $0.bindAddress,
         additionalServers: additionalServers,
         mappings: $0.mappings,

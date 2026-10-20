@@ -12,7 +12,6 @@
 // ===----------------------------------------------------------------------=== //
 
 import Dispatch
-import Logging
 import NIOCore
 import NetbotProfile
 
@@ -146,9 +145,7 @@ struct NEClientTLSProvider<Bootstrap: NIOClientTCPBootstrapProtocol>: NIOClientT
         )
       }
     #else
-      let sslContext = try SSLContextCache.shared.syncSSLContext(
-        configuration: options, logger: Logger(label: "")
-      )
+      let sslContext = try SSLContextCache.shared.syncSSLContext(configuration: options)
 
       try self.init(context: sslContext, serverHostname: serverNameIndicator)
     #endif

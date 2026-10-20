@@ -12,7 +12,6 @@
 // ===----------------------------------------------------------------------=== //
 
 import Dispatch
-import Logging
 import NEAddressProcessing
 import NIOCore
 import NetbotNIO
@@ -31,7 +30,6 @@ import SynchronizationExtras
 
   public struct Options: Sendable {
     public let group: any EventLoopGroup
-    public let logger: Logger
     public let bindAddress: IPv4Address
     public let additionalServers: any Collection<Address> & Sendable
     public let mappings: any Collection<ProtocolDNS.Mapping> & Sendable
@@ -41,7 +39,6 @@ import SynchronizationExtras
 
     public init(
       group: any EventLoopGroup,
-      logger: Logger = Logger(label: "dns"),
       bindAddress: IPv4Address,
       additionalServers: any Collection<Address> & Sendable,
       mappings: any Collection<ProtocolDNS.Mapping> & Sendable,
@@ -50,7 +47,6 @@ import SynchronizationExtras
       maxRetryAttempts: Int = 3
     ) {
       self.group = group
-      self.logger = logger
       self.bindAddress = bindAddress
       self.additionalServers = additionalServers
       self.mappings = mappings
@@ -73,7 +69,6 @@ import SynchronizationExtras
   }
 
   var group: any EventLoopGroup { options.group }
-  public var logger: Logger { options.logger }
   package let parser = DNSParser()
 
   let availableAQueries: LRUCache<String, Task<[Expirable<ARecord>], any Error>>

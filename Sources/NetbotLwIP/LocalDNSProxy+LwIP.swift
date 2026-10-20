@@ -103,8 +103,8 @@ extension LocalDNSProxy {
         var message = try parser.parse(dnsPayload)
 
         var msg = "\(iphdr.sourceAddress) => \(iphdr.destinationAddress) \(iphdr.totalLength)"
-        logger.info("\(msg) \(message.formatted())")
-        logger.trace("\(msg) \(message.formatted(.detailed))")
+        Logger.current.info("\(msg) \(message.formatted())")
+        Logger.current.trace("\(msg) \(message.formatted(.detailed))")
 
         // TODO: Multiple Qestions.
         if let question = message.questions.first {
@@ -158,8 +158,8 @@ extension LocalDNSProxy {
         iphdr.totalLength = UInt16(iphdr.data.count + datagram.data.count)
 
         msg = "\(iphdr.sourceAddress) => \(iphdr.destinationAddress) \(iphdr.totalLength)"
-        logger.info("\(msg) \(message.formatted())")
-        logger.trace("\(msg) \(message.formatted(.detailed))")
+        Logger.current.info("\(msg) \(message.formatted())")
+        Logger.current.trace("\(msg) \(message.formatted(.detailed))")
 
         var data = iphdr.data
         data.append(contentsOf: datagram.data)
@@ -168,7 +168,7 @@ extension LocalDNSProxy {
         }
         handled.append(packetObject)
       } catch {
-        logger.error("Failed to process DNS packets \(error)")
+        Logger.current.error("Failed to process DNS packets \(error)")
       }
     }
 

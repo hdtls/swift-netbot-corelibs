@@ -11,7 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Logging
 import NIOCore
 import NIOHTTP1
 import NIOHTTPCompression
@@ -22,7 +21,6 @@ import NetbotLiteData
 extension CapabilityFlags {
 
   func buildTLS(
-    logger: Logger,
     connection session: Connection,
     decryptionDNSNames: [String],
     decryptionSSLPKCS12Bundle: NIOSSLPKCS12Bundle?,
@@ -68,8 +66,7 @@ extension CapabilityFlags {
                 },
                 privateKey: .privateKey(decryptionSSLPKCS12Bundle.privateKey)
               ),
-              eventLoop: inputStream.eventLoop,
-              logger: logger
+              eventLoop: inputStream.eventLoop
             )
             .flatMap { sslContext in
               inputStream.eventLoop.makeCompletedFuture {
@@ -86,8 +83,7 @@ extension CapabilityFlags {
             // plain HTTP request to HTTPS request.
             SSLContextCache.shared.sslContext(
               configuration: .makeClientConfiguration(),
-              eventLoop: outputStream.eventLoop,
-              logger: logger
+              eventLoop: outputStream.eventLoop
             )
             .flatMap { sslContext in
               outputStream.eventLoop.makeCompletedFuture {
@@ -103,7 +99,6 @@ extension CapabilityFlags {
   }
 
   func buildHTTP(
-    logger: Logger,
     connection session: Connection,
     inMemoryHTTPCaptureFilters: [String],
     onDiskHTTPCaptureFilters: [String],

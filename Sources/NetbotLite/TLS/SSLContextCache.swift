@@ -37,27 +37,26 @@ final public class SSLContextCache: Sendable {
 
   private let sslContextCache = LRUCache<BestEffortHashableTLSConfiguration, NIOSSLContext>(
     capacity: 8)
-  private let offloadQueue = DispatchQueue(label: "anlzr-nio.SSLContextCache.offload.queue")
+  private let offloadQueue = DispatchQueue(label: "analyze-nio.SSLContextCache.offload.queue")
 }
 
 @available(SwiftStdlib 6.0, *)
 extension SSLContextCache {
   public func sslContext(
     configuration: NIOSSL.TLSConfiguration,
-    eventLoop: any EventLoop,
-    logger: Logger
+    eventLoop: any EventLoop
   ) -> EventLoopFuture<NIOSSLContext> {
     let eqTLSConfiguration = BestEffortHashableTLSConfiguration(wrapping: configuration)
     let sslContext = self.sslContextCache.value(forKey: eqTLSConfiguration)
 
     if let sslContext = sslContext {
-      logger.trace(
+      Logger.current.trace(
         "found SSL context in cache",
         metadata: ["tls-cfg": "\(configuration)"])
       return eventLoop.makeSucceededFuture(sslContext)
     }
 
-    logger.trace(
+    Logger.current.trace(
       "creating new SSL context",
       metadata: ["tls-cfg": "\(configuration)"])
     let newSSLContext = self.offloadQueue.asyncWithFuture(eventLoop: eventLoop) {
@@ -71,21 +70,18 @@ extension SSLContextCache {
     return newSSLContext
   }
 
-  public func syncSSLContext(
-    configuration: NIOSSL.TLSConfiguration,
-    logger: Logger
-  ) throws -> NIOSSLContext {
+  public func syncSSLContext(configuration: NIOSSL.TLSConfiguration) throws -> NIOSSLContext {
     let eqTLSConfiguration = BestEffortHashableTLSConfiguration(wrapping: configuration)
     let sslContext = self.sslContextCache.value(forKey: eqTLSConfiguration)
 
     if let sslContext = sslContext {
-      logger.trace(
+      Logger.current.trace(
         "found SSL context in cache",
         metadata: ["tls-cfg": "\(configuration)"])
       return sslContext
     }
 
-    logger.trace(
+    Logger.current.trace(
       "creating new SSL context",
       metadata: ["tls-cfg": "\(configuration)"])
     let newSSLContext = try NIOSSLContext(configuration: configuration)

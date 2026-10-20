@@ -48,8 +48,6 @@
 
     private var expiredPath: (String, String) = ("", "")
 
-    private let logger = Logger(label: "path-monitor")
-
     /// Create a network path monitor to monitor overall network state for the
     /// system and to enumerate all interfaces that are available for
     /// general use by applications.
@@ -105,7 +103,7 @@
         }
         self.expiredPath = (ssid, address)
 
-        self.logger.info("Network has been changed to \(ssid), New IP address: \(address)")
+        Logger.current.info("Network has been changed to \(ssid), New IP address: \(address)")
 
         let content = UNMutableNotificationContent()
         content.title = String(

@@ -11,7 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Logging
 import NetbotLiteData
 import NetbotNIO
 import Testing
@@ -22,7 +21,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func processReportService() async throws {
-    let application = AnalyzeBot(group: .default, logger: .init(label: ""))
+    let application = AnalyzeBot(group: .default)
 
     #expect(application.processResolver is DefaultProcessResolver)
     let p = try await application.processResolver.processInfo(connection: .init())

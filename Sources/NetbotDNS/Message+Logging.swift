@@ -11,8 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Logging
-
 @available(SwiftStdlib 6.0, *)
 extension Message {
 

@@ -22,9 +22,6 @@
   }
 
   @available(SwiftStdlib 6.0, *)
-  private let logger = Logger(label: "UserNotifications")
-
-  @available(SwiftStdlib 6.0, *)
   extension UNUserNotificationCenter {
 
     public static var `default`: UNUserNotificationCenter {
@@ -52,7 +49,7 @@
           break
         }
       } catch {
-        logger.error(
+        Logger.current.error(
           "perform user notification failure with error: \(error.localizedDescription)"
         )
       }

@@ -11,7 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Logging
 import NIOCore
 import NetbotLiteData
 
@@ -34,13 +33,10 @@ public protocol ForwardProtocol: Sendable {
   /// Creates a new connection for specified target.
   ///
   /// - Parameters:
-  ///   - logger: The `Logger` that will be used to log messages.
-  ///   - connection: The `Connection` contains target meta data.
+  ///   - context: The `Connection` contains target meta data.
   ///   - eventLoop: The `EventLoop` whitch is used by this `ForwardProtocol` for execution.
   /// - Returns: The connected channel.
-  func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
-    async throws
-    -> any Channel
+  func makeConnection(context: Connection, on eventLoop: any EventLoop) async throws -> any Channel
 }
 
 /// A `ProxiableForwardProtocol` declares the programmatic interface for an object that provides a proxy tunnel.

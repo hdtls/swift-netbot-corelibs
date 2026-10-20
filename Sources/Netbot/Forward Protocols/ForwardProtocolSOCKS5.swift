@@ -12,7 +12,6 @@
 // ===----------------------------------------------------------------------=== //
 
 import CoWOptimization
-import Logging
 import NEAddressProcessing
 import NESOCKS
 import NIOCore
@@ -98,10 +97,11 @@ extension ForwardProtocolSOCKS5._Storage: @unchecked Sendable {}
 @available(SwiftStdlib 6.0, *)
 extension ForwardProtocolSOCKS5: ProxiableForwardProtocol {
 
-  func makeConnection(logger: Logger, connection: Connection, on eventLoop: any EventLoop)
-    async throws -> any Channel
-  {
-    guard let destinationAddress = connection.originalRequest?.address else {
+  func makeConnection(
+    context: Connection,
+    on eventLoop: any EventLoop
+  ) async throws -> any Channel {
+    guard let destinationAddress = context.originalRequest?.address else {
       throw SocketAddressError.unsupported
     }
 

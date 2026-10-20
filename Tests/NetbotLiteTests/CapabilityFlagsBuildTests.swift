@@ -11,7 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Logging
 import NIOCore
 import NIOEmbedded
 import NIOSSL
@@ -28,7 +27,6 @@ struct CapabilityFlagsBuildTests {
     let outputStream = EmbeddedChannel()
     CapabilityFlags.httpsDecryption
       .buildTLS(
-        logger: .init(label: "tls"),
         connection: .init(),
         decryptionDNSNames: [],
         decryptionSSLPKCS12Bundle: nil,
@@ -47,7 +45,6 @@ struct CapabilityFlagsBuildTests {
     let outputStream = EmbeddedChannel()
     CapabilityFlags.httpsDecryption
       .buildHTTP(
-        logger: .init(label: "http"),
         connection: .init(),
         inMemoryHTTPCaptureFilters: [],
         onDiskHTTPCaptureFilters: [],

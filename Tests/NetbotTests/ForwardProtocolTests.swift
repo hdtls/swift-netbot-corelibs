@@ -11,7 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Logging
 import NIOCore
 import NIOEmbedded
 import NetbotLite
@@ -29,12 +28,11 @@ struct ForwardProtocolTests {
     let proto = ForwardProtocolRejectTinyGIF()
     #expect(proto.name == "REJECT-TINYGIF")
 
-    let logger = Logger(label: "test")
     let connection = Connection()
     let eventLoop = EmbeddedEventLoop()
 
     await #expect(throws: AnalyzeError.self) {
-      try await proto.makeConnection(logger: logger, connection: connection, on: eventLoop)
+      try await proto.makeConnection(context: connection, on: eventLoop)
     }
   }
 
@@ -43,12 +41,11 @@ struct ForwardProtocolTests {
   func rejectHasCorrectNameAndAlwaysThrowsErrorWhenMakeNewConnection() async throws {
     let proto = ForwardProtocolReject()
     #expect(proto.name == "REJECT")
-    let logger = Logger(label: "test")
     let connection = Connection()
     let eventLoop = EmbeddedEventLoop()
 
     await #expect(throws: AnalyzeError.self) {
-      try await proto.makeConnection(logger: logger, connection: connection, on: eventLoop)
+      try await proto.makeConnection(context: connection, on: eventLoop)
     }
   }
 

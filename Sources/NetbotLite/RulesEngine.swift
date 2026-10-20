@@ -11,7 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Logging
 import NEAddressProcessing
 import NIOCore
 import NetbotDNS
@@ -39,16 +38,12 @@ public protocol RulesEngine: Sendable {
 @available(SwiftStdlib 6.0, *)
 @Lockable final class DefaultRulesEngine: RulesEngine {
 
-  let logger: Logger
-
   var forwardingRules: [any ForwardingRuleConvertible] = []
 
   let cache = LRUCache<String, any ForwardingRule>(capacity: 100)
   private let inFlightLookups = Mutex<[String: Task<ForwardingReport, Never>]>([:])
 
-  init(logger: Logger) {
-    self.logger = logger
-  }
+  init() {}
 
   func setForwardingRules(_ forwardingRules: [any ForwardingRuleConvertible]) {
     $forwardingRules.withLock { $0 = forwardingRules }

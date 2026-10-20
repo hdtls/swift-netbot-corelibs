@@ -11,7 +11,6 @@
 //
 // ===----------------------------------------------------------------------=== //
 
-import Logging
 import NEAddressProcessing
 import NIOCore
 import NetbotDNS
@@ -36,7 +35,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func setForwardingRules() async throws {
-    let service = DefaultRulesEngine(logger: .init(label: ""))
+    let service = DefaultRulesEngine()
     #expect(service.forwardingRules.isEmpty)
     #expect(service.cache.isEmpty)
 
@@ -58,7 +57,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func ruleLookupWithoutCache() async throws {
-    let service = DefaultRulesEngine(logger: .init(label: ""))
+    let service = DefaultRulesEngine()
     service.setForwardingRules([_FinalForwardingRule()])
 
     let connection = Connection()
@@ -71,7 +70,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func ruleLookupWithCache() async throws {
-    let service = DefaultRulesEngine(logger: .init(label: ""))
+    let service = DefaultRulesEngine()
     service.setForwardingRules([_FinalForwardingRule()])
 
     let connection = Connection()
@@ -89,7 +88,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func ruleLookupForConnectionThatOriginalRequestIsNil() async throws {
-    let service = DefaultRulesEngine(logger: .init(label: ""))
+    let service = DefaultRulesEngine()
     service.setForwardingRules([_FinalForwardingRule()])
 
     let connection = Connection()
@@ -104,7 +103,7 @@ import Testing
 
   @available(SwiftStdlib 6.0, *)
   @Test func inFlightTaskWorks() async throws {
-    let service = DefaultRulesEngine(logger: .init(label: ""))
+    let service = DefaultRulesEngine()
     service.setForwardingRules([_FinalForwardingRule()])
 
     let connection = Connection()
@@ -128,7 +127,7 @@ import Testing
       }
     }
 
-    let service = DefaultRulesEngine(logger: .init(label: ""))
+    let service = DefaultRulesEngine()
     service.setForwardingRules([MockForwardingRule(), MockForwardingRule()])
 
     let connection = Connection()
@@ -146,7 +145,7 @@ import Testing
       var forwardProtocol: any ForwardProtocolConvertible { .reject }
     }
 
-    let service = DefaultRulesEngine(logger: .init(label: ""))
+    let service = DefaultRulesEngine()
     service.setForwardingRules([MockForwardingRule()])
 
     let connection = Connection()
@@ -171,7 +170,7 @@ import Testing
       }
     }
 
-    let service = DefaultRulesEngine(logger: .init(label: ""))
+    let service = DefaultRulesEngine()
     service.setForwardingRules([MockForwardingRule(), _FinalForwardingRule()])
 
     let connection = Connection()
