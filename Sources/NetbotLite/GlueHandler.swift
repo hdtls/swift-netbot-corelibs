@@ -18,7 +18,8 @@ final class GlueHandler: ChannelHandler, @unchecked Sendable {
 
   private weak var partner: GlueHandler?
 
-  private var context: ChannelHandlerContext?
+  private var eventLoop: (any EventLoop)?
+  private var context: NIOLoopBound<ChannelHandlerContext>?
 
   private var pendingRead: Bool = false
 
@@ -35,8 +36,8 @@ final class GlueHandler: ChannelHandler, @unchecked Sendable {
   }
 
   func handlerAdded(context: ChannelHandlerContext) {
-    partner?.context?.eventLoop.assertInEventLoop()
-    self.context = context
+    self.context = context.loopBound
+    self.eventLoop = context.eventLoop
   }
 
   func handlerRemoved(context: ChannelHandlerContext) {
@@ -45,26 +46,35 @@ final class GlueHandler: ChannelHandler, @unchecked Sendable {
   }
 
   private func close(mode: CloseMode = .all, promise: EventLoopPromise<Void>?) {
-    context?.close(mode: mode, promise: promise)
+    eventLoop?.execute {
+      self.context?.value.close(mode: mode, promise: promise)
+    }
   }
 
   private func write(_ data: NIOAny, promise: EventLoopPromise<Void>?) {
-    context?.write(data, promise: promise)
+    let data = NIOLoopBound(data, eventLoop: eventLoop!)
+    eventLoop?.execute {
+      self.context?.value.write(data.value, promise: promise)
+    }
   }
 
   private func flush() {
-    context?.flush()
+    eventLoop?.execute {
+      self.context?.value.flush()
+    }
   }
 
   private func becameWritable() {
     if pendingRead {
       pendingRead = false
-      context?.read()
+      eventLoop?.execute {
+        self.context?.value.read()
+      }
     }
   }
 
   private var isWritable: Bool {
-    return context?.channel.isWritable ?? false
+    return context?.value.channel.isWritable ?? false
   }
 }
 
@@ -75,26 +85,22 @@ extension GlueHandler: ChannelInboundHandler {
 
   func channelInactive(context: ChannelHandlerContext) {
     context.fireChannelInactive()
-    partner?.context?.eventLoop.assertInEventLoop()
     partner?.close(promise: nil)
   }
 
   func channelRead(context: ChannelHandlerContext, data: NIOAny) {
     context.fireChannelRead(data)
-    partner?.context?.eventLoop.assertInEventLoop()
     partner?.write(data, promise: nil)
   }
 
   func channelReadComplete(context: ChannelHandlerContext) {
     context.fireChannelReadComplete()
-    partner?.context?.eventLoop.assertInEventLoop()
     partner?.flush()
   }
 
   func channelWritabilityChanged(context: ChannelHandlerContext) {
     context.fireChannelWritabilityChanged()
     if context.channel.isWritable {
-      partner?.context?.eventLoop.assertInEventLoop()
       partner?.becameWritable()
     }
   }
@@ -103,7 +109,6 @@ extension GlueHandler: ChannelInboundHandler {
     context.fireUserInboundEventTriggered(event)
 
     if let event = event as? ChannelEvent, case .inputClosed = event {
-      partner?.context?.eventLoop.assertInEventLoop()
       // We have read EOF.
       partner?.close(mode: .output, promise: nil)
     }
@@ -115,7 +120,6 @@ extension GlueHandler: ChannelInboundHandler {
 
   func errorCaught(context: ChannelHandlerContext, error: any Error) {
     context.fireErrorCaught(error)
-    partner?.context?.eventLoop.assertInEventLoop()
     partner?.close(promise: nil)
   }
 }
@@ -126,11 +130,23 @@ extension GlueHandler: ChannelOutboundHandler {
   typealias OutboundIn = NIOAny
 
   func read(context: ChannelHandlerContext) {
-    partner?.context?.eventLoop.assertInEventLoop()
-    if let partner, partner.isWritable {
-      context.read()
-    } else {
+    guard let partner else {
       pendingRead = true
+      return
+    }
+
+    let context = context.loopBound
+
+    partner.eventLoop?.execute {
+      if partner.isWritable {
+        self.eventLoop?.execute {
+          context.value.read()
+        }
+      } else {
+        self.eventLoop?.execute {
+          self.pendingRead = true
+        }
+      }
     }
   }
 }
