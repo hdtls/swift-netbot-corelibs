@@ -12,7 +12,6 @@
 // ===----------------------------------------------------------------------=== //
 
 import Alamofire
-import Dispatch
 import Logging
 import Synchronization
 import SynchronizationExtras
@@ -38,48 +37,6 @@ import SynchronizationExtras
   @Observable
 #endif
 @MainActor final public class AirPort {
-
-  struct AirPortMonitor: Sendable {
-
-    private let publicIPs: @Sendable () async throws -> Void
-
-    private let start:
-      @Sendable (
-        _ queue: DispatchQueue,
-        _ onResult: @escaping @Sendable (_ result: AirPortPath) -> Void
-      ) throws -> Void
-
-    private let stop: @Sendable () throws -> Void
-
-    init(
-      publicIPs: @Sendable @escaping () async throws -> Void,
-      start:
-        @escaping @Sendable (
-          _ queue: DispatchQueue,
-          _ onResult: @escaping @Sendable (_ result: AirPortPath) -> Void
-        ) throws -> Void,
-      stop: @escaping @Sendable () throws -> Void
-    ) {
-      self.publicIPs = publicIPs
-      self.start = start
-      self.stop = stop
-    }
-
-    nonisolated func startListening(
-      on queue: DispatchQueue = .main,
-      onResult: @escaping @Sendable (AirPortPath) -> Void
-    ) throws {
-      try start(queue, onResult)
-    }
-
-    nonisolated func stopListening() throws {
-      try stop()
-    }
-
-    nonisolated func requestPublicIPs() async throws {
-      try await publicIPs()
-    }
-  }
 
   /// Channel width values.
   public enum ChannelWidth: Int, Sendable {
@@ -378,372 +335,201 @@ import SynchronizationExtras
 
   private let logger = Logger(label: "AirPort")
 
-  nonisolated private let monitor: AirPortMonitor
-
   /// Create a new instance of `AirPort`.
-  nonisolated public convenience init() {
+  nonisolated public init() {
+  }
+
+  /// Request air port info for current connected Wi-Fi.
+  @concurrent public func requestAirPortInfo() async throws {
     #if os(macOS)
-      self.init(monitor: .init(monitor: CWAirPortMonitor()))
-    #else
-      self.init(
-        monitor: .init(
-          publicIPs: {
+      if let interface = CWWiFiClient.shared().interface() {
+        let name = interface.interfaceName ?? "N/A"
+        let powerOn = interface.powerOn()
+        let activePHYMode = PHYMode(rawValue: interface.activePHYMode().rawValue) ?? .none
+        let ssid = interface.ssid() ?? "N/A"
+        let bssid = interface.bssid() ?? "N/A"
+        let rssi = interface.rssiValue()
+        let noise = interface.noiseMeasurement()
+        let security = Security(rawValue: interface.security().rawValue) ?? .none
+        let transmitRate = interface.transmitRate()
+        let countryCode = interface.countryCode() ?? "N/A"
+        let transmitPower = interface.transmitPower()
+        let hardwareAddress = interface.hardwareAddress() ?? "N/A"
+        let channelNumber = interface.wlanChannel()?.channelNumber ?? 11
+        let channelBand =
+          ChannelBand(
+            rawValue: (interface.wlanChannel()?.channelBand ?? .bandUnknown).rawValue
+          ) ?? .unknown
+        let channelWidth =
+          ChannelWidth(rawValue: (interface.wlanChannel()?.channelWidth ?? .widthUnknown).rawValue)
+          ?? .unknown
 
-          },
-          start: { _, _ in
+        await MainActor.run {
+          currentPath.name = name
+          currentPath.powerOn = powerOn
+          currentPath.activePHYMode = activePHYMode
+          currentPath.ssid = ssid
+          currentPath.bssid = bssid
+          currentPath.rssi = rssi
+          currentPath.noise = noise
+          currentPath.security = security
+          currentPath.transmitRate = transmitRate
+          currentPath.countryCode = countryCode
+          currentPath.transmitPower = transmitPower
+          currentPath.hardwareAddress = hardwareAddress
+          currentPath.channelNumber = channelNumber
+          currentPath.channelBand = channelBand
+          currentPath.channelWidth = channelWidth
+        }
+      }
 
-          },
-          stop: {
+      let interfaceName = await currentPath.name
+      let processName = ProcessInfo.processInfo.processName
+      guard let pref = SCPreferencesCreate(nil, processName as CFString, nil) else {
+        return
+      }
 
-          }))
+      var services = SCNetworkServiceCopyAll(pref) as? [SCNetworkService] ?? []
+      services = services.filter {
+        guard let interface = SCNetworkServiceGetInterface($0) else {
+          return false
+        }
+        guard SCNetworkInterfaceGetBSDName(interface) as? String == interfaceName else {
+          return false
+        }
+        return true
+      }
+      guard let service = services.first, let interface = SCNetworkServiceGetInterface(service)
+      else {
+        return
+      }
+
+      var mtu: Int32 = 1500
+      SCNetworkInterfaceCopyMTU(interface, &mtu, nil, nil)
+      await MainActor.run { currentPath.mtu = mtu }
+
+      var mediaSubType = "N/A"
+      var available: Unmanaged<CFArray>?
+      let success = SCNetworkInterfaceCopyMediaOptions(interface, nil, nil, &available, false)
+      if success, let available = available?.takeRetainedValue() {
+        let copied = SCNetworkInterfaceCopyMediaSubTypes(available) as NSArray?
+        mediaSubType = copied?.firstObject as? String ?? "N/A"
+        await MainActor.run { currentPath.mediaSubType = mediaSubType }
+      }
+
+      let store = SCDynamicStoreCreate(nil, processName as CFString, nil, nil)
+      guard let store, let id = SCNetworkServiceGetServiceID(service) else {
+        await MainActor.run {
+          currentPath.mtu = mtu
+          currentPath.mediaSubType = mediaSubType
+        }
+        return
+      }
+
+      // Copy DNS servers from dynamic store.
+      var key = SCDynamicStoreKeyCreateNetworkServiceEntity(
+        nil,
+        kSCDynamicStoreDomainState,
+        id,
+        kSCEntNetDNS
+      )
+      if let propertyList = SCDynamicStoreCopyValue(store, key) {
+        if let serverAddresses = propertyList.object(forKey: kSCPropNetDNSServerAddresses)
+          as? [String]
+        {
+          await MainActor.run {
+            currentPath.networkService.dnsServers = serverAddresses
+          }
+        }
+      }
+
+      // Copy IPv4 info from dynamic store.
+      key = SCDynamicStoreKeyCreateNetworkServiceEntity(
+        nil,
+        kSCDynamicStoreDomainState,
+        id,
+        kSCEntNetIPv4
+      )
+      if let propertyList = SCDynamicStoreCopyValue(store, key) {
+        let router = propertyList[kSCPropNetIPv4Router] as? String ?? ""
+        let addresses = propertyList[kSCPropNetIPv4Addresses] as? [String] ?? []
+        let subnetMasks = propertyList[kSCPropNetIPv4SubnetMasks] as? [String] ?? []
+        await MainActor.run {
+          currentPath.networkService.v4.router = router
+          currentPath.networkService.v4.addresses = addresses
+          currentPath.networkService.v4.subnetMasks = subnetMasks
+        }
+      }
+
+      // Copy IPv4 config method from dynamic store.
+      key = SCDynamicStoreKeyCreateNetworkServiceEntity(
+        nil,
+        kSCDynamicStoreDomainSetup,
+        id,
+        kSCEntNetIPv4
+      )
+      if let propertyList = SCDynamicStoreCopyValue(store, key) {
+        let configMethod = propertyList[kSCPropNetIPv4ConfigMethod] as? String ?? ""
+        await MainActor.run {
+          currentPath.networkService.v4.configMethod = configMethod
+        }
+      }
+
+      // Copy IPv6 info from dynamic store.
+      key = SCDynamicStoreKeyCreateNetworkServiceEntity(
+        nil,
+        kSCDynamicStoreDomainState,
+        id,
+        kSCEntNetIPv6
+      )
+      if let propertyList = SCDynamicStoreCopyValue(store, key) {
+        let router = propertyList[kSCPropNetIPv6Router] as? String ?? ""
+        let addresses = propertyList[kSCPropNetIPv6Addresses] as? [String] ?? []
+        let flags = propertyList[kSCPropNetIPv6Flags] as? [String] ?? []
+        let prefixLength = propertyList[kSCPropNetIPv6PrefixLength] as? String ?? ""
+        await MainActor.run {
+          currentPath.networkService.v6.router = router
+          currentPath.networkService.v6.addresses = addresses
+          currentPath.networkService.v6.flags = flags
+          currentPath.networkService.v6.prefixLength = prefixLength
+        }
+      }
+
+      // Copy IPv6 config method from dynamic store.
+      key = SCDynamicStoreKeyCreateNetworkServiceEntity(
+        nil,
+        kSCDynamicStoreDomainSetup,
+        id,
+        kSCEntNetIPv6
+      )
+      if let propertyList = SCDynamicStoreCopyValue(store, key) {
+        let configMethod = propertyList[kSCPropNetIPv6ConfigMethod] as? String ?? ""
+        await MainActor.run {
+          currentPath.networkService.v6.configMethod = configMethod
+        }
+      }
     #endif
-  }
-
-  nonisolated init(monitor: AirPortMonitor) {
-    self.monitor = monitor
-  }
-
-  deinit {
-    stopListening()
   }
 
   /// Request public IPs for current connected Wi-Fi.
   @concurrent public func requestPublicIPs() async throws {
-    try await monitor.requestPublicIPs()
-  }
+    #if os(macOS)
+      let configuration = URLSessionConfiguration.default
+      configuration.proxyConfigurations = []
+      configuration.connectionProxyDictionary = [:]
 
-  /// Start listening Wi-Fi changes.
-  nonisolated public func startListening() {
-    do {
-      try monitor.startListening { device in
-        Task { @MainActor in
-          self.currentPath = device
-        }
+      let session = Alamofire.Session(configuration: configuration)
+      let addresses = try? await session.request("https://icanhazip.com").serializingString()
+        .value
+        .components(separatedBy: .whitespacesAndNewlines)
+
+      await MainActor.run {
+        currentPath.publicIPs = addresses ?? []
+        currentPath.addressesUpdatedDate = .now
       }
-    } catch {
-      logger.error("\(error)")
-    }
-  }
-
-  /// Stop listening Wi-Fi changes.
-  nonisolated public func stopListening() {
-    do {
-      try monitor.stopListening()
-    } catch {
-      logger.error("\(error)")
-    }
+    #endif
   }
 }
-
-#if os(macOS)
-  @available(SwiftStdlib 6.0, *)
-  extension AirPort {
-    @Lockable final fileprivate class CWAirPortMonitor: Sendable {
-
-      private var currentPath: AirPortPath = .init()
-
-      fileprivate nonisolated var client: CWWiFiClient { CWWiFiClient.shared() }
-
-      private var onResult: (@Sendable (AirPortPath) -> Void)? = nil
-      private var queue: DispatchQueue = .main
-
-      nonisolated func startListening(
-        on queue: DispatchQueue = .main,
-        onResult: @escaping @Sendable (AirPortPath) -> Void
-      ) throws {
-        self.queue = queue
-        self.onResult = onResult
-        try client.startMonitoringEvent(with: .ssidDidChange)
-        try client.startMonitoringEvent(with: .bssidDidChange)
-        try client.startMonitoringEvent(with: .countryCodeDidChange)
-        try client.startMonitoringEvent(with: .linkQualityDidChange)
-
-        update()
-      }
-
-      nonisolated func stopListening() throws {
-        self.onResult = nil
-        try client.stopMonitoringAllEvents()
-      }
-
-      nonisolated private func update() {
-        Task {
-          await withTaskGroup { g in
-            g.addTask {
-              await self.requestAirPortInfo()
-            }
-            g.addTask {
-              await self.requestPublicIPs()
-            }
-            await g.waitForAll()
-          }
-
-          queue.async { [weak self] in
-            guard let self else { return }
-            onResult?(currentPath)
-          }
-        }
-      }
-
-      @concurrent private func requestAirPortInfo() async {
-        if let interface = CWWiFiClient.shared().interface() {
-          $currentPath.withLock { currentPath in
-            currentPath.name = interface.interfaceName ?? "N/A"
-            currentPath.powerOn = interface.powerOn()
-            currentPath.activePHYMode =
-              .init(
-                rawValue: interface.activePHYMode().rawValue
-              ) ?? .none
-            currentPath.ssid = interface.ssid() ?? "N/A"
-            currentPath.bssid = interface.bssid() ?? "N/A"
-            currentPath.rssi = interface.rssiValue()
-            currentPath.noise = interface.noiseMeasurement()
-            currentPath.security = .init(rawValue: interface.security().rawValue) ?? .none
-            currentPath.transmitRate = interface.transmitRate()
-            currentPath.countryCode = interface.countryCode() ?? "N/A"
-            currentPath.transmitPower = interface.transmitPower()
-            currentPath.hardwareAddress = interface.hardwareAddress() ?? "N/A"
-            currentPath.channelNumber = interface.wlanChannel()?.channelNumber ?? 11
-            currentPath.channelBand =
-              .init(
-                rawValue: (interface.wlanChannel()?.channelBand ?? .bandUnknown).rawValue
-              ) ?? .unknown
-            currentPath.channelWidth =
-              .init(rawValue: (interface.wlanChannel()?.channelWidth ?? .widthUnknown).rawValue)
-              ?? .unknown
-          }
-        }
-
-        let processName = ProcessInfo.processInfo.processName
-        guard let pref = SCPreferencesCreate(nil, processName as CFString, nil) else {
-          return
-        }
-
-        var services = SCNetworkServiceCopyAll(pref) as? [SCNetworkService] ?? []
-        services = services.filter {
-          guard let interface = SCNetworkServiceGetInterface($0) else {
-            return false
-          }
-          guard SCNetworkInterfaceGetBSDName(interface) as? String == currentPath.name else {
-            return false
-          }
-          return true
-        }
-        guard let service = services.first, let interface = SCNetworkServiceGetInterface(service)
-        else {
-          return
-        }
-
-        var mtu: Int32 = 1500
-        SCNetworkInterfaceCopyMTU(interface, &mtu, nil, nil)
-        $currentPath.withLock { $0.mtu = mtu }
-
-        var mediaSubType = "N/A"
-        var available: Unmanaged<CFArray>?
-        let success = SCNetworkInterfaceCopyMediaOptions(interface, nil, nil, &available, false)
-        if success, let available = available?.takeRetainedValue() {
-          let copied = SCNetworkInterfaceCopyMediaSubTypes(available) as NSArray?
-          mediaSubType = copied?.firstObject as? String ?? "N/A"
-          $currentPath.withLock { $0.mediaSubType = mediaSubType }
-        }
-
-        let store = SCDynamicStoreCreate(nil, processName as CFString, nil, nil)
-        guard let store, let id = SCNetworkServiceGetServiceID(service) else {
-          $currentPath.withLock { currentPath in
-            currentPath.mtu = mtu
-            currentPath.mediaSubType = mediaSubType
-          }
-          return
-        }
-
-        // Copy DNS servers from dynamic store.
-        var key = SCDynamicStoreKeyCreateNetworkServiceEntity(
-          nil,
-          kSCDynamicStoreDomainState,
-          id,
-          kSCEntNetDNS
-        )
-        if let propertyList = SCDynamicStoreCopyValue(store, key) {
-          if let serverAddresses = propertyList.object(forKey: kSCPropNetDNSServerAddresses)
-            as? [String]
-          {
-            $currentPath.withLock {
-              $0.networkService.dnsServers = serverAddresses
-            }
-          }
-        }
-
-        // Copy IPv4 info from dynamic store.
-        key = SCDynamicStoreKeyCreateNetworkServiceEntity(
-          nil,
-          kSCDynamicStoreDomainState,
-          id,
-          kSCEntNetIPv4
-        )
-        if let propertyList = SCDynamicStoreCopyValue(store, key) {
-          $currentPath.withLock {
-            $0.networkService.v4.router = propertyList[kSCPropNetIPv4Router] as? String ?? ""
-            $0.networkService.v4.addresses =
-              propertyList[kSCPropNetIPv4Addresses] as? [String] ?? []
-            $0.networkService.v4.subnetMasks =
-              propertyList[kSCPropNetIPv4SubnetMasks] as? [String] ?? []
-          }
-        }
-
-        // Copy IPv4 config method from dynamic store.
-        key = SCDynamicStoreKeyCreateNetworkServiceEntity(
-          nil,
-          kSCDynamicStoreDomainSetup,
-          id,
-          kSCEntNetIPv4
-        )
-        if let propertyList = SCDynamicStoreCopyValue(store, key) {
-          $currentPath.withLock {
-            $0.networkService.v4.configMethod =
-              propertyList[kSCPropNetIPv4ConfigMethod] as? String ?? ""
-          }
-        }
-
-        // Copy IPv6 info from dynamic store.
-        key = SCDynamicStoreKeyCreateNetworkServiceEntity(
-          nil,
-          kSCDynamicStoreDomainState,
-          id,
-          kSCEntNetIPv6
-        )
-        if let propertyList = SCDynamicStoreCopyValue(store, key) {
-          $currentPath.withLock {
-            $0.networkService.v6.router = propertyList[kSCPropNetIPv6Router] as? String ?? ""
-            $0.networkService.v6.addresses =
-              propertyList[kSCPropNetIPv6Addresses] as? [String] ?? []
-            $0.networkService.v6.flags = propertyList[kSCPropNetIPv6Flags] as? [String] ?? []
-            $0.networkService.v6.prefixLength =
-              propertyList[kSCPropNetIPv6PrefixLength] as? String ?? ""
-          }
-        }
-
-        // Copy IPv6 config method from dynamic store.
-        key = SCDynamicStoreKeyCreateNetworkServiceEntity(
-          nil,
-          kSCDynamicStoreDomainSetup,
-          id,
-          kSCEntNetIPv6
-        )
-        if let propertyList = SCDynamicStoreCopyValue(store, key) {
-          $currentPath.withLock {
-            $0.networkService.v6.configMethod =
-              propertyList[kSCPropNetIPv6ConfigMethod] as? String ?? ""
-          }
-        }
-      }
-
-      @concurrent func requestPublicIPs() async {
-        let configuration = URLSessionConfiguration.default
-        configuration.proxyConfigurations = []
-        configuration.connectionProxyDictionary = [:]
-
-        let session = Alamofire.Session(configuration: configuration)
-        let addresses = try? await session.request("https://icanhazip.com").serializingString()
-          .value
-          .components(separatedBy: .whitespacesAndNewlines)
-
-        $currentPath.withLock { currentPath in
-          currentPath.publicIPs = addresses ?? []
-          currentPath.addressesUpdatedDate = .now
-        }
-
-        queue.async { [weak self] in
-          guard let self else { return }
-          onResult?(currentPath)
-        }
-      }
-    }
-  }
-
-  @available(SwiftStdlib 6.0, *)
-  extension AirPort.CWAirPortMonitor {
-
-    func clientConnectionInterrupted() {
-      update()
-    }
-
-    func clientConnectionInvalidated() {
-      update()
-    }
-
-    func ssidDidChangeForWiFiInterface(withName interfaceName: String) {
-      guard currentPath.name == interfaceName else {
-        return
-      }
-      let ssid = client.interface()?.ssid()
-      currentPath.ssid = ssid ?? "N/A"
-
-      queue.async { [weak self] in
-        guard let self else { return }
-        onResult?(currentPath)
-      }
-    }
-
-    func bssidDidChangeForWiFiInterface(withName interfaceName: String) {
-      guard currentPath.name == interfaceName else {
-        return
-      }
-      let bssid = client.interface()?.bssid()
-      currentPath.bssid = bssid ?? "N/A"
-
-      queue.async { [weak self] in
-        guard let self else { return }
-        onResult?(currentPath)
-      }
-    }
-
-    func countryCodeDidChangeForWiFiInterface(withName interfaceName: String) {
-      guard currentPath.name == interfaceName else {
-        return
-      }
-      let countryCode = client.interface()?.countryCode()
-      currentPath.countryCode = countryCode ?? "N/A"
-
-      queue.async { [weak self] in
-        guard let self else { return }
-        onResult?(currentPath)
-      }
-    }
-
-    func linkQualityDidChangeForWiFiInterface(
-      withName interfaceName: String,
-      rssi: Int,
-      transmitRate: Double
-    ) {
-      guard currentPath.name == interfaceName else {
-        return
-      }
-      let rssi = client.interface()?.rssiValue()
-      let transmitRate = client.interface()?.transmitRate()
-      currentPath.rssi = rssi ?? 0
-      currentPath.transmitRate = transmitRate ?? 0
-
-      queue.async { [weak self] in
-        guard let self else { return }
-        onResult?(currentPath)
-      }
-    }
-  }
-
-  @available(SwiftStdlib 6.0, *)
-  extension AirPort.CWAirPortMonitor: nonisolated CWEventDelegate {
-  }
-
-  @available(SwiftStdlib 6.0, *)
-  extension AirPort.AirPortMonitor {
-
-    fileprivate init(monitor: AirPort.CWAirPortMonitor) {
-      publicIPs = monitor.requestPublicIPs
-      start = monitor.startListening
-      stop = monitor.stopListening
-    }
-  }
-#endif
 
 @available(SwiftStdlib 6.0, *)
 extension AirPort.ChannelWidth {
