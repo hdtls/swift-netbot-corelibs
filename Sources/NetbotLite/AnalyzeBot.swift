@@ -49,11 +49,11 @@ import Tracing
 
   /// Address of web proxy (HTTP/HTTPS) server will bind if present.
   @LockableTracked(accessors: .get)
-  public var webProxyListenAddress: Address = .hostPort(host: "127.0.0.1", port: 6152)
+  public var webProxyListenAddress: Address = .hostPort(host: "127.0.0.1", port: 3128)
 
   /// Address of SOCKS proxy server will bind if present.
   @LockableTracked(accessors: .get)
-  public var socksProxyListenAddress: Address = .hostPort(host: "127.0.0.1", port: 1080)
+  public var socksProxyListenAddress: Address = .hostPort(host: "127.0.0.1", port: .socks)
 
   /// The outbound mode control how requests will be process.
   @LockableTracked(accessors: .get)

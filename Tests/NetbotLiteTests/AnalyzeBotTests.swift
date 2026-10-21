@@ -100,7 +100,7 @@ import Testing
   @Test func initializer() async throws {
     let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     let bot = AnalyzeBot(group: group)
-    #expect(bot.webProxyListenAddress == .hostPort(host: "127.0.0.1", port: 6152))
+    #expect(bot.webProxyListenAddress == .hostPort(host: "127.0.0.1", port: 3128))
     #expect(bot.socksProxyListenAddress == .hostPort(host: "127.0.0.1", port: 1080))
     #expect(bot.outboundMode == .direct)
     #expect(bot.forwardProtocol.asForwardProtocol().name == "DIRECT")
