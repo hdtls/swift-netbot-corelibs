@@ -187,9 +187,10 @@ import Tracing
   public func run() async throws {
     try await withSpan("run") { _ in
       try await withThrowingDiscardingTaskGroup { g in
-        g.addTask(name: "HTTP over \(self.webProxyListenAddress)") {
-          try await withSpan("HTTP") { _ in
+        g.addTask(name: "HTTP proxy") {
+          try await withSpan("HTTP proxy") { _ in
             try await self.startVPNTunnel(
+              name: "HTTP proxy",
               address: self.webProxyListenAddress,
               childChannelInitializer: { channel in
                 return channel.configureHTTPListenerPipeline { _, req in
@@ -201,17 +202,17 @@ import Tracing
             ) { inbound in
               try await withThrowingDiscardingTaskGroup { _ in
                 for try await _ in inbound {
-
                 }
               }
             }
           }
         }
 
-        g.addTask(name: "SOCKS5 over \(self.socksProxyListenAddress)") {
-          try await withSpan("SOCKS5") { _ in
+        g.addTask(name: "SOCKSv5 proxy") {
+          try await withSpan("SOCKSv5 proxy") { _ in
             try await self.startVPNTunnel(
-              address: self.webProxyListenAddress,
+              name: "SOCKSv5 proxy",
+              address: self.socksProxyListenAddress,
               childChannelInitializer: { channel in
                 return channel.configureSOCKSListenerPipeline { address in
                   channel.eventLoop.makeFutureWithTask {
@@ -235,12 +236,8 @@ import Tracing
     inputStream: any Channel, outputStream: any Channel, session: Connection
   )
 
-  /// Start a VPN tunnel for specified protocol.
-  /// - Parameters:
-  ///   - protocol: The VPN protocol.
-  ///   - address: The server for VPN tunnel to bind.
-  /// - Returns: Started VPN tunnel and server quiescing helper pair.
   private func startVPNTunnel<Child: Sendable>(
+    name: String,
     address: Address,
     childChannelInitializer: @escaping @Sendable (any Channel) -> EventLoopFuture<Child>,
     _ body: (NIOAsyncChannelInboundStream<Child>) async throws -> Void
@@ -268,11 +265,13 @@ import Tracing
           return
         }
 
-        guard (try? serverChannel.channel.localAddress?.asAddress()) != nil else {
+        guard let address = try? serverChannel.channel.localAddress?.asAddress() else {
           fatalError(
             "Address was unable to bind. Please check that the socket was not closed or that the address family was understood."
           )
         }
+
+        Logger.current.info("\(name) started and listen on \(address)")
 
         try await serverChannel.executeThenClose { inbound in
           try await body(inbound)
