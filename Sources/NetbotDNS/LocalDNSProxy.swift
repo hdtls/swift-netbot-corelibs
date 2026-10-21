@@ -29,13 +29,13 @@ import SynchronizationExtras
 @Lockable final public class LocalDNSProxy: Sendable {
 
   public struct Options: Sendable {
-    public let group: any EventLoopGroup
-    public let bindAddress: IPv4Address
-    public let additionalServers: any Collection<Address> & Sendable
-    public let mappings: any Collection<ProtocolDNS.Mapping> & Sendable
-    public let availableIPPool: AvailableIPPool
-    public let timeoutInterval: TimeAmount
-    public let maxRetryAttempts: Int
+    public var group: any EventLoopGroup
+    public var bindAddress: IPv4Address
+    public var additionalServers: any Collection<Address> & Sendable
+    public var mappings: any Collection<ProtocolDNS.Mapping> & Sendable
+    public var availableIPPool: AvailableIPPool
+    public var timeoutInterval: TimeAmount
+    public var maxRetryAttempts: Int
 
     public init(
       group: any EventLoopGroup,
