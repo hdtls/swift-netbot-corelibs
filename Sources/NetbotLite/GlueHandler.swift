@@ -18,6 +18,9 @@ final class GlueHandler: ChannelHandler, @unchecked Sendable {
 
   private weak var partner: GlueHandler?
 
+  private var eventLoop: (any EventLoop)? {
+    context?.eventLoop
+  }
   private var context: ChannelHandlerContext?
 
   private var pendingRead: Bool = false
@@ -35,36 +38,12 @@ final class GlueHandler: ChannelHandler, @unchecked Sendable {
   }
 
   func handlerAdded(context: ChannelHandlerContext) {
-    partner?.context?.eventLoop.assertInEventLoop()
     self.context = context
   }
 
   func handlerRemoved(context: ChannelHandlerContext) {
     self.context = nil
     self.partner = nil
-  }
-
-  private func close(mode: CloseMode = .all, promise: EventLoopPromise<Void>?) {
-    context?.close(mode: mode, promise: promise)
-  }
-
-  private func write(_ data: NIOAny, promise: EventLoopPromise<Void>?) {
-    context?.write(data, promise: promise)
-  }
-
-  private func flush() {
-    context?.flush()
-  }
-
-  private func becameWritable() {
-    if pendingRead {
-      pendingRead = false
-      context?.read()
-    }
-  }
-
-  private var isWritable: Bool {
-    return context?.channel.isWritable ?? false
   }
 }
 
@@ -75,37 +54,52 @@ extension GlueHandler: ChannelInboundHandler {
 
   func channelInactive(context: ChannelHandlerContext) {
     context.fireChannelInactive()
-    partner?.context?.eventLoop.assertInEventLoop()
-    partner?.close(promise: nil)
+
+    guard let partner else { return }
+    partner.eventLoop?.execute {
+      partner.context?.close(promise: nil)
+    }
   }
 
   func channelRead(context: ChannelHandlerContext, data: NIOAny) {
     context.fireChannelRead(data)
-    partner?.context?.eventLoop.assertInEventLoop()
-    partner?.write(data, promise: nil)
+
+    guard let partner, let eventLoop = partner.eventLoop else { return }
+    let data = NIOLoopBound(data, eventLoop: eventLoop)
+    partner.eventLoop?.execute {
+      partner.context?.write(data.value, promise: nil)
+    }
   }
 
   func channelReadComplete(context: ChannelHandlerContext) {
     context.fireChannelReadComplete()
-    partner?.context?.eventLoop.assertInEventLoop()
-    partner?.flush()
+
+    guard let partner else { return }
+    partner.eventLoop?.execute {
+      partner.context?.flush()
+    }
   }
 
   func channelWritabilityChanged(context: ChannelHandlerContext) {
     context.fireChannelWritabilityChanged()
-    if context.channel.isWritable {
-      partner?.context?.eventLoop.assertInEventLoop()
-      partner?.becameWritable()
+    if context.channel.isWritable, let partner {
+      partner.eventLoop?.execute {
+        if partner.pendingRead {
+          partner.pendingRead = false
+          partner.context?.read()
+        }
+      }
     }
   }
 
   func userInboundEventTriggered(context: ChannelHandlerContext, event: Any) {
     context.fireUserInboundEventTriggered(event)
 
-    if let event = event as? ChannelEvent, case .inputClosed = event {
-      partner?.context?.eventLoop.assertInEventLoop()
+    if let event = event as? ChannelEvent, case .inputClosed = event, let partner {
       // We have read EOF.
-      partner?.close(mode: .output, promise: nil)
+      partner.eventLoop?.execute {
+        partner.context?.close(mode: .output, promise: nil)
+      }
     }
 
     if event is ChannelShouldQuiesceEvent {
@@ -115,8 +109,11 @@ extension GlueHandler: ChannelInboundHandler {
 
   func errorCaught(context: ChannelHandlerContext, error: any Error) {
     context.fireErrorCaught(error)
-    partner?.context?.eventLoop.assertInEventLoop()
-    partner?.close(promise: nil)
+
+    guard let partner else { return }
+    partner.eventLoop?.execute {
+      partner.context?.fireErrorCaught(error)
+    }
   }
 }
 
@@ -126,11 +123,23 @@ extension GlueHandler: ChannelOutboundHandler {
   typealias OutboundIn = NIOAny
 
   func read(context: ChannelHandlerContext) {
-    partner?.context?.eventLoop.assertInEventLoop()
-    if let partner, partner.isWritable {
-      context.read()
-    } else {
+    guard let partner else {
       pendingRead = true
+      return
+    }
+
+    let context = context.loopBound
+
+    partner.eventLoop?.execute {
+      if partner.context?.channel.isWritable ?? false {
+        self.eventLoop?.execute {
+          context.value.read()
+        }
+      } else {
+        self.eventLoop?.execute {
+          self.pendingRead = true
+        }
+      }
     }
   }
 }
