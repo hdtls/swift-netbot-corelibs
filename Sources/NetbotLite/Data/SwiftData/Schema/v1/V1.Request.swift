@@ -13,10 +13,7 @@
 
 import HTTPTypes
 import NEAddressProcessing
-
-#if canImport(Darwin) || swift(>=6.3)
-  import Observation
-#endif
+import Observation
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials

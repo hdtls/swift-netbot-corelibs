@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.3
 // ===----------------------------------------------------------------------=== //
 //
 // This source file is part of the Netbot open source project
@@ -332,7 +332,7 @@ for target in package.targets {
     ))
   settings.append(
     .enableExperimentalFeature(
-      "AvailabilityMacro=SwiftStdlib 6.2:macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, visionOS 26.0"
+      "AvailabilityMacro=SwiftStdlib 6.2:iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0"
     ))
   target.swiftSettings = settings
 }

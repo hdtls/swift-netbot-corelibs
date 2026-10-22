@@ -204,11 +204,7 @@
           continue
         }
 
-        #if swift(>=6.3)
-          @inline(always)
-        #else
-          @inline(__always)
-        #endif
+        @inline(always)
         @Sendable
         func input(_ packetObject: NEPacket) throws {
           try packetObject.data.withUnsafeReadableBytes {

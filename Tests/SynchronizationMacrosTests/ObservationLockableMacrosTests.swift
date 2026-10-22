@@ -19,62 +19,44 @@
 
     @available(SwiftStdlib 6.0, *)
     @Test func lockableMacro() {
-      #if canImport(Darwin) || swift(>=6.3)
-        let expandedSource = """
-          class Contact {
-            @ObservationLockableTracked
-            var givenName: String
-            @ObservationLockableTracked
-            var familyName: String
+      let expandedSource = """
+        class Contact {
+          @ObservationLockableTracked
+          var givenName: String
+          @ObservationLockableTracked
+          var familyName: String
 
-            @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
+          @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
 
-            package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<Contact, __macro_local_6MemberfMu_>) {
-              _$observationRegistrar.access(self, keyPath: keyPath)
-            }
-
-            package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<Contact, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
-              try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
-            }
-
-            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
-              true
-            }
-
-            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
-              lhs != rhs
-            }
-
-            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
-              lhs !== rhs
-            }
-
-            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
-              lhs != rhs
-            }
+          package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<Contact, __macro_local_6MemberfMu_>) {
+            _$observationRegistrar.access(self, keyPath: keyPath)
           }
 
-          @available(SwiftStdlib 6.0, *)
-          extension Contact: nonisolated Observation.Observable {
+          package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<Contact, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
+            try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
           }
-          """
-      #else
-        let expandedSource = """
-          class Contact {
-            @ObservationLockableTracked
-            var givenName: String
-            @ObservationLockableTracked
-            var familyName: String
 
-            package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<Contact, __macro_local_6MemberfMu_>) {
-            }
-
-            package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<Contact, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
-              try mutation()
-            }
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            true
           }
-          """
-      #endif
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            lhs != rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            lhs !== rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            lhs != rhs
+          }
+        }
+
+        @available(SwiftStdlib 6.0, *)
+        extension Contact: nonisolated Observation.Observable {
+        }
+        """
 
       assertMacroExpansion(
         """
@@ -90,62 +72,44 @@
 
     @available(SwiftStdlib 6.0, *)
     @Test func lockableMacroIgnoreUnLockableMember() {
-      #if canImport(Darwin) || swift(>=6.3)
-        let expandedSource = """
-          class UnLockable {
-            static let name = "UnLockable"
-            var name: String { Self.name }
-            let tag: Int = 0
-            func prepare() {}
+      let expandedSource = """
+        class UnLockable {
+          static let name = "UnLockable"
+          var name: String { Self.name }
+          let tag: Int = 0
+          func prepare() {}
 
-            @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
+          @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
 
-            package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>) {
-              _$observationRegistrar.access(self, keyPath: keyPath)
-            }
-
-            package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
-              try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
-            }
-
-            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
-              true
-            }
-
-            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
-              lhs != rhs
-            }
-
-            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
-              lhs !== rhs
-            }
-
-            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
-              lhs != rhs
-            }
+          package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>) {
+            _$observationRegistrar.access(self, keyPath: keyPath)
           }
 
-          @available(SwiftStdlib 6.0, *)
-          extension UnLockable: nonisolated Observation.Observable {
+          package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
+            try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
           }
-          """
-      #else
-        let expandedSource = """
-          class UnLockable {
-            static let name = "UnLockable"
-            var name: String { Self.name }
-            let tag: Int = 0
-            func prepare() {}
 
-            package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>) {
-            }
-
-            package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
-              try mutation()
-            }
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            true
           }
-          """
-      #endif
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            lhs != rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            lhs !== rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            lhs != rhs
+          }
+        }
+
+        @available(SwiftStdlib 6.0, *)
+        extension UnLockable: nonisolated Observation.Observable {
+        }
+        """
       assertMacroExpansion(
         """
         @ObservationLockable class UnLockable {
@@ -162,58 +126,43 @@
 
     @available(SwiftStdlib 6.0, *)
     @Test func lockableMacroIgnoreMemberAlreadyContainsTrackedOrIgnored() {
-      #if canImport(Darwin) || swift(>=6.3)
-        let expandedSource = """
-          class UnLockable {
-            @ObservationLockableTracked var tracked: String
-            @ObservationLockableIgnored var ignored: Int
+      let expandedSource = """
+        class UnLockable {
+          @ObservationLockableTracked var tracked: String
+          @ObservationLockableIgnored var ignored: Int
 
-            @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
+          @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
 
-            package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>) {
-              _$observationRegistrar.access(self, keyPath: keyPath)
-            }
-
-            package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
-              try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
-            }
-
-            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
-              true
-            }
-
-            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
-              lhs != rhs
-            }
-
-            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
-              lhs !== rhs
-            }
-
-            private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
-              lhs != rhs
-            }
+          package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>) {
+            _$observationRegistrar.access(self, keyPath: keyPath)
           }
 
-          @available(SwiftStdlib 6.0, *)
-          extension UnLockable: nonisolated Observation.Observable {
+          package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
+            try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
           }
-          """
-      #else
-        let expandedSource = """
-          class UnLockable {
-            @ObservationLockableTracked var tracked: String
-            @ObservationLockableIgnored var ignored: Int
 
-            package nonisolated func access<__macro_local_6MemberfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>) {
-            }
-
-            package nonisolated func withMutation<__macro_local_6MemberfMu_, __macro_local_14MutationResultfMu_>(keyPath: KeyPath<UnLockable, __macro_local_6MemberfMu_>, _ mutation: () throws -> __macro_local_14MutationResultfMu_) rethrows -> __macro_local_14MutationResultfMu_ {
-              try mutation()
-            }
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            true
           }
-          """
-      #endif
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            lhs != rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            lhs !== rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            lhs != rhs
+          }
+        }
+
+        @available(SwiftStdlib 6.0, *)
+        extension UnLockable: nonisolated Observation.Observable {
+        }
+        """
+
       assertMacroExpansion(
         """
         @ObservationLockable class UnLockable {
@@ -228,65 +177,41 @@
 
     @available(SwiftStdlib 6.0, *)
     @Test func trackedMacro() {
-      #if canImport(Darwin) || swift(>=6.3)
-        let expandedSource = """
-          class Tracked {
-            var p1: String {
-              @storageRestrictions(initializes: $p1)
-              init(initialValue) {
-                $p1 = .init(initialValue)
-              }
-              get {
-                access(keyPath: \\.p1)
-                return self.$p1.withLock {
-                  $0
-                }
-              }
-              set {
-                let _p1 = self.$p1.withLock {
-                  $0
-                }
-                guard shouldNotifyObservers(_p1, newValue) else {
-                  self.$p1.withLock {
-                    $0 = newValue
-                  }
-                  return
-                }
-                withMutation(keyPath: \\.p1) {
-                  self.$p1.withLock {
-                    $0 = newValue
-                  }
-                }
+      let expandedSource = """
+        class Tracked {
+          var p1: String {
+            @storageRestrictions(initializes: $p1)
+            init(initialValue) {
+              $p1 = .init(initialValue)
+            }
+            get {
+              access(keyPath: \\.p1)
+              return self.$p1.withLock {
+                $0
               }
             }
-
-            private let $p1: Mutex<String>
-          }
-          """
-      #else
-        let expandedSource = """
-          class Tracked {
-            var p1: String {
-              @storageRestrictions(initializes: $p1)
-              init(initialValue) {
-                $p1 = .init(initialValue)
+            set {
+              let _p1 = self.$p1.withLock {
+                $0
               }
-              get {
+              guard shouldNotifyObservers(_p1, newValue) else {
                 self.$p1.withLock {
-                  $0
+                  $0 = newValue
                 }
+                return
               }
-              set {
+              withMutation(keyPath: \\.p1) {
                 self.$p1.withLock {
                   $0 = newValue
                 }
               }
             }
-
-            private let $p1: Mutex<String>
           }
-          """
-      #endif
+
+          private let $p1: Mutex<String>
+        }
+        """
+
       assertMacroExpansion(
         """
         class Tracked {
@@ -302,305 +227,191 @@
 
     @available(SwiftStdlib 6.0, *)
     @Test func trackedWithAccessLevel() {
-      #if canImport(Darwin) || swift(>=6.3)
-        let expandedSource = """
-          class Tracked {
-            var p1: Int {
-              @storageRestrictions(initializes: $p1)
-              init(initialValue) {
-                $p1 = .init(initialValue)
-              }
-              get {
-                access(keyPath: \\.p1)
-                return self.$p1.withLock {
-                  $0
-                }
-              }
-              set {
-                let _p1 = self.$p1.withLock {
-                  $0
-                }
-                guard shouldNotifyObservers(_p1, newValue) else {
-                  self.$p1.withLock {
-                    $0 = newValue
-                  }
-                  return
-                }
-                withMutation(keyPath: \\.p1) {
-                  self.$p1.withLock {
-                    $0 = newValue
-                  }
-                }
+      let expandedSource = """
+        class Tracked {
+          var p1: Int {
+            @storageRestrictions(initializes: $p1)
+            init(initialValue) {
+              $p1 = .init(initialValue)
+            }
+            get {
+              access(keyPath: \\.p1)
+              return self.$p1.withLock {
+                $0
               }
             }
-
-            open let $p1: Mutex<Int>
-            var p2: Int {
-              @storageRestrictions(initializes: $p2)
-              init(initialValue) {
-                $p2 = .init(initialValue)
+            set {
+              let _p1 = self.$p1.withLock {
+                $0
               }
-              get {
-                access(keyPath: \\.p2)
-                return self.$p2.withLock {
-                  $0
-                }
-              }
-              set {
-                let _p2 = self.$p2.withLock {
-                  $0
-                }
-                guard shouldNotifyObservers(_p2, newValue) else {
-                  self.$p2.withLock {
-                    $0 = newValue
-                  }
-                  return
-                }
-                withMutation(keyPath: \\.p2) {
-                  self.$p2.withLock {
-                    $0 = newValue
-                  }
-                }
-              }
-            }
-
-            public let $p2: Mutex<Int>
-            var p3: Int {
-              @storageRestrictions(initializes: $p3)
-              init(initialValue) {
-                $p3 = .init(initialValue)
-              }
-              get {
-                access(keyPath: \\.p3)
-                return self.$p3.withLock {
-                  $0
-                }
-              }
-              set {
-                let _p3 = self.$p3.withLock {
-                  $0
-                }
-                guard shouldNotifyObservers(_p3, newValue) else {
-                  self.$p3.withLock {
-                    $0 = newValue
-                  }
-                  return
-                }
-                withMutation(keyPath: \\.p3) {
-                  self.$p3.withLock {
-                    $0 = newValue
-                  }
-                }
-              }
-            }
-
-            package let $p3: Mutex<Int>
-            var p4: Int {
-              @storageRestrictions(initializes: $p4)
-              init(initialValue) {
-                $p4 = .init(initialValue)
-              }
-              get {
-                access(keyPath: \\.p4)
-                return self.$p4.withLock {
-                  $0
-                }
-              }
-              set {
-                let _p4 = self.$p4.withLock {
-                  $0
-                }
-                guard shouldNotifyObservers(_p4, newValue) else {
-                  self.$p4.withLock {
-                    $0 = newValue
-                  }
-                  return
-                }
-                withMutation(keyPath: \\.p4) {
-                  self.$p4.withLock {
-                    $0 = newValue
-                  }
-                }
-              }
-            }
-
-            internal let $p4: Mutex<Int>
-            var p5: Int {
-              @storageRestrictions(initializes: $p5)
-              init(initialValue) {
-                $p5 = .init(initialValue)
-              }
-              get {
-                access(keyPath: \\.p5)
-                return self.$p5.withLock {
-                  $0
-                }
-              }
-              set {
-                let _p5 = self.$p5.withLock {
-                  $0
-                }
-                guard shouldNotifyObservers(_p5, newValue) else {
-                  self.$p5.withLock {
-                    $0 = newValue
-                  }
-                  return
-                }
-                withMutation(keyPath: \\.p5) {
-                  self.$p5.withLock {
-                    $0 = newValue
-                  }
-                }
-              }
-            }
-
-            fileprivate let $p5: Mutex<Int>
-            var p6: Int {
-              @storageRestrictions(initializes: $p6)
-              init(initialValue) {
-                $p6 = .init(initialValue)
-              }
-              get {
-                access(keyPath: \\.p6)
-                return self.$p6.withLock {
-                  $0
-                }
-              }
-              set {
-                let _p6 = self.$p6.withLock {
-                  $0
-                }
-                guard shouldNotifyObservers(_p6, newValue) else {
-                  self.$p6.withLock {
-                    $0 = newValue
-                  }
-                  return
-                }
-                withMutation(keyPath: \\.p6) {
-                  self.$p6.withLock {
-                    $0 = newValue
-                  }
-                }
-              }
-            }
-
-            private let $p6: Mutex<Int>
-          }
-          """
-      #else
-        let expandedSource = """
-          class Tracked {
-            var p1: Int {
-              @storageRestrictions(initializes: $p1)
-              init(initialValue) {
-                $p1 = .init(initialValue)
-              }
-              get {
+              guard shouldNotifyObservers(_p1, newValue) else {
                 self.$p1.withLock {
-                  $0
+                  $0 = newValue
                 }
+                return
               }
-              set {
+              withMutation(keyPath: \\.p1) {
                 self.$p1.withLock {
                   $0 = newValue
                 }
               }
             }
-
-            open let $p1: Mutex<Int>
-            var p2: Int {
-              @storageRestrictions(initializes: $p2)
-              init(initialValue) {
-                $p2 = .init(initialValue)
-              }
-              get {
-                self.$p2.withLock {
-                  $0
-                }
-              }
-              set {
-                self.$p2.withLock {
-                  $0 = newValue
-                }
-              }
-            }
-
-            public let $p2: Mutex<Int>
-            var p3: Int {
-              @storageRestrictions(initializes: $p3)
-              init(initialValue) {
-                $p3 = .init(initialValue)
-              }
-              get {
-                self.$p3.withLock {
-                  $0
-                }
-              }
-              set {
-                self.$p3.withLock {
-                  $0 = newValue
-                }
-              }
-            }
-
-            package let $p3: Mutex<Int>
-            var p4: Int {
-              @storageRestrictions(initializes: $p4)
-              init(initialValue) {
-                $p4 = .init(initialValue)
-              }
-              get {
-                self.$p4.withLock {
-                  $0
-                }
-              }
-              set {
-                self.$p4.withLock {
-                  $0 = newValue
-                }
-              }
-            }
-
-            internal let $p4: Mutex<Int>
-            var p5: Int {
-              @storageRestrictions(initializes: $p5)
-              init(initialValue) {
-                $p5 = .init(initialValue)
-              }
-              get {
-                self.$p5.withLock {
-                  $0
-                }
-              }
-              set {
-                self.$p5.withLock {
-                  $0 = newValue
-                }
-              }
-            }
-
-            fileprivate let $p5: Mutex<Int>
-            var p6: Int {
-              @storageRestrictions(initializes: $p6)
-              init(initialValue) {
-                $p6 = .init(initialValue)
-              }
-              get {
-                self.$p6.withLock {
-                  $0
-                }
-              }
-              set {
-                self.$p6.withLock {
-                  $0 = newValue
-                }
-              }
-            }
-
-            private let $p6: Mutex<Int>
           }
-          """
-      #endif
+
+          open let $p1: Mutex<Int>
+          var p2: Int {
+            @storageRestrictions(initializes: $p2)
+            init(initialValue) {
+              $p2 = .init(initialValue)
+            }
+            get {
+              access(keyPath: \\.p2)
+              return self.$p2.withLock {
+                $0
+              }
+            }
+            set {
+              let _p2 = self.$p2.withLock {
+                $0
+              }
+              guard shouldNotifyObservers(_p2, newValue) else {
+                self.$p2.withLock {
+                  $0 = newValue
+                }
+                return
+              }
+              withMutation(keyPath: \\.p2) {
+                self.$p2.withLock {
+                  $0 = newValue
+                }
+              }
+            }
+          }
+
+          public let $p2: Mutex<Int>
+          var p3: Int {
+            @storageRestrictions(initializes: $p3)
+            init(initialValue) {
+              $p3 = .init(initialValue)
+            }
+            get {
+              access(keyPath: \\.p3)
+              return self.$p3.withLock {
+                $0
+              }
+            }
+            set {
+              let _p3 = self.$p3.withLock {
+                $0
+              }
+              guard shouldNotifyObservers(_p3, newValue) else {
+                self.$p3.withLock {
+                  $0 = newValue
+                }
+                return
+              }
+              withMutation(keyPath: \\.p3) {
+                self.$p3.withLock {
+                  $0 = newValue
+                }
+              }
+            }
+          }
+
+          package let $p3: Mutex<Int>
+          var p4: Int {
+            @storageRestrictions(initializes: $p4)
+            init(initialValue) {
+              $p4 = .init(initialValue)
+            }
+            get {
+              access(keyPath: \\.p4)
+              return self.$p4.withLock {
+                $0
+              }
+            }
+            set {
+              let _p4 = self.$p4.withLock {
+                $0
+              }
+              guard shouldNotifyObservers(_p4, newValue) else {
+                self.$p4.withLock {
+                  $0 = newValue
+                }
+                return
+              }
+              withMutation(keyPath: \\.p4) {
+                self.$p4.withLock {
+                  $0 = newValue
+                }
+              }
+            }
+          }
+
+          internal let $p4: Mutex<Int>
+          var p5: Int {
+            @storageRestrictions(initializes: $p5)
+            init(initialValue) {
+              $p5 = .init(initialValue)
+            }
+            get {
+              access(keyPath: \\.p5)
+              return self.$p5.withLock {
+                $0
+              }
+            }
+            set {
+              let _p5 = self.$p5.withLock {
+                $0
+              }
+              guard shouldNotifyObservers(_p5, newValue) else {
+                self.$p5.withLock {
+                  $0 = newValue
+                }
+                return
+              }
+              withMutation(keyPath: \\.p5) {
+                self.$p5.withLock {
+                  $0 = newValue
+                }
+              }
+            }
+          }
+
+          fileprivate let $p5: Mutex<Int>
+          var p6: Int {
+            @storageRestrictions(initializes: $p6)
+            init(initialValue) {
+              $p6 = .init(initialValue)
+            }
+            get {
+              access(keyPath: \\.p6)
+              return self.$p6.withLock {
+                $0
+              }
+            }
+            set {
+              let _p6 = self.$p6.withLock {
+                $0
+              }
+              guard shouldNotifyObservers(_p6, newValue) else {
+                self.$p6.withLock {
+                  $0 = newValue
+                }
+                return
+              }
+              withMutation(keyPath: \\.p6) {
+                self.$p6.withLock {
+                  $0 = newValue
+                }
+              }
+            }
+          }
+
+          private let $p6: Mutex<Int>
+        }
+        """
+
       assertMacroExpansion(
         """
         class Tracked {

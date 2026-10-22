@@ -17,6 +17,7 @@ import NEAddressProcessing
 import NIOCore
 import NetbotDNS
 import NetbotLiteData
+import Observation
 import Synchronization
 import Tracing
 
@@ -25,10 +26,6 @@ import Tracing
   import FoundationInternationalization
 #else
   import Foundation
-#endif
-
-#if canImport(Darwin) || swift(>=6.3)
-  import Observation
 #endif
 
 @available(SwiftStdlib 6.0, *)
@@ -71,11 +68,7 @@ extension Connection {
 extension Connection {
 
   func establishmentMetrics(on outputStream: any Channel) async {
-    #if swift(>=6.3)
-      @inline(always)
-    #else
-      @inline(__always)
-    #endif
+    @inline(always)
     func execute() async -> EstablishmentReport? {
       // Once channel connected, we can request establishment report.
       // Error will be ignored, we don't want connection closed by establishment report
@@ -125,11 +118,7 @@ extension Connection {
       return
     }
 
-    #if swift(>=6.3)
-      @inline(always)
-    #else
-      @inline(__always)
-    #endif
+    @inline(always)
     func execute() async throws -> ProcessReport? {
       let metrics = try await resolver.processInfo(connection: self)
       processReport = metrics
@@ -165,11 +154,7 @@ extension Connection {
   /// path has produced a result (or both have failed). The entire process runs within a tracing span named "dns query".
   ///
   func dnsLookup(resolver: any DNSResolver, on eventLoop: any EventLoop) async throws {
-    #if swift(>=6.3)
-      @inline(always)
-    #else
-      @inline(__always)
-    #endif
+    @inline(always)
     func execute() async throws -> DNSResolutionReport? {
       let earliestBeginDate = Date.now
       let startTime = ContinuousClock.now
@@ -341,11 +326,7 @@ extension Connection {
   }
 
   func ruleLookup(engine: any RulesEngine) async throws {
-    #if swift(>=6.3)
-      @inline(always)
-    #else
-      @inline(__always)
-    #endif
+    @inline(always)
     func execute() async -> ForwardingReport? {
       let metrics = await engine.executeAllRules(connection: self)
       assert(metrics._forwardingRule != nil)
@@ -389,11 +370,7 @@ extension Connection {
     rules: any RulesEngine,
     eventLoop: any EventLoop
   ) async throws {
-    #if swift(>=6.3)
-      @inline(always)
-    #else
-      @inline(__always)
-    #endif
+    @inline(always)
     func execute() async throws -> ForwardingReport? {
       try await withThrowingTaskGroup(of: Void.self) { g in
         g.addTask {
@@ -463,75 +440,69 @@ extension Connection {
   }
 
   func publish(using tracker: any CoreVPNTaskTracker) async {
-    #if swift(>=6.3)
-      @inline(always)
-    #else
-      @inline(__always)
-    #endif
+    @inline(always)
     @Sendable func finish() async {
       // Reset the data transfer report metrics and publish changes.
       $dataTransferReport.withLock { $0?.pathReport = .init() }
       await tracker.broadcast(self)
     }
 
-    #if canImport(Darwin) || swift(>=6.3)
-      Task {
-        if #available(SwiftStdlib 6.2, *) {
-          let observations = Observations<Void, Never>.untilFinished {
-            guard !self.state.isFinished else {
-              return .finish
-            }
-            _ = (
-              self.currentRequest,
-              self.response,
-              self.duration,
-              self.tls,
-              self.dnsResolutionReport,
-              self.establishmentReport,
-              self.forwardingReport,
-              self.processReport
-            )
-            return .next(())
+    Task {
+      if #available(SwiftStdlib 6.2, *) {
+        let observations = Observations<Void, Never>.untilFinished {
+          guard !self.state.isFinished else {
+            return .finish
           }
-          for await _ in observations {
-            await tracker.broadcast(self)
-          }
-          await finish()
-        } else {
-          let observations = AsyncStream<Void>(
-            bufferingPolicy: .bufferingNewest(1)
-          ) { continuation in
-            @Sendable func installTracking() {
-              withObservationTracking {
-                _ = (
-                  self.currentRequest,
-                  self.response,
-                  self.duration,
-                  self.tls,
-                  self.state,
-                  self.dnsResolutionReport,
-                  self.establishmentReport,
-                  self.forwardingReport,
-                  self.processReport
-                )
-              } onChange: {
-                guard !self.state.isFinished else {
-                  continuation.finish()
-                  return
-                }
-                continuation.yield()
-                installTracking()
-              }
-            }
-            installTracking()
-          }
-          for await _ in observations {
-            await tracker.broadcast(self)
-          }
-          await finish()
+          _ = (
+            self.currentRequest,
+            self.response,
+            self.duration,
+            self.tls,
+            self.dnsResolutionReport,
+            self.establishmentReport,
+            self.forwardingReport,
+            self.processReport
+          )
+          return .next(())
         }
+        for await _ in observations {
+          await tracker.broadcast(self)
+        }
+        await finish()
+      } else {
+        let observations = AsyncStream<Void>(
+          bufferingPolicy: .bufferingNewest(1)
+        ) { continuation in
+          @Sendable func installTracking() {
+            withObservationTracking {
+              _ = (
+                self.currentRequest,
+                self.response,
+                self.duration,
+                self.tls,
+                self.state,
+                self.dnsResolutionReport,
+                self.establishmentReport,
+                self.forwardingReport,
+                self.processReport
+              )
+            } onChange: {
+              guard !self.state.isFinished else {
+                continuation.finish()
+                return
+              }
+              continuation.yield()
+              installTracking()
+            }
+          }
+          installTracking()
+        }
+        for await _ in observations {
+          await tracker.broadcast(self)
+        }
+        await finish()
       }
-    #endif
+    }
   }
 
   func transportMetrics(on outputStream: (any Channel)?) async {

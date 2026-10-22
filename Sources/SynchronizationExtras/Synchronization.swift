@@ -11,6 +11,8 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+import Observation
+
 @available(SwiftStdlib 6.0, *)
 public struct Lockable {
 
@@ -46,24 +48,14 @@ public macro LockableTracked(
 public macro LockableIgnored() =
   #externalMacro(module: "SynchronizationMacros", type: "LockableIgnoredMacro")
 
-#if canImport(Darwin) || swift(>=6.3)
-  import Observation
-
-  @available(SwiftStdlib 6.0, *)
-  @attached(
-    member, names: named(_$observationRegistrar), named(access), named(withMutation),
-    named(shouldNotifyObservers)) @attached(memberAttribute)
-  @attached(
-    extension, conformances: Observable)
-  public macro ObservationLockable() =
-    #externalMacro(module: "SynchronizationMacros", type: "ObservationLockableMacro")
-#else
-  @available(SwiftStdlib 6.0, *)
-  @attached(member, names: named(access), named(withMutation))
-  @attached(memberAttribute)
-  public macro ObservationLockable() =
-    #externalMacro(module: "SynchronizationMacros", type: "ObservationLockableMacro")
-#endif
+@available(SwiftStdlib 6.0, *)
+@attached(
+  member, names: named(_$observationRegistrar), named(access), named(withMutation),
+  named(shouldNotifyObservers)) @attached(memberAttribute)
+@attached(
+  extension, conformances: Observable)
+public macro ObservationLockable() =
+  #externalMacro(module: "SynchronizationMacros", type: "ObservationLockableMacro")
 
 @available(SwiftStdlib 6.0, *)
 @attached(accessor, names: named(init), named(get), named(set))

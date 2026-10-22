@@ -33,55 +33,41 @@ extension ObservationLockableMacro: MemberMacro {
     }
     let memberGeneric = context.makeUniqueName("Member")
     let mutationGeneric = context.makeUniqueName("MutationResult")
-    #if canImport(Darwin) || swift(>=6.3)
-      return [
-        """
-        @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
-        """,
-        """
-        package nonisolated func access<\(memberGeneric)>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), \(memberGeneric)>) {
-          _$observationRegistrar.access(self, keyPath: keyPath)
-        }
-        """,
-        """
-        package nonisolated func withMutation<\(memberGeneric), \(mutationGeneric)>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), \(memberGeneric)>, _ mutation: () throws -> \(mutationGeneric)) rethrows -> \(mutationGeneric) {
-          try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
-        }
-        """,
-        """
-        private nonisolated func shouldNotifyObservers<\(memberGeneric)>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool {
-          true
-        }
-        """,
-        """
-        private nonisolated func shouldNotifyObservers<\(memberGeneric): Equatable>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool {
-          lhs != rhs
-        }
-        """,
-        """
-        private nonisolated func shouldNotifyObservers<\(memberGeneric): AnyObject>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool {
-          lhs !== rhs
-        }
-        """,
-        """
-        private nonisolated func shouldNotifyObservers<\(memberGeneric): Equatable & AnyObject>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool {
-          lhs != rhs
-        }
-        """,
-      ]
-    #else
-      return [
-        """
-        package nonisolated func access<\(memberGeneric)>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), \(memberGeneric)>) {
-        }
-        """,
-        """
-        package nonisolated func withMutation<\(memberGeneric), \(mutationGeneric)>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), \(memberGeneric)>, _ mutation: () throws -> \(mutationGeneric)) rethrows -> \(mutationGeneric) {
-          try mutation()
-        }
-        """,
-      ]
-    #endif
+    return [
+      """
+      @ObservationIgnored private let _$observationRegistrar = Observation.ObservationRegistrar()
+      """,
+      """
+      package nonisolated func access<\(memberGeneric)>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), \(memberGeneric)>) {
+        _$observationRegistrar.access(self, keyPath: keyPath)
+      }
+      """,
+      """
+      package nonisolated func withMutation<\(memberGeneric), \(mutationGeneric)>(keyPath: KeyPath<\(raw: classDecl.name.trimmedDescription), \(memberGeneric)>, _ mutation: () throws -> \(mutationGeneric)) rethrows -> \(mutationGeneric) {
+        try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
+      }
+      """,
+      """
+      private nonisolated func shouldNotifyObservers<\(memberGeneric)>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool {
+        true
+      }
+      """,
+      """
+      private nonisolated func shouldNotifyObservers<\(memberGeneric): Equatable>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool {
+        lhs != rhs
+      }
+      """,
+      """
+      private nonisolated func shouldNotifyObservers<\(memberGeneric): AnyObject>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool {
+        lhs !== rhs
+      }
+      """,
+      """
+      private nonisolated func shouldNotifyObservers<\(memberGeneric): Equatable & AnyObject>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool {
+        lhs != rhs
+      }
+      """,
+    ]
   }
 }
 
@@ -112,25 +98,23 @@ extension ObservationLockableMacro: MemberAttributeMacro {
   }
 }
 
-#if canImport(Darwin) || swift(>=6.3)
-  extension ObservationLockableMacro: ExtensionMacro {
-    public static func expansion(
-      of node: SwiftSyntax.AttributeSyntax,
-      attachedTo declaration: some SwiftSyntax.DeclGroupSyntax,
-      providingExtensionsOf type: some SwiftSyntax.TypeSyntaxProtocol,
-      conformingTo protocols: [SwiftSyntax.TypeSyntax],
-      in context: some SwiftSyntaxMacros.MacroExpansionContext
-    ) throws -> [SwiftSyntax.ExtensionDeclSyntax] {
-      let decl: DeclSyntax = """
-        @available(SwiftStdlib 6.0, *)
-        extension \(raw: type.trimmedDescription): nonisolated Observation.Observable {
-        }
-        """
-      let ext = decl.cast(ExtensionDeclSyntax.self)
-      return [ext]
-    }
+extension ObservationLockableMacro: ExtensionMacro {
+  public static func expansion(
+    of node: SwiftSyntax.AttributeSyntax,
+    attachedTo declaration: some SwiftSyntax.DeclGroupSyntax,
+    providingExtensionsOf type: some SwiftSyntax.TypeSyntaxProtocol,
+    conformingTo protocols: [SwiftSyntax.TypeSyntax],
+    in context: some SwiftSyntaxMacros.MacroExpansionContext
+  ) throws -> [SwiftSyntax.ExtensionDeclSyntax] {
+    let decl: DeclSyntax = """
+      @available(SwiftStdlib 6.0, *)
+      extension \(raw: type.trimmedDescription): nonisolated Observation.Observable {
+      }
+      """
+    let ext = decl.cast(ExtensionDeclSyntax.self)
+    return [ext]
   }
-#endif
+}
 
 public struct ObservationLockableTrackedMacro: AccessorMacro, Sendable {
   public static func expansion<
@@ -151,63 +135,38 @@ public struct ObservationLockableTrackedMacro: AccessorMacro, Sendable {
       return []
     }
 
-    #if canImport(Darwin) || swift(>=6.3)
-      return [
-        """
-        @storageRestrictions(initializes: \(raw: ObservationLockableMacro.prefixed)\(label))
-        init(initialValue) {
-          \(raw: ObservationLockableMacro.prefixed)\(label) = .init(initialValue)
+    return [
+      """
+      @storageRestrictions(initializes: \(raw: ObservationLockableMacro.prefixed)\(label))
+      init(initialValue) {
+        \(raw: ObservationLockableMacro.prefixed)\(label) = .init(initialValue)
+      }
+      """,
+      """
+      get {
+        access(keyPath: \\.\(label))
+        return self.\(raw: ObservationLockableMacro.prefixed)\(label).withLock {
+          $0
         }
-        """,
-        """
-        get {
-          access(keyPath: \\.\(label))
-          return self.\(raw: ObservationLockableMacro.prefixed)\(label).withLock {
-            $0
-          }
-        }
-        """,
-        """
-        set {
-          let _\(label) = self.\(raw: ObservationLockableMacro.prefixed)\(label).withLock { $0 }
-          guard shouldNotifyObservers(_\(label), newValue) else {
-            self.\(raw: ObservationLockableMacro.prefixed)\(label).withLock {
-              $0 = newValue
-            }
-            return
-          }
-          withMutation(keyPath: \\.\(label)) {
-            self.\(raw: ObservationLockableMacro.prefixed)\(label).withLock {
-              $0 = newValue
-            }
-          }
-        }
-        """,
-      ]
-    #else
-      return [
-        """
-        @storageRestrictions(initializes: \(raw: ObservationLockableMacro.prefixed)\(label))
-        init(initialValue) {
-          \(raw: ObservationLockableMacro.prefixed)\(label) = .init(initialValue)
-        }
-        """,
-        """
-        get {
+      }
+      """,
+      """
+      set {
+        let _\(label) = self.\(raw: ObservationLockableMacro.prefixed)\(label).withLock { $0 }
+        guard shouldNotifyObservers(_\(label), newValue) else {
           self.\(raw: ObservationLockableMacro.prefixed)\(label).withLock {
-            $0
+            $0 = newValue
           }
+          return
         }
-        """,
-        """
-        set {
+        withMutation(keyPath: \\.\(label)) {
           self.\(raw: ObservationLockableMacro.prefixed)\(label).withLock {
             $0 = newValue
           }
         }
-        """,
-      ]
-    #endif
+      }
+      """,
+    ]
   }
 }
 
