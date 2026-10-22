@@ -292,11 +292,7 @@ import SynchronizationExtras
     if let question = message.questions.first,
       let mapping = self.options.mappings.first(where: { $0.domainName == question.domainName })
     {
-      #if swift(>=6.3)
-        @inline(always)
-      #else
-        @inline(__always)
-      #endif
+      @inline(always)
       func response(_ record: any ResourceRecord) -> Message {
         Message(
           headerFields: .init(

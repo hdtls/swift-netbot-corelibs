@@ -12,15 +12,12 @@
 // ===----------------------------------------------------------------------=== //
 
 import HTTPTypes
+import Observation
 
 #if canImport(FoundationEssentials)
   import FoundationEssentials
 #else
   import Foundation
-#endif
-
-#if canImport(Darwin) || swift(>=6.3)
-  import Observation
 #endif
 
 #if canImport(SwiftData)

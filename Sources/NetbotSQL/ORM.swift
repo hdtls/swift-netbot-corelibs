@@ -12,9 +12,7 @@
 // ===----------------------------------------------------------------------=== //
 
 #if !canImport(SwiftData) || !SWTNE_REQUIRES_SQL
-  #if canImport(Darwin) || swift(>=6.3)
-    import Observation
-  #endif
+  import Observation
 
   #if canImport(Darwin)
     import Foundation
@@ -41,16 +39,9 @@
     }
   #endif
 
-  #if canImport(Darwin) || swift(>=6.3)
-    @available(SwiftStdlib 6.0, *)
-    public protocol PersistentModel: AnyObject, Observable, Hashable, Identifiable, SendableMetatype
-    {
-    }
-  #else
-    @available(SwiftStdlib 6.0, *)
-    public protocol PersistentModel: AnyObject, Hashable, Identifiable, SendableMetatype {
-    }
-  #endif
+  @available(SwiftStdlib 6.0, *)
+  public protocol PersistentModel: AnyObject, Observable, Hashable, Identifiable, SendableMetatype {
+  }
 
   @available(SwiftStdlib 6.0, *)
   extension PersistentModel {
@@ -218,22 +209,16 @@
     hashModifier: String? = nil
   ) = #externalMacro(module: "NetbotSQLMacros", type: "AttributePropertyMacro")
 
-  #if canImport(Darwin) || swift(>=6.3)
-    @available(SwiftStdlib 6.0, *)
-    @attached(
-      member,
-      conformances: Observable, PersistentModel, Sendable,
-      names: named(_$observationRegistrar), named(access), named(withMutation),
-      named(shouldNotifyObservers)
-    )
-    @attached(memberAttribute)
-    @attached(extension, conformances: Observable, PersistentModel, Sendable)
-    public macro Model() = #externalMacro(module: "NetbotSQLMacros", type: "PersistentModelMacro")
-  #else
-    @available(SwiftStdlib 6.0, *)
-    @attached(extension, conformances: PersistentModel, Sendable)
-    public macro Model() = #externalMacro(module: "NetbotSQLMacros", type: "PersistentModelMacro")
-  #endif
+  @available(SwiftStdlib 6.0, *)
+  @attached(
+    member,
+    conformances: Observable, PersistentModel, Sendable,
+    names: named(_$observationRegistrar), named(access), named(withMutation),
+    named(shouldNotifyObservers)
+  )
+  @attached(memberAttribute)
+  @attached(extension, conformances: Observable, PersistentModel, Sendable)
+  public macro Model() = #externalMacro(module: "NetbotSQLMacros", type: "PersistentModelMacro")
 
   @available(SwiftStdlib 6.0, *)
   @attached(peer)

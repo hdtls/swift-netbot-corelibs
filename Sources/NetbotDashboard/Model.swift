@@ -14,6 +14,7 @@
 import Alamofire
 import Logging
 import NetbotLiteData
+import Observation
 import Synchronization
 
 #if canImport(FoundationEssentials)
@@ -32,10 +33,6 @@ import Synchronization
   import NetworkExtension
 #endif
 
-#if canImport(Darwin) || swift(>=6.3)
-  import Observation
-#endif
-
 @available(SwiftStdlib 6.0, *)
 public enum DataTransfer: Hashable, Sendable {
   case upload
@@ -43,10 +40,7 @@ public enum DataTransfer: Hashable, Sendable {
 }
 
 @available(SwiftStdlib 6.0, *)
-#if canImport(Darwin) || swift(>=6.3)
-  @Observable
-#endif
-@MainActor public class RecentConnectionsStore {
+@MainActor @Observable public class RecentConnectionsStore {
 
   public typealias Data = Connection.Model
 
@@ -63,22 +57,14 @@ public enum DataTransfer: Hashable, Sendable {
     private var _searchResult: [Data] = []
     private var _indexes: [Data.ID: Data] = [:]
 
-    #if canImport(Darwin) || swift(>=6.3)
-      @ObservationIgnored private var _activeIndexes: [Data.ID: Data] = [:]
-    #else
-      private var _activeIndexes: [Data.ID: Data] = [:]
-    #endif
+    @ObservationIgnored private var _activeIndexes: [Data.ID: Data] = [:]
 
     public var programs: [Program.Model] {
       _programs
     }
     public var _programs: [Program.Model] = []
 
-    #if canImport(Darwin) || swift(>=6.3)
-      @ObservationIgnored private var _indexesForPrograms: [Program.Model.ID: Program.Model] = [:]
-    #else
-      private var _indexesForPrograms: [Program.Model.ID: Program.Model] = [:]
-    #endif
+    @ObservationIgnored private var _indexesForPrograms: [Program.Model.ID: Program.Model] = [:]
 
     public func fetch(_ id: Data.ID) -> [Data] {
       guard let persistentModel = self._indexes[id] else {

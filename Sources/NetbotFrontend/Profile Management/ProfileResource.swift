@@ -11,14 +11,12 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+import Observation
+
 #if canImport(FoundationEssentials)
   import FoundationEssentials
 #else
   import Foundation
-#endif
-
-#if canImport(Darwin) || swift(>=6.3)
-  import Observation
 #endif
 
 @available(SwiftStdlib 6.0, *)
@@ -38,10 +36,7 @@ public struct ProfileInfo: Hashable, Identifiable, Sendable {
 }
 
 @available(SwiftStdlib 6.0, *)
-#if canImport(Darwin) || swift(>=6.3)
-  @Observable
-#endif
-@MainActor final public class ProfileResource {
+@MainActor @Observable final public class ProfileResource {
 
   public var profiles: [ProfileInfo] = []
 

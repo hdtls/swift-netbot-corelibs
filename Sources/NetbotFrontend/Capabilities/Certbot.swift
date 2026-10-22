@@ -15,6 +15,7 @@ import CryptoExtras
 import Logging
 import NIOCore
 import NIOSSL
+import Observation
 import SwiftASN1
 import X509
 
@@ -22,10 +23,6 @@ import X509
   import FoundationEssentials
 #else
   import Foundation
-#endif
-
-#if canImport(Darwin) || swift(>=6.3)
-  import Observation
 #endif
 
 #if canImport(Security)
@@ -69,10 +66,7 @@ public enum CertbotError: Error {
 ///
 /// This object allow user to load, generate, install and trust certificates.
 @available(SwiftStdlib 6.0, *)
-#if canImport(Darwin) || swift(>=6.3)
-  @Observable
-#endif
-@MainActor final public class Certbot: Sendable {
+@MainActor @Observable final public class Certbot: Sendable {
 
   private struct Backing: Hashable, Sendable {
 
@@ -157,11 +151,7 @@ public enum CertbotError: Error {
   /// Logger for certbot.
   nonisolated let logger = Logger(label: "Certbot")
 
-  #if canImport(Darwin) || swift(>=6.3)
-    @ObservationIgnored private var generatingTask: Task<Backing, any Error>?
-  #else
-    private var generatingTask: Task<Backing, any Error>?
-  #endif
+  @ObservationIgnored private var generatingTask: Task<Backing, any Error>?
 
   /// Create a new instance of `Certbot`.
   nonisolated public init() {

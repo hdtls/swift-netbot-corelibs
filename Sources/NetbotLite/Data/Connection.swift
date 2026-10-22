@@ -11,6 +11,7 @@
 //
 // ===----------------------------------------------------------------------=== //
 
+import Observation
 import Synchronization
 import SynchronizationExtras
 
@@ -18,10 +19,6 @@ import SynchronizationExtras
   import FoundationEssentials
 #else
   import Foundation
-#endif
-
-#if canImport(Darwin) || swift(>=6.3)
-  import Observation
 #endif
 
 // swift-format-ignore: AlwaysUseLowerCamelCase

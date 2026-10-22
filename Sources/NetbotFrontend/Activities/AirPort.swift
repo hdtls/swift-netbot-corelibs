@@ -13,6 +13,7 @@
 
 import Alamofire
 import Logging
+import Observation
 import Synchronization
 import SynchronizationExtras
 
@@ -27,16 +28,9 @@ import SynchronizationExtras
   import Foundation
 #endif
 
-#if canImport(Darwin) || swift(>=6.3)
-  import Observation
-#endif
-
 /// The `AirPort` is a state object of the Wi-Fi subsystem which provides access to all Wi-Fi interfaces.
 @available(SwiftStdlib 6.0, *)
-#if canImport(Darwin) || swift(>=6.3)
-  @Observable
-#endif
-@MainActor final public class AirPort {
+@MainActor @Observable final public class AirPort {
 
   /// Channel width values.
   public enum ChannelWidth: Int, Sendable {
