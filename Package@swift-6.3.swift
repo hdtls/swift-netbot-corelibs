@@ -330,10 +330,7 @@ for target in package.targets {
     .enableExperimentalFeature(
       "AvailabilityMacro=SwiftStdlib 6.0:iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0"
     ))
-  settings.append(
-    .enableExperimentalFeature(
-      "AvailabilityMacro=SwiftStdlib 6.2:iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0"
-    ))
+  settings.append(.enableExperimentalFeature("AnyAppleOSAvailability"))
   target.swiftSettings = settings
 }
 

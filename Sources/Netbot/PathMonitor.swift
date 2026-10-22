@@ -54,11 +54,7 @@ public struct Path: Equatable, CustomDebugStringConvertible, Sendable {
     /// Use this value to tune initial values for algorithms that can scale with the
     /// capabilities of the network. Do not use this value to gate connection attempts or
     /// to override adjustments that would be made based on actual network performance.
-    #if compiler(>=6.4)
-      @available(anyAppleOS 26.0, *)
-    #else
-      @available(SwiftStdlib 6.2, *)
-    #endif
+    @available(anyAppleOS 26.0, *)
     public typealias LinkQuality = NWPath.LinkQuality
 
     /// An Interface object represents an instance of a network interface of a specific
@@ -140,11 +136,7 @@ public struct Path: Equatable, CustomDebugStringConvertible, Sendable {
 
   /// Checks if the path uses an NWInterface that is considered to be constrained
   /// by user preference
-  #if compiler(>=6.4)
-    @available(anyAppleOS 26.0, *)
-  #else
-    @available(SwiftStdlib 6.2, *)
-  #endif
+  @available(anyAppleOS 26.0, *)
   public var isUltraConstrained: Bool { _isUltraConstrained }
   private var _isUltraConstrained: Bool
 
@@ -173,19 +165,11 @@ public struct Path: Equatable, CustomDebugStringConvertible, Sendable {
   /// Use this value to tune initial values for algorithms that can scale with the
   /// capabilities of the network. Do not use this value to gate connection attempts or
   /// to override adjustments that would be made based on actual network performance.
-  #if compiler(>=6.4)
-    @available(anyAppleOS 26.0, *)
-  #else
-    @available(SwiftStdlib 6.2, *)
-  #endif
+  @available(anyAppleOS 26.0, *)
   public var linkQuality: LinkQuality { _linkQuality as! LinkQuality }
   private var _linkQuality: any Sendable
 
-  #if compiler(>=6.4)
-    @available(anyAppleOS 26.0, *)
-  #else
-    @available(SwiftStdlib 6.2, *)
-  #endif
+  @available(anyAppleOS 26.0, *)
   fileprivate init(
     status: Status, availableInterfaces: [Interface], isExpensive: Bool, isConstrained: Bool,
     isUltraConstrained: Bool, supportsIPv4: Bool, supportsIPv6: Bool, supportsDNS: Bool,
@@ -209,17 +193,10 @@ public struct Path: Equatable, CustomDebugStringConvertible, Sendable {
     fileprivate init(path: NWPath) {
       _isUltraConstrained = false
       _linkQuality = 0
-      #if compiler(>=6.4)
-        if #available(anyAppleOS 26.0, *) {
-          _isUltraConstrained = path.isUltraConstrained
-          _linkQuality = path.linkQuality
-        }
-      #else
-        if #available(SwiftStdlib 6.2, *) {
-          _isUltraConstrained = path.isUltraConstrained
-          _linkQuality = path.linkQuality
-        }
-      #endif
+      if #available(anyAppleOS 26.0, *) {
+        _isUltraConstrained = path.isUltraConstrained
+        _linkQuality = path.linkQuality
+      }
       status = path.status
       availableInterfaces = path.availableInterfaces
       isExpensive = path.isExpensive
@@ -245,19 +222,11 @@ public struct Path: Equatable, CustomDebugStringConvertible, Sendable {
       && lhs.localEndpoint == rhs.localEndpoint
       && lhs.remoteEndpoint == rhs.remoteEndpoint
 
-    #if compiler(>=6.4)
-      if #available(anyAppleOS 26.0, *) {
-        return isEqual && lhs.linkQuality == rhs.linkQuality
-      } else {
-        return isEqual
-      }
-    #else
-      if #available(SwiftStdlib 6.2, *) {
-        return isEqual && lhs.linkQuality == rhs.linkQuality
-      } else {
-        return isEqual
-      }
-    #endif
+    if #available(anyAppleOS 26.0, *) {
+      return isEqual && lhs.linkQuality == rhs.linkQuality
+    } else {
+      return isEqual
+    }
   }
 }
 

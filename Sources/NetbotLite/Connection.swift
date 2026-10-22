@@ -448,7 +448,7 @@ extension Connection {
     }
 
     Task {
-      if #available(SwiftStdlib 6.2, *) {
+      if #available(anyAppleOS 26.0, *) {
         let observations = Observations<Void, Never>.untilFinished {
           guard !self.state.isFinished else {
             return .finish
