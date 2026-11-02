@@ -50,15 +50,19 @@
       private let logger = Logger(label: "com.apple.CoreLocation")
 
       func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        guard manager.authorizationStatus == .authorized else {
-          return
-        }
+        #if os(iOS)
+          let authorized =
+            manager.authorizationStatus == .authorizedAlways
+            || manager.authorizationStatus == .authorizedWhenInUse
+        #elseif os(macOS)
+          let authorized = manager.authorizationStatus == .authorized
+        #endif
+        guard authorized else { return }
         manager.startUpdatingLocation()
       }
 
       func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation])
       {
-
       }
 
       func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
