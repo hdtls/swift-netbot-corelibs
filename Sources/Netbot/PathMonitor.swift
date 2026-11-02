@@ -23,7 +23,7 @@ import SynchronizationExtras
   import Network
   import UserNotifications
 
-  #if os(iOS)
+  #if os(iOS) || os(visionOS)
     import NetworkExtension
   #elseif os(macOS)
     import CoreWLAN
@@ -115,7 +115,30 @@ public struct Path: Equatable, CustomDebugStringConvertible, Sendable {
 
     /// An Interface object represents an instance of a network interface of a specific
     /// type, such as a Wi-Fi or Cellular interface.
-    public typealias Interface = NIONetworkDevice
+    public struct Interface: Hashable, Sendable {
+
+      /// The name of the interface, such as "en0"
+      public var name: String {
+        backing.name
+      }
+
+      /// The kernel index of the interface
+      public var index: Int {
+        backing.interfaceIndex
+      }
+
+      /// The addresses associated with the interface
+      public var addresses: [Address.Host] {
+        guard let host = backing.address?.ipAddress else { return [] }
+        return [.init(host)]
+      }
+
+      private let backing: NIONetworkDevice
+
+      init(backing: NIONetworkDevice) {
+        self.backing = backing
+      }
+    }
   #endif
 
   public let status: Status
@@ -170,7 +193,7 @@ public struct Path: Equatable, CustomDebugStringConvertible, Sendable {
   private var _linkQuality: any Sendable
 
   @available(anyAppleOS 26.0, *)
-  fileprivate init(
+  init(
     status: Status, availableInterfaces: [Interface], isExpensive: Bool, isConstrained: Bool,
     isUltraConstrained: Bool, supportsIPv4: Bool, supportsIPv6: Bool, supportsDNS: Bool,
     gateways: [Address], localEndpoint: Address?, remoteEndpoint: Address?, linkQuality: LinkQuality
@@ -278,7 +301,7 @@ public struct Path: Equatable, CustomDebugStringConvertible, Sendable {
   /// Start should only be called once on a monitor, and multiple calls to start will
   /// be ignored.
   /// Once started, the path monitor must be explicitly cancelled when it is no longer needed.
-  public func run() async throws {
+  @concurrent public func run() async throws {
     await withTaskCancellationHandler {
       #if canImport(Network)
         pathMonitor.start(queue: .global())
@@ -294,38 +317,22 @@ public struct Path: Equatable, CustomDebugStringConvertible, Sendable {
     }
   }
 
-  private func pathUpdateHandler0(_ path: Path) async throws {
+  nonisolated private func pathUpdateHandler0(_ path: Path) async throws {
     self.pathUpdateHandler?(path)
 
-    #if os(iOS)
-      let ssid = await withCheckedContinuation { continuation in
-        NEHotspotNetwork.fetchCurrent {
-          continuation.resume(returning: $0?.ssid)
-        }
-      }
-      let interfaceName = path.availableInterfaces.first?.name
+    #if os(iOS) || os(visionOS)
+      let ssid = await NEHotspotNetwork.fetchCurrent()?.ssid ?? "-"
+      let bsdname = path.availableInterfaces.first?.name
     #elseif os(macOS)
-      let ssid = CWWiFiClient.shared().interface()?.ssid()
-      let interfaceName = CWWiFiClient.shared().interface()?.interfaceName
+      let ssid = CWWiFiClient.shared().interface()?.ssid() ?? "-"
+      let bsdname = CWWiFiClient.shared().interface()?.interfaceName
     #else
-      let ssid = Optional<String>.none
-      let interfaceName = path.availableInterfaces.first?.name
+      let ssid = "-"
+      let bsdname = path.availableInterfaces.first?.name
     #endif
 
-    let addresses: [String] = try System.enumerateDevices().compactMap {
-      guard $0.name == interfaceName else {
-        return nil
-      }
-      guard case .v4 = $0.address else {
-        return nil
-      }
-      return $0.address?.ipAddress
-    }
-
-    guard let ssid, let address = addresses.first else {
-      return
-    }
-    guard ssid != self.expiredPath.0 || address != self.expiredPath.1 else {
+    let address = try System.enumerateDevices().first { $0.name == bsdname }?.address?.ipAddress
+    guard let address, ssid != self.expiredPath.0 || address != expiredPath.1 else {
       return
     }
     self.expiredPath = (ssid, address)
