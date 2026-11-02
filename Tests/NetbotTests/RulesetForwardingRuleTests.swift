@@ -27,8 +27,11 @@ import Testing
 @Suite(.tags(.forwardingrule))
 struct RulesetForwardingRuleTests {
 
-  private let externalResourceDirectory: URL = URL(fileURLWithPath: #filePath)
-    .deletingLastPathComponent().appending(path: "External Resource")
+  @available(SwiftStdlib 6.0, *)
+  private var externalResourceDirectory: URL {
+    URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent().appending(path: "External Resource")
+  }
 
   @available(SwiftStdlib 6.0, *)
   @Test func propertyInitialValue() async throws {
