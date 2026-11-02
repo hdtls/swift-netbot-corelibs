@@ -20,8 +20,10 @@ struct OnDiskHTTPCaptureTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func unsupportedHeadT() async throws {
-    await #expect(processExitsWith: .failure) {
-      _ = OnDiskHTTPCapture<Int>(connection: .init(), captureFilters: [])
-    }
+    #if !os(iOS) && !os(tvOS) && !os(visionOS)
+      await #expect(processExitsWith: .failure) {
+        _ = OnDiskHTTPCapture<Int>(connection: .init(), captureFilters: [])
+      }
+    #endif
   }
 }

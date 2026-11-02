@@ -32,9 +32,11 @@ struct InMemoryHTTPCaptureTests {
 
   @available(SwiftStdlib 6.0, *)
   @Test func unsupportedHeadT() async throws {
-    await #expect(processExitsWith: .failure) {
-      _ = InMemoryHTTPCapture<Int>(connection: .init(), captureFilters: [])
-    }
+    #if !os(iOS) && !os(tvOS) && !os(visionOS)
+      await #expect(processExitsWith: .failure) {
+        _ = InMemoryHTTPCapture<Int>(connection: .init(), captureFilters: [])
+      }
+    #endif
   }
 
   @available(SwiftStdlib 6.0, *)
