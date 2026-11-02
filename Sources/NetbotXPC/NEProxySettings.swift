@@ -100,34 +100,36 @@
   @available(SwiftStdlib 6.0, *)
   extension NEProxySettings: @unchecked Sendable {}
 
-  @available(SwiftStdlib 6.0, *)
-  extension Optional where Wrapped == NEProxySettings {
+  #if os(macOS)
+    @available(SwiftStdlib 6.0, *)
+    extension Optional where Wrapped == NEProxySettings {
 
-    var options: [CFString: Any] {
-      switch self {
-      case .none:
-        return [
-          kCFNetworkProxiesHTTPEnable: 0,
-          kCFNetworkProxiesHTTPSEnable: 0,
-          kCFNetworkProxiesSOCKSEnable: 0,
-          kCFNetworkProxiesExcludeSimpleHostnames: 0,
-          kCFNetworkProxiesExceptionsList: [],
-        ]
-      case .some(let wrapped):
-        var options: [CFString: Any] = [:]
-        options[kCFNetworkProxiesHTTPEnable] = wrapped.httpEnabled ? 1 : 0
-        options[kCFNetworkProxiesHTTPProxy] = wrapped.httpsServer?.address
-        options[kCFNetworkProxiesHTTPPort] = wrapped.httpServer?.port
-        options[kCFNetworkProxiesHTTPSEnable] = wrapped.httpEnabled ? 1 : 0
-        options[kCFNetworkProxiesHTTPSProxy] = wrapped.httpsServer?.address
-        options[kCFNetworkProxiesHTTPSPort] = wrapped.httpsServer?.port
-        options[kCFNetworkProxiesSOCKSEnable] = wrapped.socksEnabled ? 1 : 0
-        options[kCFNetworkProxiesSOCKSProxy] = wrapped.socksServer?.address
-        options[kCFNetworkProxiesSOCKSPort] = wrapped.socksServer?.port
-        options[kCFNetworkProxiesExcludeSimpleHostnames] = wrapped.excludeSimpleHostnames ? 1 : 0
-        options[kCFNetworkProxiesExceptionsList] = wrapped.exceptionList
-        return options
+      var options: [CFString: Any] {
+        switch self {
+        case .none:
+          return [
+            kCFNetworkProxiesHTTPEnable: 0,
+            kCFNetworkProxiesHTTPSEnable: 0,
+            kCFNetworkProxiesSOCKSEnable: 0,
+            kCFNetworkProxiesExcludeSimpleHostnames: 0,
+            kCFNetworkProxiesExceptionsList: [],
+          ]
+        case .some(let wrapped):
+          var options: [CFString: Any] = [:]
+          options[kCFNetworkProxiesHTTPEnable] = wrapped.httpEnabled ? 1 : 0
+          options[kCFNetworkProxiesHTTPProxy] = wrapped.httpsServer?.address
+          options[kCFNetworkProxiesHTTPPort] = wrapped.httpServer?.port
+          options[kCFNetworkProxiesHTTPSEnable] = wrapped.httpEnabled ? 1 : 0
+          options[kCFNetworkProxiesHTTPSProxy] = wrapped.httpsServer?.address
+          options[kCFNetworkProxiesHTTPSPort] = wrapped.httpsServer?.port
+          options[kCFNetworkProxiesSOCKSEnable] = wrapped.socksEnabled ? 1 : 0
+          options[kCFNetworkProxiesSOCKSProxy] = wrapped.socksServer?.address
+          options[kCFNetworkProxiesSOCKSPort] = wrapped.socksServer?.port
+          options[kCFNetworkProxiesExcludeSimpleHostnames] = wrapped.excludeSimpleHostnames ? 1 : 0
+          options[kCFNetworkProxiesExceptionsList] = wrapped.exceptionList
+          return options
+        }
       }
     }
-  }
+  #endif
 #endif
